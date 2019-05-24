@@ -1,0 +1,16 @@
+# EditorConfig configuration for CoreMedia
+# https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+continuation_indent_size = 8
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+tab_width = 8
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CMSettings folder="/Settings/Options/Settings" name="GlobalLink">
+  <settings>
+    <Struct xmlns="http://www.coremedia.com/2008/struct">
+      <StructProperty Name="globalLink">
+        <Struct>
+          <StringProperty Name="url">https://connect-dev.translations.com/api/v2</StringProperty>
+          <StringProperty Name="key">Your Connector Key</StringProperty>
+          <StringProperty Name="username">Your Username</StringProperty>
+          <StringProperty Name="password">Your Password</StringProperty>
+          <StringProperty Name="fileType">xliff</StringProperty>
+          <IntProperty Name="dayOffsetForDueDate">20</IntProperty>
+          <!-- Uses translation type "mock" by default. Additional options: "disabled" or "default" (which again is the default if unset. -->
+          <StringProperty Name="type">mock</StringProperty>
+          <IntProperty Name="retryCommunicationErrors">5</IntProperty>
+          <IntProperty Name="mockDelaySeconds">10</IntProperty>
+          <IntProperty Name="mockDelayOffsetPercentage">0</IntProperty>
+          <StringProperty Name="mockError">Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.</StringProperty>
+        </Struct>
+      </StructProperty>
+    </Struct>
+  </settings>
+</CMSettings>

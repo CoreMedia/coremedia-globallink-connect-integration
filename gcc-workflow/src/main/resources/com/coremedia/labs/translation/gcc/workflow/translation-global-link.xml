@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workflow>
+  <Process name="TranslationGlobalLink"
+           description="Translation by GlobalLink "
+           startTask="Prepare">
+
+    <Rights>
+      <Grant group="translation-manager-role"
+             rights="create, read, write, start, suspend, resume, abort"/>
+      <Grant user="admin" rights="create, start, suspend, resume, abort"/>
+    </Rights>
+
+    <Variable name="subject" type="String"/>
+    <Variable name="comment" type="String"/>
+
+    <Variable name="translationAction" type="String"/>
+    <AggregationVariable name="targetSiteId" type="String"/>
+    <!-- list of locales that are marked as completed. -->
+    <AggregationVariable name="completedLocales" type="String"/>
+    <Variable name="performer" type="User"/>
+    <Variable name="robotUser" type="User"/>
+
+    <!-- list of contents or versions to be translated -->
+    <AggregationVariable name="masterContentObjects" type="Resource"/>
+
+    <!-- list of derived contents -->
+    <AggregationVariable name="derivedContents" type="Resource"/>
+    <!-- list of derived contents that did not exist before the workflow was started -->
+    <AggregationVariable name="createdContents" type="Resource"/>
+    <!-- list of checked-in versions of the derived contents before the actual translation started -->
+    <AggregationVariable name="rollbackVersions" type="Resource"/>
+    <!-- list of contents that were changed both in the derived and in the master site at conflicting places -->
+    <AggregationVariable name="autoMergeConflicts" type="Resource"/>
+
+    <!--
+      A JSON blob with errors that happened when downloading and/or importing XLIFF from the translation service,
+      or null if no such errors occurred. Studio's TaskErrorValidator can then display these errors as task issues.
+      The JSON data structure is a serialized map from Studio severity to map of error code to list of affected
+      contents, i.e. Map<Severity, Map<String, List<Content>>>. The list of contents may be empty for some errors.
+    -->
+    <Variable name="workflowActionIssues" type="Blob"/>
+
+    <!--
+      A blob that contains a zip file that stores the result xliff from GlobalLink under its gcc taskID.
+      Also more specific error messages are stored in a separate file, also reference by the taskId
+    -->
+    <Variable name="translationResultXliff" type="Blob"/>
+
+    <!-- map that groups each derived content by its locale-->
+    <Variable name="translationTreeData" type="Blob"/>
+    <!-- map that groups each derived content by its masterVersion-->
+    <Variable name="premularConfigData" type="Blob"/>
+
+    <!--
+      Timers to delay execution of corresponding automated tasks, for example before automatically retrying their
+      execution after communication errors. Initial value 0 for no delay for first task execution.
+    -->
+    <Variable name="sendTranslationRequestRetryDelay" type="Timer"><Timer value="0"/></Variable>
+    <Variable name="downloadTranslationRetryDelay" type="Timer"><Timer value="0"/></Variable>
+    <Variable name="cancelTranslationRetryDelay" type="Timer"><Timer value="0"/></Variable>
+    <!--
+      Number of remaining automatic retries after errors, or 0 if there's no error
+      that should be retried automatically without user intervention in an error user task.
+    -->
+    <Variable name="remainingAutomaticRetries" type="Integer">
+      <Integer value="0"/>
+    </Variable>
+
+    <!-- ID of the submission -->
+    <Variable name="globalLinkSubmissionId" type="String"/>
+    <!-- String that represents the submission status of GlobalLink -->
+    <Variable name="globalLinkSubmissionStatus" type="String"/>
+    <!-- Date that represents dueDate for the globalLink API -->
+    <Variable name="globalLinkDueDate" type="Date"/>
+    <!-- set to true if the editor requested cancellation of the translation request -->
+    <Variable name="cancelRequested" type="Boolean"><Boolean value="false"/></Variable>
+    <!-- set to true after a cancellation request was sent to the translation service -->
+    <Variable name="cancelled" type="Boolean"><Boolean value="false"/></Variable>
+    <!-- used by the client, to check if a cancellation may be requested via 'cancelRequested'-->
+    <Variable name="cancellationAllowed" type="Boolean"><Boolean value="true"/></Variable>
+
+    <InitialAssignment>
+      <Writes variable="subject"/>
+      <Writes variable="comment"/>
+      <Writes variable="masterContentObjects"/>
+      <Writes variable="targetSiteId"/>
+      <Writes variable="globalLinkDueDate"/>
+      <Writes variable="cancellationAllowed"/>
+    </InitialAssignment>
+
+    <Assignment>
+      <Writes variable="subject"/>
+      <Writes variable="comment"/>
+      <Writes variable="masterContentObjects"/>
+      <Writes variable="derivedContents"/>
+      <Writes variable="createdContents"/>
+      <Writes variable="targetSiteId"/>
+      <Writes variable="globalLinkSubmissionId"/>
+      <Writes variable="globalLinkSubmissionStatus"/>
+      <Writes variable="globalLinkDueDate"/>
+      <Writes variable="workflowActionIssues"/>
+      <Writes variable="remainingAutomaticRetries"/>
+      <Writes variable="cancelRequested"/>
+      <Writes variable="completedLocales"/>
+      <Writes variable="cancellationAllowed"/>
+      <Reads  variable="cancelled"/>
+    </Assignment>
+
+    <AutomatedTask name="Prepare" successor="CheckIfDerivedContentsEmpty">
+      <Action class="RegisterPendingProcess" userVariable="OWNER_"/>
+      <Action class="com.coremedia.translate.workflow.ValidateTranslationParametersAction"
+              masterContentObjectsVariable="masterContentObjects"
+              targetSiteIdVariable="targetSiteId"/>
+      <Action class="com.coremedia.translate.workflow.ExtractTranslationWorkflowRobotUserAction"
+              resultVariable="robotUser"/>
+      <!-- Enable timers for delaying certain automated tasks. With its initial values, these timers will expire
+           immediately, so that the IsExpired guards of those tasks do not delay the initial task execution -->
+      <Action class="EnableTimer" timerVariable="sendTranslationRequestRetryDelay"/>
+      <Action class="EnableTimer" timerVariable="downloadTranslationRetryDelay"/>
+      <Action class="EnableTimer" timerVariable="cancelTranslationRetryDelay"/>
+      <!-- Find and filter derived contents -->
+      <Action class="com.coremedia.translate.workflow.GetDerivedContentsAction"
+              masterContentObjectsVariable="masterContentObjects"
+              derivedContentsVariable="derivedContents"
+              createdContentsVariable="createdContents"
+              targetSiteIdVariable="targetSiteId"/>
+      <Action class="com.coremedia.translate.workflow.FilterDerivedContentsAction"
+              masterContentObjectsVariable="masterContentObjects"
+              derivedContentsVariable="derivedContents"/>
+    </AutomatedTask>
+
+    <If name="CheckIfDerivedContentsEmpty">
+      <Condition>
+        <IsEmpty variable="derivedContents"/>
+      </Condition>
+      <Then successor="Finish"/>
+      <Else successor="AutoMerge"/>
+    </If>
+
+    <AutomatedTask name="AutoMerge" successor="SendTranslationRequest">
+      <Action class="com.coremedia.translate.workflow.CreateTranslationTreeDataAction"
+              masterContentObjectsVariable="masterContentObjects"
+              derivedContentsVariable="derivedContents"
+              translationTreeDataVariable="translationTreeData"
+              premularConfigDataVariable="premularConfigData"/>
+      <Action class="AssignVariable" resultVariable="performer"><Get variable="OWNER_"/></Action>
+      <Action class="com.coremedia.translate.workflow.GetCheckedInVersionsAction"
+              contentsVariable="derivedContents"
+              resultVariable="rollbackVersions"
+              performerVariable="performer"/>
+      <Action class="com.coremedia.translate.workflow.AutoMergeTranslationAction"
+              derivedContentsVariable="derivedContents"
+              masterContentObjectsVariable="masterContentObjects"
+              resultVariable="autoMergeConflicts"
+              performerVariable="robotUser"
+              checkInContent="true"/>
+    </AutomatedTask>
+
+    <AutomatedTask name="SendTranslationRequest" successor="CheckSendTranslationRequest">
+      <Guard>
+        <IsExpired variable="sendTranslationRequestRetryDelay"/>
+      </Guard>
+      <Action class="com.coremedia.labs.translation.gcc.workflow.SendToGlobalLinkAction"
+              subjectVariable="subject"
+              derivedContentsVariable="derivedContents"
+              masterContentObjectsVariable="masterContentObjects"
+              issuesVariable="workflowActionIssues"
+              resultVariable="globalLinkSubmissionId"
+              globalLinkDueDateVariable="globalLinkDueDate"
+              remainingAutomaticRetriesVariable="remainingAutomaticRetries"/>
+      <!-- wait 180 seconds before retrying in case of error -->
+      <Action class="AssignVariable" resultVariable="sendTranslationRequestRetryDelay"><Timer value="180"/></Action>
+      <Action class="EnableTimer" timerVariable="sendTranslationRequestRetryDelay"/>
+    </AutomatedTask>
+
+    <Switch name="CheckSendTranslationRequest" defaultSuccessor="DownloadTranslation">
+      <Case successor="SendTranslationRequest">
+        <And>
+          <Greater><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Greater>
+          <NotEmpty variable="workflowActionIssues"/>
+        </And>
+      </Case>
+      <Case successor="HandleSendTranslationRequestError">
+        <And>
+          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
+          <NotEmpty variable="workflowActionIssues"/>
+        </And>
+      </Case>
+    </Switch>
+
+    <UserTask name="HandleSendTranslationRequestError" successor="SelectTaskAfterSendTranslationRequestError">
+      <Rights>
+        <Grant group="translation-manager-role"
+               rights="read, write, accept, complete, cancel"/>
+      </Rights>
+      <Assignment>
+        <Reads variable="workflowActionIssues"/>
+      </Assignment>
+      <!-- clear timer so that SendTranslationRequest task starts immediately after user decided to retry -->
+      <ExitAction class="AssignVariable" resultVariable="sendTranslationRequestRetryDelay"><Timer value="0"/></ExitAction>
+      <ExitAction class="EnableTimer" timerVariable="sendTranslationRequestRetryDelay"/>
+    </UserTask>
+
+    <If name="SelectTaskAfterSendTranslationRequestError">
+      <Condition>
+        <Equal><Get variable="translationAction"/><String value="rollbackTranslation"/></Equal>
+      </Condition>
+      <Then successor="RollbackContent"/>
+      <Else successor="SendTranslationRequest"/>
+    </If>
+
+    <AutomatedTask name="DownloadTranslation" successor="CheckDownloadTranslation">
+      <Guard>
+        <Or>
+          <IsExpired variable="downloadTranslationRetryDelay"/>
+          <Get variable="cancelRequested"/>
+        </Or>
+      </Guard>
+      <Action class="com.coremedia.labs.translation.gcc.workflow.DownloadFromGlobalLinkAction"
+              skipVariable="cancelRequested"
+              masterContentObjectsVariable="masterContentObjects"
+              issuesVariable="workflowActionIssues"
+              xliffResultVariable="translationResultXliff"
+              globalLinkSubmissionIdVariable="globalLinkSubmissionId"
+              globalLinkSubmissionStatusVariable="globalLinkSubmissionStatus"
+              completedLocalesVariable="completedLocales"
+              cancellationAllowedVariable="cancellationAllowed"
+              remainingAutomaticRetriesVariable="remainingAutomaticRetries"/>
+      <!-- wait 180 seconds before retrying if translation is still pending or in case of error -->
+      <Action class="AssignVariable" resultVariable="downloadTranslationRetryDelay"><Timer value="180"/></Action>
+      <Action class="EnableTimer" timerVariable="downloadTranslationRetryDelay"/>
+    </AutomatedTask>
+
+    <Switch name="CheckDownloadTranslation" defaultSuccessor="DownloadTranslation">
+      <Case successor="HandleDownloadTranslationError">
+        <!-- if there are errors that are not retried automatically, let the user handle them in the error user task -->
+        <And>
+          <NotEmpty variable="workflowActionIssues"/>
+          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
+        </And>
+      </Case>
+      <Case successor="ReviewDeliveredTranslation">
+        <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
+      </Case>
+      <Case successor="ReviewCancelledTranslation">
+        <Equal><Get variable="globalLinkSubmissionStatus"/><String value="CANCELLATION_CONFIRMED"/></Equal>
+      </Case>
+      <Case successor="CancelTranslation">
+        <Get variable="cancelRequested"/>
+      </Case>
+    </Switch>
+
+    <UserTask name="HandleDownloadTranslationError" successor="SelectTaskAfterDownloadTranslationError">
+      <!-- At this point a user could cancel the workflow if he sees it "in pending" while
+       another user has already "accepted" this workflow task. We need to prevent this and therefore set "cancellationAllowed" to false -->
+      <EntryAction class="AssignVariable" resultVariable="cancellationAllowed">
+        <Boolean value="false"/>
+      </EntryAction>
+      <Rights>
+        <Grant group="translation-manager-role"
+               rights="read, write, accept, complete, cancel"/>
+      </Rights>
+      <Assignment>
+        <Reads variable="workflowActionIssues"/>
+      </Assignment>
+      <!-- clear timer so that DownloadTranslation task starts immediately after user decided to retry -->
+      <ExitAction class="AssignVariable" resultVariable="downloadTranslationRetryDelay"><Timer value="0"/></ExitAction>
+      <ExitAction class="EnableTimer" timerVariable="downloadTranslationRetryDelay"/>
+
+      <!-- After this userTask "cancel" will be allowed again. If the user chose to continue to DownloadTranslation,
+      the "cancellationAllowed" variable will be set to "false" immediately again, should "completed locales" exist. In case the user chose
+      CancelTranslation, the cancelState will be set at the submission and cancellationAllowed is not necessary anymore-->
+      <ExitAction class="AssignVariable" resultVariable="cancellationAllowed">
+        <Boolean value="true"/>
+      </ExitAction>
+    </UserTask>
+
+    <If name="SelectTaskAfterDownloadTranslationError">
+      <Condition>
+        <Equal><Get variable="translationAction"/><String value="rollbackTranslation"/></Equal>
+      </Condition>
+      <Then successor="CancelTranslation"/>
+      <Else successor="DownloadTranslation"/>
+    </If>
+
+    <UserTask name="ReviewDeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
+      <Rights>
+        <Grant group="translation-manager-role"
+               rights="read, write, accept, complete, cancel"/>
+      </Rights>
+      <!-- store task performer for executing CompleteTranslationAction in task "Complete" -->
+      <EntryAction class="com.coremedia.translate.workflow.ExtractPerformerAction"
+                   performerVariable="performer"/>
+      <Assignment>
+        <Reads variable="subject"/>
+        <Reads variable="targetSiteId"/>
+        <Reads variable="masterContentObjects"/>
+        <Writes variable="comment"/>
+        <Writes variable="derivedContents"/>
+        <Writes variable="createdContents"/>
+        <Writes variable="translationAction"/>
+      </Assignment>
+      <ExitAction class="RegisterPendingProcess"/>
+    </UserTask>
+
+    <If name="SelectTaskAfterReviewDeliveredTranslation">
+      <Condition>
+        <Equal><Get variable="translationAction"/><String value="rollbackTranslation"/></Equal>
+      </Condition>
+      <Then successor="RollbackContent"/>
+      <Else successor="Complete"/>
+    </If>
+
+    <UserTask name="ReviewCancelledTranslation" successor="RollbackContent">
+      <Rights>
+        <Grant group="translation-manager-role"
+               rights="read, write, accept, complete, cancel"/>
+      </Rights>
+      <Assignment>
+        <Reads variable="subject"/>
+        <Reads variable="targetSiteId"/>
+        <Reads variable="masterContentObjects"/>
+        <Writes variable="comment"/>
+        <Writes variable="derivedContents"/>
+        <Writes variable="createdContents"/>
+        <Writes variable="translationAction"/>
+      </Assignment>
+      <ExitAction class="RegisterPendingProcess"/>
+    </UserTask>
+
+    <AutomatedTask name="CancelTranslation" successor="CheckCancelTranslation">
+      <!-- do not allow a cancellation by the client anymore -->
+      <Action class="AssignVariable" resultVariable="cancellationAllowed">
+        <Boolean value="false"/>
+      </Action>
+      <Guard>
+        <IsExpired variable="cancelTranslationRetryDelay"/>
+      </Guard>
+      <Action class="com.coremedia.labs.translation.gcc.workflow.CancelTranslationGlobalLinkAction"
+              masterContentObjectsVariable="masterContentObjects"
+              issuesVariable="workflowActionIssues"
+              globalLinkSubmissionIdVariable="globalLinkSubmissionId"
+              globalLinkSubmissionStatusVariable="globalLinkSubmissionStatus"
+              cancelledVariable="cancelled"
+              completedLocalesVariable="completedLocales"
+              remainingAutomaticRetriesVariable="remainingAutomaticRetries"/>
+      <!-- wait 180 seconds before retrying in case of error or if not yet in state CANCELLATION_CONFIRMED -->
+      <Action class="AssignVariable" resultVariable="cancelTranslationRetryDelay"><Timer value="180"/></Action>
+      <Action class="EnableTimer" timerVariable="cancelTranslationRetryDelay"/>
+    </AutomatedTask>
+
+    <Switch name="CheckCancelTranslation" defaultSuccessor="CancelTranslation">
+      <Case successor="HandleCancelTranslationError">
+        <And>
+          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
+          <NotEmpty variable="workflowActionIssues"/>
+        </And>
+      </Case>
+      <Case successor="RollbackContent">
+        <Or>
+          <Equal><Get variable="globalLinkSubmissionStatus"/><String value="CANCELLATION_CONFIRMED"/></Equal>
+          <And>
+            <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
+            <Get variable="cancelled"/>
+          </And>
+        </Or>
+      </Case>
+      <Case successor="ReviewDeliveredTranslation">
+        <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
+      </Case>
+    </Switch>
+
+    <UserTask name="HandleCancelTranslationError" successor="SelectTaskAfterCancelTranslationError">
+      <Rights>
+        <Grant group="translation-manager-role"
+               rights="read, write, accept, complete, cancel"/>
+      </Rights>
+      <Assignment>
+        <Reads variable="workflowActionIssues"/>
+      </Assignment>
+      <!-- clear timer so that CancelTranslation task starts immediately after user decided to retry -->
+      <ExitAction class="AssignVariable" resultVariable="cancelTranslationRetryDelay"><Timer value="0"/></ExitAction>
+      <ExitAction class="EnableTimer" timerVariable="cancelTranslationRetryDelay"/>
+    </UserTask>
+
+    <If name="SelectTaskAfterCancelTranslationError">
+      <Condition>
+        <Equal><Get variable="translationAction"/><String value="rollbackTranslation_afterCancellationFailed"/></Equal>
+      </Condition>
+      <Then successor="RollbackContent"/>
+      <Else successor="CancelTranslation"/>
+    </If>
+
+    <AutomatedTask name="RollbackContent" successor="Finish">
+      <Action class="com.coremedia.translate.workflow.RollbackVersionsAction"
+              rollbackVersionsVariable="rollbackVersions"
+              performerVariable="robotUser"/>
+      <Action class="com.coremedia.translate.workflow.RollbackTranslationAction"
+              derivedContentsVariable="derivedContents"
+              masterContentObjectsVariable="masterContentObjects"
+              contentsVariable="createdContents"/>
+    </AutomatedTask>
+
+    <AutomatedTask name="Complete" successor="Finish">
+      <Action class="com.coremedia.translate.workflow.CompleteTranslationAction"
+              derivedContentsVariable="derivedContents"
+              masterContentObjectsVariable="masterContentObjects"
+              performerVariable="performer"/>
+    </AutomatedTask>
+
+    <Variable name="finishTaskRetryTimer" type="Timer"/>
+    <TimerHandler class="RetryTaskTimerHandler" task="Finish" timerName="finishTaskRetryTimer"/>
+
+    <AutomatedTask name="Finish" final="true">
+      <Action class="AssignVariable" resultVariable="finishTaskRetryTimer"><Timer value="30"/></Action>
+      <Action class="EnableTimer" timerVariable="finishTaskRetryTimer"/>
+      <Action class="ArchiveProcess" maxProcessesPerUser="100"/>
+    </AutomatedTask>
+
+  </Process>
+</Workflow>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file xmlns:cmxliff="http://www.coremedia.com/2013/xliff-extensions-1.0" original="coremedia:///cap/version/2/1"
+        source-language="en-US" datatype="xml" target-language="de-DE" cmxliff:target="coremedia:///cap/content/4">
+    <body>
+      <group resname="property:string:string">
+        <trans-unit id="0" datatype="plaintext" size-unit="char" maxwidth="1536" maxbytes="512">
+          <source>Lorem Ipsum</source>
+          <target>Lörem Ipsüm</target>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>
