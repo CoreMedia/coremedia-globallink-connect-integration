@@ -32,23 +32,23 @@ The connector adds the following functionality to the CoreMedia Studio:
 
 Once finished working on the campaigns content, open the Control Room and click the _Start a localization workflow_ button in the toolbar of the _Localization workflows_.
 
-![GCC Start Workflow](docs/img/gcc-start-wf.png)
+![GCC Start Workflow](global/docs/img/gcc-start-wf.png)
 
 In the _Start Localization Workflow_ window , select the workflow type _Translation with GlobalLink_, set a self-describing name, a due date, drop the to-be-translated content, and set the target locales.
 
-![GCC Select](docs/img/gcc-select-type.png)
+![GCC Select](global/docs/img/gcc-select-type.png)
 
 After having started the workflow, it is shown in the pending workflow section and the details contain the submission id and the current state.
 
-![GCC Select](docs/img/gcc-running.png)
+![GCC Select](global/docs/img/gcc-running.png)
 
 In case an error occurs, it is shown in your inbox and you can select to cancel the workflow or you can try to fix the problem and retry.
 
-![GCC Error Handling](docs/img/gcc-connect-error.png)
+![GCC Error Handling](global/docs/img/gcc-connect-error.png)
 
 After the translation is finished, you will receive a notification. The workflow is shown in the inbox and once accepting the task, you can review the content and finish it. 
 
-![GCC Success](docs/img/gcc-success.png)
+![GCC Success](global/docs/img/gcc-success.png)
 
 Well done.
 
@@ -56,7 +56,7 @@ Well done.
 
 If the connection is not set up yet, go to _/Settings/Options/Settings/_ create a _Settings_ content called _GlobalLink_ and add it to the _Linked Settings_ property of the master site's homepage.
 
-![GCC Settings](docs/img/gcc-settings.png)
+![GCC Settings](global/docs/img/gcc-settings.png)
 
 
 ## Prerequisites
@@ -75,7 +75,7 @@ For more details on available options and how to configure them in CoreMedia Stu
 
 If you did not receive a client secret key as part of your _Client Onboarding_
 you can query it via REST API `/api/v2/connectors` which, provides a response
-similar to this (see [Connectors Get Request][GCC-API-Connectors]):
+similar to this:
 
 ```json
 {
@@ -111,67 +111,42 @@ to copy the sources to your workspace.
 To summarize the steps below, everything you need to do:
 
 1. Add GCC to your Blueprint workspace at `modules/extensions/gcc`.
-2. Extend `modules/extensions/pom.xml` by the GCC module.
-3. Adapt `coremedia.cms.version` in `modules/extensions/gcc/gcc-bom/pom.xml`.
+2. Configure your extension tool.
+3. Run your extension tool to activate the gcc extension.
 4. Add `translation-global-link.xml` to your workflow server deployment.
-5. Add the required GCC dependencies to your applications manually or use
-    the CoreMedia Extension Tool to do that for you.
-6. Later on: Ensure that your homepages link to `/Settings/Options/Settings/GlobalLink`
+5. Later on: Ensure that your homepages link to `/Settings/Options/Settings/GlobalLink`
     in their linked settings.
 
 ### Adding GCC Submodule
 
 In order to add GCC as submodule to Blueprint workspace you will use
-`git submodule`. The following statement will add the submodule to
-your extensions folder. It will use the main GCC Labs repository and
-will start with the master branch. You may as well decide to use a fork
-of the GCC Labs repository.
+`git submodule`. You need to add the submodule for your 
+gcc extension under the following path: `modules/extensions/gcc`
 
-```bash
-blueprint/$ git submodule add -b master -- \
-  https://github.com/CoreMedia/coremedia-globallink-connect-integration.git \
-  modules/extensions/gcc
+### Adding GCC as extension
+
+In order to add the gcc extension to your workspace you need to configure your extension tool. 
+The configuration for the tool can be found under `workspace-configuration/extensions`. 
+Make sure that you use at least version 4.0.1 of the extension tool.
+Here you need to add the following configuration for the `extensions-maven-plugin`
+```
+        <configuration>
+            <projectRoot>../..</projectRoot>
+            <extensionsRoot>modules/extensions</extensionsRoot>
+            <extensionPointsPath>modules/extension-config</extensionPointsPath>
+        </configuration>
 ```
 
-### Adding GCC to Extensions POM
-
-You need to add GCC to the extensions POM, as for example by using this SED
-command:
-
-```bash
-blueprint/$ sed --in-place \
-  --expression \
-    "\\#.*<modules>.*#a \\ \\ \\ \\ <module>gcc</module>" "modules/extensions/pom.xml"
-```
-
-It will add the GCC module as first entry behind `<modules>`.
-
-### Adapt CMS Version in gcc-bom
-
-It is required that you adapt `coremedia.cms.version` in `gcc-bom` to the CMS
-version you are using. To set it for example to version 1810.2 you may
-use the following SED command:
-
-```bash
-blueprint/$ sed --in-place \
-  --expression \
-    "s/\\(coremedia.cms.version>\\)[^<]*/\\11810.2/" "modules/extensions/gcc/gcc-bom/pom.xml"
-```
+After adapting the configuration you may run the commands `mvn extensions:sync` & `mvn extensions:sync -Denable=gcc` in the 
+`workspace-configuration/extensions` folder. This will activate the globalLink extension.
+The extension tool will also set the relative path for the parents of the extension modules.
 
 ### Adding GCC Workflow to Workflow Server Deployment
 
 You need to add `translation-global-link.xml` to your _builtin_ workflow definitions
-in `deployment/chef/cookbooks/blueprint-dev-tooling/attributes/default.rb`. Using
+in `docker/management-tools/src/docker/import-default-workflows`. Using
 _builtin_ will make the definition to be read from the JAR.
 
-You may add the workflow with the following SED command:
-
-```bash
-blueprint/$ sed --in-place \
-  --expression \
-    "\\#default.*workflow_definitions.*builtin.*#s#)# /com/coremedia/blueprint/workflow/translate/gcc/translation-global-link.xml)#" \
-  "deployment/chef/cookbooks/blueprint-dev-tooling/attributes/default.rb"
-```
 
 The first part of the expression is the _address_ where to add the workflow,
 the second part just replaces the closing parenthesis with an additional
@@ -208,59 +183,42 @@ parameters:
 * `password` Password (type:`String`)
 * `key` Client Secret Key (type:`String`)
 * `fileType` (_optional_) If there is more than one file format in your GlobalLink setup, then this has to be set to the XLIFF file type identifier to be used by your connector. (type:`String`)
-* `type` (_optional_) determines which facade implementation will be used (see [Facade Documentation](gcc-restclient-facade/README.md)). (type:`String`)
+* `type` (_optional_) determines which facade implementation will be used (see [Facade Documentation](apps/workflow-server/gcc-facade/gcc-restclient-facade/README.md)). (type:`String`)
 * `dayOffsetForDueDate` set the default value of the `Due Date`, that is set for your GlobalLink translation. The parameter defines the offset for the `Due Date` to lie within the future in days. (type:`Integer`)
 * `retryCommunicationErrors` number of retries in case of a communication error with GlobalLink. By default the value is set to 5. (type:`Integer`)
 
-You can also define Parameters for testing with the mock facade (see [Mock Facade Documentation](gcc-restclient-facade-mock/README.md)).
+You can also define Parameters for testing with the mock facade (see [Mock Facade Documentation](apps/workflow-server/gcc-facade/gcc-restclient-facade-mock/README.md)).
 
 
 By default the offset is set to `20` within the test data.
 
-### Enable Extension`
-
-In order to enable the extension eventually, i. e. to add required dependencies
-to all extended applications it is recommended to run the CoreMedia
-Extension Tool.
-
-In order to do so, you first need to adapt your task input file, as for
-example `workspace-configuration/extensions/managed-extensions.txt` and
-add one line for `gcc`. Here is an example how to do this via SED command:
-
-```batch
-blueprint/$ sed --in-place --expression \
-  "\$agcc" "workspace-configuration/extensions/managed-extensions.txt"
-```
-
-Then just run the Extension Tool with this task input file as
-described in [Blueprint Developer Manual / Project Extensions][DOC-CM-PEXT].
-
 ## Workspace Structure
 
-### gcc-bom
+### workflow-server
+Manages the workflow-server extension and the gcc-restclient-facade
 
-Manages third-party dependencies.
-
-### gcc-restclient-facade*
+#### gcc-restclient-facade*
 
 Facades to GCC Java REST Client API. Please see corresponding
-[README.md](gcc-restclient-facade/README.md) for details.
+[README.md](apps/workflow-server/gcc-facade/gcc-restclient-facade/README.md) for details.
 
-### gcc-studio
+#### gcc-workflow-server
+
+The workflow definition and classes to send and receive translation via GCC REST API.
+
+### studio-client
 
 Extension for the Studio client that registers the workflow definition and configures the UI.
 
-### gcc-studio-lib
+### studio-server
 
 Extension for the Studio REST server that registers the workflow definition.
 
-### gcc-user-changes
+### user-changes
 
 Extension for the User Changes web application to enable Studio notifications for the GlobalLink workflow.
 
-### gcc-workflow
 
-The workflow definition and classes to send and receive translation via GCC REST API.
 
 ### test-data
 
@@ -407,23 +365,21 @@ in your CMS.
 
 ## Third Party Libraries
 Third party libraries used by the Coremedia GlobalLink Connect Cloud connector modules: 
-* [gcc-restclient-facade](docs/dependencies/gcc-restclient-facade.pdf)
-* [gcc-restclient-facade-default](docs/dependencies/gcc-restclient-facade-default.pdf)
-* [gcc-restclient-facade-disabled](docs/dependencies/gcc-restclient-facade-disabled.pdf)
-* [gcc-restclient-facade-mock](docs/dependencies/gcc-restclient-facade-mock.pdf)
-* [gcc-studio](docs/dependencies/gcc-studio.pdf)
-* [gcc-studio-lib](docs/dependencies/gcc-studio-lib.pdf)
-* [gcc-util](docs/dependencies/gcc-util.pdf)
-* [gcc-workflow](docs/dependencies/gcc-workflow.pdf)
+* [studio-client](global/docs/dependencies/studio-client.pdf)
+* [studio-server](global/docs/dependencies/studio-server.pdf)
+* [gcc-workflow-server](global/docs/dependencies/gcc-workflow-server.pdf)
+* [gcc-workflow-server-util](global/docs/dependencies/gcc-workflow-server-util.pdf)
+* [gcc-restclient-facade](global/docs/dependencies/gcc-restclient-facade.pdf)
+* [gcc-restclient-facade-default](global/docs/dependencies/gcc-restclient-facade-default.pdf)
 
 The gcc-restclient` provided by GlobalLink is used in version 2.2.1.
 
-If required by the license, a reproduction can be found [here](https://documentation.coremedia.com/cms-9/artifacts/1904/webhelp/used-opensource-en/content/index.html).
+If required by the license, a reproduction can be found [here](https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/used-opensource-en/content/index.html).
 
 
 ## Manual Test Steps
 
-Manul Test Steps for the different use cases can be found [here](docs/test/manualTestSteps.md)
+Manul Test Steps for the different use cases can be found [here](global/docs/test/manualTestSteps)
 
 
 *******
@@ -439,9 +395,8 @@ The code we provide is meant to be example code, illustrating a set of features 
 
 <!-- Links, keep at bottom -->
 
-[DOC-CM-PEXT]: <https://documentation.coremedia.com/cms-9/artifacts/1810/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
-[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cms-9/artifacts/1810/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
-[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cms-9/artifacts/1810/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
-[DOC-WF-VARS]: <https://documentation.coremedia.com/cms-9/artifacts/1810/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
-[GCC-API-Connectors]: <https://connect.translations.com/docs/api/GlobalLink_Connect_Cloud_API_Documentation.htm#> "GCC API: Connectors Get"
+[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
+[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
+[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
+[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
 
