@@ -6,6 +6,7 @@
     <artifactId>workflow-server.extensions</artifactId>
     <groupId>com.coremedia.blueprint</groupId>
     <version>1-SNAPSHOT</version>
+    <relativePath>../../../../../apps/workflow-server/modules/extensions/pom.xml</relativePath>
   </parent>
 
   <packaging>pom</packaging>
