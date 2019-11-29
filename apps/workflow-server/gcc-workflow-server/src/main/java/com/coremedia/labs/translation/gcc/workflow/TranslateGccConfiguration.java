@@ -5,7 +5,7 @@ import com.coremedia.cap.translate.xliff.config.XliffImporterConfiguration;
 import com.coremedia.translate.item.TranslateItemConfiguration;
 import com.coremedia.translate.workflow.DefaultTranslationWorkflowDerivedContentsStrategy;
 import com.coremedia.translate.workflow.TranslationWorkflowDerivedContentsStrategy;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
+
+import java.util.List;
 
 @Configuration
 @Import({
@@ -72,11 +74,12 @@ public class TranslateGccConfiguration {
     public Object postProcessBeforeInitialization(Object bean, String beanName) {
       if (TRANSLATE_XLIFF_TRANSLATABLE_EXPRESSIONS.equals(beanName)) {
         if (bean instanceof Iterable) {
-          Iterable<String> list = (Iterable<String>) bean;
-          return ImmutableList.<String>builder()
-            .addAll(list)
-            .add("CMLinkable.localSettings.callToActionCustomText")
-            .build();
+          List<String> beans = Lists.newArrayList((Iterable<String>) bean);
+          String ctaCustomText = "CMLinkable.localSettings.callToActionCustomText";
+          if (!beans.contains(ctaCustomText)) {
+            beans.add(ctaCustomText);
+          }
+          return beans;
         }
         throw new BeanNotOfRequiredTypeException(beanName, Iterable.class, bean.getClass());
       }
