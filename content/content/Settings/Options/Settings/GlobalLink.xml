@@ -13,7 +13,7 @@
           <!-- Uses translation type "mock" by default. Additional options: "disabled" or "default" (which again is the default if unset. -->
           <StringProperty Name="type">mock</StringProperty>
           <IntProperty Name="retryCommunicationErrors">5</IntProperty>
-          <IntProperty Name="mockDelaySeconds">10</IntProperty>
+          <IntProperty Name="mockDelaySeconds">0</IntProperty>
           <IntProperty Name="mockDelayOffsetPercentage">0</IntProperty>
           <StringProperty Name="mockError">Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.</StringProperty>
         </Struct>
