@@ -14,6 +14,7 @@
     gcc-api which contains the REST requests and responses and
     gcc-workflow which contains the corresponding workflow.
   ]]></description>
+
   <modules>
     <module>apps/studio-client</module>
     <module>apps/studio-server</module>
@@ -22,4 +23,53 @@
     <module>content</module>
   </modules>
 
+  <properties>
+    <maven.compiler.release>11</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <docs.directory>${project.basedir}/docs</docs.directory>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.0.0</version>
+          <configuration>
+            <excludedGroups>^com\.coremedia\.</excludedGroups>
+            <excludeTransitiveDependencies>true</excludeTransitiveDependencies>
+            <outputDirectory>${docs.directory}</outputDirectory>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>generate-resources-docs</id>
+      <!--
+        Will create generated resources for docs/ folder.
+      -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-docs-licenses</id>
+                <goals>
+                  <goal>aggregate-add-third-party</goal>
+                </goals>
+                <phase>generate-resources</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
