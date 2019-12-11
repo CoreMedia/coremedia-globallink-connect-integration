@@ -2,24 +2,18 @@
 
 --------------------------------------------------------------------------------
 
-\[[Up](../README.md)\] \[[Top](#top)\]
+\[[Up](README.md)\] \[[Top](#top)\]
 
 --------------------------------------------------------------------------------
 
-In here you will find steps to release this repository.
+In here you will find a description of steps to perform a release
+of this workspace.
 
-## Contents
-
-1. [Manual Test Steps](manual-test-steps.md)
-
-    Manual tests to perform prior to release.
-
-2. [Release Steps](release-steps.md)
-
-    Steps to perform a release of this workspace.
+* Update documentation links in [development.md](../development.md) right at
+    the bottom of the MarkDown file.
 
 --------------------------------------------------------------------------------
 
-\[[Up](../README.md)\] \[[Top](#top)\]
+\[[Up](README.md)\] \[[Top](#top)\]
 
 --------------------------------------------------------------------------------
