@@ -324,20 +324,6 @@ should be equal to your derived site locale as IETF BCP 47 language tag.
 You will find the language tags in `/Settings/Options/Settings/LocaleSettings`
 in your CMS.
 
-## Third Party Libraries
-Third party libraries used by the Coremedia GlobalLink Connect Cloud connector modules: 
-* [studio-client](global/docs/dependencies/studio-client.pdf)
-* [studio-server](global/docs/dependencies/studio-server.pdf)
-* [gcc-workflow-server](global/docs/dependencies/gcc-workflow-server.pdf)
-* [gcc-workflow-server-util](global/docs/dependencies/gcc-workflow-server-util.pdf)
-* [gcc-restclient-facade](global/docs/dependencies/gcc-restclient-facade.pdf)
-* [gcc-restclient-facade-default](global/docs/dependencies/gcc-restclient-facade-default.pdf)
-
-The gcc-restclient` provided by GlobalLink is used in version 2.2.1.
-
-If required by the license, a reproduction can be found [here](https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/used-opensource-en/content/index.html).
-
-
 ## Manual Test Steps
 
 Manul Test Steps for the different use cases can be found [here](global/docs/test/manualTestSteps)
