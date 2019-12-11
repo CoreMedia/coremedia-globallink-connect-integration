@@ -8,12 +8,11 @@
 
 ## Scenarios
 
-1. [Happy Path](#happy_path)
-2. [Cancellation](#cancellation)
-3. [Error Handling](#error_handling)
-4. [XLIFF Import Error Handling](#xliff_error_handling)
+1. [Happy Path](#scenario-happy-path)
+2. [Cancellation](#scenario-cancellation)
+3. [Error Handling](#scenario-error-handling)
+4. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
 
-<a name="happy_path"></a>
 ## Scenario: Happy Path
 
 1. Login as Rick C.
@@ -44,7 +43,6 @@
     2. The workflow should appear in “Finished”
 
 
-<a name="cancellation"></a>
 ## Scenario: Cancellation
 
 1. Login as Rick C.
@@ -74,7 +72,6 @@
     2. The “Status” variable should display “Cancelled”
     3. The icon should mark the workflow as cancelled (little “x” on the bottom right)
 
-<a name="error_handling"></a>
 ## Scenario: Error Handling
 
 1. Login as Rick C.
@@ -108,7 +105,6 @@
     3. You have the ability to “Reject Changes without cancelling the submission at GlobalLink.” or “Continue and Retry”
 13. Continue and Retry should lead to a cancellation of the workflow, reject changes should lead to a direct rollback
 
-<a name="xliff_error_handling"></a>
 ## Scenario: XLIFF Import Error Handling
 
 1. Login as Rick C.

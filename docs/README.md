@@ -13,6 +13,10 @@ result eventually.
 
     Use GlobalLink Translation Workflow in CoreMedia Studio.
 
+2. [Administration](administration.md)
+
+    How to administrate GlobalLink extension (especially in CoreMedia Studio).
+
 2. [Development](development.md)
 
     How to integrate the extension to your Blueprint workspace.
