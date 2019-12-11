@@ -324,11 +324,6 @@ should be equal to your derived site locale as IETF BCP 47 language tag.
 You will find the language tags in `/Settings/Options/Settings/LocaleSettings`
 in your CMS.
 
-## Manual Test Steps
-
-Manul Test Steps for the different use cases can be found [here](global/docs/test/manualTestSteps)
-
-
 *******
 
 
