@@ -12,8 +12,12 @@ result eventually.
 1. [Editorial Quick Start](editorial-quick-start.md)
 
     Use GlobalLink Translation Workflow in CoreMedia Studio.
-    
-2. [Release Steps](release/README.md)
+
+2. [Development](development.md)
+
+    How to integrate the extension to your Blueprint workspace.
+
+3. [Release Steps](release/README.md)
 
     How to release this workspace.
 
