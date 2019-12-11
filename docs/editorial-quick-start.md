@@ -1,5 +1,11 @@
 ## Editorial Quick Start
 
+--------------------------------------------------------------------------------
+
+\[[Up](README.md)\] \[[Top](#top)\]
+
+--------------------------------------------------------------------------------
+
 Assuming that you are familiar with the CoreMedia Studio and that you created a
 new campaign in the English master site that has now to be translated into
 French, German, and Spanish. This guide shows how this task can be accomplished
@@ -58,3 +64,9 @@ a _Settings_ content called _GlobalLink_ and add it to the _Linked Settings_
 property of the master site's homepage.
 
 ![GCC Settings](img/gcc-settings.png)
+
+--------------------------------------------------------------------------------
+
+\[[Up](README.md)\] \[[Top](#top)\]
+
+--------------------------------------------------------------------------------

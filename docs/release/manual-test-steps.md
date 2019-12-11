@@ -1,5 +1,11 @@
 # Manual Test Steps
 
+--------------------------------------------------------------------------------
+
+\[[Up](README.md)\] \[[Top](#top)\]
+
+--------------------------------------------------------------------------------
+
 ## Scenarios
 
 1. [Happy Path](#happy_path)
@@ -122,3 +128,9 @@
     2. The TaskName should be “Download Error”
     3. You have the ability to “Reject Changes” or “Continue and Retry”
     4. There should be a field “Issue Details” with clickable link that links to a download of the broken XLIFF
+
+--------------------------------------------------------------------------------
+
+\[[Up](README.md)\] \[[Top](#top)\]
+
+--------------------------------------------------------------------------------
