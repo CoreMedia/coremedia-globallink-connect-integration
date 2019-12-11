@@ -2,11 +2,16 @@
 
 # Translation via GlobalLink Connect Cloud
 
-This open-source workspace enables CoreMedia CMS to communicate with GlobalLink Connect Cloud (GCC) REST API in order to send contents to be translated, query the translation status and to update contents with the received translation result eventually.
+This open-source workspace enables CoreMedia CMS to communicate with GlobalLink
+Connect Cloud (GCC) REST API in order to send contents to be translated, query
+the translation status and to update contents with the received translation
+result eventually.
+
+For more detailed documentation visit [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/).
 
 ## Table of Contents
 
-1. [Editorial Quick Start](#editorial-quick-start)
+1. [Editorial Quick Start](docs/editorial-quick-start.md)
 2. [Prerequisites](#prerequisites)
 3. [Installation](#installation)
 4. [Workspace Structure](#workspace-structure)
@@ -14,50 +19,6 @@ This open-source workspace enables CoreMedia CMS to communicate with GlobalLink 
 6. [Questions & Answers](#questions-amp-answers)
 7. [Third Party Libraries](#third-party-libraries)
 8. [Manual Test Steps](#manual-test-steps)
-
-## Editorial Quick Start
-
-Assuming that you are familiar with the CoreMedia Studio and that you created a new campaign in the English master site that has now to be translated into French, German, and Spanish. This guide shows how this task can be accomplished by means of the GlobalLink Connect Cloud connector.
-
-The connector adds the following functionality to the CoreMedia Studio:
-* Send content to GlobalLink for translation into one or multiple languages with individual due dates in one or multiple workflows.
-* Retrieve content from GlobalLink once the translation is finished.
-* Automatically detect cancellations of submissions at GlobalLink and cancel the translation workflow in CoreMedia Studio.
-* Configure the connection to GlobalLink per site hierarchy.
-* Show additional information like the translation status from GlobalLink in CoreMedia Studio.
-* Download XLIFF files and import log files in CoreMedia Studio if an error occurs during import.
-* Editors in CoreMedia Studio are notified about completion, cancellation, and import and communication errors of a translation workflow with GlobalLink.
-
-### Send Content to GlobalLink
-
-Once finished working on the campaigns content, open the Control Room and click the _Start a localization workflow_ button in the toolbar of the _Localization workflows_.
-
-![GCC Start Workflow](global/docs/img/gcc-start-wf.png)
-
-In the _Start Localization Workflow_ window , select the workflow type _Translation with GlobalLink_, set a self-describing name, a due date, drop the to-be-translated content, and set the target locales.
-
-![GCC Select](global/docs/img/gcc-select-type.png)
-
-After having started the workflow, it is shown in the pending workflow section and the details contain the submission id and the current state.
-
-![GCC Select](global/docs/img/gcc-running.png)
-
-In case an error occurs, it is shown in your inbox and you can select to cancel the workflow or you can try to fix the problem and retry.
-
-![GCC Error Handling](global/docs/img/gcc-connect-error.png)
-
-After the translation is finished, you will receive a notification. The workflow is shown in the inbox and once accepting the task, you can review the content and finish it. 
-
-![GCC Success](global/docs/img/gcc-success.png)
-
-Well done.
-
-### Configure Connection to GlobalLink Connect Cloud
-
-If the connection is not set up yet, go to _/Settings/Options/Settings/_ create a _Settings_ content called _GlobalLink_ and add it to the _Linked Settings_ property of the master site's homepage.
-
-![GCC Settings](global/docs/img/gcc-settings.png)
-
 
 ## Prerequisites
 
