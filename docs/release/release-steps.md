@@ -91,6 +91,11 @@ If we require a CI, create a branch similar to `ci/develop`, for example
 
 ## Documentation Update
 
+* Ensure you have built the CMCC version (snapshot versions) which this
+    workspace dedicates to. Otherwise, the third-party versions won't
+    match the declared CMCC version (most third-party dependencies)
+    are managed in Blueprint and CMCC Core.
+
 * Update [THIRD-PARTY.txt](../THIRD-PARTY.txt) and license downloads by running:
 
     ```bash
@@ -98,6 +103,7 @@ If we require a CI, create a branch similar to `ci/develop`, for example
     ```
 
 * Update CMCC and GCC Version in badges at main workspace `README.md`.
+
 * Update documentation links in [development.md](../development.md) right at
     the bottom of the MarkDown file.
 
