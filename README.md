@@ -26,4 +26,5 @@ Connect Cloud (GCC) REST API in order to send contents to be translated, query
 the translation status and to update contents with the received translation
 result eventually.
 
-For more detailed documentation visit [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/).
+For more detailed documentation visit [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
+or browse directly in [docs/ folder](./docs/README.md).
