@@ -1,5 +1,15 @@
 ![CoreMedia Labs Logo](https://documentation.coremedia.com/badges/banner_coremedia_labs_wide.png "CoreMedia Labs Logo Title Text")
 
+<!--
+  On Update:
+     * Change "message" for CMCC version to recent version.
+     * Change "message" for GCC (Used) version to the recently used version.
+-->
+
+![CoreMedia Content Cloud Version](https://img.shields.io/static/v1?message=1907&label=CoreMedia%20Content%20Cloud&style=for-the-badge&color=672779)
+![GCC Used](https://img.shields.io/static/v1?message=v2.3.0&label=GCC%20REST%20API%20%28Used%29&style=for-the-badge&color=green)
+[![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient.svg?label=GCC%20REST%20API%20%28Recent%29&style=for-the-badge)](https://search.maven.org/search?q=g:%22com.translations.globallink%22%20AND%20a:%22gcc-restclient%22)
+
 # CoreMedia Labs
 
 Welcome to [CoreMedia Labs](https://blog.coremedia.com/labs/)! This repository
@@ -46,3 +56,13 @@ or browse directly in [docs/ folder](./docs/README.md).
     branches named according to the CMS major version. It is recommended to
     take these versioned branches as starting point from within your project,
     choosing the major version matching your project version.
+
+# See Also
+
+* **[Changelog](CHANGELOG.md)**
+
+    for recent changes
+
+* **[Documentation](https://coremedia.github.io/coremedia-globallink-connect-integration/)**
+
+    for guides for editors, administrators and developers
