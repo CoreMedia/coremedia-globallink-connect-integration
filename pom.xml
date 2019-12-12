@@ -38,9 +38,15 @@
           <artifactId>license-maven-plugin</artifactId>
           <version>2.0.0</version>
           <configuration>
+            <cleanLicensesOutputDirectory>true</cleanLicensesOutputDirectory>
+            <errorRemedy>ignore</errorRemedy>
             <excludedGroups>^com\.coremedia\.</excludedGroups>
             <excludeTransitiveDependencies>true</excludeTransitiveDependencies>
+            <includeTransitiveDependencies>false</includeTransitiveDependencies>
+            <licensesOutputFile>${docs.directory}/third-party-licenses/licenses.xml</licensesOutputFile>
+            <licensesOutputDirectory>${docs.directory}/third-party-licenses</licensesOutputDirectory>
             <outputDirectory>${docs.directory}</outputDirectory>
+            <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
           </configuration>
         </plugin>
       </plugins>
@@ -49,7 +55,7 @@
 
   <profiles>
     <profile>
-      <id>generate-resources-docs</id>
+      <id>docs-third-party</id>
       <!--
         Will create generated resources for docs/ folder.
       -->
@@ -63,6 +69,7 @@
                 <id>generate-docs-licenses</id>
                 <goals>
                   <goal>aggregate-add-third-party</goal>
+                  <goal>aggregate-download-licenses</goal>
                 </goals>
                 <phase>generate-resources</phase>
               </execution>
