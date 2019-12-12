@@ -29,4 +29,5 @@ result eventually.
 
 * [Used Third-Party Libraries](THIRD-PARTY.txt)
 
-    For license texts have a look at [third-party-licenses/](third-party-licenses/.).
+    <!-- GitHub Pages is not able to list directory contents. Jump back to GitHub directly.  -->
+    For license texts have a look at [third-party-licenses/](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/docs/third-party-licenses).
