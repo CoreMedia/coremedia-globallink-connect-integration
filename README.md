@@ -36,10 +36,11 @@ Connect Cloud (GCC) REST API in order to send contents to be translated, query
 the translation status and to update contents with the received translation
 result eventually.
 
-For more detailed documentation visit [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
-or browse directly in [docs/ folder](./docs/README.md).
+**Detailed documentation available at
+[GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
+or browse directly in [docs/ folder](./docs/README.md).**
 
-# ⑃ Branches
+# ⑃ Branches &amp; Tags
 
 * **[master](/CoreMedia/coremedia-globallink-connect-integration/tree/master):**
 
@@ -50,11 +51,15 @@ or browse directly in [docs/ folder](./docs/README.md).
 
     Will contain preparations for next supported major.
 
-* **Version Branches:**
+* **ci-develop:**
+
+    Artificial branch required for CoreMedia internal CI systems.
+
+* **Version Tags:**
 
     For adaptions to CoreMedia CMS major versions you will find corresponding
-    branches named according to the CMS major version. It is recommended to
-    take these versioned branches as starting point from within your project,
+    tags named according to the CMS major version. It is recommended to
+    take these tags as starting point from within your project,
     choosing the major version matching your project version.
 
 # See Also
