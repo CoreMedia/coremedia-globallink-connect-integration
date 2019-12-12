@@ -501,14 +501,14 @@ class DefaultGCExchangeFacadeTest {
     @DisplayName("Robustness: Handle multiple submissions found.")
     void dealWithTooManySubmissionsFound() {
       lenient().when(additionalSubmission.getStatus()).thenReturn(additionalSubmissionState);
-      lenient().when(additionalSubmissionState.getStatusName()).thenReturn(SubmissionStatus.InProgress.text());
+      lenient().when(additionalSubmissionState.getStatusName()).thenReturn(SubmissionStatus.Translate.text());
 
       when(submissionsResponseData.getSubmissions()).thenReturn(asList(submission, additionalSubmission));
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
         GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
         // Does not matter, just one should be chosen.
-        assertThat(state).isIn(GCSubmissionState.STARTED, GCSubmissionState.IN_PROGRESS);
+        assertThat(state).isIn(GCSubmissionState.STARTED, GCSubmissionState.TRANSLATE);
       }
     }
 

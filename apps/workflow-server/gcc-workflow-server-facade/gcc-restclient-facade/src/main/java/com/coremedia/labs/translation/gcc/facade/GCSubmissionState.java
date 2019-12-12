@@ -39,24 +39,18 @@ public enum GCSubmissionState {
   ANALYZED(SubmissionStatus.Analyzed),
   AWAITING_APPROVAL(SubmissionStatus.AwaitingApproval),
   AWAITING_QUOTE_APPROVAL(SubmissionStatus.AwaitingQuoteApproval),
-  IN_PROGRESS(SubmissionStatus.InProgress),
   /**
-   * Workaround for translations-com/globallink-connect-cloud-api-java#1:
-   * Submission state "Translate" is not yet available.
-   *
-   * @see <a href="https://github.com/translations-com/globallink-connect-cloud-api-java/issues/1">SubmissionStatus (model): Misses State "Translate" · Issue #1 · translations-com/globallink-connect-cloud-api-java</a>
+   * Signalled, that a translation is in progress.
+   * @deprecated Removed in {@code gcc-restclient}. This state won't
+   * be reached anymore.
    */
-  TRANSLATE("Translate"),
+  @Deprecated(since = "gcc-restclient:2.4.0", forRemoval = true)
+  IN_PROGRESS("In Progress"),
+  TRANSLATE(SubmissionStatus.Translate),
   REVIEW(SubmissionStatus.Review),
   COMPLETED(SubmissionStatus.Completed),
   DELIVERED(SubmissionStatus.Delivered),
-  /**
-   * Artificial submission status for a cancelled submission. While the
-   * GCC API keeps track of the cancellation state as flag rather
-   * than as submission state, the actual state in which state a submission was
-   * cancelled is not relevant to this API.
-   */
-  CANCELLED("Cancelled"),
+  CANCELLED(SubmissionStatus.Cancelled),
   /**
    * Artificial submission status for a cancelled submission completely
    * being marked as cancellation confirmed. In other words a submission

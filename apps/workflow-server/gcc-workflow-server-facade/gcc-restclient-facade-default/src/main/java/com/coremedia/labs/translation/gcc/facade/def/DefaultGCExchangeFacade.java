@@ -436,7 +436,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
       return GCSubmissionState.OTHER;
     }
-    if (submission.getIsCancelled()) {
+    GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
+    // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation
+    // seem to be appropriate.
+    if (Boolean.TRUE.equals(submission.getIsCancelled()) || state == GCSubmissionState.CANCELLED) {
       /*
        * In order to know, that there is no more interaction with GCC backend
        * required to put the submission into a valid finished state, we split
@@ -449,10 +452,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       if (areAllSubmissionTasksDone(submissionId)) {
         return GCSubmissionState.CANCELLATION_CONFIRMED;
       }
-      // Interpret cancelled flag of submission as state.
+      // Interpret cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
       return GCSubmissionState.CANCELLED;
     }
-    return GCSubmissionState.fromSubmissionState(submission.getStatus());
+    return state;
   }
 
   /**
