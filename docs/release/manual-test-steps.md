@@ -8,10 +8,17 @@
 
 ## Scenarios
 
-1. [Happy Path](#scenario-happy-path)
-2. [Cancellation](#scenario-cancellation)
-3. [Error Handling](#scenario-error-handling)
-4. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
+1. [Contract Test](#scenario-contract-test)
+2. [Happy Path](#scenario-happy-path)
+3. [Cancellation](#scenario-cancellation)
+4. [Error Handling](#scenario-error-handling)
+5. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
+
+## Scenario: Contract Test
+
+Especially on updates of `gcc-restclient` you should run the half-automatic
+test `DefaultGCExchangeFacadeContractTest`. Read the JavaDoc to know how to
+configure and run the test.
 
 ## Scenario: Happy Path
 
