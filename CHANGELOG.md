@@ -7,7 +7,7 @@ Changelog
 ### Main Changes
 
 * Updated to CoreMedia 1910.
-* Update GCC from 3.3.0 to 3.4.0.
+* Update GCC from 2.3.0 to 2.4.0.
 
 ### Other Changes
 
