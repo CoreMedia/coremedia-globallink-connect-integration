@@ -28,3 +28,5 @@ result eventually.
 ## See Also
 
 * [Used Third-Party Libraries](THIRD-PARTY.txt)
+
+    For license texts have a look at [third-party-licenses/](third-party-licenses/.).
