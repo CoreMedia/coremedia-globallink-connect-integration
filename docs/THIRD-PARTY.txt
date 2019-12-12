@@ -5,7 +5,7 @@ Lists of 19 third-party dependencies.
      (Apache 2.0) Gson (com.google.code.gson:gson:2.8.6 - https://github.com/google/gson/gson)
      (Apache License, Version 2.0) Guava: Google Core Libraries for Java (com.google.guava:guava:28.0-jre - https://github.com/google/guava/guava)
      (EDL 1.0) JavaBeans Activation Framework (com.sun.activation:jakarta.activation:1.2.1 - https://github.com/eclipse-ee4j/jaf/jakarta.activation)
-     (The Apache Software License, Version 2.0) globallink-connect-restclient (com.translations.globallink:gcc-restclient:2.3.0 - http://www.translations.com/globallink/products/globallink_connect.html)
+     (The Apache Software License, Version 2.0) globallink-connect-restclient (com.translations.globallink:gcc-restclient:2.4.0 - http://www.translations.com/globallink/products/globallink_connect.html)
      (Apache License, Version 2.0) Apache Commons IO (commons-io:commons-io:2.6 - http://commons.apache.org/proper/commons-io/)
      (Apache License, Version 2.0) AssertJ fluent assertions (org.assertj:assertj-core:3.13.2 - http://assertj.org/assertj-core)
      (Apache 2.0) Awaitility (org.awaitility:awaitility:3.1.2 - http://awaitility.org)
