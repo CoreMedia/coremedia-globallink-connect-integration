@@ -28,3 +28,21 @@ result eventually.
 
 For more detailed documentation visit [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
 or browse directly in [docs/ folder](./docs/README.md).
+
+# ⑃ Branches
+
+* **[master](/CoreMedia/coremedia-globallink-connect-integration/tree/master):**
+
+    When development has finished on `develop` branch, changes will be merged to
+    `master` branch.
+
+* **[develop](/CoreMedia/coremedia-globallink-connect-integration/tree/develop):**
+
+    Will contain preparations for next supported major.
+
+* **Version Branches:**
+
+    For adaptions to CoreMedia CMS major versions you will find corresponding
+    branches named according to the CMS major version. It is recommended to
+    take these versioned branches as starting point from within your project,
+    choosing the major version matching your project version.
