@@ -48,17 +48,23 @@ extension tool. The configuration for the tool can be found under
 4.0.1 of the extension tool.
 
 Here you need to add the following configuration for the `extensions-maven-plugin`
-```
-        <configuration>
-            <projectRoot>../..</projectRoot>
-            <extensionsRoot>modules/extensions</extensionsRoot>
-            <extensionPointsPath>modules/extension-config</extensionPointsPath>
-        </configuration>
+```xml
+<configuration>
+  <projectRoot>../..</projectRoot>
+  <extensionsRoot>modules/extensions</extensionsRoot>
+  <extensionPointsPath>modules/extension-config</extensionPointsPath>
+</configuration>
 ```
 
-After adapting the configuration you may run the commands `mvn extensions:sync`
-& `mvn extensions:sync -Denable=gcc` in the `workspace-configuration/extensions`
-folder. This will activate the globalLink extension. The extension tool will
+After adapting the configuration you may run the extension tool in
+`workspace-configuration/extensions`:
+
+```bash
+$ mvn extensions:sync
+$ mvn extensions:sync -Denable=gcc
+``` 
+
+This will activate the globalLink extension. The extension tool will
 also set the relative path for the parents of the extension modules.
 
 ## Adding GCC Workflow to Workflow Server Deployment
