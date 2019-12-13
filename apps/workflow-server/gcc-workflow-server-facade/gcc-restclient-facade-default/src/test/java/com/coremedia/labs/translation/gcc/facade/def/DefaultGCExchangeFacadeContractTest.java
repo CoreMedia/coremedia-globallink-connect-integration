@@ -275,29 +275,106 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
-  @Test
-  @DisplayName("Test content submission")
-  void submitXml(TestInfo testInfo, Map<String, String> gccProperties) {
-    String testName = testInfo.getDisplayName();
+  @Nested
+  @DisplayName("Test general content submission")
+  class ContentSubmission {
+    @Test
+    @DisplayName("Test simple submission")
+    void submitXml(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
 
-    try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
-      long submissionId = facade.submitSubmission(
-              testName,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              Locale.US,
-              singletonMap(fileId, singletonList(Locale.GERMANY))
-      );
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                testName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
 
-      assertThat(submissionId).isGreaterThan(0L);
+        assertThat(submissionId).isGreaterThan(0L);
 
-      // Yes, we need to wait here. Directly after being started, a submission state
-      // may be 'null' (which we internally map to "other").
-      Awaitility.await("Wait for submission to be valid (has some well-known state).")
-              .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
-              .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isNotEqualTo(GCSubmissionState.OTHER));
+        // Yes, we need to wait here. Directly after being started, a submission state
+        // may be 'null' (which we internally map to "other").
+        Awaitility.await("Wait for submission to be valid (has some well-known state).")
+                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+                .pollDelay(1, TimeUnit.SECONDS)
+                .pollInterval(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isNotEqualTo(GCSubmissionState.OTHER));
+      }
+    }
+
+    @Test
+    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, skip additional information")
+    void submissionNameTruncationAsciiSkipAdditionalInfo(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
+      String submissionName = padEnd(testName, 150, 'a', 'z');
+
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                submissionName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
+
+        assertThat(submissionId).isGreaterThan(0L);
+      }
+    }
+
+    @Test
+    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, subject truncation")
+    void submissionNameTruncationAscii(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
+      String submissionName = padEnd(testName, 200, 'a', 'z');
+
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                submissionName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
+
+        assertThat(submissionId).isGreaterThan(0L);
+      }
+    }
+
+    @Test
+    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: Unicode, skip additional information")
+    void submissionNameTruncationUnicode(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
+      // 2190..21FF Arrows
+      String submissionName = padEnd(testName, 150, '\u2190', '\u21FF');
+
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                submissionName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
+
+        assertThat(submissionId).isGreaterThan(0L);
+      }
+    }
+
+    private String padEnd(String str, int minLength, char startChar, char endChar) {
+      StringBuilder builder = new StringBuilder(str);
+      char currentChar = startChar;
+      while (builder.length() < minLength) {
+        builder.append(currentChar);
+        if (currentChar == endChar) {
+          // Loop from beginning.
+          currentChar = startChar;
+        } else {
+          currentChar++;
+        }
+      }
+      return builder.toString();
     }
   }
 

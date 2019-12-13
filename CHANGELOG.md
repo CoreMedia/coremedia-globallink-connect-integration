@@ -32,6 +32,12 @@ Changelog
         
             It maps to `SubmissionStatus` directly now.
 
+### Bug Fixes
+
+* #2 Direct cancellation of workflow might result into failure 
+* #3 Submission name might be too long
+* #5 Links to mock facade documentation in README broken
+
 ### Other Changes
 
 * Introduced [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/).

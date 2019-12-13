@@ -53,6 +53,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.google.common.base.Strings.nullToEmpty;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
@@ -74,6 +75,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 @DefaultAnnotation(NonNull.class)
 public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
+  /**
+   * Maximum length of submission name. May require adjustment on
+   * GCC update.
+   */
+  private static final int SUBMISSION_NAME_MAX_LENGTH = 150;
   private static final Integer HTTP_OK = 200;
   /**
    * Some string, so GCC can identify the source of requests.
@@ -211,7 +217,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
   /**
    * Generates a submission name which shall be suitable for easily detecting the
-   * submission in project director.
+   * submission in project director. Submission name will be truncated
+   * to the maximum submission name length available at GCC if required.
    *
    * @param subject      workflow subject
    * @param sourceLocale source locale
@@ -221,16 +228,35 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static String createSubmissionName(@Nullable String subject,
                                              Locale sourceLocale,
                                              Map<String, List<Locale>> contentMap) {
+    String trimmedSubject = nullToEmpty(subject).trim();
+    if (trimmedSubject.length() >= SUBMISSION_NAME_MAX_LENGTH) {
+      if (trimmedSubject.length() == SUBMISSION_NAME_MAX_LENGTH) {
+        LOG.debug("Given subject at maximum length {}. Skipping applying further information to subject.", SUBMISSION_NAME_MAX_LENGTH);
+      } else {
+        String truncatedSubject = trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
+        LOG.warn("Given subject exceeds maximum length of {}. Will truncate subject and skip adding further information: {} → {}",
+                SUBMISSION_NAME_MAX_LENGTH,
+                trimmedSubject,
+                truncatedSubject);
+        trimmedSubject = truncatedSubject;
+      }
+      return trimmedSubject;
+    }
+
     String allTargetLocales = contentMap.entrySet().stream()
             .flatMap(e -> e.getValue().stream())
             .distinct()
             .map(Locale::toLanguageTag)
             .collect(joining(", "));
 
-    if (subject == null || subject.isEmpty()) {
-      subject = Instant.now().toString();
+    if (trimmedSubject.isEmpty()) {
+      trimmedSubject = Instant.now().toString();
     }
-    return subject + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
+    trimmedSubject = trimmedSubject + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
+    if (trimmedSubject.length() > SUBMISSION_NAME_MAX_LENGTH) {
+      return trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
+    }
+    return trimmedSubject;
   }
 
   @Override
@@ -299,7 +325,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     for (Long taskId : taskIds) {
       try {
         MessageResponse messageResponse = delegate.confirmTaskCancellation(taskId);
-        if(!HTTP_OK.equals(messageResponse.getStatus())){
+        if (!HTTP_OK.equals(messageResponse.getStatus())) {
           LOG.debug("Failed to confirm task cancellation for the task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
           throw new GCFacadeCommunicationException("Failed to confirm the cancelled task: " + taskId);
         }
