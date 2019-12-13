@@ -106,7 +106,7 @@ class DefaultGCExchangeFacadeContractTest {
   @DisplayName("Tests for available File Types")
   class FileTypes {
     @ParameterizedTest(name = "[{index}] Optional File Type {0} should be available.")
-    @ValueSource(strings = { "xml" })
+    @ValueSource(strings = {"xml"})
     @DisplayName("Ensure that optional file types are available.")
     void optionalFileTypesAvailable(String type, Map<String, String> gccProperties) {
       // These file types are optional. They may be required for testing, but they are not
@@ -115,7 +115,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     @ParameterizedTest(name = "[{index}] Required File Type {0} should be available.")
-    @ValueSource(strings= { "xliff" })
+    @ValueSource(strings = {"xliff"})
     @DisplayName("Ensure that required file types are available.")
     void requiredFileTypesAvailable(String type, Map<String, String> gccProperties) {
       // These file types are crucial for this GCC client.
@@ -128,6 +128,34 @@ class DefaultGCExchangeFacadeContractTest {
         ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
         List<String> availableTypes = connectorsConfig.getFileTypes();
         assertThat(type).isIn(availableTypes);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("Tests for available Supported Locales")
+  class SupportedLocales {
+    @ParameterizedTest(name = "[{index}] Required Target Locale {0} should be available.")
+    @ValueSource(strings = {"de", "fr"})
+    @DisplayName("Ensure that target locales required by tests are available.")
+    void requiredTargetLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
+      assertSupportedLocaleAvailable(expectedSupportedLocale, lc -> !lc.getIsSource(), gccProperties);
+    }
+
+    @ParameterizedTest(name = "[{index}] Required Source Locale {0} should be available.")
+    @ValueSource(strings = {"en"})
+    @DisplayName("Ensure that source locales required by tests are available.")
+    void requiredSourceLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
+      assertSupportedLocaleAvailable(expectedSupportedLocale, LocaleConfig::getIsSource, gccProperties);
+    }
+
+    private void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, String> gccProperties) {
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
+        List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
+        Locale expected = Locale.forLanguageTag(expectedSupportedLocale);
+        LOG.info("Available locales: {}", supportedLocales);
+        assertThat(supportedLocales).anySatisfy(tl -> assertThat(tl).isEqualTo(expected));
       }
     }
   }
@@ -231,14 +259,14 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
-  private class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+  private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
     @Override
     public boolean test(InputStream inputStream, GCTaskModel task) {
       return true;
     }
   }
 
-    @Test
+  @Test
   @DisplayName("Test content submission")
   void submitXml(TestInfo testInfo, Map<String, String> gccProperties) {
     String testName = testInfo.getDisplayName();
@@ -314,7 +342,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
-  private class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+  private static class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
     private final List<String> xliffResults;
 
     private TaskDataConsumer(List<String> xliffResults) {
