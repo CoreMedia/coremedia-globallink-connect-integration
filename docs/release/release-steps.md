@@ -27,6 +27,11 @@ $ git push origin develop
 $ git checkout --track "origin/ci/develop"
 $ git rebase "origin/develop"
 $ git push origin "ci/develop" --force-with-lease
+
+### It is recommended to leave "ci/develop" immediately, as no other commits
+### must make it to this branch than those required to run it in CoreMedia CI!
+
+$ git checkout develop
 ```
 
 Prior to release, ensure you update documentation links and third-party reports
