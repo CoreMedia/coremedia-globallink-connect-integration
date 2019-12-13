@@ -71,3 +71,26 @@ or browse directly in [docs/ folder](./docs/README.md).**
 * **[Documentation](https://coremedia.github.io/coremedia-globallink-connect-integration/)**
 
     for guides for editors, administrators and developers
+
+## GCC Java REST Client Facades
+
+* **[README: gcc-restclient-facade](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)**
+
+    Facade encapsulating all calls to GCC REST, the Java API as well as the REST
+    backend.
+    
+* **[README: gcc-restclient-facade-default](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-default/README.md)**
+
+    This is the default and fallback facade used when nothing is defined in
+    settings — or if there is no other facade applicable.
+
+* **[README: gcc-restclient-facade-disabled](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-disabled/README.md)**
+
+    This facade mainly serves as example how to implement custom connection
+    types. The implementation just throws exceptions on every interaction with the facade.
+    
+* **[README: gcc-restclient-facade-mock](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)**
+
+    The mock facade will simulate a translation service in that way, that it
+    replaces the target nodes (pre-filled with values from source nodes) in
+    XLIFF with some other characters. 
