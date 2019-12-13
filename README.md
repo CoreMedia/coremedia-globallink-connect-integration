@@ -51,9 +51,9 @@ or browse directly in [docs/ folder](./docs/README.md).**
 
     Will contain preparations for next supported major.
 
-* **ci-develop:**
+* **ci/develop:**
 
-    Artificial branch required for CoreMedia internal CI systems.
+    An artificial branch required for CoreMedia internal CI systems.
 
 * **Version Tags:**
 
