@@ -107,6 +107,11 @@ If we require a CI, create a branch similar to `ci/develop`, for example
 * Update documentation links in [development.md](../development.md) right at
     the bottom of the MarkDown file.
 
+## Post Process
+
+* Review GitHub issues and possibly adjust state.
+* Close and possibly rename the milestone.
+
 --------------------------------------------------------------------------------
 
 \[[Up](README.md)\] \[[Top](#top)\]
