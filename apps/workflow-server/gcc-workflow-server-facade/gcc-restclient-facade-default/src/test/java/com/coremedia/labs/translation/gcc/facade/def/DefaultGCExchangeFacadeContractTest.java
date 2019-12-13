@@ -234,8 +234,17 @@ class DefaultGCExchangeFacadeContractTest {
                 .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
                 .pollDelay(1, TimeUnit.SECONDS)
                 .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isNotEqualTo(GCSubmissionState.OTHER));
+                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId))
+                        .isNotIn(
+                                GCSubmissionState.OTHER,
+                                GCSubmissionState.IN_PRE_PROCESS
+                        )
+                );
 
+        /*
+         * If cancellation fails because of invalid state: Extend the forbidden
+         * states in the Awaitility call above.
+         */
         delegate.cancelSubmission(submissionId);
 
         Awaitility.await("Wait until submission is marked as cancelled.")
