@@ -136,14 +136,14 @@ class DefaultGCExchangeFacadeContractTest {
   @DisplayName("Tests for available Supported Locales")
   class SupportedLocales {
     @ParameterizedTest(name = "[{index}] Required Target Locale {0} should be available.")
-    @ValueSource(strings = {"de", "fr"})
+    @ValueSource(strings = {"de-DE", "fr-FR"})
     @DisplayName("Ensure that target locales required by tests are available.")
     void requiredTargetLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
       assertSupportedLocaleAvailable(expectedSupportedLocale, lc -> !lc.getIsSource(), gccProperties);
     }
 
     @ParameterizedTest(name = "[{index}] Required Source Locale {0} should be available.")
-    @ValueSource(strings = {"en"})
+    @ValueSource(strings = {"en-US"})
     @DisplayName("Ensure that source locales required by tests are available.")
     void requiredSourceLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
       assertSupportedLocaleAvailable(expectedSupportedLocale, LocaleConfig::getIsSource, gccProperties);
@@ -382,6 +382,8 @@ class DefaultGCExchangeFacadeContractTest {
     return connectorsConfig.getSupportedLocales().stream()
             .filter(localeConfigPredicate)
             .map(LocaleConfig::getLocaleLabel)
+            // GCC REST Backend Bug Workaround: Locale contains/may contain trailing space.
+            .map(String::trim)
             .map(Locale::forLanguageTag);
   }
 

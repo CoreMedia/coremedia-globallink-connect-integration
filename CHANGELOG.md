@@ -40,3 +40,9 @@ Changelog
     libraries and licenses.
 * Removed PDF documents for third-party libraries. Has been replaced by
     [THIRD-PARTY.txt](docs/THIRD-PARTY.txt).
+
+### General Notes
+
+* The GCC REST Backend changes the response of supported locales to contain
+    a trailing space, such as `"fr-FR "` rather than `"fr-FR"`. On parsing,
+    you should ensure trimming the result first.
