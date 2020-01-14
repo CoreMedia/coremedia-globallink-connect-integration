@@ -1,8 +1,29 @@
-Manual Test steps:
+# Manual Test Steps
 
-Happy Path:
+--------------------------------------------------------------------------------
+
+\[[Up](README.md)\] \[[Top](#top)\]
+
+--------------------------------------------------------------------------------
+
+## Scenarios
+
+1. [Contract Test](#scenario-contract-test)
+2. [Happy Path](#scenario-happy-path)
+3. [Cancellation](#scenario-cancellation)
+4. [Error Handling](#scenario-error-handling)
+5. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
+
+## Scenario: Contract Test
+
+Especially on updates of `gcc-restclient` you should run the half-automatic
+test `DefaultGCExchangeFacadeContractTest`. Read the JavaDoc to know how to
+configure and run the test.
+
+## Scenario: Happy Path
+
 1. Login as Rick C.
-2. Open the GlobalLinkSettings “/Settings/Options/Settings/GlobalLink”
+2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
     1. type should not be set to “mock”
     2. dayOffsetForDueDate should be set to 20
     3. Credentials for gcc should be entered (automatic workflow key)
@@ -29,9 +50,10 @@ Happy Path:
     2. The workflow should appear in “Finished”
 
 
-Cancel:
+## Scenario: Cancellation
+
 1. Login as Rick C.
-2. Open the GlobalLinkSettings “/Settings/Options/Settings/GlobalLink”
+2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
     1. type should not be set to “mock”
     2. dayOffsetForDueDate should be set to 20
 3. Choose an article and drag it into the “Localization Workflows” drop area
@@ -57,11 +79,10 @@ Cancel:
     2. The “Status” variable should display “Cancelled”
     3. The icon should mark the workflow as cancelled (little “x” on the bottom right)
 
+## Scenario: Error Handling
 
-
-Error Handling:
 1. Login as Rick C.
-2. Open the GlobalLinkSettings “/Settings/Options/Settings/GlobalLink”
+2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
     1. type should not be set to “mock”
     2. dayOffsetForDueDate should be set to 20
 3. Choose an article and drag it into the “Localization Workflows” drop area
@@ -91,11 +112,10 @@ Error Handling:
     3. You have the ability to “Reject Changes without cancelling the submission at GlobalLink.” or “Continue and Retry”
 13. Continue and Retry should lead to a cancellation of the workflow, reject changes should lead to a direct rollback
 
+## Scenario: XLIFF Import Error Handling
 
-
-XLIFF Import Error Handling:
 1. Login as Rick C.
-2. Open the GlobalLinkSettings “/Settings/Options/Settings/GlobalLink”
+2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
     1. type should be set to “mock”
     2. dayOffsetForDueDate should be set to 20
     3. mockError should be set to “DOWNLOAD_XLIFF”
@@ -112,4 +132,8 @@ XLIFF Import Error Handling:
     3. You have the ability to “Reject Changes” or “Continue and Retry”
     4. There should be a field “Issue Details” with clickable link that links to a download of the broken XLIFF
 
+--------------------------------------------------------------------------------
 
+\[[Up](README.md)\] \[[Top](#top)\]
+
+--------------------------------------------------------------------------------

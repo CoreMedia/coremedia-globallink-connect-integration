@@ -53,6 +53,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.google.common.base.Strings.nullToEmpty;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
@@ -74,6 +75,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 @DefaultAnnotation(NonNull.class)
 public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
+  /**
+   * Maximum length of submission name. May require adjustment on
+   * GCC update.
+   */
+  private static final int SUBMISSION_NAME_MAX_LENGTH = 150;
   private static final Integer HTTP_OK = 200;
   /**
    * Some string, so GCC can identify the source of requests.
@@ -88,7 +94,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    *
    * @param config configuration using keys as provided in {@link GCConfigProperty}.
    * @throws GCFacadeConfigException        if configuration is incomplete
-   * @throws GCFacadeCommunicationException if connection to GCC failed
+   * @throws GCFacadeCommunicationException if connection to GCC failed.
    */
   DefaultGCExchangeFacade(Map<String, String> config) {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
@@ -135,7 +141,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       delegate.logout();
       LOG.info("Successfully closed GCC connection.");
     } catch (RuntimeException e) {
-      LOG.warn("Failed to logout. Ignored assuming that the session will automatically timeout.", e);
+      LOG.warn("Failed to logout. Ignored assuming the session will automatically timeout.", e);
     }
   }
 
@@ -186,7 +192,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public int cancelSubmission(long submissionId) {
     try {
       MessageResponse response = delegate.cancelSubmission(submissionId);
-      if (!HTTP_OK.equals(response.getStatus())) {
+      if (LOG.isWarnEnabled() && !HTTP_OK.equals(response.getStatus())) {
         LOG.warn("Cannot cancel submission {}: {}", submissionId, gcResponseToString(response));
       }
       // MessageResponse has a statusCode (do not confuse with status), but
@@ -211,26 +217,46 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
   /**
    * Generates a submission name which shall be suitable for easily detecting the
-   * submission in project director.
+   * submission in project director. Submission name will be truncated
+   * to the maximum submission name length available at GCC if required.
    *
    * @param subject      workflow subject
    * @param sourceLocale source locale
    * @param contentMap   content map, the target languages will be extracted from it
-   * @return a descriptive string
+   * @return a descriptive string.
    */
   private static String createSubmissionName(@Nullable String subject,
                                              Locale sourceLocale,
                                              Map<String, List<Locale>> contentMap) {
+    String trimmedSubject = nullToEmpty(subject).trim();
+    if (trimmedSubject.length() >= SUBMISSION_NAME_MAX_LENGTH) {
+      if (trimmedSubject.length() == SUBMISSION_NAME_MAX_LENGTH) {
+        LOG.debug("Given subject at maximum length {}. Skipping applying further information to subject.", SUBMISSION_NAME_MAX_LENGTH);
+      } else {
+        String truncatedSubject = trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
+        LOG.warn("Given subject exceeds maximum length of {}. Will truncate subject and skip adding further information: {} → {}",
+                SUBMISSION_NAME_MAX_LENGTH,
+                trimmedSubject,
+                truncatedSubject);
+        trimmedSubject = truncatedSubject;
+      }
+      return trimmedSubject;
+    }
+
     String allTargetLocales = contentMap.entrySet().stream()
             .flatMap(e -> e.getValue().stream())
             .distinct()
             .map(Locale::toLanguageTag)
             .collect(joining(", "));
 
-    if (subject == null || subject.isEmpty()) {
-      subject = Instant.now().toString();
+    if (trimmedSubject.isEmpty()) {
+      trimmedSubject = Instant.now().toString();
     }
-    return subject + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
+    trimmedSubject = trimmedSubject + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
+    if (trimmedSubject.length() > SUBMISSION_NAME_MAX_LENGTH) {
+      return trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
+    }
+    return trimmedSubject;
   }
 
   @Override
@@ -254,9 +280,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       try {
         completedLocales.add(task.getTaskLocale());
         delegate.confirmTask(task.getTaskId());
-        LOG.debug("Confirmed delivery for task {} of submission {}", task.getTaskId(), submissionId);
+        LOG.debug("Confirmed delivery for the task {} of submission {}", task.getTaskId(), submissionId);
       } catch (RuntimeException e) {
-        throw new GCFacadeCommunicationException(e, "Failed to confirm delivery for task %s", task.getTaskId());
+        throw new GCFacadeCommunicationException(e, "Failed to confirm delivery for the task %s", task.getTaskId());
       }
     }
   }
@@ -268,7 +294,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         delegate.confirmTask(taskId);
       }
     } catch (IOException | RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to download and confirm delivery for task %s", taskId);
+      throw new GCFacadeCommunicationException(e, "Failed to download and confirm delivery for the task %s", taskId);
     }
   }
 
@@ -299,12 +325,12 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     for (Long taskId : taskIds) {
       try {
         MessageResponse messageResponse = delegate.confirmTaskCancellation(taskId);
-        if(!HTTP_OK.equals(messageResponse.getStatus())){
-          LOG.debug("Failed to confirm task cancellation for task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
-          throw new GCFacadeCommunicationException("Failed to confirm cancelled task: " + taskId);
+        if (!HTTP_OK.equals(messageResponse.getStatus())) {
+          LOG.debug("Failed to confirm task cancellation for the task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
+          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task: " + taskId);
         }
       } catch (RuntimeException e) {
-        throw new GCFacadeCommunicationException(e, "Failed to confirm cancelled task: " + taskId);
+        throw new GCFacadeCommunicationException(e, "Failed to confirm the cancelled task: " + taskId);
       }
     }
   }
@@ -316,7 +342,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @param submissionId submission ID
    * @param taskStates   task states to include
    * @return map of task states to sets of {@link GCTaskModel}
-   * @throws GCFacadeCommunicationException if tasks could be not be retrieved
+   * @throws GCFacadeCommunicationException if tasks could be not be retrieved.
    */
   private Map<TaskStatus, Set<GCTaskModel>> getTasksByState(long submissionId, TaskStatus... taskStates) {
     return getTasksByState(submissionId, r -> {
@@ -331,7 +357,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @param requestPreProcessor pre-processor for request for further customization
    * @param taskStates          task states to include
    * @return map of task states to sets of {@link GCTaskModel}
-   * @throws GCFacadeCommunicationException if tasks could be not be retrieved
+   * @throws GCFacadeCommunicationException if tasks could be not be retrieved.
    */
   private Map<TaskStatus, Set<GCTaskModel>> getTasksByState(long submissionId,
                                                             Consumer<? super TaskListRequest> requestPreProcessor,
@@ -352,7 +378,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    *
    * @param submissionId ID of the submission we want to retrieve the tasks for
    * @param taskStates   the task states which are relevant
-   * @return base request
+   * @return base request.
    */
   private static TaskListRequest createTaskListRequestBase(long submissionId,
                                                            TaskStatus... taskStates) {
@@ -367,7 +393,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @param submissionId        ID of the submission we want to retrieve the tasks for
    * @param requestPreProcessor pre-processor for request for further customization
    * @param taskStates          the task states which are relevant
-   * @return base request
+   * @return base request.
    */
   private static TaskListRequest createTaskListRequestBase(long submissionId,
                                                            Consumer<? super TaskListRequest> requestPreProcessor,
@@ -385,7 +411,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    *
    * @param request      request to process
    * @param tasksByState result collector
-   * @return {@code PageableResponseData} to retrieve the total number of pages
+   * @return {@code PageableResponseData} to retrieve the total number of pages.
    */
   private PageableResponseData executeRequest(TaskListRequest request, Map<TaskStatus, Set<GCTaskModel>> tasksByState) {
     return executeRequest(request, t ->
@@ -413,7 +439,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    *
    * @param request      request to process
    * @param taskConsumer result consumer
-   * @return {@code PageableResponseData} to retrieve the total number of pages
+   * @return {@code PageableResponseData} to retrieve the total number of pages.
    */
   private PageableResponseData executeRequest(TaskListRequest request, Consumer<? super GCTask> taskConsumer) {
     Tasks.TasksResponseData tasksList = delegate.getTasksList(request);
@@ -436,7 +462,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
       return GCSubmissionState.OTHER;
     }
-    if (submission.getIsCancelled()) {
+    GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
+    // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation
+    // seem to be appropriate.
+    if (Boolean.TRUE.equals(submission.getIsCancelled()) || state == GCSubmissionState.CANCELLED) {
       /*
        * In order to know, that there is no more interaction with GCC backend
        * required to put the submission into a valid finished state, we split
@@ -449,19 +478,19 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       if (areAllSubmissionTasksDone(submissionId)) {
         return GCSubmissionState.CANCELLATION_CONFIRMED;
       }
-      // Interpret cancelled flag of submission as state.
+      // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
       return GCSubmissionState.CANCELLED;
     }
-    return GCSubmissionState.fromSubmissionState(submission.getStatus());
+    return state;
   }
 
   /**
    * All submission tasks are considered done if they are either
-   * delivered or their cancellation got confirmed.
+   * delivered, or their cancellation got confirmed.
    *
    * @param submissionId ID of submission
    * @return {@code true} if all tasks are considered done; {@code false} otherwise
-   * @throws GCFacadeCommunicationException if the status could not be retrieved
+   * @throws GCFacadeCommunicationException if the status could not be retrieved.
    */
   private boolean areAllSubmissionTasksDone(long submissionId) {
     AtomicBoolean allDone = new AtomicBoolean(true);
@@ -474,7 +503,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
                   break;
                 case Cancelled:
                   // Logical AND: Only use confirmed state, if value
-                  // is still true. Otherwise keep false state.
+                  // is still true. Otherwise, keep false state.
                   allDone.compareAndSet(true, t.getIsCancelConfirmed());
                   break;
                 default:
@@ -491,7 +520,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    *
    * @param submissionId ID of the submission
    * @return submission found; {@code null} if not found
-   * @throws GCFacadeCommunicationException if unable to retrieve
+   * @throws GCFacadeCommunicationException if unable to retrieve.
    */
   @Nullable
   private GCSubmission getSubmissionById(long submissionId) {

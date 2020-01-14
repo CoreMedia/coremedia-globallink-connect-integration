@@ -106,7 +106,7 @@ class DefaultGCExchangeFacadeContractTest {
   @DisplayName("Tests for available File Types")
   class FileTypes {
     @ParameterizedTest(name = "[{index}] Optional File Type {0} should be available.")
-    @ValueSource(strings = { "xml" })
+    @ValueSource(strings = {"xml"})
     @DisplayName("Ensure that optional file types are available.")
     void optionalFileTypesAvailable(String type, Map<String, String> gccProperties) {
       // These file types are optional. They may be required for testing, but they are not
@@ -115,7 +115,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     @ParameterizedTest(name = "[{index}] Required File Type {0} should be available.")
-    @ValueSource(strings= { "xliff" })
+    @ValueSource(strings = {"xliff"})
     @DisplayName("Ensure that required file types are available.")
     void requiredFileTypesAvailable(String type, Map<String, String> gccProperties) {
       // These file types are crucial for this GCC client.
@@ -128,6 +128,34 @@ class DefaultGCExchangeFacadeContractTest {
         ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
         List<String> availableTypes = connectorsConfig.getFileTypes();
         assertThat(type).isIn(availableTypes);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("Tests for available Supported Locales")
+  class SupportedLocales {
+    @ParameterizedTest(name = "[{index}] Required Target Locale {0} should be available.")
+    @ValueSource(strings = {"de-DE", "fr-FR"})
+    @DisplayName("Ensure that target locales required by tests are available.")
+    void requiredTargetLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
+      assertSupportedLocaleAvailable(expectedSupportedLocale, lc -> !lc.getIsSource(), gccProperties);
+    }
+
+    @ParameterizedTest(name = "[{index}] Required Source Locale {0} should be available.")
+    @ValueSource(strings = {"en-US"})
+    @DisplayName("Ensure that source locales required by tests are available.")
+    void requiredSourceLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
+      assertSupportedLocaleAvailable(expectedSupportedLocale, LocaleConfig::getIsSource, gccProperties);
+    }
+
+    private void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, String> gccProperties) {
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
+        List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
+        Locale expected = Locale.forLanguageTag(expectedSupportedLocale);
+        LOG.info("Available locales: {}", supportedLocales);
+        assertThat(supportedLocales).anySatisfy(tl -> assertThat(tl).isEqualTo(expected));
       }
     }
   }
@@ -206,8 +234,17 @@ class DefaultGCExchangeFacadeContractTest {
                 .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
                 .pollDelay(1, TimeUnit.SECONDS)
                 .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isNotEqualTo(GCSubmissionState.OTHER));
+                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId))
+                        .isNotIn(
+                                GCSubmissionState.OTHER,
+                                GCSubmissionState.IN_PRE_PROCESS
+                        )
+                );
 
+        /*
+         * If cancellation fails because of invalid state: Extend the forbidden
+         * states in the Awaitility call above.
+         */
         delegate.cancelSubmission(submissionId);
 
         Awaitility.await("Wait until submission is marked as cancelled.")
@@ -231,36 +268,113 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
-  private class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+  private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
     @Override
     public boolean test(InputStream inputStream, GCTaskModel task) {
       return true;
     }
   }
 
+  @Nested
+  @DisplayName("Test general content submission")
+  class ContentSubmission {
     @Test
-  @DisplayName("Test content submission")
-  void submitXml(TestInfo testInfo, Map<String, String> gccProperties) {
-    String testName = testInfo.getDisplayName();
+    @DisplayName("Test simple submission")
+    void submitXml(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
 
-    try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
-      long submissionId = facade.submitSubmission(
-              testName,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              Locale.US,
-              singletonMap(fileId, singletonList(Locale.GERMANY))
-      );
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                testName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
 
-      assertThat(submissionId).isGreaterThan(0L);
+        assertThat(submissionId).isGreaterThan(0L);
 
-      // Yes, we need to wait here. Directly after being started, a submission state
-      // may be 'null' (which we internally map to "other").
-      Awaitility.await("Wait for submission to be valid (has some well-known state).")
-              .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
-              .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isNotEqualTo(GCSubmissionState.OTHER));
+        // Yes, we need to wait here. Directly after being started, a submission state
+        // may be 'null' (which we internally map to "other").
+        Awaitility.await("Wait for submission to be valid (has some well-known state).")
+                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+                .pollDelay(1, TimeUnit.SECONDS)
+                .pollInterval(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isNotEqualTo(GCSubmissionState.OTHER));
+      }
+    }
+
+    @Test
+    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, skip additional information")
+    void submissionNameTruncationAsciiSkipAdditionalInfo(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
+      String submissionName = padEnd(testName, 150, 'a', 'z');
+
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                submissionName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
+
+        assertThat(submissionId).isGreaterThan(0L);
+      }
+    }
+
+    @Test
+    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, subject truncation")
+    void submissionNameTruncationAscii(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
+      String submissionName = padEnd(testName, 200, 'a', 'z');
+
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                submissionName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
+
+        assertThat(submissionId).isGreaterThan(0L);
+      }
+    }
+
+    @Test
+    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: Unicode, skip additional information")
+    void submissionNameTruncationUnicode(TestInfo testInfo, Map<String, String> gccProperties) {
+      String testName = testInfo.getDisplayName();
+      // 2190..21FF Arrows
+      String submissionName = padEnd(testName, 150, '\u2190', '\u21FF');
+
+      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        long submissionId = facade.submitSubmission(
+                submissionName,
+                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+                Locale.US,
+                singletonMap(fileId, singletonList(Locale.GERMANY))
+        );
+
+        assertThat(submissionId).isGreaterThan(0L);
+      }
+    }
+
+    private String padEnd(String str, int minLength, char startChar, char endChar) {
+      StringBuilder builder = new StringBuilder(str);
+      char currentChar = startChar;
+      while (builder.length() < minLength) {
+        builder.append(currentChar);
+        if (currentChar == endChar) {
+          // Loop from beginning.
+          currentChar = startChar;
+        } else {
+          currentChar++;
+        }
+      }
+      return builder.toString();
     }
   }
 
@@ -314,7 +428,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
-  private class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+  private static class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
     private final List<String> xliffResults;
 
     private TaskDataConsumer(List<String> xliffResults) {
@@ -354,6 +468,8 @@ class DefaultGCExchangeFacadeContractTest {
     return connectorsConfig.getSupportedLocales().stream()
             .filter(localeConfigPredicate)
             .map(LocaleConfig::getLocaleLabel)
+            // GCC REST Backend Bug Workaround: Locale contains/may contain trailing space.
+            .map(String::trim)
             .map(Locale::forLanguageTag);
   }
 

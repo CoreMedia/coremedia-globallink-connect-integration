@@ -187,3 +187,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Microsoft Office Temporary Files
+~*.*
