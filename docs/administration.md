@@ -71,6 +71,22 @@ that the integration between both systems runs smoothly:
 * Re-opening of submissions is not yet supported by the connector. Ask your
     contacts at Translations.com to disable this functionality in GlobalLink
     Connect Cloud to avoid misunderstandings.
+    
+* A connector instance at GlobalLink Connect Cloud currently requires unique
+    ISO-639-1 language codes in the source locales of the sites. This essentially 
+    means that Translations.com would have to set up multiple connectors if your
+    site hierarchy looks like the following example. Each site in CoreMedia 
+    consequently has to use the `key` of the corresponding connector in its 
+    [settings](#configuring-globallink-connection-settings).
+```
+    |
+    |- en_FR
+    |  |- fr_FR
+    |
+    |- en_DE
+    |  |- de_DE
+    |
+```
 
 ## Configuring GlobalLink Connection Settings
 
@@ -85,7 +101,7 @@ parameters:
 * `url` for GCC REST Base URL  (type:`String`)
 * `username` Username (type:`String`)
 * `password` Password (type:`String`)
-* `key` Client Secret Key (type:`String`)
+* `key` the GCC connector key (type:`String`)
 * `fileType` (_optional_) If there is more than one file format in your
     GlobalLink setup, then this has to be set to the XLIFF file type identifier
     to be used by your connector. (type:`String`)

@@ -11,19 +11,13 @@ new campaign in the English master site that has now to be translated into
 French, German, and Spanish. This guide shows how this task can be accomplished
 by means of the GlobalLink Connect Cloud connector.
 
-The connector adds the following functionality to the CoreMedia Studio:
-* Send content to GlobalLink for translation into one or multiple languages
-    with individual due dates in one or multiple workflows.
-* Retrieve content from GlobalLink once the translation is finished.
-* Automatically detect cancellations of submissions at GlobalLink and cancel the
-    translation workflow in CoreMedia Studio.
-* Configure the connection to GlobalLink per site hierarchy.
-* Show additional information like the translation status from GlobalLink in
-    CoreMedia Studio.
-* Download XLIFF files and import log files in CoreMedia Studio if an error
-    occurs during import.
-* Editors in CoreMedia Studio are notified about completion, cancellation, and
-    import and communication errors of a translation workflow with GlobalLink.
+### Configure Connection to GlobalLink Connect Cloud
+
+If the connection is not set up yet, go to `/Settings/Options/Settings/` create
+a _Settings_ content called _GlobalLink_ and add it to the _Linked Settings_
+property of the master site's homepage.
+
+![GCC Settings](img/gcc-settings.png)
 
 ### Send Content to GlobalLink
 
@@ -56,14 +50,6 @@ and finish it.
 ![GCC Success](img/gcc-success.png)
 
 Well done.
-
-### Configure Connection to GlobalLink Connect Cloud
-
-If the connection is not set up yet, go to `/Settings/Options/Settings/` create
-a _Settings_ content called _GlobalLink_ and add it to the _Linked Settings_
-property of the master site's homepage.
-
-![GCC Settings](img/gcc-settings.png)
 
 --------------------------------------------------------------------------------
 
