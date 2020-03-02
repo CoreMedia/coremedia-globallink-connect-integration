@@ -39,12 +39,12 @@ or browse directly in [docs/ folder](./docs/README.md).**
 
 # ⑃ Branches &amp; Tags
 
-* **[master](/CoreMedia/coremedia-globallink-connect-integration/tree/master):**
+* **[master](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master):**
 
     When development has finished on `develop` branch, changes will be merged to
     `master` branch.
 
-* **[develop](/CoreMedia/coremedia-globallink-connect-integration/tree/develop):**
+* **[develop](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/develop):**
 
     Will contain preparations for next supported major.
 
