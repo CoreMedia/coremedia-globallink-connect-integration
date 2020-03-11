@@ -106,7 +106,7 @@ parameters:
     GlobalLink setup, then this has to be set to the XLIFF file type identifier
     to be used by your connector. (type:`String`)
 * `type` (_optional_) determines which facade implementation will be used
-    (see _Facade Documentation_ in the workspace). (type:`String`)
+    (see [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)). (type:`String`)
 * `dayOffsetForDueDate` set the default value of the `Due Date`, that is set for
     your GlobalLink translation. The parameter defines the offset for the
     `Due Date` to lie within the future in days. (type:`Integer`)
@@ -114,7 +114,7 @@ parameters:
     with GlobalLink. By default the value is set to 5. (type:`Integer`)
 
 You can also define Parameters for testing with the mock facade
-(see _Mock Facade Documentation_ in the workspace).
+(see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
 
 
 By default the offset is set to `20` within the test data.
