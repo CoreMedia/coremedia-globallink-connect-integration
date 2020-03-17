@@ -17,7 +17,7 @@ public class DisabledGCExchangeFacadeProvider implements GCExchangeFacadeProvide
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, String> settings) {
+  public GCExchangeFacade getFacade(Map<String, Object> settings) {
     return DisabledGCExchangeFacade.getInstance();
   }
 }

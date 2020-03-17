@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file xmlns:cmxliff="http://www.coremedia.com/2013/xliff-extensions-1.0" original="coremedia:///cap/version/9516/1"
+        source-language="en-US" datatype="xml" target-language="de-DE" cmxliff:target="coremedia:///cap/content/9518">
+    <body>
+      <group resname="property:string:title">
+        <trans-unit id="0" datatype="plaintext" size-unit="char" maxwidth="1536" maxbytes="512">
+          <source>Lorem Ipsum</source>
+          <target>Untranslated</target>
+        </trans-unit>
+      </group>
+      <group datatype="xhtml" resname="property:markup:detailText">
+        <group id="1" restype="x-html-div">
+          <trans-unit id="2" restype="x-html-p">
+            <source>Lorem Ipsum Dolor Sit Amet.</source>
+            <target>Untranslated</target>
+          </trans-unit>
+        </group>
+      </group>
+      <group resname="property:struct:localSettings">
+        <group resname="pathsegment:string:callToActionCustomText">
+          <trans-unit id="0" datatype="plaintext" size-unit="char" maxwidth="2147483647" maxbytes="2147483647">
+            <source>Lorem Ipsum</source>
+            <target>Untranslated</target>
+          </trans-unit>
+        </group>
+      </group>
+      <group resname="systemproperty:string:name">
+        <trans-unit id="3" datatype="plaintext" size-unit="char" maxwidth="233">
+          <source>Lorem Ipsum</source>
+          <target>Untranslated</target>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>

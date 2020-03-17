@@ -1,13 +1,5 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.cap.util.StructUtil;
-import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.cap.common.Blob;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentObject;
@@ -16,9 +8,17 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.struct.Struct;
 import com.coremedia.cap.translate.xliff.XliffImportResultCode;
+import com.coremedia.cap.util.StructUtil;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.cap.workflow.plugin.ActionResult;
+import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
@@ -430,7 +430,16 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   GCExchangeFacade openSession(Site site) {
-    return defaultFactory().openSession(getGccSettings(site));
+    Map<String, String> gccSettings = getGccSettings(site);
+    Map<String, Object> newSettings = new HashMap<>();
+    for (Map.Entry<String, String> stringObjectEntry : gccSettings.entrySet()) {
+      if(stringObjectEntry.getKey().startsWith("bean:") && getSpringContext().containsBean(stringObjectEntry.getValue())) {
+        newSettings.put(stringObjectEntry.getKey().substring("bean:".length()), getSpringContext().getBean(stringObjectEntry.getValue()));
+      } else {
+        newSettings.put(stringObjectEntry.getKey(), stringObjectEntry.getValue());
+      }
+    }
+    return defaultFactory().openSession(newSettings);
   }
 
   @Nullable

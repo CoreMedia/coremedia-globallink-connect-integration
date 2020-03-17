@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @DefaultAnnotation(NonNull.class)
 public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
@@ -28,7 +29,10 @@ public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, String> settings) {
+  public GCExchangeFacade getFacade(Map<String, Object> settingsOld) {
+    Map<String, String> settings = settingsOld.entrySet()
+            .stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
     MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
 
     String delaySeconds = settings.get(CONFIG_DELAY_SECONDS);
