@@ -121,7 +121,7 @@ public final class InternalGCExchangeFacade implements GCExchangeFacade {
   private void downloadTask(Task task, BiPredicate<? super InputStream, ? super GCTaskModel> taskDataConsumer) {
     boolean success = false;
     String untranslatedContent = task.getContent();
-    String translatedContent = TranslationUtil.translateXliff(untranslatedContent, translationService);
+    String translatedContent = translationService.translateXliff(untranslatedContent, true).orElse(untranslatedContent);
     try (InputStream is = new ByteArrayInputStream(translatedContent.getBytes(StandardCharsets.UTF_8))) {
       success = taskDataConsumer.test(is, new GCTaskModel(task.getId(), task.getTargetLocale()));
     } catch (IOException e) {
