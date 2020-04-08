@@ -76,7 +76,8 @@ also set the relative path for the parents of the extension modules.
 ## Adding GCC Workflow to Workflow Server Deployment
 
 You need to add `translation-global-link.xml` to your workflow definitions
-in `global/management-tools/docker/management-tools/src/docker/import-default-workflows`. Add `TranslationGlobalLink:/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml`
+in `global/management-tools/docker/management-tools/src/docker/import-default-workflows`.
+Add `TranslationGlobalLink:/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml`
 to the variable `DEFAULT_WORKFLOWS`.
 
 ## Patch/Edit Site Homepages
