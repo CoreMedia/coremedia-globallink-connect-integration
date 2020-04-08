@@ -78,7 +78,8 @@ that the integration between both systems runs smoothly:
     site hierarchy looks like the following example. Each site in CoreMedia 
     consequently has to use the `key` of the corresponding connector in its 
     [settings](#configuring-globallink-connection-settings).
-```
+
+    ```
     |
     |- en_FR
     |  |- fr_FR
@@ -86,7 +87,7 @@ that the integration between both systems runs smoothly:
     |- en_DE
     |  |- de_DE
     |
-```
+    ```
 
 ## Configuring GlobalLink Connection Settings
 
