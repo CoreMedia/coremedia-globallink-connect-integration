@@ -1,12 +1,22 @@
 Changelog
 ================================================================================
 
+2001
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated to CoreMedia Content Cloud 10.2001.
+
+* Updated documentation with additional information on setup of 
+  GlobalLink Connect Cloud.
+
 1910
 --------------------------------------------------------------------------------
 
 ### Main Changes
 
-* Updated to CoreMedia 1910.
+* Updated to CoreMedia Content Cloud 10.1910.
 
 * Update GCC from 2.3.0 to 2.4.0.
 
