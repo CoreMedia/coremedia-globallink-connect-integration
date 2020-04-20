@@ -1,6 +1,15 @@
 Changelog
 ================================================================================
 
+2004
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated to CoreMedia Content Cloud 10.2004.
+
+* Updated ```ActionTestBaseConfiguration``` to latest version of the ```TranslatablePredicate``` interface.
+  
 2001
 --------------------------------------------------------------------------------
 

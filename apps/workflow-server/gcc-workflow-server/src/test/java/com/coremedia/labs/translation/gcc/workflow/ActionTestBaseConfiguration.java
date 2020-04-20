@@ -51,7 +51,7 @@ public class ActionTestBaseConfiguration {
   @Bean
   @Scope(SCOPE_SINGLETON)
   public TranslatablePredicate translatablePredicate() {
-    return descriptor -> TRANSLATABLE_PROPERTIES.contains(descriptor.getName());
+    return descriptors -> descriptors.stream().anyMatch(descriptor -> TRANSLATABLE_PROPERTIES.contains(descriptor.getName()));
   }
 
   /**
