@@ -9,6 +9,10 @@ Changelog
 * Updated to CoreMedia Content Cloud 10.2004.
 
 * Updated ```ActionTestBaseConfiguration``` to latest version of the ```TranslatablePredicate``` interface.
+
+* Removed ```translatableExpressions``` configuration from  
+  ```TranslateGccConfiguration``` which is now provided by the Blueprint's 
+  multi-site module.
   
 2001
 --------------------------------------------------------------------------------
