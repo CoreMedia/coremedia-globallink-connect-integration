@@ -95,7 +95,7 @@ class DefaultGCExchangeFacadeContractTest {
 
   @Test
   @DisplayName("Validate that login works.")
-  void login(Map<String, String> gccProperties) {
+  void login(Map<String, Object> gccProperties) {
     LOG.info("Properties: {}", gccProperties);
     try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
       assertThat(facade.getDelegate()).isNotNull();
@@ -108,7 +108,7 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest(name = "[{index}] Optional File Type {0} should be available.")
     @ValueSource(strings = {"xml"})
     @DisplayName("Ensure that optional file types are available.")
-    void optionalFileTypesAvailable(String type, Map<String, String> gccProperties) {
+    void optionalFileTypesAvailable(String type, Map<String, Object> gccProperties) {
       // These file types are optional. They may be required for testing, but they are not
       // important for production usage.
       assertFileTypeAvailable(type, gccProperties);
@@ -117,12 +117,12 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest(name = "[{index}] Required File Type {0} should be available.")
     @ValueSource(strings = {"xliff"})
     @DisplayName("Ensure that required file types are available.")
-    void requiredFileTypesAvailable(String type, Map<String, String> gccProperties) {
+    void requiredFileTypesAvailable(String type, Map<String, Object> gccProperties) {
       // These file types are crucial for this GCC client.
       assertFileTypeAvailable(type, gccProperties);
     }
 
-    private void assertFileTypeAvailable(String type, Map<String, String> gccProperties) {
+    private void assertFileTypeAvailable(String type, Map<String, Object> gccProperties) {
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
         GCExchange delegate = facade.getDelegate();
         ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
@@ -138,18 +138,18 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest(name = "[{index}] Required Target Locale {0} should be available.")
     @ValueSource(strings = {"de-DE", "fr-FR"})
     @DisplayName("Ensure that target locales required by tests are available.")
-    void requiredTargetLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
+    void requiredTargetLocalesAreAvailable(String expectedSupportedLocale, Map<String, Object> gccProperties) {
       assertSupportedLocaleAvailable(expectedSupportedLocale, lc -> !lc.getIsSource(), gccProperties);
     }
 
     @ParameterizedTest(name = "[{index}] Required Source Locale {0} should be available.")
     @ValueSource(strings = {"en-US"})
     @DisplayName("Ensure that source locales required by tests are available.")
-    void requiredSourceLocalesAreAvailable(String expectedSupportedLocale, Map<String, String> gccProperties) {
+    void requiredSourceLocalesAreAvailable(String expectedSupportedLocale, Map<String, Object> gccProperties) {
       assertSupportedLocaleAvailable(expectedSupportedLocale, LocaleConfig::getIsSource, gccProperties);
     }
 
-    private void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, String> gccProperties) {
+    private void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, Object> gccProperties) {
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
         ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
         List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
@@ -165,7 +165,7 @@ class DefaultGCExchangeFacadeContractTest {
   class ContentUpload {
     @Test
     @DisplayName("Upload File.")
-    void upload(TestInfo testInfo, Map<String, String> gccProperties) {
+    void upload(TestInfo testInfo, Map<String, Object> gccProperties) {
       Instant startTimeUtc = Instant.now().atZone(ZoneOffset.UTC).toInstant();
       String fileName = testInfo.getDisplayName();
 
@@ -212,7 +212,7 @@ class DefaultGCExchangeFacadeContractTest {
   class Cancellation {
     @Test
     @DisplayName("Be aware of submission/task cancellation.")
-    void shouldBeCancellationAware(TestInfo testInfo, Map<String, String> gccProperties) {
+    void shouldBeCancellationAware(TestInfo testInfo, Map<String, Object> gccProperties) {
       String testName = testInfo.getDisplayName();
 
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
@@ -280,7 +280,7 @@ class DefaultGCExchangeFacadeContractTest {
   class ContentSubmission {
     @Test
     @DisplayName("Test simple submission")
-    void submitXml(TestInfo testInfo, Map<String, String> gccProperties) {
+    void submitXml(TestInfo testInfo, Map<String, Object> gccProperties) {
       String testName = testInfo.getDisplayName();
 
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
@@ -306,7 +306,7 @@ class DefaultGCExchangeFacadeContractTest {
 
     @Test
     @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, skip additional information")
-    void submissionNameTruncationAsciiSkipAdditionalInfo(TestInfo testInfo, Map<String, String> gccProperties) {
+    void submissionNameTruncationAsciiSkipAdditionalInfo(TestInfo testInfo, Map<String, Object> gccProperties) {
       String testName = testInfo.getDisplayName();
       String submissionName = padEnd(testName, 150, 'a', 'z');
 
@@ -325,7 +325,7 @@ class DefaultGCExchangeFacadeContractTest {
 
     @Test
     @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, subject truncation")
-    void submissionNameTruncationAscii(TestInfo testInfo, Map<String, String> gccProperties) {
+    void submissionNameTruncationAscii(TestInfo testInfo, Map<String, Object> gccProperties) {
       String testName = testInfo.getDisplayName();
       String submissionName = padEnd(testName, 200, 'a', 'z');
 
@@ -344,7 +344,7 @@ class DefaultGCExchangeFacadeContractTest {
 
     @Test
     @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: Unicode, skip additional information")
-    void submissionNameTruncationUnicode(TestInfo testInfo, Map<String, String> gccProperties) {
+    void submissionNameTruncationUnicode(TestInfo testInfo, Map<String, Object> gccProperties) {
       String testName = testInfo.getDisplayName();
       // 2190..21FF Arrows
       String submissionName = padEnd(testName, 150, '\u2190', '\u21FF');
@@ -390,7 +390,7 @@ class DefaultGCExchangeFacadeContractTest {
   @Tag("slow")
   @Tag("full")
   @DisplayName("Translate XLIFF and receive results (takes about 10 Minutes)")
-  void translateXliff(TestInfo testInfo, Map<String, String> gccProperties) {
+  void translateXliff(TestInfo testInfo, Map<String, Object> gccProperties) {
     String testName = testInfo.getDisplayName();
 
     try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {

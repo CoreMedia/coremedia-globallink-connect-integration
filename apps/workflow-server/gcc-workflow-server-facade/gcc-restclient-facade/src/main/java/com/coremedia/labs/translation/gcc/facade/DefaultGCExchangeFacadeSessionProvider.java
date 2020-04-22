@@ -33,8 +33,8 @@ public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeF
    * facade to instantiate.
    */
   @Override
-  public GCExchangeFacade openSession(Map<String, String> settings) {
-    String facadeType = settings.getOrDefault(GCConfigProperty.KEY_TYPE, GCConfigProperty.VALUE_TYPE_DEFAULT);
+  public GCExchangeFacade openSession(Map<String, Object> settings) {
+    String facadeType = String.valueOf(settings.getOrDefault(GCConfigProperty.KEY_TYPE, GCConfigProperty.VALUE_TYPE_DEFAULT));
     LOG.debug("Identified facade type to use: {}", facadeType);
     GCExchangeFacadeProvider defaultFacadeProvider = null;
     for (GCExchangeFacadeProvider facadeProvider : facadeProviders) {

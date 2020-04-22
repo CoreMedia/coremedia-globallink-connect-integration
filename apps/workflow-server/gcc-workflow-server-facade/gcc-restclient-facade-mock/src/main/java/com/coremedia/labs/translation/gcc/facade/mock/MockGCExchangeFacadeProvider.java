@@ -28,18 +28,18 @@ public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, String> settings) {
+  public GCExchangeFacade getFacade(Map<String, Object> settings) {
     MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
 
-    String delaySeconds = settings.get(CONFIG_DELAY_SECONDS);
+    String delaySeconds = String.valueOf(settings.get(CONFIG_DELAY_SECONDS));
     if (delaySeconds != null) {
       facade.setDelayBaseSeconds(Long.parseLong(delaySeconds));
     }
-    String delayOffsetPercentage = settings.get(CONFIG_DELAY_OFFSET_PERCENTAGE);
+    String delayOffsetPercentage = String.valueOf(settings.get(CONFIG_DELAY_OFFSET_PERCENTAGE));
     if (delayOffsetPercentage != null) {
       facade.setDelayOffsetPercentage(Integer.parseInt(delayOffsetPercentage));
     }
-    String mockError = settings.get(CONFIG_MOCK_ERROR);
+    String mockError = String.valueOf(settings.get(CONFIG_MOCK_ERROR));
     Arrays.stream(MockError.values())
             .filter(e -> e.toString().equalsIgnoreCase(mockError))
             .findAny()
