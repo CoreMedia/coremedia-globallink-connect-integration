@@ -97,7 +97,7 @@ class GlobalLinkActionTest {
     }
 
     @Override
-    protected Map<String, String> getGccSettings(Site site) {
+    protected Map<String, Object> getGccSettings(Site site) {
       return ImmutableMap.of(
               GCConfigProperty.KEY_URL, "http://lorem.ipsum.fun/",
               GCConfigProperty.KEY_USERNAME, "Horst",

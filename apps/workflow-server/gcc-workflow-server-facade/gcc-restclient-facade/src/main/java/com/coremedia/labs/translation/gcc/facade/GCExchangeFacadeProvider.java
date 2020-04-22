@@ -34,7 +34,7 @@ public interface GCExchangeFacadeProvider {
    * @param settings settings to use, contains for example credentials
    * @return GCExchange facade
    */
-  GCExchangeFacade getFacade(Map<String, String> settings);
+  GCExchangeFacade getFacade(Map<String, Object> settings);
 
   /**
    * Signal, if this is a default SPI, which should be used if no other SPI
