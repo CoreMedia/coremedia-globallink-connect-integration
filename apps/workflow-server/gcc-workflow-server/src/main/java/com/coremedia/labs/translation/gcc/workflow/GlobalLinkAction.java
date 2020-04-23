@@ -374,10 +374,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   private int maxAutomaticRetries(Site masterSite) {
     Map<String, Object> gccSettings = getGccSettings(masterSite);
-    String value = String.valueOf(gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS));
+    Object value = gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS);
     if (value != null) {
       try {
-        return Integer.parseInt(value);
+        return Integer.parseInt(String.valueOf(value));
       } catch (NumberFormatException e) {
         LOG.warn("Ignoring setting '{}'. Not an integer: {}", CONFIG_RETRY_COMMUNICATION_ERRORS, value);
       }

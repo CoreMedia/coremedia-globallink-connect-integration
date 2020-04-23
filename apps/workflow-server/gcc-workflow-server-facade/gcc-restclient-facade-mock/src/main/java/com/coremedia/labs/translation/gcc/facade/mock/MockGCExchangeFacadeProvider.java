@@ -31,13 +31,13 @@ public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
   public GCExchangeFacade getFacade(Map<String, Object> settings) {
     MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
 
-    String delaySeconds = String.valueOf(settings.get(CONFIG_DELAY_SECONDS));
+    Object delaySeconds = settings.get(CONFIG_DELAY_SECONDS);
     if (delaySeconds != null) {
-      facade.setDelayBaseSeconds(Long.parseLong(delaySeconds));
+      facade.setDelayBaseSeconds(Long.parseLong(String.valueOf(delaySeconds)));
     }
-    String delayOffsetPercentage = String.valueOf(settings.get(CONFIG_DELAY_OFFSET_PERCENTAGE));
+    Object delayOffsetPercentage = settings.get(CONFIG_DELAY_OFFSET_PERCENTAGE);
     if (delayOffsetPercentage != null) {
-      facade.setDelayOffsetPercentage(Integer.parseInt(delayOffsetPercentage));
+      facade.setDelayOffsetPercentage(Integer.parseInt(String.valueOf(delayOffsetPercentage)));
     }
     String mockError = String.valueOf(settings.get(CONFIG_MOCK_ERROR));
     Arrays.stream(MockError.values())
