@@ -1,12 +1,44 @@
 Changelog
 ================================================================================
 
+2004
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated to CoreMedia Content Cloud 10.2004.
+
+* Updated `ActionTestBaseConfiguration` to latest version of the 
+  `TranslatablePredicate` interface.
+
+* Removed `translatableExpressions` configuration from  
+  `TranslateGccConfiguration` which is now provided by the Blueprint's 
+  multi-site module.
+  
+* Fixed ISSUE-12 to allow the usage of other setting types within the facade. 
+
+  The interfaces of `GCExchangeFacadeProvider`, `GCExchangeFacadeSessionProvide`
+  and all its subclasses have been updated to pass `Map<String, Object>` instead
+  of `Map<String, String>`. If you have customized these classes or created your
+  own subclasses, you will have to update them and make sure to cast the value
+  of the settings in your implementation accordingly.
+  
+2001
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated to CoreMedia Content Cloud 10.2001.
+
+* Updated documentation with additional information on setup of 
+  GlobalLink Connect Cloud.
+
 1910
 --------------------------------------------------------------------------------
 
 ### Main Changes
 
-* Updated to CoreMedia 1910.
+* Updated to CoreMedia Content Cloud 10.1910.
 
 * Update GCC from 2.3.0 to 2.4.0.
 

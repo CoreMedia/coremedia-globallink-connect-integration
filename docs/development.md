@@ -27,7 +27,7 @@ to copy the sources to your workspace.
 
 To summarize the steps below, everything you need to do:
 
-1. Add GCC to your Blueprint workspace at `modules/extensions/gcc`.
+1. Add GCC to your Blueprint workspace at `modules/extensions`.
 2. Configure your extension tool.
 3. Run your extension tool to activate the gcc extension.
 4. Add `translation-global-link.xml` to your workflow server deployment.
@@ -36,9 +36,15 @@ To summarize the steps below, everything you need to do:
 
 ## Adding GCC Submodule
 
-In order to add GCC as submodule to Blueprint workspace you will use
-`git submodule`. You need to add the submodule for your 
-gcc extension under the following path: `modules/extensions/gcc`
+The GCC extension can be added the Blueprint workspace as a Git submodule as follwos:
+```bash
+$ mkdir -p modules/extensions
+$ cd modules/extensions
+$ git submodule add https://github.com/CoreMedia/coremedia-globallink-connect-integration.git gcc
+$ git submodule init
+$ git checkout -b <tag-name> <your-branch-name>
+```
+If you plan to customize the extension, create a fork of the repository and adjust the repository parameters accordingly. 
 
 ## Adding GCC as extension
 
@@ -69,14 +75,10 @@ also set the relative path for the parents of the extension modules.
 
 ## Adding GCC Workflow to Workflow Server Deployment
 
-You need to add `translation-global-link.xml` to your _builtin_ workflow definitions
-in `docker/management-tools/src/docker/import-default-workflows`. Using
-_builtin_ will make the definition to be read from the JAR.
-
-
-The first part of the expression is the _address_ where to add the workflow,
-the second part just replaces the closing parenthesis with an additional
-entry for the workflow definition.
+You need to add `translation-global-link.xml` to your workflow definitions
+in `global/management-tools/docker/management-tools/src/docker/import-default-workflows`.
+Add `TranslationGlobalLink:/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml`
+to the variable `DEFAULT_WORKFLOWS`.
 
 ## Patch/Edit Site Homepages
 
@@ -257,7 +259,7 @@ be linked to your site root documents (also known as Homepages).
 
 <!-- Links, keep at bottom -->
 
-[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
-[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
-[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
-[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-10/artifacts/1907/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
+[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
+[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
+[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
+[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"

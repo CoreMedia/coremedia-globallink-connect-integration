@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @DefaultAnnotation(NonNull.class)
 public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
@@ -29,21 +28,18 @@ public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, Object> settingsOld) {
-    Map<String, String> settings = settingsOld.entrySet()
-            .stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
+  public GCExchangeFacade getFacade(Map<String, Object> settings) {
     MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
 
-    String delaySeconds = settings.get(CONFIG_DELAY_SECONDS);
+    Object delaySeconds = settings.get(CONFIG_DELAY_SECONDS);
     if (delaySeconds != null) {
-      facade.setDelayBaseSeconds(Long.parseLong(delaySeconds));
+      facade.setDelayBaseSeconds(Long.parseLong(String.valueOf(delaySeconds)));
     }
-    String delayOffsetPercentage = settings.get(CONFIG_DELAY_OFFSET_PERCENTAGE);
+    Object delayOffsetPercentage = settings.get(CONFIG_DELAY_OFFSET_PERCENTAGE);
     if (delayOffsetPercentage != null) {
-      facade.setDelayOffsetPercentage(Integer.parseInt(delayOffsetPercentage));
+      facade.setDelayOffsetPercentage(Integer.parseInt(String.valueOf(delayOffsetPercentage)));
     }
-    String mockError = settings.get(CONFIG_MOCK_ERROR);
+    String mockError = String.valueOf(settings.get(CONFIG_MOCK_ERROR));
     Arrays.stream(MockError.values())
             .filter(e -> e.toString().equalsIgnoreCase(mockError))
             .findAny()

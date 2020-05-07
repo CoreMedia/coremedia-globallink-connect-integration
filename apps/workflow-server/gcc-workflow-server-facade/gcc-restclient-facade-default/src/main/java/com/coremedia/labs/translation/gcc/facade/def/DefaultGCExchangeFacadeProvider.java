@@ -6,7 +6,6 @@ import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @DefaultAnnotation(NonNull.class)
 public class DefaultGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
@@ -24,9 +23,7 @@ public class DefaultGCExchangeFacadeProvider implements GCExchangeFacadeProvider
 
   @Override
   public GCExchangeFacade getFacade(Map<String, Object> settings) {
-    return new DefaultGCExchangeFacade(settings.entrySet()
-            .stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue()))));
+    return new DefaultGCExchangeFacade(settings);
   }
 
 }

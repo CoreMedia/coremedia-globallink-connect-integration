@@ -79,7 +79,7 @@ import static java.util.Objects.requireNonNull;
  * @param <P> the type of the parameter passed to {@link #doExecuteGlobalLinkAction(Object, Consumer, GCExchangeFacade, Map)}
  *            that was previously returned by {@link #doExtractParameters(Task)}
  * @param <R> the type of the result value that {@link #doExecuteGlobalLinkAction(Object, Consumer, GCExchangeFacade, Map)}
- *           passes to its consumer argument and that is then passed as parameter to {@link #doStoreResult(Task, Object)}
+ *            passes to its consumer argument and that is then passed as parameter to {@link #doStoreResult(Task, Object)}
  */
 abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final Logger LOG = LoggerFactory.getLogger(GlobalLinkAction.class);
@@ -298,13 +298,13 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * <p>This method is called from {@link com.coremedia.cap.workflow.plugin.LongAction#execute(Object)} and
    * the constraints documented for that method apply here as well.
    *
-   * @param params parameters returned by {@link #doExtractParameters(Task)}
+   * @param params         parameters returned by {@link #doExtractParameters(Task)}
    * @param resultConsumer consumer that takes the result of the execution
-   * @param facade the facade to communicate with GlobalLink
-   * @param issues map to add issues to that occurred during action execution and will be stored in the workflow
-   *               variable set with {@link #setIssuesVariable(String)}. The workflow can display
-   *               these issues to the end-user, who may trigger a retry, for example.
-   * @throws GCFacadeException if an error was raised by the given facade
+   * @param facade         the facade to communicate with GlobalLink
+   * @param issues         map to add issues to that occurred during action execution and will be stored in the workflow
+   *                       variable set with {@link #setIssuesVariable(String)}. The workflow can display
+   *                       these issues to the end-user, who may trigger a retry, for example.
+   * @throws GCFacadeException           if an error was raised by the given facade
    * @throws GlobalLinkWorkflowException if some other error occurred
    */
   abstract void doExecuteGlobalLinkAction(P params,
@@ -325,7 +325,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * must override this method for complex result values that cannot or should not be stored in the
    * {@code resultVariable} as is.
    *
-   * @param task the task in which the action should be executed
+   * @param task   the task in which the action should be executed
    * @param result result value that was passed to the consumer in {@link #doExecuteGlobalLinkAction}
    * @return value to store in the {@code resultVariable} or null to store nothing in that variable
    */
@@ -365,19 +365,19 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private Site getMasterSite(Collection<? extends ContentObject> masterContents) {
     SitesService sitesService = getSitesService();
     return masterContents.stream()
-      .map(sitesService::getSiteAspect)
-      .map(ContentObjectSiteAspect::getSite)
-      .filter(Objects::nonNull)
-      .findAny()
-      .orElseThrow(() -> new IllegalStateException("No master site found"));
+            .map(sitesService::getSiteAspect)
+            .map(ContentObjectSiteAspect::getSite)
+            .filter(Objects::nonNull)
+            .findAny()
+            .orElseThrow(() -> new IllegalStateException("No master site found"));
   }
 
   private int maxAutomaticRetries(Site masterSite) {
-    Map<String, String> gccSettings = getGccSettings(masterSite);
-    String value = gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS);
+    Map<String, Object> gccSettings = getGccSettings(masterSite);
+    Object value = gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS);
     if (value != null) {
       try {
-        return Integer.parseInt(value);
+        return Integer.parseInt(String.valueOf(value));
       } catch (NumberFormatException e) {
         LOG.warn("Ignoring setting '{}'. Not an integer: {}", CONFIG_RETRY_COMMUNICATION_ERRORS, value);
       }
@@ -386,10 +386,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  Map<String, String> getGccSettings(Site site) {
+  Map<String, Object> getGccSettings(Site site) {
     Content siteIndicator = site.getSiteIndicator();
 
-    Map<String, String> siteIndicatorSettings = getGccSettings(siteIndicator);
+    Map<String, Object> siteIndicatorSettings = getGccSettings(siteIndicator);
     if (!siteIndicatorSettings.isEmpty()) {
       return siteIndicatorSettings;
     }
@@ -398,7 +398,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return getGccSettings(siteRootDocument);
   }
 
-  private static Map<String, String> getGccSettings(Content content) {
+  private static Map<String, Object> getGccSettings(Content content) {
     Struct localSettings = getStruct(content, LOCAL_SETTINGS);
     Struct struct = StructUtil.mergeStructList(
             localSettings,
@@ -410,10 +410,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     if (struct != null) {
       Object value = struct.get(GCConfigProperty.KEY_GLOBALLINK_ROOT);
       if (value instanceof Struct) {
-        return ((Struct) value).toNestedMaps()
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
+        return ((Struct) value).toNestedMaps();
       }
     }
 
@@ -430,11 +427,13 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   GCExchangeFacade openSession(Site site) {
-    Map<String, String> gccSettings = getGccSettings(site);
+    Map<String, Object> gccSettings = getGccSettings(site);
     Map<String, Object> newSettings = new HashMap<>();
-    for (Map.Entry<String, String> stringObjectEntry : gccSettings.entrySet()) {
-      if(stringObjectEntry.getKey().startsWith("bean:") && getSpringContext().containsBean(stringObjectEntry.getValue())) {
-        newSettings.put(stringObjectEntry.getKey().substring("bean:".length()), getSpringContext().getBean(stringObjectEntry.getValue()));
+    for (Map.Entry<String, Object> stringObjectEntry : gccSettings.entrySet()) {
+      if (stringObjectEntry.getKey().startsWith("bean:")
+              && (stringObjectEntry.getValue() instanceof String)
+              && getSpringContext().containsBean((String) stringObjectEntry.getValue())) {
+        newSettings.put(stringObjectEntry.getKey().substring("bean:".length()), getSpringContext().getBean((String) stringObjectEntry.getValue()));
       } else {
         newSettings.put(stringObjectEntry.getKey(), stringObjectEntry.getValue());
       }
@@ -484,12 +483,18 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   private static class Result<R> {
-    /** holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result */
+    /**
+     * holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
+     */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // suppress warning for non-typical usage of Optional
-    Optional<R> extendedResult = Optional.empty();
-    /** json with map from studio severity to map of error codes to possibly empty list of affected contents */
+            Optional<R> extendedResult = Optional.empty();
+    /**
+     * json with map from studio severity to map of error codes to possibly empty list of affected contents
+     */
     Blob issues;
-    /** number of remaining automatic retries, if there are issues */
+    /**
+     * number of remaining automatic retries, if there are issues
+     */
     int remainingAutomaticRetries;
   }
 }

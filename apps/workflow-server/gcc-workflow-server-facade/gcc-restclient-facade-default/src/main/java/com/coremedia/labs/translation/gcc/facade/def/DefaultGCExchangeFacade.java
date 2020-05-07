@@ -96,7 +96,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @throws GCFacadeConfigException        if configuration is incomplete
    * @throws GCFacadeCommunicationException if connection to GCC failed.
    */
-  DefaultGCExchangeFacade(Map<String, String> config) {
+  DefaultGCExchangeFacade(Map<String, Object> config) {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
     String userName = requireNonNullConfig(config, GCConfigProperty.KEY_USERNAME);
     String password = requireNonNullConfig(config, GCConfigProperty.KEY_PASSWORD);
@@ -113,7 +113,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);
     }
-    this.fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(config.get(GCConfigProperty.KEY_FILE_TYPE)));
+    this.fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
+            String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
+    );
   }
 
   @VisibleForTesting
@@ -122,14 +124,14 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     this.fileTypeSupplier = () -> fileType;
   }
 
-  private static <T> T requireNonNullConfig(Map<?, T> config, Object key) {
-    T value = config.get(key);
+  private static String requireNonNullConfig(Map<String, Object> config, String key) {
+    Object value = config.get(key);
     if (value == null) {
       throw new GCFacadeConfigException("Configuration for %s is missing. Configuration (values hidden): %s", key, config.entrySet().stream()
               .collect(toMap(Map.Entry::getKey, e -> GCConfigProperty.KEY_URL.equals(e.getKey()) ? e.getValue() : "*****"))
       );
     }
-    return value;
+    return String.valueOf(value);
   }
 
   /**

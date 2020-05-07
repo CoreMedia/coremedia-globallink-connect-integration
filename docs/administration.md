@@ -71,6 +71,23 @@ that the integration between both systems runs smoothly:
 * Re-opening of submissions is not yet supported by the connector. Ask your
     contacts at Translations.com to disable this functionality in GlobalLink
     Connect Cloud to avoid misunderstandings.
+    
+* A connector instance at GlobalLink Connect Cloud currently requires unique
+    ISO-639-1 language codes in the source locales of the sites. This essentially 
+    means that Translations.com would have to set up multiple connectors if your
+    site hierarchy looks like the following example. Each site in CoreMedia 
+    consequently has to use the `key` of the corresponding connector in its 
+    [settings](#configuring-globallink-connection-settings).
+
+    ```
+    |
+    |- en_FR
+    |  |- fr_FR
+    |
+    |- en_DE
+    |  |- de_DE
+    |
+    ```
 
 ## Configuring GlobalLink Connection Settings
 
@@ -85,12 +102,12 @@ parameters:
 * `url` for GCC REST Base URL  (type:`String`)
 * `username` Username (type:`String`)
 * `password` Password (type:`String`)
-* `key` Client Secret Key (type:`String`)
+* `key` the GCC connector key (type:`String`)
 * `fileType` (_optional_) If there is more than one file format in your
     GlobalLink setup, then this has to be set to the XLIFF file type identifier
     to be used by your connector. (type:`String`)
 * `type` (_optional_) determines which facade implementation will be used
-    (see _Facade Documentation_ in the workspace). (type:`String`)
+    (see [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)). (type:`String`)
 * `dayOffsetForDueDate` set the default value of the `Due Date`, that is set for
     your GlobalLink translation. The parameter defines the offset for the
     `Due Date` to lie within the future in days. (type:`Integer`)
@@ -98,7 +115,7 @@ parameters:
     with GlobalLink. By default the value is set to 5. (type:`Integer`)
 
 You can also define Parameters for testing with the mock facade
-(see _Mock Facade Documentation_ in the workspace).
+(see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
 
 
 By default the offset is set to `20` within the test data.
