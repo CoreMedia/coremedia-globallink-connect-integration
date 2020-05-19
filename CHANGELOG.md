@@ -15,7 +15,7 @@ Changelog
   `TranslateGccConfiguration` which is now provided by the Blueprint's 
   multi-site module.
   
-* Fixed ISSUE-12 to allow the usage of other setting types within the facade. 
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#12](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/12) to allow the usage of other setting types within the facade. 
 
   The interfaces of `GCExchangeFacadeProvider`, `GCExchangeFacadeSessionProvider`
   and all its subclasses have been updated to pass `Map<String, Object>` instead
