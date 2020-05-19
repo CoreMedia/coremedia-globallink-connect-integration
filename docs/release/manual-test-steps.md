@@ -98,7 +98,7 @@ work with the manual workflow though.
     1. The dialog should close without any error
     2. In the “pending” area from “Localization Workflows” the workflow should pop up
 5. Login to GlobalLink project director by using the credentials for the manual
- workflow account.
+    workflow account.
 6. Cancel the submission in Project Director (Active -> Manage -> Select -> Cancel)
 7. Go back to the Studio
     1. The workflow appears in Rick's inbox.
