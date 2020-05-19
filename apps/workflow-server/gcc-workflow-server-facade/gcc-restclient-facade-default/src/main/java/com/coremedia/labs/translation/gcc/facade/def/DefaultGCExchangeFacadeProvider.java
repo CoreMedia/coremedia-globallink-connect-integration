@@ -22,7 +22,7 @@ public class DefaultGCExchangeFacadeProvider implements GCExchangeFacadeProvider
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, String> settings) {
+  public GCExchangeFacade getFacade(Map<String, Object> settings) {
     return new DefaultGCExchangeFacade(settings);
   }
 

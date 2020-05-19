@@ -373,11 +373,11 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   private int maxAutomaticRetries(Site masterSite) {
-    Map<String, String> gccSettings = getGccSettings(masterSite);
-    String value = gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS);
+    Map<String, Object> gccSettings = getGccSettings(masterSite);
+    Object value = gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS);
     if (value != null) {
       try {
-        return Integer.parseInt(value);
+        return Integer.parseInt(String.valueOf(value));
       } catch (NumberFormatException e) {
         LOG.warn("Ignoring setting '{}'. Not an integer: {}", CONFIG_RETRY_COMMUNICATION_ERRORS, value);
       }
@@ -386,10 +386,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  Map<String, String> getGccSettings(Site site) {
+  Map<String, Object> getGccSettings(Site site) {
     Content siteIndicator = site.getSiteIndicator();
 
-    Map<String, String> siteIndicatorSettings = getGccSettings(siteIndicator);
+    Map<String, Object> siteIndicatorSettings = getGccSettings(siteIndicator);
     if (!siteIndicatorSettings.isEmpty()) {
       return siteIndicatorSettings;
     }
@@ -398,7 +398,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return getGccSettings(siteRootDocument);
   }
 
-  private static Map<String, String> getGccSettings(Content content) {
+  private static Map<String, Object> getGccSettings(Content content) {
     Struct localSettings = getStruct(content, LOCAL_SETTINGS);
     Struct struct = StructUtil.mergeStructList(
             localSettings,
@@ -410,10 +410,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     if (struct != null) {
       Object value = struct.get(GCConfigProperty.KEY_GLOBALLINK_ROOT);
       if (value instanceof Struct) {
-        return ((Struct) value).toNestedMaps()
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
+        return ((Struct) value).toNestedMaps();
       }
     }
 

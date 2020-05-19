@@ -97,7 +97,7 @@ class DefaultGCExchangeFacadeTest {
           GCConfigProperty.KEY_KEY
   })
   void failOnMissingRequiredConfiguration(String excludedKey) {
-    Map<String, String> config = new HashMap<>();
+    Map<String, Object> config = new HashMap<>();
     List<String> requiredKeys = new ArrayList<>(asList(
             GCConfigProperty.KEY_URL,
             GCConfigProperty.KEY_USERNAME,

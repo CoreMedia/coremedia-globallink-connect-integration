@@ -27,5 +27,5 @@ public interface GCExchangeFacadeSessionProvider {
    * @implSpec Factories may support extra settings in order to control which
    * facade to instantiate.
    */
-  GCExchangeFacade openSession(Map<String, String> settings);
+  GCExchangeFacade openSession(Map<String, Object> settings);
 }
