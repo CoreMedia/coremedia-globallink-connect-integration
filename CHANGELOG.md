@@ -17,7 +17,7 @@ Changelog
   
 * Fixed ISSUE-12 to allow the usage of other setting types within the facade. 
 
-  The interfaces of `GCExchangeFacadeProvider`, `GCExchangeFacadeSessionProvide`
+  The interfaces of `GCExchangeFacadeProvider`, `GCExchangeFacadeSessionProvider`
   and all its subclasses have been updated to pass `Map<String, Object>` instead
   of `Map<String, String>`. If you have customized these classes or created your
   own subclasses, you will have to update them and make sure to cast the value
