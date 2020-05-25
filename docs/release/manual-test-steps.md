@@ -18,7 +18,10 @@
 
 Especially on updates of `gcc-restclient` you should run the half-automatic
 test `DefaultGCExchangeFacadeContractTest`. Read the JavaDoc to know how to
-configure and run the test.
+configure and run the test. 
+Lately, when using the automatic workflow, the submission is not marked as 
+`DELIVERED` anymore. This is why the `translateXliff` test fails. It seems to 
+work with the manual workflow though.
 
 ## Scenario: Happy Path
 
@@ -56,6 +59,7 @@ configure and run the test.
 2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
     1. type should not be set to “mock”
     2. dayOffsetForDueDate should be set to 20
+    3. Credentials for gcc should be entered (manual workflow key)
 3. Choose an article and drag it into the “Localization Workflows” drop area
     1. A StartTranslation window should pop up
     2. There should be no warnings or errors
@@ -79,12 +83,39 @@ configure and run the test.
     2. The “Status” variable should display “Cancelled”
     3. The icon should mark the workflow as cancelled (little “x” on the bottom right)
 
+## Scenario: Cancellation in GlobalLink
+
+1. Login as Rick C.
+2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
+    1. type should not be set to “mock”
+    2. dayOffsetForDueDate should be set to 20
+    3. Credentials for gcc should be entered (manual workflow key)
+3. Choose an article and drag it into the “Localization Workflows” drop area
+    1. A StartTranslation window should pop up
+    2. There should be no warnings or errors
+    3. The Due Date should be set to the current dateTime plus 20 days
+4. Click “Start”
+    1. The dialog should close without any error
+    2. In the “pending” area from “Localization Workflows” the workflow should pop up
+5. Login to GlobalLink project director by using the credentials for the manual
+    workflow account.
+6. Cancel the submission in Project Director (Active -> Manage -> Select -> Cancel)
+7. Go back to the Studio
+    1. The workflow appears in Rick's inbox.
+    2. Rick can choose to rollback the changes or just accept the cancellation.
+    3. Accept by rollback
+9. Open the “Finished” area
+    1. The workflow should appear here
+    2. The “Status” variable should display “Cancelled”
+    3. The icon should mark the workflow as cancelled (little “x” on the bottom right)
+    
 ## Scenario: Error Handling
 
 1. Login as Rick C.
 2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
     1. type should not be set to “mock”
     2. dayOffsetForDueDate should be set to 20
+    3. Credentials for gcc should be entered (automatic workflow key)
 3. Choose an article and drag it into the “Localization Workflows” drop area
     1. A StartTranslation window should pop up
     2. There should be no warnings or errors
@@ -94,7 +125,7 @@ configure and run the test.
     1. The dialog should close without any error
     2. In the “pending” area from “Localization Workflows” the workflow should pop up
 6. Wait for the Workflow to appear in the inbox
-    1. The icon should be a Waring sign
+    1. The icon should be a Warning sign
     2. The TaskName should be “Upload Error”
     3. You have the ability to “Reject Changes” or “Continue and Retry”
     4. A click on “Reject Changes” should perform a Rollback of the content (if you perform that you need to redo steps from 1 to 6)
@@ -102,12 +133,12 @@ configure and run the test.
 8. Select the workflow in “pending” and wait for the Status to change to “Translate” or for the Submission ID to be set
 9. Reset the “username” in the GlobalLinkSettings to something wrong
 10. Wait for the Workflow to appear in the inbox
-    1. The icon should be a Waring sign
+    1. The icon should be a Warning sign
     2. The TaskName should be “Download Error”
     3. You have the ability to “Reject Changes” or “Continue and Retry”
 11. Click “Reject Changes”
 12. Wait for the Workflow to appear in the inbox
-    1. The icon should be a Waring sign
+    1. The icon should be a Warning sign
     2. The TaskName should be “Cancellation Error”
     3. You have the ability to “Reject Changes without cancelling the submission at GlobalLink.” or “Continue and Retry”
 13. Continue and Retry should lead to a cancellation of the workflow, reject changes should lead to a direct rollback
@@ -127,7 +158,7 @@ configure and run the test.
     1. The dialog should close without any error
     2. In the “pending” area from “Localization Workflows” the workflow should pop up
 5. Wait for the Workflow to appear in the inbox
-    1. The icon should be a Waring sign
+    1. The icon should be a Warning sign
     2. The TaskName should be “Download Error”
     3. You have the ability to “Reject Changes” or “Continue and Retry”
     4. There should be a field “Issue Details” with clickable link that links to a download of the broken XLIFF
