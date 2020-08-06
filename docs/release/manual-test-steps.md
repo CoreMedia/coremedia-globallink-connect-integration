@@ -23,6 +23,9 @@ Lately, when using the automatic workflow, the submission is not marked as
 `DELIVERED` anymore. This is why the `translateXliff` test fails. It seems to 
 work with the manual workflow though.
 
+In order run the test you need to create a file with the name [.gcc.properties](example.gcc.properties.txt) in your user 
+home folder
+
 ## Scenario: Happy Path
 
 1. Login as Rick C.
