@@ -52,13 +52,22 @@
     <!-- map that groups each derived content by its masterVersion-->
     <Variable name="premularConfigData" type="Blob"/>
 
+    <!-- string that defines the strategy how to calculate derived content-->
+    <Variable name="placeholderPreparationStrategy" type="String"/>
+
     <!--
       Timers to delay execution of corresponding automated tasks, for example before automatically retrying their
       execution after communication errors. Initial value 0 for no delay for first task execution.
     -->
-    <Variable name="sendTranslationRequestRetryDelay" type="Timer"><Timer value="0"/></Variable>
-    <Variable name="downloadTranslationRetryDelay" type="Timer"><Timer value="0"/></Variable>
-    <Variable name="cancelTranslationRetryDelay" type="Timer"><Timer value="0"/></Variable>
+    <Variable name="sendTranslationRequestRetryDelay" type="Timer">
+      <Timer value="0"/>
+    </Variable>
+    <Variable name="downloadTranslationRetryDelay" type="Timer">
+      <Timer value="0"/>
+    </Variable>
+    <Variable name="cancelTranslationRetryDelay" type="Timer">
+      <Timer value="0"/>
+    </Variable>
     <!--
       Number of remaining automatic retries after errors, or 0 if there's no error
       that should be retried automatically without user intervention in an error user task.
@@ -87,6 +96,7 @@
       <Writes variable="targetSiteId"/>
       <Writes variable="globalLinkDueDate"/>
       <Writes variable="cancellationAllowed"/>
+      <Writes variable="placeholderPreparationStrategy"/>
     </InitialAssignment>
 
     <Assignment>
@@ -105,6 +115,7 @@
       <Writes variable="completedLocales"/>
       <Writes variable="cancellationAllowed"/>
       <Reads  variable="cancelled"/>
+      <Writes variable="placeholderPreparationStrategy"/>
     </Assignment>
 
     <AutomatedTask name="Prepare" successor="CheckIfDerivedContentsEmpty">
@@ -124,6 +135,7 @@
               masterContentObjectsVariable="masterContentObjects"
               derivedContentsVariable="derivedContents"
               createdContentsVariable="createdContents"
+              placeholderPreparationStrategyVariable="placeholderPreparationStrategy"
               targetSiteIdVariable="targetSiteId"/>
       <Action class="com.coremedia.translate.workflow.FilterDerivedContentsAction"
               masterContentObjectsVariable="masterContentObjects"

@@ -4,9 +4,10 @@
         xmlns="exml:ext.config"
         xmlns:exml="http://www.jangaroo.net/exml/0.8"
         xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
-        xmlns:collab="exml:com.coremedia.cms.editor.controlroom.config" xmlns:ui="exml:com.coremedia.ui.config"
-        xmlns:components="com.coremedia.cms.editor.controlroom.workflow.components.*"
-        xmlns:studio2="com.coremedia.labs.translation.gcc.studio.*">
+        xmlns:collab="exml:com.coremedia.cms.editor.controlroom.config"
+        xmlns:ui="exml:com.coremedia.ui.config"
+        xmlns:studio2="com.coremedia.labs.translation.gcc.studio.*"
+        xmlns:local="com.coremedia.labs.translation.gcc.studio.*">
   <fx:Metadata>
     [ResourceBundle('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions')]
   </fx:Metadata>
@@ -29,63 +30,8 @@
     <!-- configure the UI for the GlobalLink translation workflow -->
     <collab:AddTranslationWorkflowPlugin processDefinitionName="TranslationGlobalLink"
                                          listToolbarButtonsFunction="{getButtons()}">
-      <collab:rules exml:mode="append">
-        <collab:AdditionalWorkflowFieldsContainer>
-          <collab:plugins>
-            <ui:AddItemsPlugin>
-              <ui:items>
-                <collab:WorkflowDateTimeField itemId="globalLinkDueDate"
-                                              validOnlyWhenDateLiesInFuture="{true}"
-                                              defaultTimeFunction="{setDefaultTimeToBean}"
-                                              fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
-                                              key="globalLinkDueDate">
-                  <collab:plugins>
-                    <ui:AddQuickTipPlugin
-                            text="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_tooltip')}"/>
-                    <ui:HorizontalSpacingPlugin modifier="{SpacingBEMEntities.HORIZONTAL_SPACING_MODIFIER_200}"/>
-                  </collab:plugins>
-                </collab:WorkflowDateTimeField>
-              </ui:items>
-            </ui:AddItemsPlugin>
-          </collab:plugins>
-        </collab:AdditionalWorkflowFieldsContainer>
-        <collab:DisplayAdditionalWorkflowFieldsContainer>
-          <collab:plugins>
-            <ui:AddItemsPlugin>
-              <ui:items>
-                <collab:WorkflowTextDisplayField
-                        fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_key')}"
-                        key="globalLinkSubmissionId" transformer="{transformSubmissionId}"/>
-                <collab:WorkflowTextDisplayField
-                        fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_status_key')}"
-                        key="globalLinkSubmissionStatus" transformer="{transformSubmissionStatus}"/>
-                <collab:WorkflowDateDisplayField
-                        fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
-                        key="globalLinkDueDate"/>
-                <components:WorkflowTextDisplayField
-                        ui="{DisplayFieldSkin.UNDERLINE.getSkin()}"
-                        key="xliffResultDownload"
-                        fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'translationResultXliff_Label_Button_text')}"
-                        value="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'translationResultXliff_Button_text')}"
-                        baseAction="{DependencyTrackedAction(ActionConfigUtil.extendConfig(null, 'downloadXliff', {handler: downloadXliff}))}"
-                        validationState="{ValidationState.ERROR}"
-                        displayFieldVisibleFunction="{downloadAvailable}"/>
-                <components:WorkflowTextDisplayField
-                        fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_completed_Locales')}"
-                        key="completedLocales"
-                        transformer="{convertLocales}">
-                  <components:plugins>
-                    <ui:AddQuickTipPlugin
-                            bindTo="{getCompletedLocalesQuickTipTextValueExpression()}"/>
-                  </components:plugins>
-                </components:WorkflowTextDisplayField>
-              </ui:items>
-            </ui:AddItemsPlugin>
-          </collab:plugins>
-        </collab:DisplayAdditionalWorkflowFieldsContainer>
-      </collab:rules>
 
-      <collab:inboxPanel>
+      <collab:inboxForm>
         <collab:DefaultTranslationWorkflowDetailForm downloadXLIFFButtonVisible="{false}">
           <collab:workflowStateTransitions>
             <collab:WorkflowStateTransition task="ReviewDeliveredTranslation"
@@ -104,20 +50,105 @@
                                             nextSteps="{[{nextStep: 'rollbackTranslation_afterCancellationFailed', allowAlways:true}, {nextStep: 'continueRetry', allowAlways:true}]}"
                                             defaultStep="rollbackTranslation"/>
           </collab:workflowStateTransitions>
+          <collab:additionalFields>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_key')}"
+                    key="globalLinkSubmissionId" transformer="{transformSubmissionId}"/>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_status_key')}"
+                    key="globalLinkSubmissionStatus" transformer="{transformSubmissionStatus}"/>
+            <collab:WorkflowDateDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
+                    key="globalLinkDueDate"/>
+            <collab:WorkflowTextDisplayField
+                    ui="{DisplayFieldSkin.UNDERLINE.getSkin()}"
+                    key="xliffResultDownload"
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'translationResultXliff_Label_Button_text')}"
+                    value="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'translationResultXliff_Button_text')}"
+                    baseAction="{DependencyTrackedAction(ActionConfigUtil.extendConfig(null, 'downloadXliff', {handler: downloadXliff}))}"
+                    validationState="{ValidationState.ERROR}"
+                    displayFieldVisibleFunction="{downloadAvailable}"/>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_completed_Locales')}"
+                    key="completedLocales"
+                    transformer="{convertLocales}">
+              <collab:plugins>
+                <ui:AddQuickTipPlugin
+                        bindTo="{getCompletedLocalesQuickTipTextValueExpression()}"/>
+              </collab:plugins>
+            </collab:WorkflowTextDisplayField>
+          </collab:additionalFields>
         </collab:DefaultTranslationWorkflowDetailForm>
-      </collab:inboxPanel>
+      </collab:inboxForm>
 
-      <collab:pendingPanel>
-        <collab:DefaultTranslationWorkflowInfoForm showTranslationStatus="true"/>
-      </collab:pendingPanel>
+      <collab:pendingForm>
+        <collab:DefaultTranslationWorkflowInfoForm showTranslationStatus="true">
+          <collab:additionalFields>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_key')}"
+                    key="globalLinkSubmissionId" transformer="{transformSubmissionId}"/>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_status_key')}"
+                    key="globalLinkSubmissionStatus" transformer="{transformSubmissionStatus}"/>
+            <collab:WorkflowDateDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
+                    key="globalLinkDueDate"/>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_completed_Locales')}"
+                    key="completedLocales"
+                    transformer="{convertLocales}">
+              <collab:plugins>
+                <ui:AddQuickTipPlugin
+                        bindTo="{getCompletedLocalesQuickTipTextValueExpression()}"/>
+              </collab:plugins>
+            </collab:WorkflowTextDisplayField>
+          </collab:additionalFields>
+        </collab:DefaultTranslationWorkflowInfoForm>
+      </collab:pendingForm>
 
-      <collab:finishedPanel>
-        <collab:DefaultTranslationWorkflowInfoForm/>
-      </collab:finishedPanel>
+      <collab:finishedForm>
+        <collab:DefaultTranslationWorkflowInfoForm>
+          <collab:additionalFields>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_key')}"
+                    key="globalLinkSubmissionId" transformer="{transformSubmissionId}"/>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_status_key')}"
+                    key="globalLinkSubmissionStatus" transformer="{transformSubmissionStatus}"/>
+            <collab:WorkflowDateDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
+                    key="globalLinkDueDate"/>
+            <collab:WorkflowTextDisplayField
+                    fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_completed_Locales')}"
+                    key="completedLocales"
+                    transformer="{convertLocales}">
+              <collab:plugins>
+                <ui:AddQuickTipPlugin
+                        bindTo="{getCompletedLocalesQuickTipTextValueExpression()}"/>
+              </collab:plugins>
+            </collab:WorkflowTextDisplayField>
+          </collab:additionalFields>
+        </collab:DefaultTranslationWorkflowInfoForm>
+      </collab:finishedForm>
 
-      <collab:startPanel>
-        <collab:DefaultStartTranslationWorkflowPanel createWorkflowPerTargetSite="false"/>
-      </collab:startPanel>
+      <collab:startForm>
+        <collab:DefaultStartTranslationWorkflowForm createWorkflowPerTargetSite="false">
+          <collab:additionalFields>
+            <local:GccWorkflowDateTimeField itemId="globalLinkDueDate"
+                                            defaultTimeFunction="{defaultTimeFunction}"
+                                            fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
+                                            key="globalLinkDueDate"
+                                            triggerRemoteValidationOnChange="true"
+                                            remoteIssuesCallback="{setValidationStateForIssues}">
+              <local:plugins>
+                <ui:AddQuickTipPlugin
+                        text="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_tooltip')}"/>
+                <ui:HorizontalSpacingPlugin modifier="{SpacingBEMEntities.HORIZONTAL_SPACING_MODIFIER_200}"/>
+              </local:plugins>
+            </local:GccWorkflowDateTimeField>
+          </collab:additionalFields>
+        </collab:DefaultStartTranslationWorkflowForm>
+      </collab:startForm>
     </collab:AddTranslationWorkflowPlugin>
 
     <editor:CopyResourceBundleProperties

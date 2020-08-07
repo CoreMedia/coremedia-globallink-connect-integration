@@ -11,7 +11,7 @@
 
   <packaging>pom</packaging>
   <groupId>com.coremedia.labs.translation.gcc</groupId>
-  <artifactId>workflow-server</artifactId>
+  <artifactId>gcc-workflow-server-parent</artifactId>
 
   <modules>
     <module>gcc-workflow-server-facade/gcc-restclient-facade</module>
