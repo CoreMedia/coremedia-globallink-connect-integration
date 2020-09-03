@@ -151,6 +151,8 @@ final class TranslationUtil {
     Result result = new StreamResult(writer);
 
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
+    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
     transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
     Transformer transformer = transformerFactory.newTransformer();
     transformer.transform(source, result);

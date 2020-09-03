@@ -412,7 +412,7 @@ class DefaultGCExchangeFacadeContractTest {
               contentMap
       );
 
-      assertSubmissionReachesCompletedState(facade, submissionId);
+      assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
 
       List<String> xliffResults = new ArrayList<>();
 
@@ -422,9 +422,9 @@ class DefaultGCExchangeFacadeContractTest {
               .describedAs("All XLIFFs shall have been pseudo-translated.")
               .hasSize(targetLocales.size())
               .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
-      assertThat(facade.getSubmissionState(submissionId))
-              .describedAs("After all tasks have been marked as delivered also the submission shall be marked as delivered.")
-              .isEqualTo(GCSubmissionState.DELIVERED);
+
+      //After all tasks have been marked as delivered also the submission shall be marked as delivered.
+      assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5);
     }
   }
 
@@ -486,12 +486,12 @@ class DefaultGCExchangeFacadeContractTest {
     return contentMapBuilder.build();
   }
 
-  private static void assertSubmissionReachesCompletedState(GCExchangeFacade facade, long submissionId) {
+  private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState stateToReach, int timeout) {
     Awaitility.await("Wait for translation to complete.")
-            .atMost(TRANSLATION_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+            .atMost(timeout, TimeUnit.MINUTES)
             .pollDelay(1, TimeUnit.MINUTES)
             .pollInterval(1, TimeUnit.MINUTES)
             .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmissionState(submissionId), condition.getElapsedTimeInMS() / 1000L))
-            .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isEqualTo(GCSubmissionState.COMPLETED));
+            .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isEqualTo(stateToReach));
   }
 }
