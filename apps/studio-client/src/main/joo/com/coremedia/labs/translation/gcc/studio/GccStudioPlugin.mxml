@@ -132,8 +132,8 @@
       </collab:finishedForm>
 
       <collab:startForm>
-        <collab:DefaultStartTranslationWorkflowForm createWorkflowPerTargetSite="false">
-          <collab:additionalFields>
+        <studio2:GCCStartTranslationWorkflowForm createWorkflowPerTargetSite="false">
+          <studio2:additionalFields>
             <local:GccWorkflowDateTimeField itemId="globalLinkDueDate"
                                             defaultTimeFunction="{defaultTimeFunction}"
                                             fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
@@ -146,8 +146,8 @@
                 <ui:HorizontalSpacingPlugin modifier="{SpacingBEMEntities.HORIZONTAL_SPACING_MODIFIER_200}"/>
               </local:plugins>
             </local:GccWorkflowDateTimeField>
-          </collab:additionalFields>
-        </collab:DefaultStartTranslationWorkflowForm>
+          </studio2:additionalFields>
+        </studio2:GCCStartTranslationWorkflowForm>
       </collab:startForm>
     </collab:AddTranslationWorkflowPlugin>
 

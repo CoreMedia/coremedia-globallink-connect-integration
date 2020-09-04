@@ -1,6 +1,42 @@
 Changelog
 ================================================================================
 
+2007
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated to CoreMedia Content Cloud 10.2007.
+
+* Add a custom override of the `DateTimePropertyField` that displays the `duedate`.
+
+    The `dueDate` is validated by the new `GCCDateLiesInFutureValidator.java` on the server side. 
+
+* Replace XML-based Spring configuration with Java-based Spring configuration.
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#15](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/15)
+    by providing an example of the .gcc.properties. 
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#16](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/16)
+    by renaming the module workflow-server to gcc-workflow-server-parent. 
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#17](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/17)
+    by adding a new checkbox to the workflow window, that enables to choose
+    between two strategies for the calculation of dependent content. The value
+    of the checkbox is saved in the new workflow variable
+    `placeholderPreparationStrategy`, which was added to the 
+    `translation-global-link.xml`.
+
+ * With CMCC 2007 the workflow extension point for additional fields was adapted.
+
+    It is now possible to place additional fields (that display or write
+    custom process values) anywhere in the `DefaultTranslationWorkflowDetailForm`. 
+    An additional field, like the new `GccWorkflowDateTimeField.as` can now
+    trigger a workflow validation, which can result in a validation error (e.g.,
+    if the value of the dateTimeField is in the past). If you have added
+    further `AdditionalWorkflowFields`, you need to make sure, that they are now
+    added to the workflow window like the `GccWorkflowDateTimeField.as`.
+
 2004
 --------------------------------------------------------------------------------
 
@@ -8,21 +44,22 @@ Changelog
 
 * Updated to CoreMedia Content Cloud 10.2004.
 
-* Updated `ActionTestBaseConfiguration` to latest version of the 
-  `TranslatablePredicate` interface.
+* Updated `ActionTestBaseConfiguration` to the latest version of the 
+    `TranslatablePredicate` interface.
 
 * Removed `translatableExpressions` configuration from  
-  `TranslateGccConfiguration` which is now provided by the Blueprint's 
-  multi-site module.
+    `TranslateGccConfiguration` which is now provided by the Blueprint's 
+    multi-site module.
   
-* Fixed [CoreMedia/coremedia-globallink-connect-integration#12](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/12) to allow the usage of other setting types within the facade. 
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#12](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/12)
+    to allow the usage of other setting types within the facade. 
 
-  The interfaces of `GCExchangeFacadeProvider`, `GCExchangeFacadeSessionProvider`
-  and all its subclasses have been updated to pass `Map<String, Object>` instead
-  of `Map<String, String>`. If you have customized these classes or created your
-  own subclasses, you will have to update them and make sure to cast the value
-  of the settings in your implementation accordingly.
-  
+    The interfaces of `GCExchangeFacadeProvider`, `GCExchangeFacadeSessionProvider`
+    and all its subclasses have been updated to pass `Map<String, Object>` instead
+    of `Map<String, String>`. If you have customized these classes or created your
+    own subclasses, you will have to update them and make sure to cast the value
+    of the settings in your implementation accordingly.
+
 2001
 --------------------------------------------------------------------------------
 
@@ -30,8 +67,8 @@ Changelog
 
 * Updated to CoreMedia Content Cloud 10.2001.
 
-* Updated documentation with additional information on setup of 
-  GlobalLink Connect Cloud.
+* Updated the documentation with additional information on the setup of 
+    GlobalLink Connect Cloud.
 
 1910
 --------------------------------------------------------------------------------
