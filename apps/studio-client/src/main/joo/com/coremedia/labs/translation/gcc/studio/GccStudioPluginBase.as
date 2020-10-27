@@ -50,9 +50,6 @@ public class GccStudioPluginBase extends StudioPlugin {
   private static const HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME:String = "HandleDownloadTranslationError";
   private static const HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME:String = "HandleCancelTranslationError";
 
-  private static const DATE_LIES_IN_PAST_ISSUES_KEY:String = 'dateLiesInPast_globalLinkDueDate';
-  private static const DATE_INVALID_ISSUES_KEY:String = 'dateInvalid_globalLinkDueDate';
-
   private static const CANCELLATION_CONFIRMED_SUBMISSION_STATE:String = "CANCELLATION_CONFIRMED";
   private static const CANCELLED_SUBMISSION_STATE:String = "CANCELLED";
   private static const UNAVAILABLE_SUBMISSION_STATE:String = 'unavailable';
@@ -328,15 +325,5 @@ public class GccStudioPluginBase extends StudioPlugin {
     return completedLocalesQuickTipTextValueExpression;
   }
 
-  internal function setValidationStateForIssues(issues:WorkflowSetIssues, cmp:GccWorkflowDateTimeField):Function {
-    var dateInPast:Boolean = issues.getIssues(false).some(function (issue:Issue):Boolean {
-      return issue.code === DATE_LIES_IN_PAST_ISSUES_KEY || issue.code === DATE_INVALID_ISSUES_KEY;
-    });
-    if (dateInPast) {
-      cmp.setValidationState(false);
-    } else {
-      cmp.setValidationState(true);
-    }
-  }
 }
 }
