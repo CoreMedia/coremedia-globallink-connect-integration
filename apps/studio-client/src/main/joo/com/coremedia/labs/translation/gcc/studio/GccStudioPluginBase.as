@@ -9,9 +9,8 @@ import com.coremedia.cap.workflow.WorkflowObject;
 import com.coremedia.cap.workflow.WorkflowObjectProperties;
 import com.coremedia.cms.editor.configuration.StudioPlugin;
 import com.coremedia.cms.editor.sdk.EditorContextImpl;
-import com.coremedia.cms.editor.sdk.LocalesService;
 import com.coremedia.cms.editor.sdk.editorContext;
-import com.coremedia.cms.editor.sdk.util.MessageBoxUtilInternal;
+import com.coremedia.cms.studio.startup.models.locale.ILocalesService;
 import com.coremedia.collaboration.controlroom.rest.WorkflowSetIssues;
 import com.coremedia.ui.components.IconButton;
 import com.coremedia.ui.data.Blob;
@@ -21,12 +20,12 @@ import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.coremedia.ui.data.impl.RemoteService;
 import com.coremedia.ui.data.validation.Issue;
+import com.coremedia.ui.messagebox.MessageBoxUtil;
 
 import ext.data.JsonStore;
 import ext.data.Store;
 import ext.grid.GridPanel;
 import ext.panel.Panel;
-import ext.window.MessageBoxWindow;
 
 import mx.resources.ResourceManager;
 
@@ -50,9 +49,6 @@ public class GccStudioPluginBase extends StudioPlugin {
   private static const HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME:String = "HandleSendTranslationRequestError";
   private static const HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME:String = "HandleDownloadTranslationError";
   private static const HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME:String = "HandleCancelTranslationError";
-
-  private static const DATE_LIES_IN_PAST_ISSUES_KEY:String = 'dateLiesInPast_globalLinkDueDate';
-  private static const DATE_INVALID_ISSUES_KEY:String = 'dateInvalid_globalLinkDueDate';
 
   private static const CANCELLATION_CONFIRMED_SUBMISSION_STATE:String = "CANCELLATION_CONFIRMED";
   private static const CANCELLED_SUBMISSION_STATE:String = "CANCELLED";
@@ -125,14 +121,13 @@ public class GccStudioPluginBase extends StudioPlugin {
       var processName:String = process.getProperties().get(SUBJECT_VARIABLE_NAME) as String;
       var messageText:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation', [processName]);
 
-      MessageBoxUtilInternal.show("Cancel Workflow", messageText,
-              MessageBoxWindow.INFO, MessageBoxWindow.OKCANCEL, function (result:String):void {
+      MessageBoxUtil.showPrompt("Cancel Workflow", messageText, function (result:String):void {
                 if (process && result === "ok") {
                   process.getProperties().set(CANCEL_REQUESTED_VARIABLE_NAME, true);
                   workflowObjectVE.setValue(undefined);
                   panel["view"] && panel["view"].refresh();
                 }
-              }, true, true);
+              });
     };
 
     if (mayButtonBeAdded(process, panel)) {
@@ -289,7 +284,7 @@ public class GccStudioPluginBase extends StudioPlugin {
    */
   protected function convertLocales(locales:Array):String {
     if (locales) {
-      var localesService:LocalesService = (editorContext as EditorContextImpl).getLocalesService();
+      var localesService:ILocalesService = (editorContext as EditorContextImpl).getLocalesService();
       createQuickTipText(locales, localesService, getCompletedLocalesQuickTipTextValueExpression());
 
       if (locales.length === 1) {
@@ -310,7 +305,7 @@ public class GccStudioPluginBase extends StudioPlugin {
    * @param localesService to localize the locales
    * @param quickTipValueExpression to store the computed text into
    */
-  private function createQuickTipText(locales:Array, localesService:LocalesService, quickTipValueExpression:ValueExpression):void {
+  private function createQuickTipText(locales:Array, localesService:ILocalesService, quickTipValueExpression:ValueExpression):void {
     var localeQuickTipText:String = "";
     locales.forEach(function (localeString:String):void {
       var locale:Locale = localesService.getLocale(localeString);
@@ -330,15 +325,5 @@ public class GccStudioPluginBase extends StudioPlugin {
     return completedLocalesQuickTipTextValueExpression;
   }
 
-  internal function setValidationStateForIssues(issues:WorkflowSetIssues, cmp:GccWorkflowDateTimeField):Function {
-    var dateInPast:Boolean = issues.getIssues(false).some(function (issue:Issue):Boolean {
-      return issue.code === DATE_LIES_IN_PAST_ISSUES_KEY || issue.code === DATE_INVALID_ISSUES_KEY;
-    });
-    if (dateInPast) {
-      cmp.setValidationState(false);
-    } else {
-      cmp.setValidationState(true);
-    }
-  }
 }
 }

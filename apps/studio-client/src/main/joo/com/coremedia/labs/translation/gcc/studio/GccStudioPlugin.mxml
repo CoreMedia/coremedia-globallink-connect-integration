@@ -6,8 +6,7 @@
         xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
         xmlns:collab="exml:com.coremedia.cms.editor.controlroom.config"
         xmlns:ui="exml:com.coremedia.ui.config"
-        xmlns:studio2="com.coremedia.labs.translation.gcc.studio.*"
-        xmlns:local="com.coremedia.labs.translation.gcc.studio.*">
+        xmlns:studio2="com.coremedia.labs.translation.gcc.studio.*">
   <fx:Metadata>
     [ResourceBundle('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions')]
   </fx:Metadata>
@@ -21,6 +20,9 @@
     import mx.resources.ResourceManager;
 
     public static const xtype:String = "com.coremedia.labs.translation.gcc.studio.config.gccStudioPlugin";
+
+    private static const DATE_LIES_IN_PAST_ISSUES_KEY:String = 'dateLiesInPast_globalLinkDueDate';
+    private static const DATE_INVALID_ISSUES_KEY:String = 'dateInvalid_globalLinkDueDate';
 
     public native function GccStudioPlugin(config:GccStudioPlugin = null);
     ]]></fx:Script>
@@ -134,18 +136,18 @@
       <collab:startForm>
         <studio2:GCCStartTranslationWorkflowForm createWorkflowPerTargetSite="false">
           <studio2:additionalFields>
-            <local:GccWorkflowDateTimeField itemId="globalLinkDueDate"
+            <collab:WorkflowDateTimeField itemId="globalLinkDueDate"
                                             defaultTimeFunction="{defaultTimeFunction}"
                                             fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_key')}"
                                             key="globalLinkDueDate"
                                             triggerRemoteValidationOnChange="true"
-                                            remoteIssuesCallback="{setValidationStateForIssues}">
-              <local:plugins>
+                                            issueKeysForValidationState="{[DATE_LIES_IN_PAST_ISSUES_KEY, DATE_INVALID_ISSUES_KEY]}">
+              <collab:plugins>
                 <ui:AddQuickTipPlugin
                         text="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_dueDate_tooltip')}"/>
                 <ui:HorizontalSpacingPlugin modifier="{SpacingBEMEntities.HORIZONTAL_SPACING_MODIFIER_200}"/>
-              </local:plugins>
-            </local:GccWorkflowDateTimeField>
+              </collab:plugins>
+            </collab:WorkflowDateTimeField>
           </studio2:additionalFields>
         </studio2:GCCStartTranslationWorkflowForm>
       </collab:startForm>
