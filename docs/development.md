@@ -193,7 +193,24 @@ tasks and wait for the whole submission to be marked as cancelled. Such wait
 loops are logged.
 
 _Planned/Later:_ If you perform cancellation within the CMS workflow, it is always ensured,
-that the complete submission is cancelled. 
+that the complete submission is cancelled.
+
+### One Workflow for all Locales vs. One Workflow per Locale
+
+Per default the GCC extension will create one workflow instance for all locales,
+that were chosen in the _StartWorkflowWindow_. Each locale results into a separate
+Job, which are all bundled under one submission, that is tracked by one workflow.
+
+This means that the workflow is only marked as completed, 
+when all locales (Jobs) have been marked as completed.
+
+The GCC extension can also be configured, to start one workflow instance
+per locale. This means that one submission, holding only one job is created per chosen locale.
+
+This can be achieved by setting the value _createWorkflowPerTargetSite_ in the GccStudioPlugin
+to _true_ (this is actually the default, therefore you can also completely remove this configuration).
+Furthermore you need to change the type of the workflow variable _targetSiteId_ in the workflow definition _translation-global-link.xml_
+to _String_.
 
 ### Not supported: Reopening
 

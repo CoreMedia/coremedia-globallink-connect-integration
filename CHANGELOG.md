@@ -1,6 +1,17 @@
 Changelog
 ================================================================================
 
+2010
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Replace `GccWorkflowDateTimeField` of `gcc-studio-client` with built-in `WorkflowDateTimeField`.
+
+* Replaced usage of internal API usage of `MessageBoxInternal` with newly introduced public API `MessageBoxUtil`.
+
+* Internal API `LocaleService` was moved and renamed in 2010 AEP. Updated usages. There is no public API for this functionality yet.
+
 2007
 --------------------------------------------------------------------------------
 
