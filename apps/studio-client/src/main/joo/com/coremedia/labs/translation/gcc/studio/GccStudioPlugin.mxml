@@ -154,7 +154,7 @@
     </collab:AddTranslationWorkflowPlugin>
 
     <editor:CopyResourceBundleProperties
-            destination="{ResourceManager.getInstance().getResourceBundle(null, 'com.coremedia.cms.editor.ProcessDefinitions')}"
+            destination="{ResourceManager.getInstance().getResourceBundle(null, 'com.coremedia.cms.studio.workflow.components.ProcessDefinitions')}"
             source="{ResourceManager.getInstance().getResourceBundle(null, 'com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions')}"/>
 
     <editor:CopyResourceBundleProperties
