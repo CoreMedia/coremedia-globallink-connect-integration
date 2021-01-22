@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.studio.validation;
 
-import com.coremedia.rest.cap.workflow.validation.WorkflowValidationParameterModel;
 import com.coremedia.rest.cap.workflow.validation.impl.translation.DateLiesInFutureValidator;
+import com.coremedia.rest.cap.workflow.validation.model.WorkflowValidationParameterModel;
 import com.coremedia.rest.validation.Issues;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.rest.validation.impl.IssuesImpl;

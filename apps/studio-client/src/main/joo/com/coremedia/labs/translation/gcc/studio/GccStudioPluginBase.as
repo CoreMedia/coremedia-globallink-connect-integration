@@ -10,8 +10,7 @@ import com.coremedia.cap.workflow.WorkflowObjectProperties;
 import com.coremedia.cms.editor.configuration.StudioPlugin;
 import com.coremedia.cms.editor.sdk.EditorContextImpl;
 import com.coremedia.cms.editor.sdk.editorContext;
-import com.coremedia.cms.studio.startup.models.locale.ILocalesService;
-import com.coremedia.collaboration.controlroom.rest.WorkflowSetIssues;
+import com.coremedia.cms.studio.base.cap.models.locale.ILocalesService;
 import com.coremedia.ui.components.IconButton;
 import com.coremedia.ui.data.Blob;
 import com.coremedia.ui.data.Calendar;
@@ -19,7 +18,6 @@ import com.coremedia.ui.data.Locale;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.coremedia.ui.data.impl.RemoteService;
-import com.coremedia.ui.data.validation.Issue;
 import com.coremedia.ui.messagebox.MessageBoxUtil;
 
 import ext.data.JsonStore;
