@@ -1,6 +1,17 @@
 Changelog
 ================================================================================
 
+2101
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated validators and validation configuration to align with improvements in CoreMedia Content Cloud 1ß.2101.
+
+* Internal API `ILocalesService` was moved and renamed in 2101 AEP. Updated usages. There is no public API for this functionality yet.
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#18](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
+
 2010
 --------------------------------------------------------------------------------
 
@@ -11,6 +22,10 @@ Changelog
 * Replaced usage of internal API usage of `MessageBoxInternal` with newly introduced public API `MessageBoxUtil`.
 
 * Internal API `LocaleService` was moved and renamed in 2010 AEP. Updated usages. There is no public API for this functionality yet.
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#20](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/20)
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#21](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/21)
 
 2007
 --------------------------------------------------------------------------------
