@@ -91,8 +91,11 @@ that the integration between both systems runs smoothly:
 
 ## Configuring GlobalLink Connection Settings
 
-After you have created your GlobalLink settings and linked them to your site,
-you need to configure your personal GlobalLink parameters.
+After you have created your GlobalLink settings at `/Settings/Options/Settings/GlobalLink` 
+and linked them to your site, you need to configure your personal 
+GlobalLink parameters. There can be more settings content items like this with different
+names and values to enable site-specific connections. However, global settings 
+like `dayOffsetForDueDate` have to be defined in `/Settings/Options/Settings/GlobalLink`.
 
 
 Therefore, you need to add a struct to the GlobalLink settings, named
@@ -108,9 +111,9 @@ parameters:
     to be used by your connector. (type:`String`)
 * `type` (_optional_) determines which facade implementation will be used
     (see [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)). (type:`String`)
-* `dayOffsetForDueDate` set the default value of the `Due Date`, that is set for
-    your GlobalLink translation. The parameter defines the offset for the
-    `Due Date` to lie within the future in days. (type:`Integer`)
+* `dayOffsetForDueDate` defines the offset for the
+   `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
+   Window to lie within the future in days. (type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` number of retries in case of a communication error
     with GlobalLink. By default the value is set to 5. (type:`Integer`)
 
