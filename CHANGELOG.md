@@ -10,6 +10,8 @@ Changelog
 
 * Internal API `ILocalesService` was moved and renamed in 2101 AEP. Updated usages. There is no public API for this functionality yet.
 
+* Added support for bulk cancellation of workflows
+
 * Fixed [CoreMedia/coremedia-globallink-connect-integration#18](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
 
 2010

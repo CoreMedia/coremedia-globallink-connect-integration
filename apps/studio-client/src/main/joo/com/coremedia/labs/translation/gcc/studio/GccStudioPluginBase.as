@@ -107,32 +107,39 @@ public class GccStudioPluginBase extends StudioPlugin {
     };
   }
 
-  internal static function getTranslationCancelToolBarButtonGCC(workflowObjectVE:ValueExpression, panel:Panel):IconButton {
+  internal static function getTranslationCancelToolBarButtonGCC(workflowObjectVE:ValueExpression, panel:Panel, callback:Function):IconButton {
+    var workflowObjects:Array = workflowObjectVE.getValue();
 
-    var process:Process = getProcess(workflowObjectVE.getValue());
+    var processes:Array;
+    if (workflowObjects) {
+      processes = workflowObjects.map(getProcess);
+    }
 
-    var buttonCfg:IconButton = IconButton({});
-    buttonCfg.itemId = "cancelButtonID";
-    buttonCfg.tooltip = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'Action_Tooltip_Cancel_Process');
-    buttonCfg.iconCls = ResourceManager.getInstance().getString('com.coremedia.icons.CoreIcons', 'remove');
-    buttonCfg.handler = function ():void {
-      var processName:String = process.getProperties().get(SUBJECT_VARIABLE_NAME) as String;
-      var messageText:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation', [processName]);
+    if (processes && processes.every(function(po:Process):Boolean { return mayButtonBeAdded(po, panel)})) {
+      var buttonCfg:IconButton = IconButton({});
+      buttonCfg.itemId = "cancelButtonID";
+      buttonCfg.tooltip = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'Action_Tooltip_Cancel_Process');
+      buttonCfg.iconCls = ResourceManager.getInstance().getString('com.coremedia.icons.CoreIcons', 'remove');
+      buttonCfg.handler = function ():void {
 
-      MessageBoxUtil.showPrompt("Cancel Workflow", messageText, function (result:String):void {
-                if (process && result === "ok") {
-                  process.getProperties().set(CANCEL_REQUESTED_VARIABLE_NAME, true);
-                  workflowObjectVE.setValue(undefined);
-                  panel["view"] && panel["view"].refresh();
-                }
-              });
-    };
 
-    if (mayButtonBeAdded(process, panel)) {
+        var messageText:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation');
+        MessageBoxUtil.showPrompt("Cancel Workflow", messageText, function (result:String):void {
+          if (workflowObjects && result === "ok") {
+            if (callback is Function) {
+              callback();
+            }
+            workflowObjects
+                    .map(getProcess)
+                    .forEach(function (po:Process):void {
+                      po.getProperties().set(CANCEL_REQUESTED_VARIABLE_NAME, true);
+                    });
+          }
+        });
+      };
       return new IconButton(buttonCfg);
     }
   }
-
 
   private function getDayOffsetFromSettings(offSetValueExpression:ValueExpression):void {
     var globalLinkSettings:Content = SESSION.getConnection().getContentRepository().getChild("/Settings/Options/Settings/GlobalLink");
@@ -222,11 +229,11 @@ public class GccStudioPluginBase extends StudioPlugin {
   }
 
   internal function getButtons():Function {
-    return function (panel:GridPanel, processCategory:String, panelType:String, selectedWorkflowObjectVE:ValueExpression):Array {
+    return function (panel:GridPanel, processCategory:String, panelType:String, selectedWorkflowObjectVE:ValueExpression, callback:Function = null):Array {
 
       var buttonFunction:Function = function ():void {
         lastAddedButton && panel.getTopToolbar().remove(lastAddedButton);
-        var translationCancelToolBarButtonGCC:IconButton = getTranslationCancelToolBarButtonGCC(selectedWorkflowObjectVE, panel);
+        var translationCancelToolBarButtonGCC:IconButton = getTranslationCancelToolBarButtonGCC(selectedWorkflowObjectVE, panel, callback);
         if (translationCancelToolBarButtonGCC) {
           panel.getTopToolbar().add(translationCancelToolBarButtonGCC);
           lastAddedButton = translationCancelToolBarButtonGCC;
@@ -236,10 +243,12 @@ public class GccStudioPluginBase extends StudioPlugin {
       if (panelType === "processListPanel" && selectedWorkflowObjectVE) {
         selectedWorkflowObjectVE.addChangeListener(buttonFunction);
         var cancellationAllowedVE:ValueExpression = ValueExpressionFactory.createFromFunction(function ():Boolean {
-          var process:Process = getProcess(selectedWorkflowObjectVE.getValue());
-          if (process) {
-            return process.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME);
-          }
+          var workflowObjects:Array = selectedWorkflowObjectVE.getValue();
+          return workflowObjects && workflowObjects
+                  .map(getProcess)
+                  .every(function(po:Process):Boolean {
+                    return processAvailable(po) && po.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME) as Boolean;
+                  });
         });
 
         cancellationAllowedVE.addChangeListener(buttonFunction);
