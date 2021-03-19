@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.workflow.Process;
@@ -111,7 +112,8 @@ public class CancelTranslationGlobalLinkAction extends
   void doExecuteGlobalLinkAction(Parameters params, Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
     long submissionId = params.submissionId;
-    GCSubmissionState submissionState = facade.getSubmissionState(submissionId);
+    GCSubmissionModel submission = facade.getSubmission(submissionId);
+    GCSubmissionState submissionState = submission.getState();
     boolean cancelled = params.cancelled;
 
     Result result = new Result(submissionState, cancelled, params.completedLocales);
@@ -128,7 +130,7 @@ public class CancelTranslationGlobalLinkAction extends
     // the workflow doesn't proceed with "ReviewDeliveredTranslation" when the submission is marked as delivered.
     if (submissionState == COMPLETED) {
       facade.confirmCompletedTasks(submissionId, result.completedLocales);
-      result.submissionState = facade.getSubmissionState(submissionId);
+      result.submissionState = facade.getSubmission(submissionId).getState();
       result.cancelled = true;
       return;
     }
@@ -136,13 +138,13 @@ public class CancelTranslationGlobalLinkAction extends
     // not yet cancelled -> cancel
     if (!cancelled && submissionState != CANCELLED) {
       result.cancelled = cancel(facade, submissionId, issues);
-      result.submissionState = facade.getSubmissionState(submissionId);
+      result.submissionState = facade.getSubmission(submissionId).getState();
     }
 
     // cancelled but not yet confirmed -> confirm
     if (result.submissionState == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
-      result.submissionState = facade.getSubmissionState(submissionId);
+      result.submissionState = facade.getSubmission(submissionId).getState();
     }
   }
 

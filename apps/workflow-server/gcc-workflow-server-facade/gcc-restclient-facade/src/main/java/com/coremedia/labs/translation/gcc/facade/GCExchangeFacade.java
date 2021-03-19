@@ -136,12 +136,11 @@ public interface GCExchangeFacade extends AutoCloseable {
   void confirmCancelledTasks(long submissionId);
 
   /**
-   * Get the status of the submission.
+   * Get the submission model which contains information like its state
    *
    * @param submissionId ID of the submission
-   * @return state of the submission; {@link GCSubmissionState#OTHER} if the state could not be retrieved or is unknown
-   * @throws GCFacadeCommunicationException if the status could not be retrieved
+   * @return the submission model
+   * @throws GCFacadeCommunicationException if the submission could not be retrieved
    */
-  GCSubmissionState getSubmissionState(long submissionId);
-
+  GCSubmissionModel getSubmission(long submissionId);
 }

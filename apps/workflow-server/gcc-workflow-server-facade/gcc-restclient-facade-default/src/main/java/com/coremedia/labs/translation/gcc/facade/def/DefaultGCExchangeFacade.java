@@ -8,6 +8,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
@@ -458,11 +459,11 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public GCSubmissionState getSubmissionState(long submissionId) {
+  public GCSubmissionModel getSubmission(long submissionId) {
     GCSubmission submission = getSubmissionById(submissionId);
     if (submission == null) {
       LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
-      return GCSubmissionState.OTHER;
+      return new GCSubmissionModel(submissionId, Collections.emptyList());
     }
     GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
     // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation
@@ -478,12 +479,13 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
        * results.
        */
       if (areAllSubmissionTasksDone(submissionId)) {
-        return GCSubmissionState.CANCELLATION_CONFIRMED;
+        state = GCSubmissionState.CANCELLATION_CONFIRMED;
+      } else {
+        // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
+        state = GCSubmissionState.CANCELLED;
       }
-      // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
-      return GCSubmissionState.CANCELLED;
     }
-    return state;
+    return new GCSubmissionModel(submissionId, submission.getPdSubmissionIds(), state);
   }
 
   /**

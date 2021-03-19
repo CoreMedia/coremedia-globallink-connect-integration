@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.util.Zipper;
@@ -93,6 +94,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   );
 
   private String globalLinkSubmissionIdVariable;
+  private String globalLinkPdSubmissionIdsVariable;
   private String globalLinkSubmissionStatusVariable;
   private String xliffResultVariable;
   private String completedLocalesVariable;
@@ -119,13 +121,24 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   /**
-   * Sets the name of the string process variable holding the ID of the translation submission.
+   * Sets the name of the string process variable holding the internal ID of the translation submission.
    *
    * @param globalLinkSubmissionIdVariable string workflow variable name
    */
   @SuppressWarnings("unused") // set from workflow definition
   public void setGlobalLinkSubmissionIdVariable(String globalLinkSubmissionIdVariable) {
     this.globalLinkSubmissionIdVariable = requireNonNull(globalLinkSubmissionIdVariable);
+  }
+
+  /**
+   * Sets the name of the process variable that holds the submission IDs shown to editors in Studio and
+   * in the GlobalLink tools.
+   *
+   * @param globalLinkPdSubmissionIdsVariable string workflow variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setGlobalLinkPdSubmissionIdsVariable(String globalLinkPdSubmissionIdsVariable) {
+    this.globalLinkPdSubmissionIdsVariable = requireNonNull(globalLinkPdSubmissionIdsVariable);
   }
 
   /**
@@ -210,10 +223,11 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     //in case we came from 'HandleDownloadTranslationError' we need to correctly set the "cancellationAllowed" variable first.
     disableCancelWhenCompletedLocalesExist(result);
 
-    GCSubmissionState submissionState = facade.getSubmissionState(submissionId);
-    result.globalLinkStatus = submissionState;
+    GCSubmissionModel submission = facade.getSubmission(submissionId);
+    result.globalLinkStatus = submission.getState();
+    result.pdSubmissionIds = submission.getPdSubmissionIds();
 
-    if (submissionState == CANCELLED) {
+    if (submission.getState() == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
     } else {
       facade.downloadCompletedTasks(submissionId,
@@ -222,12 +236,13 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
       disableCancelWhenCompletedLocalesExist(result);
     }
 
-    submissionState = facade.getSubmissionState(submissionId);
-    if (submissionState != DELIVERED && submissionState != CANCELLATION_CONFIRMED) {
-      LOG.debug("Submission {} in state {} and thus not completed yet.", submissionId, submissionState);
+    // retrieve potentially updated submission after confirming cancellation or download completed task
+    submission = facade.getSubmission(submissionId);
+    if (submission.getState() != DELIVERED && submission.getState() != CANCELLATION_CONFIRMED) {
+      LOG.debug("Submission {} (PD ID {}) in state {} and thus not completed yet.", submissionId, submission.getPdSubmissionIds(), submission.getState());
     }
 
-    result.globalLinkStatus = submissionState;
+    result.globalLinkStatus = submission.getState();
   }
 
   @Override
@@ -237,6 +252,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
       if (result.globalLinkStatus != null) {
         process.set(globalLinkSubmissionStatusVariable, result.globalLinkStatus.toString());
       }
+
+      process.set(globalLinkPdSubmissionIdsVariable, result.pdSubmissionIds);
+
       process.set(xliffResultVariable, updateXliffsZip(result));
 
       List<String> completedLocalesStringList = result.completedLocales.stream()
@@ -472,6 +490,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     final Map<Long, List<XliffImportResultItem>> resultItems = new HashMap<>();
 
     private GCSubmissionState globalLinkStatus;
+    private List<String> pdSubmissionIds;
     private Set<Locale> completedLocales;
     private boolean cancellationAllowed;
 

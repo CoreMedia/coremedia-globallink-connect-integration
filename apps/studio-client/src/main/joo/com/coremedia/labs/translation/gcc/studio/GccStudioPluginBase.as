@@ -74,11 +74,11 @@ public class GccStudioPluginBase extends StudioPlugin {
     return status;
   }
 
-  internal static function transformSubmissionId(value:String):String {
-    if (!value) {
-      value = UNAVAILABLE_SUBMISSION_STATE;
+  internal static function transformSubmissionId(value:Array):String {
+    if (!value || value.length === 0) {
+      return UNAVAILABLE_SUBMISSION_STATE;
     }
-    return value;
+    return value.length > 1 ? value.join(", ") : value[0];
   }
 
   internal static function getCustomProcessIconFunction():Function {
@@ -126,9 +126,6 @@ public class GccStudioPluginBase extends StudioPlugin {
         var messageText:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation');
         MessageBoxUtil.showPrompt("Cancel Workflow", messageText, function (result:String):void {
           if (workflowObjects && result === "ok") {
-            if (callback is Function) {
-              callback();
-            }
             workflowObjects
                     .map(getProcess)
                     .forEach(function (po:Process):void {

@@ -3,6 +3,7 @@ package com.coremedia.labs.translation.gcc.facade.mock;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
@@ -18,7 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -166,8 +169,8 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public GCSubmissionState getSubmissionState(long submissionId) {
-    return submissionStore.getSubmissionState(submissionId);
+  public GCSubmissionModel getSubmission(long submissionId) {
+    return new GCSubmissionModel(submissionId, Collections.singletonList(Long.toString(submissionId)), submissionStore.getSubmissionState(submissionId));
   }
 
 }
