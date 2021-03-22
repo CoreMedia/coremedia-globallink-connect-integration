@@ -14,6 +14,13 @@ Changelog
 
 * Fixed [CoreMedia/coremedia-globallink-connect-integration#18](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
 
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#23](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
+
+    The API of the `GCExchangeFacade` was updated to also return the submission identifier 
+    shown in GlobalLink Project Director and Connect Cloud. If you had accessed the
+    the submission state through `GCExchangeFacade.getSubmissionState(submissionId)`, you have
+    to migrate to `GCExchangeFacade.getSubmission(submissionId).getState()`.
+
 2010
 --------------------------------------------------------------------------------
 

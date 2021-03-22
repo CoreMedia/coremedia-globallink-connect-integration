@@ -19,11 +19,11 @@ import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.coremedia.ui.data.impl.RemoteService;
 import com.coremedia.ui.messagebox.MessageBoxUtil;
+import com.coremedia.ui.util.createComponentSelector;
 
-import ext.data.JsonStore;
-import ext.data.Store;
 import ext.grid.GridPanel;
 import ext.panel.Panel;
+import ext.toolbar.Toolbar;
 
 import mx.resources.ResourceManager;
 
@@ -75,10 +75,10 @@ public class GccStudioPluginBase extends StudioPlugin {
   }
 
   internal static function transformSubmissionId(value:Array):String {
-    if (!value || value.length === 0) {
-      return UNAVAILABLE_SUBMISSION_STATE;
+    if (value && value.length) {
+      return value.join(", ");
     }
-    return value.length > 1 ? value.join(", ") : value[0];
+    return ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_unavailable');
   }
 
   internal static function getCustomProcessIconFunction():Function {
@@ -107,35 +107,36 @@ public class GccStudioPluginBase extends StudioPlugin {
     };
   }
 
-  internal static function getTranslationCancelToolBarButtonGCC(workflowObjectVE:ValueExpression, panel:Panel, callback:Function):IconButton {
-    var workflowObjects:Array = workflowObjectVE.getValue();
+  internal static function getTranslationCancelToolBarButtonGCC(workflowObjectVE:ValueExpression, panel:GridPanel):IconButton {
+    var buttonCfg:IconButton = IconButton({});
+    buttonCfg.itemId = "cancelButtonID";
+    buttonCfg.disabled = !isButtonEnabled(workflowObjectVE);
+    buttonCfg.tooltip = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'Action_Tooltip_Cancel_Process');
+    buttonCfg.iconCls = ResourceManager.getInstance().getString('com.coremedia.icons.CoreIcons', 'remove');
 
-    var processes:Array;
-    if (workflowObjects) {
-      processes = workflowObjects.map(getProcess);
-    }
+    var cancelButton:IconButton = new IconButton(buttonCfg);
 
-    if (processes && processes.every(function(po:Process):Boolean { return mayButtonBeAdded(po, panel)})) {
-      var buttonCfg:IconButton = IconButton({});
-      buttonCfg.itemId = "cancelButtonID";
-      buttonCfg.tooltip = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'Action_Tooltip_Cancel_Process');
-      buttonCfg.iconCls = ResourceManager.getInstance().getString('com.coremedia.icons.CoreIcons', 'remove');
-      buttonCfg.handler = function ():void {
+    workflowObjectVE.addChangeListener(function(woVE:ValueExpression):void {
+      cancelButton.setDisabled(!isButtonEnabled(woVE));
+    });
 
+    cancelButton.setHandler(function ():void {
+      var messageText:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation');
+      MessageBoxUtil.showPrompt("Cancel Workflow", messageText, function (result:String):void {
+        var workflowObjects:Array = workflowObjectVE.getValue();
+        if (workflowObjects && workflowObjects.length && result === "ok") {
+          workflowObjects.map(getProcess).forEach(function (po:Process):void {
+            po.getProperties().set(CANCEL_REQUESTED_VARIABLE_NAME, true);
+          });
+          // update the button state after successful cancellation
+          cancelButton.setDisabled(!isButtonEnabled(workflowObjectVE));
+          // refresh the panel to force icon update (see getCustomProcessIconFunction)
+          panel.getView() && panel.getView().refresh();
+        }
+      });
+    });
 
-        var messageText:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation');
-        MessageBoxUtil.showPrompt("Cancel Workflow", messageText, function (result:String):void {
-          if (workflowObjects && result === "ok") {
-            workflowObjects
-                    .map(getProcess)
-                    .forEach(function (po:Process):void {
-                      po.getProperties().set(CANCEL_REQUESTED_VARIABLE_NAME, true);
-                    });
-          }
-        });
-      };
-      return new IconButton(buttonCfg);
-    }
+    return cancelButton;
   }
 
   private function getDayOffsetFromSettings(offSetValueExpression:ValueExpression):void {
@@ -172,23 +173,19 @@ public class GccStudioPluginBase extends StudioPlugin {
   }
 
   /**
-   * Method that validates the given process, if a button can be added to the panel header
-   * @param process to validate
-   * @param panel to validate if the button can be added to
-   * @return true if the button may be added to the panel header
+   * Method that validates for the selected processes, if the cancel button is enabled
+   * @param workflowObjectsVE the workflows to consider when evaluating the enabled state
+   * @return true if the button is enable
    */
-  private static function mayButtonBeAdded(process:Process, panel:Panel):Boolean {
-    var cancellationAllowed:Boolean = processAvailable(process) && process.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME) as Boolean;
+  private static function isButtonEnabled(workflowObjectsVE:ValueExpression):Boolean {
+    var workflowObjects:Array = workflowObjectsVE.getValue();
+    return workflowObjects && workflowObjects.length && workflowObjects.map(getProcess).every(function(process:Process):Boolean {
+      var cancellationAllowed:Boolean = processAvailable(process) && process.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME) as Boolean;
+      var isTranslationGlobalLink:Boolean = processAvailable(process) && process.getDefinition().getName() === TRANSLATION_GLOBAL_LINK_PROCESS_NAME;
+      var cancelAlreadyRequested:Boolean = processAvailable(process) && process.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean;
 
-    //we need to check if the store is not empty, to make sure not to show the button for an empty panel
-    var jsonStore:JsonStore = panel["store"] as JsonStore;
-    var panelJsonStoreNotEmpty:Boolean = jsonStore && jsonStore.data && jsonStore.data.length > 0;
-
-    var isTranslationGlobalLink:Boolean = processAvailable(process) && process.getDefinition().getName() === TRANSLATION_GLOBAL_LINK_PROCESS_NAME;
-
-    var cancelAlreadyRequested:Boolean = processAvailable(process) && process.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean;
-
-    return isTranslationGlobalLink && panelJsonStoreNotEmpty && cancellationAllowed && !cancelAlreadyRequested;
+      return isTranslationGlobalLink && cancellationAllowed && !cancelAlreadyRequested;
+    });
   }
 
   internal function defaultTimeFunction(asyncCalendarCallback:Function):Calendar {
@@ -228,38 +225,11 @@ public class GccStudioPluginBase extends StudioPlugin {
   internal function getButtons():Function {
     return function (panel:GridPanel, processCategory:String, panelType:String, selectedWorkflowObjectVE:ValueExpression, callback:Function = null):Array {
 
-      var buttonFunction:Function = function ():void {
-        lastAddedButton && panel.getTopToolbar().remove(lastAddedButton);
-        var translationCancelToolBarButtonGCC:IconButton = getTranslationCancelToolBarButtonGCC(selectedWorkflowObjectVE, panel, callback);
-        if (translationCancelToolBarButtonGCC) {
-          panel.getTopToolbar().add(translationCancelToolBarButtonGCC);
-          lastAddedButton = translationCancelToolBarButtonGCC;
-        }
-      };
-
-      if (panelType === "processListPanel" && selectedWorkflowObjectVE) {
-        selectedWorkflowObjectVE.addChangeListener(buttonFunction);
-        var cancellationAllowedVE:ValueExpression = ValueExpressionFactory.createFromFunction(function ():Boolean {
-          var workflowObjects:Array = selectedWorkflowObjectVE.getValue();
-          return workflowObjects && workflowObjects
-                  .map(getProcess)
-                  .every(function(po:Process):Boolean {
-                    return processAvailable(po) && po.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME) as Boolean;
-                  });
-        });
-
-        cancellationAllowedVE.addChangeListener(buttonFunction);
-
-        //we want to recalculate the buttons when something was removed from the store
-        var jsonStore:JsonStore = panel["store"] as JsonStore;
-        jsonStore && jsonStore.on("remove", function (store:Store, records:Array):void {
-          var removed:WorkflowObject = records[0].data.bean as WorkflowObject;
-          if (selectedWorkflowObjectVE.getValue() === removed) {
-            selectedWorkflowObjectVE.setValue(undefined);
-          }
-          buttonFunction();
-          panel.getView() && panel.getView().refresh();
-        });
+      if (panelType === "processListPanel") {
+        var toolbar:Toolbar = panel.getDockedItems("toolbar[dock=\"top\"]")[0] as Toolbar;
+        var buttons:Array = toolbar.query(createComponentSelector()._xtype(IconButton.xtype).build());
+        buttons.push(getTranslationCancelToolBarButtonGCC(selectedWorkflowObjectVE, panel));
+        return buttons;
       }
 
     }
