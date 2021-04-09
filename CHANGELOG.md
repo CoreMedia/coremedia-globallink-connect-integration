@@ -3,10 +3,13 @@ Changelog
 
 2101
 --------------------------------------------------------------------------------
+### General Notes
+
+* This release requires at least CoreMedia Content Cloud 10.2101.3.
 
 ### Main Changes
 
-* Updated validators and validation configuration to align with improvements in CoreMedia Content Cloud 1ß.2101.
+* Updated validators and validation configuration to align with improvements in CoreMedia Content Cloud 10.2101. 
 
 * Internal API `ILocalesService` was moved and renamed in 2101 AEP. Updated usages. There is no public API for this functionality yet.
 

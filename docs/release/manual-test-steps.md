@@ -71,13 +71,14 @@ home folder
     1. The dialog should close without any error
     2. In the “pending” area from “Localization Workflows” the workflow should pop up
 5. Open the “pending” area and select the started workflow
-    1. A “X” should pop up in the header bar
+    1. A “X” should be activated in the header bar
+    2. Multi-selection is possible. If you select a "normal" and a GlobalLink workflow, the button remains deactivated. It is also  possible to select and cancel multiple GlobalLink workflows at once.
 6. Press the “X”
     1. A dialog should pop
 7. Confirm the dialog
     1. The Dialog should close
     2. The icon of the workflow should change (now it has a little “x” on the bottom right)
-    3. The “X” should not be displayed in the header bar anymore
+    3. The “X” should appear disabled in the header bar 
     4. The workflow should disappear in the “pending” list after some time
 8. Depending on timing there might be a “Review Cancellation” Task in your inbox or the workflow will directly be cancelled
 9. Confirm the “Review Cancellation” Task or wait for the workflow to appear in the “Finished” area
@@ -105,8 +106,8 @@ home folder
 6. Cancel the submission in Project Director (Active -> Manage -> Select -> Cancel)
 7. Go back to the Studio
     1. The workflow appears in Rick's inbox.
-    2. Rick can choose to rollback the changes or just accept the cancellation.
-    3. Accept by rollback
+    2. Rick can only choose to reject the previous changes and accept the cancellation.
+    3. Reject the changes to rollback
 9. Open the “Finished” area
     1. The workflow should appear here
     2. The “Status” variable should display “Cancelled”
