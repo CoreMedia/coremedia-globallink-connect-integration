@@ -481,7 +481,7 @@ class DefaultGCExchangeFacadeTest {
     @DisplayName("Standard Submission State Retrieval")
     void happyPath() {
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+        GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
         assertThat(state).isEqualTo(GCSubmissionState.STARTED);
       }
     }
@@ -492,7 +492,7 @@ class DefaultGCExchangeFacadeTest {
       when(submissionsResponseData.getSubmissions()).thenReturn(emptyList());
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+        GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
         assertThat(state).isEqualTo(GCSubmissionState.OTHER);
       }
     }
@@ -506,7 +506,7 @@ class DefaultGCExchangeFacadeTest {
       when(submissionsResponseData.getSubmissions()).thenReturn(asList(submission, additionalSubmission));
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+        GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
         // Does not matter, just one should be chosen.
         assertThat(state).isIn(GCSubmissionState.STARTED, GCSubmissionState.TRANSLATE);
       }
@@ -540,7 +540,7 @@ class DefaultGCExchangeFacadeTest {
           when(task.getStatus()).thenReturn(TaskStatus.Processing.text());
 
           try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
             assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
           }
@@ -553,7 +553,7 @@ class DefaultGCExchangeFacadeTest {
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.FALSE);
 
           try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
             assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
           }
@@ -571,7 +571,7 @@ class DefaultGCExchangeFacadeTest {
           when(additionalTask2.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
 
           try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
             assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
           }
@@ -588,7 +588,7 @@ class DefaultGCExchangeFacadeTest {
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
 
           try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
             assertThat(state).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED);
           }
@@ -611,7 +611,7 @@ class DefaultGCExchangeFacadeTest {
           when(additionalTask2.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
 
           try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmissionState(SUBMISSION_ID);
+            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
             assertThat(state).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED);
           }

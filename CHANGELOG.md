@@ -1,6 +1,29 @@
 Changelog
 ================================================================================
 
+2101
+--------------------------------------------------------------------------------
+### General Notes
+
+* This release requires at least CoreMedia Content Cloud 10.2101.3.
+
+### Main Changes
+
+* Updated validators and validation configuration to align with improvements in CoreMedia Content Cloud 10.2101. 
+
+* Internal API `ILocalesService` was moved and renamed in 2101 AEP. Updated usages. There is no public API for this functionality yet.
+
+* Added support for bulk cancellation of workflows
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#18](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#23](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
+
+    The API of the `GCExchangeFacade` was updated to also return the submission identifier 
+    shown in GlobalLink Project Director and Connect Cloud. If you had accessed the
+    the submission state through `GCExchangeFacade.getSubmissionState(submissionId)`, you have
+    to migrate to `GCExchangeFacade.getSubmission(submissionId).getState()`.
+
 2010
 --------------------------------------------------------------------------------
 
@@ -11,6 +34,10 @@ Changelog
 * Replaced usage of internal API usage of `MessageBoxInternal` with newly introduced public API `MessageBoxUtil`.
 
 * Internal API `LocaleService` was moved and renamed in 2010 AEP. Updated usages. There is no public API for this functionality yet.
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#20](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/20)
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#21](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/21)
 
 2007
 --------------------------------------------------------------------------------
