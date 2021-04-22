@@ -122,7 +122,8 @@ public class GccStudioPluginBase extends StudioPlugin {
 
     cancelButton.setHandler(function ():void {
       var messageText:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation');
-      MessageBoxUtil.showPrompt("Cancel Workflow", messageText, function (result:String):void {
+      var promptTitle:String = ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'confirm_cancellation_title');
+      MessageBoxUtil.showPrompt(promptTitle, messageText, function (result:String):void {
         var workflowObjects:Array = workflowObjectVE.getValue();
         if (workflowObjects && workflowObjects.length && result === "ok") {
           workflowObjects.map(getProcess).forEach(function (po:Process):void {
