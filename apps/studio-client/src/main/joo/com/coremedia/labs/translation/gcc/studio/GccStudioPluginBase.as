@@ -176,7 +176,7 @@ public class GccStudioPluginBase extends StudioPlugin {
   /**
    * Method that validates for the selected processes, if the cancel button is enabled
    * @param workflowObjectsVE the workflows to consider when evaluating the enabled state
-   * @return true if the button is enable
+   * @return true if the button is enabled
    */
   private static function isButtonEnabled(workflowObjectsVE:ValueExpression):Boolean {
     var workflowObjects:Array = workflowObjectsVE.getValue();
