@@ -84,7 +84,7 @@
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
-      <artifactId>coremedia-rest-plugins</artifactId>
+      <artifactId>middle.coremedia-validation</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
