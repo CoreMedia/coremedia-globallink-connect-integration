@@ -8,7 +8,7 @@ Changelog
 
 * Updated dependencies to reflect changes to content validators in CoreMedia Content Cloud 10.2104.1.
 
-* Added the possibility to configure the connection to GlobalLink in properties file on the server with [CoreMedia/coremedia-globallink-connect-integration#29](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/29) - Thank you @mtommila for suggesting this change and providing a Pull Request.
+* Added the possibility to configure the connection to GlobalLink in properties file on the server with [CoreMedia/coremedia-globallink-connect-integration#25](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/25) - Thank you @mtommila for suggesting this change and providing a Pull Request.
 
 2101
 --------------------------------------------------------------------------------
