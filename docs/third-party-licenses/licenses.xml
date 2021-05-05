@@ -45,7 +45,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>30.0-jre</version>
+      <version>30.1.1-jre</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -97,7 +97,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.14.0</version>
+      <version>3.16.1</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -209,7 +209,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>5.2.9.RELEASE</version>
+      <version>5.2.13.RELEASE</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -222,7 +222,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>5.2.9.RELEASE</version>
+      <version>5.2.13.RELEASE</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -235,7 +235,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>5.2.9.RELEASE</version>
+      <version>5.2.13.RELEASE</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -248,12 +248,24 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
-      <version>5.2.9.RELEASE</version>
+      <version>5.2.13.RELEASE</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
           <url>https://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
+          <file>apache license, version 2.0 - license-2.0.txt</file>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
+      <version>2.3.9.RELEASE</version>
+      <licenses>
+        <license>
+          <name>Apache License, Version 2.0</name>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
           <file>apache license, version 2.0 - license-2.0.txt</file>
         </license>
       </licenses>

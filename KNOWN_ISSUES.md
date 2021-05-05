@@ -22,12 +22,6 @@ Example message for such a failure report:
     severity = MAJOR]] (LongActionManager-10)
 ```
 
-## GCC RestClient Issues
-
-* translations-com/globallink-connect-cloud-api-java#1:
-
-    SubmissionStatus (Model): Misses State "Translate"
-
 ## Open Questions
 
 ### Submission Locales
