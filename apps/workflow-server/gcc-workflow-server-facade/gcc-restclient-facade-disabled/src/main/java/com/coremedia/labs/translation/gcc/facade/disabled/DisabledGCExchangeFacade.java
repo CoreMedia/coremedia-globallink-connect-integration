@@ -64,7 +64,7 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public long submitSubmission(String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+  public long submitSubmission(String subject, String comment, ZonedDateTime dueDate, String workflow, String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
     throw createDisabledException();
   }
 

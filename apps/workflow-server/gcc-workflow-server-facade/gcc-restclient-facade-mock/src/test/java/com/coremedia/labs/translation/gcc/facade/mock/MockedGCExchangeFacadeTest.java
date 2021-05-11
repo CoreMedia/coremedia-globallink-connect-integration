@@ -52,7 +52,10 @@ class MockedGCExchangeFacadeTest {
       String fileId = facade.uploadContent(testName, xliffResource);
       long submissionId = facade.submitSubmission(
               testName,
+              null,
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              null,
+              "admin",
               Locale.US,
               singletonMap(fileId, singletonList(Locale.ROOT))
       );
@@ -111,7 +114,10 @@ class MockedGCExchangeFacadeTest {
       String fileId = facade.uploadContent(testName, xliffResource);
       long submissionId = facade.submitSubmission(
               "states:other,cancelled",
+              null,
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              null,
+              "admin",
               Locale.US,
               singletonMap(fileId, singletonList(Locale.ROOT))
       );
