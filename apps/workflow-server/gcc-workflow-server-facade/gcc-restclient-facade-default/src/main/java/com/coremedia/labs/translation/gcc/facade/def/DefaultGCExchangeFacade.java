@@ -26,6 +26,7 @@ import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.model.ContentLocales;
 import org.gs4tr.gcc.restclient.model.GCSubmission;
 import org.gs4tr.gcc.restclient.model.GCTask;
+import org.gs4tr.gcc.restclient.model.LocaleConfig;
 import org.gs4tr.gcc.restclient.model.TaskStatus;
 import org.gs4tr.gcc.restclient.operation.SubmissionSubmit;
 import org.gs4tr.gcc.restclient.operation.Submissions;
@@ -489,6 +490,11 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       }
     }
     return new GCSubmissionModel(submissionId, submission.getPdSubmissionIds(), state);
+  }
+
+  @Override
+  public List<Locale> getSupportedLocales() {
+    return getDelegate().getConnectorsConfig().getSupportedLocales().stream().map(LocaleConfig::getPdLocale).map(Locale::forLanguageTag).collect(toList());
   }
 
   /**

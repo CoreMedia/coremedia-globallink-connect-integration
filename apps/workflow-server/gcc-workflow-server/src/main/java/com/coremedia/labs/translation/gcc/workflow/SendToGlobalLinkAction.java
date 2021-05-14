@@ -39,6 +39,7 @@ import static com.coremedia.cap.translate.xliff.XliffExportOptions.xliffExportOp
 import static com.coremedia.translate.item.TransformStrategy.ITEM_PER_TARGET;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Requests a translation from GlobalLink by opening a submission with uploaded XLIFF for translatable
@@ -54,6 +55,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   private String commentVariable;
   private String globalLinkDueDateVariable;
   private String workflowVariable;
+  private boolean mapToBestSupportedLocale;
 
   // --- construct and configure ----------------------------------------------------------------------
 
@@ -115,6 +117,16 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   @SuppressWarnings("unused") // set from workflow definition
   public void setWorkflowVariable(String workflowVariable) {
     this.workflowVariable = workflowVariable;
+  }
+
+  /**
+   * Sets if source and target locales should be mapped to the best matching supported locale.
+   *
+   * @param mapToBestSupportedLocale if locales should be mapped to the best matching supported locale
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setMapToBestSupportedLocale(boolean mapToBestSupportedLocale) {
+    this.mapToBestSupportedLocale = mapToBestSupportedLocale;
   }
 
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
@@ -232,12 +244,34 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
                                   Map<Locale, List<TranslateItem>> translationItemsByLocale,
                                   ZonedDateTime dueDate, String workflow, String submitter) {
 
+    if (mapToBestSupportedLocale) {
+      List<Locale> supportedLocales = facade.getSupportedLocales();
+
+      sourceLocale = findBestMatchingLocale(sourceLocale, supportedLocales);
+
+      translationItemsByLocale = translationItemsByLocale.entrySet().stream().collect(
+              toMap(entry -> findBestMatchingLocale(entry.getKey(), supportedLocales), entry -> entry.getValue()));
+    }
+
     Map<String, List<Locale>> xliffFileIds = uploadContents(facade, sourceLocale, translationItemsByLocale);
 
     long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, xliffFileIds);
 
     LOG.debug("Submitted submission {} for {} files to GCC.", submissionId, xliffFileIds.size());
     return String.valueOf(submissionId);
+  }
+
+  private Locale findBestMatchingLocale(Locale locale, List<Locale> supportedLocales) {
+    Locale best = locale;
+    int bestScore = 0;
+    for (Locale supportedLocale : supportedLocales) {
+      int score = (locale.getLanguage().equals(supportedLocale.getLanguage()) ? 2 : 0) + (locale.getCountry().equals(supportedLocale.getCountry()) ? 1 : 0);
+      if (score > bestScore) {
+        best = supportedLocale;
+        bestScore = score;
+      }
+    }
+    return best;
   }
 
   private Map<String, List<Locale>> uploadContents(GCExchangeFacade gccSession, Locale sourceLocale, Map<Locale, List<TranslateItem>> translationItemsByLocale) {

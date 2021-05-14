@@ -93,6 +93,11 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
     return new GCSubmissionModel(submissionId, Collections.emptyList());
   }
 
+  @Override
+  public List<Locale> getSupportedLocales() {
+    return List.of();
+  }
+
   private static GCFacadeException createDisabledException() {
     return new GCFacadeException("GCC Service disabled.");
   }

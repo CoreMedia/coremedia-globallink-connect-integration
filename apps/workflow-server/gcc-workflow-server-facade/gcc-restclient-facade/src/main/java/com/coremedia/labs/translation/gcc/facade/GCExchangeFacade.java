@@ -146,4 +146,12 @@ public interface GCExchangeFacade extends AutoCloseable {
    * @throws GCFacadeCommunicationException if the submission could not be retrieved
    */
   GCSubmissionModel getSubmission(long submissionId);
+
+  /**
+   * Get the supported locales.
+   *
+   * @return the supported locales
+   */
+  List<Locale> getSupportedLocales();
+
 }

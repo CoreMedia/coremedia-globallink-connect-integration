@@ -173,4 +173,9 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
     return new GCSubmissionModel(submissionId, Collections.singletonList(Long.toString(submissionId)), submissionStore.getSubmissionState(submissionId));
   }
 
+  @Override
+  public List<Locale> getSupportedLocales() {
+    return List.of();
+  }
+
 }
