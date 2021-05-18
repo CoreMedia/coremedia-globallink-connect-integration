@@ -88,6 +88,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    */
   private static final String USER_AGENT = lookup().lookupClass().getPackage().getName();
 
+  private final Boolean isSendSubmitter;
   private final GCExchange delegate;
   private final Supplier<String> fileTypeSupplier;
 
@@ -103,6 +104,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String userName = requireNonNullConfig(config, GCConfigProperty.KEY_USERNAME);
     String password = requireNonNullConfig(config, GCConfigProperty.KEY_PASSWORD);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
+    this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
     LOG.info("Will connect to GCC endpoint: {}", apiUrl);
     try {
       delegate = new GCExchange(new GCConfig(
@@ -124,6 +126,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   DefaultGCExchangeFacade(GCExchange delegate, String fileType) {
     this.delegate = delegate;
     this.fileTypeSupplier = () -> fileType;
+    this.isSendSubmitter = false;
   }
 
   private static String requireNonNullConfig(Map<String, Object> config, String key) {
@@ -183,9 +186,15 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             sourceLocale.toLanguageTag(),
             contentLocalesList
     );
-    request.setInstructions(comment);
-    request.setWorkflow(workflow);
-    request.setSubmitter(submitter);
+    if (comment != null) {
+      request.setInstructions(comment);
+    }
+    if (isSendSubmitter && submitter != null) {
+      request.setSubmitter(submitter);
+    }
+    if (workflow != null) {
+      request.setWorkflow(workflow);
+    }
 
     try {
       SubmissionSubmit.SubmissionSubmitResponseData response = delegate.submitSubmission(request);

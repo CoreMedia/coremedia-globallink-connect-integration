@@ -46,6 +46,12 @@ public final class GCConfigProperty {
   public static final String KEY_TYPE = "type";
 
   /**
+   * Boolean that determines if the name of the submitter is passed to GlobalLink. For privacy reason this should be
+   * deactivated by default.
+   */
+  public static final String KEY_IS_SEND_SUBMITTER = "isSendSubmitter";
+
+  /**
    * Default type for facades. Will be used also if unset or if the type
    * cannot be parsed/is unknown.
    */

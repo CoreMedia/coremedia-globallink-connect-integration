@@ -84,7 +84,7 @@
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
-      <artifactId>coremedia-rest-plugins</artifactId>
+      <artifactId>middle.coremedia-validation</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -109,6 +109,10 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
     </dependency>
 
     <dependency>

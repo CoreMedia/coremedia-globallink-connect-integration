@@ -1,6 +1,17 @@
 Changelog
 ================================================================================
 
+2104
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to reflect changes to content validators in CoreMedia Content Cloud 10.2104.1.
+
+* Added the possibility to configure the connection to GlobalLink in properties file on the server with [CoreMedia/coremedia-globallink-connect-integration#25](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/25) - Thank you @mtommila for suggesting this change and providing a Pull Request.
+
+* The notes from the Start Translation Workflow Window are now sent as instructions to GlobalLink. Optionally, the submitter's name can be added to the submission. The workflow is also prepared to take an optional string that represents the type of the workflow on the GlobalLink side. This still requires the UI to be implemented in Studio. - [CoreMedia/coremedia-globallink-connect-integration#26](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/26) - Thank you @mtommila for suggesting this change and providing a Pull Request.
+
 2101
 --------------------------------------------------------------------------------
 ### General Notes

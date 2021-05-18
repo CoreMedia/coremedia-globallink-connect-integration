@@ -1,5 +1,6 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
+import com.coremedia.cap.user.User;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentObject;
@@ -53,9 +54,10 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   private String derivedContentsVariable;
   private String subjectVariable;
   private String commentVariable;
+  private String performerVariable;
   private String globalLinkDueDateVariable;
-  private String workflowVariable;
   private boolean mapToBestSupportedLocale;
+  private String globalLinkWorkflowVariable;
 
   // --- construct and configure ----------------------------------------------------------------------
 
@@ -100,6 +102,17 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   }
 
   /**
+   * Sets the variable to read the performer of the translation workflow from.
+   * This will be used to add the name of the submitter to the translation submission (if enabled=.
+   *
+   * @param performerVariable performer variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setPerformerVariable(String performerVariable) {
+    this.performerVariable = performerVariable;
+  }
+
+  /**
    * Sets the variable to read the dueDate, that will be sent to GlobalLink.
    *
    * @param globalLinkDueDateVariable subject variable name
@@ -112,17 +125,22 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   /**
    * Sets the variable to define, which translation workflow is used on GlobalLink side.
    *
-   * @param workflowVariable workflow variable name
+   * @param globalLinkWorkflowVariable workflow variable name
    */
   @SuppressWarnings("unused") // set from workflow definition
-  public void setWorkflowVariable(String workflowVariable) {
-    this.workflowVariable = workflowVariable;
+  public void setGlobalLinkWorkflowVariable(String globalLinkWorkflowVariable) {
+    this.globalLinkWorkflowVariable = globalLinkWorkflowVariable;
   }
 
   /**
    * Sets if source and target locales should be mapped to the best matching supported locale.
    *
-   * @param mapToBestSupportedLocale if locales should be mapped to the best matching supported locale
+   * @param 
+   
+   
+   
+   
+   if locales should be mapped to the best matching supported locale
    */
   @SuppressWarnings("unused") // set from workflow definition
   public void setMapToBestSupportedLocale(boolean mapToBestSupportedLocale) {
@@ -141,9 +159,12 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     List<ContentObject> masterContentObjects = process.getLinksAndVersions(getMasterContentObjectsVariable());
     Calendar date = process.getDate(globalLinkDueDateVariable);
     ZonedDateTime dueDate = ZonedDateTime.ofInstant(date.toInstant(), date.getTimeZone().toZoneId());
-    String workflow = workflowVariable != null ? process.getString(workflowVariable) : null;
-    String submitter = task.getContainingProcess().getOwner().getName();
-    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitter);
+    String workflow = globalLinkWorkflowVariable != null ? process.getString(globalLinkWorkflowVariable) : null;
+    String submitterName = null;
+    if (performerVariable != null) {
+      submitterName = process.getUser(performerVariable).getName();
+    }
+    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitterName);
   }
 
   /**

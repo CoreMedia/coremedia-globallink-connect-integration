@@ -4,7 +4,6 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;

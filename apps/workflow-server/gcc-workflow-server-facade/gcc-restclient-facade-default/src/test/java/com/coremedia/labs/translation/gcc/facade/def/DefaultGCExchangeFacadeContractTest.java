@@ -225,9 +225,7 @@ class DefaultGCExchangeFacadeContractTest {
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
                 null,
                 "admin",
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
 
@@ -294,9 +292,7 @@ class DefaultGCExchangeFacadeContractTest {
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
                 null,
                 "admin",
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
 
@@ -324,9 +320,7 @@ class DefaultGCExchangeFacadeContractTest {
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
                 null,
                 "admin",
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -346,9 +340,7 @@ class DefaultGCExchangeFacadeContractTest {
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
                 null,
                 "admin",
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -369,9 +361,7 @@ class DefaultGCExchangeFacadeContractTest {
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
                 null,
                 "admin",
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -426,9 +416,7 @@ class DefaultGCExchangeFacadeContractTest {
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
               null,
               "admin",
-              masterLocale,
-              contentMap
-      );
+              masterLocale, contentMap);
 
       assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
 
