@@ -38,7 +38,7 @@ public interface GCExchangeFacade extends AutoCloseable {
 
   /**
    * Uploads the given content, like for example an XLIFF file. Returns
-   * the file ID which is later required in {@link #submitSubmission(String, ZonedDateTime, Locale, Map)}.
+   * the file ID which is later required in {@link #submitSubmission(String, String, ZonedDateTime, String, String, Locale, Map)}.
    *
    * @param fileName the filename of the resource
    * @param resource the resource to send
@@ -52,7 +52,10 @@ public interface GCExchangeFacade extends AutoCloseable {
    * Submit submission for the given contents uploaded before.
    *
    * @param subject      workflow subject
+   * @param comment      instructions for translators
    * @param dueDate      due date for the submission; implies the priority when translation jobs should be done
+   * @param workflow     translation workflow to be used, if not the default
+   * @param submitter    name of the submitter
    * @param sourceLocale source locale
    * @param contentMap   file IDs (returned by {@link #uploadContent(String, Resource)}) to translate
    *                     with the desired target locales to translate to
@@ -60,7 +63,7 @@ public interface GCExchangeFacade extends AutoCloseable {
    * @throws GCFacadeCommunicationException if submitting the submission failed
    * @see #uploadContent(String, Resource)
    */
-  long submitSubmission(String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap);
+  long submitSubmission(String subject, String comment, ZonedDateTime dueDate, String workflow, String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap);
 
   /**
    * Cancel a submission.

@@ -51,7 +51,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   private String derivedContentsVariable;
   private String subjectVariable;
+  private String commentVariable;
   private String globalLinkDueDateVariable;
+  private String workflowVariable;
 
   // --- construct and configure ----------------------------------------------------------------------
 
@@ -85,6 +87,17 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   }
 
   /**
+   * Sets the variable to read the comment/instructions of the translation workflow from.
+   * This will be used for the translation submission accordingly.
+   *
+   * @param commentVariable subject variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setCommentVariable(String commentVariable) {
+    this.commentVariable = commentVariable;
+  }
+
+  /**
    * Sets the variable to read the dueDate, that will be sent to GlobalLink.
    *
    * @param globalLinkDueDateVariable subject variable name
@@ -94,6 +107,16 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     this.globalLinkDueDateVariable = globalLinkDueDateVariable;
   }
 
+  /**
+   * Sets the variable to define, which translation workflow is used on GlobalLink side.
+   *
+   * @param workflowVariable workflow variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setWorkflowVariable(String workflowVariable) {
+    this.workflowVariable = workflowVariable;
+  }
+
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
 
   @Override
@@ -101,11 +124,14 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Process process = task.getContainingProcess();
 
     String subject = process.getString(subjectVariable);
+    String comment = commentVariable != null ? process.getString(commentVariable) : null;
     List<Content> derivedContents = process.getLinks(derivedContentsVariable);
     List<ContentObject> masterContentObjects = process.getLinksAndVersions(getMasterContentObjectsVariable());
     Calendar date = process.getDate(globalLinkDueDateVariable);
     ZonedDateTime dueDate = ZonedDateTime.ofInstant(date.toInstant(), date.getTimeZone().toZoneId());
-    return new Parameters(subject, derivedContents, masterContentObjects, dueDate);
+    String workflow = workflowVariable != null ? process.getString(workflowVariable) : null;
+    String submitter = task.getContainingProcess().getOwner().getName();
+    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitter);
   }
 
   /**
@@ -135,7 +161,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Locale firstMasterLocale = findFirstMasterLocale(masterContentObjects, localeMapper)
             .orElseThrow(() -> new IllegalStateException("Unable to identify master locale."));
 
-    String submissionId = submitSubmission(facade, params.subject, firstMasterLocale, translationItemsByLocale, params.dueDate);
+    String submissionId = submitSubmission(facade, params.subject, params.comment, firstMasterLocale, translationItemsByLocale, params.dueDate, params.workflow, params.submitter);
     resultConsumer.accept(submissionId);
   }
 
@@ -193,19 +219,22 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    *
    * @param facade                   the facade to communicate with GlobalLink
    * @param subject                  subject, will be part of the submission name
+   * @param comment                  comment, will be the instructions of the submission
    * @param sourceLocale             locale of master site
    * @param translationItemsByLocale translation items grouped by target locale
    * @param dueDate                  date that will be sent as 'dueDate' parameter
+   * @param workflow                 workflow to be used for the translation, if not the default
+   * @param submitter                username of the submitter
    * @return the result that contains the ID of the created submission or an error result
    */
-  private String submitSubmission(GCExchangeFacade facade, String subject,
+  private String submitSubmission(GCExchangeFacade facade, String subject, String comment,
                                   Locale sourceLocale,
                                   Map<Locale, List<TranslateItem>> translationItemsByLocale,
-                                  ZonedDateTime dueDate) {
+                                  ZonedDateTime dueDate, String workflow, String submitter) {
 
     Map<String, List<Locale>> xliffFileIds = uploadContents(facade, sourceLocale, translationItemsByLocale);
 
-    long submissionId = facade.submitSubmission(subject, dueDate, sourceLocale, xliffFileIds);
+    long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, xliffFileIds);
 
     LOG.debug("Submitted submission {} for {} files to GCC.", submissionId, xliffFileIds.size());
     return String.valueOf(submissionId);
@@ -250,18 +279,27 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   static final class Parameters {
     final String subject;
+    final String comment;
     final Collection<Content> derivedContents;
     final Collection<ContentObject> masterContentObjects;
     final ZonedDateTime dueDate;
+    final String workflow;
+    final String submitter;
 
     Parameters(String subject,
+               String comment,
                Collection<Content> derivedContents,
                Collection<ContentObject> masterContentObjects,
-               ZonedDateTime dueDate) {
+               ZonedDateTime dueDate,
+               String workflow,
+               String submitter) {
       this.subject = subject;
+      this.comment = comment;
       this.derivedContents = derivedContents;
       this.masterContentObjects = masterContentObjects;
       this.dueDate = dueDate;
+      this.workflow = workflow;
+      this.submitter = submitter;
     }
   }
 

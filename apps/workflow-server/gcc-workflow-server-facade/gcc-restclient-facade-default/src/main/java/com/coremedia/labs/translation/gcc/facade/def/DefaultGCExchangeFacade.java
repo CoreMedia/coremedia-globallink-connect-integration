@@ -167,7 +167,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public long submitSubmission(@Nullable String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+  public long submitSubmission(@Nullable String subject, String comment, ZonedDateTime dueDate, String workflow, String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
 
     List<ContentLocales> contentLocalesList = contentMap.entrySet().stream()
             .map(e ->
@@ -182,6 +182,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             sourceLocale.toLanguageTag(),
             contentLocalesList
     );
+    request.setInstructions(comment);
+    request.setWorkflow(workflow);
+    request.setSubmitter(submitter);
 
     try {
       SubmissionSubmit.SubmissionSubmitResponseData response = delegate.submitSubmission(request);

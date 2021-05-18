@@ -104,7 +104,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public long submitSubmission(String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+  public long submitSubmission(String subject, String comment, ZonedDateTime dueDate, String workflow, String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
     List<SubmissionContent> collect = contentMap.entrySet().stream()
             .map(e -> new SubmissionContent(
                     e.getKey(),
