@@ -117,7 +117,8 @@ parameters:
    Window to lie within the future in days. (type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` number of retries in case of a communication error
     with GlobalLink. By default the value is set to 5. (type:`Integer`)
-  
+* `isSendSubmitter` defines if the name of the editor that started the workflow is send to GlobalLink as part of the submission. (type:`Boolean`). By default, this is disabled to not accidentally leak personal data to third parties.   
+
 By default, the offset is set to `20` within the test data.
 
 In addition to the configuration approach described above, the settings can be

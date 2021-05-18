@@ -56,9 +56,7 @@ class MockedGCExchangeFacadeTest {
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
               null,
               "admin",
-              Locale.US,
-              singletonMap(fileId, singletonList(Locale.ROOT))
-      );
+              Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
       assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED);
 
@@ -118,9 +116,7 @@ class MockedGCExchangeFacadeTest {
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
               null,
               "admin",
-              Locale.US,
-              singletonMap(fileId, singletonList(Locale.ROOT))
-      );
+              Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
       assertSubmissionReachesState(facade, submissionId, GCSubmissionState.CANCELLED);
     }
