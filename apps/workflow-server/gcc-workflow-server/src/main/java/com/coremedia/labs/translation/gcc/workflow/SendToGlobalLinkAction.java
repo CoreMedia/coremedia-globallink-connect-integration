@@ -1,7 +1,5 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.cap.user.User;
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentObject;
 import com.coremedia.cap.multisite.ContentObjectSiteAspect;
@@ -10,6 +8,8 @@ import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.translate.xliff.XliffExporter;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.translate.item.ContentToTranslateItemTransformer;
 import com.coremedia.translate.item.TranslateItem;
 import com.google.common.collect.ImmutableMap;
@@ -33,10 +33,10 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.XLIFF_EXPORT_FAILURE;
 import static com.coremedia.cap.translate.xliff.XliffExportOptions.EmptyOption.EMPTY_IGNORE;
 import static com.coremedia.cap.translate.xliff.XliffExportOptions.TargetOption.TARGET_SOURCE;
 import static com.coremedia.cap.translate.xliff.XliffExportOptions.xliffExportOptions;
+import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.XLIFF_EXPORT_FAILURE;
 import static com.coremedia.translate.item.TransformStrategy.ITEM_PER_TARGET;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.stream.Collectors.groupingBy;
@@ -231,7 +231,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   }
 
   /**
-   * Create a submission for the given translation items.
+   * Create a submission for the given translation items and return its unique identifier.
    *
    * @param facade                   the facade to communicate with GlobalLink
    * @param subject                  subject, will be part of the submission name
@@ -242,8 +242,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    * @param workflow                 workflow to be used for the translation, if not the default
    * @param submitter                username of the submitter
    * @return the result that contains the ID of the created submission or an error result
+   * @throws GCFacadeCommunicationException if submitting the submission failed
    */
-  private String submitSubmission(GCExchangeFacade facade, String subject, String comment,
+  protected String submitSubmission(GCExchangeFacade facade, String subject, String comment,
                                   Locale sourceLocale,
                                   Map<Locale, List<TranslateItem>> translationItemsByLocale,
                                   ZonedDateTime dueDate, String workflow, String submitter) {
