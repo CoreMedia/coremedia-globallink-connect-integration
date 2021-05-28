@@ -12,6 +12,8 @@ Changelog
 
 * The notes from the Start Translation Workflow Window are now sent as instructions to GlobalLink. Optionally, the submitter's name can be added to the submission. The workflow is also prepared to take an optional string that represents the type of the workflow on the GlobalLink side. This still requires the UI to be implemented in Studio. - [CoreMedia/coremedia-globallink-connect-integration#26](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/26) - Thank you @mtommila for suggesting this change and providing a Pull Request.
 
+* Fixed concurrency issue of `DefaultGCExchangeFacadeSessionProvider` which could cause `java.util.NoSuchElementExceptions`  [CoreMedia/coremedia-globallink-connect-integration#33](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/33)
+
 2101
 --------------------------------------------------------------------------------
 ### General Notes
