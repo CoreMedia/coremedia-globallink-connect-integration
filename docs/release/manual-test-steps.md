@@ -91,18 +91,18 @@ home folder
 
 1. Login as Rick C.
 2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
-  1. type should not be set to “mock”
-  3. Credentials for gcc should be entered (manual workflow key)
-  4. Activate the boolean property "isSendSubmitter"
+    1. type should not be set to “mock”
+    3. Credentials for gcc should be entered (manual workflow key)
+    4. Activate the boolean property "isSendSubmitter"
 3. Choose an article and drag it into the “Localization Workflows” drop area
-  1. A StartTranslation window should pop up
-  2. Add a text to the notes field
+    1. A StartTranslation window should pop up
+    2. Add a text to the notes field
 4. Click “Start”
-  1. The dialog should close without any error
-  2. In the “pending” area from “Localization Workflows” the workflow should pop up
+    1. The dialog should close without any error
+    2. In the “pending” area from “Localization Workflows” the workflow should pop up
 5. Login to the GlobalLink Connect Dashboard
-  1. The submitter and the instructions added to the notes field are visible in the submission's detail view
-  2. Not required - If you login to the Project Director the submitter is set to the API user. Instructions should be available though.
+    1. The submitter and the instructions added to the notes field are visible in the submission's detail view
+    2. Not required - If you login to the Project Director the submitter is set to the API user. Instructions should be available though.
 6. Switch back to the Studio and cancel the workflow in the pending list.
 
 ## Scenario: Cancellation in GlobalLink
