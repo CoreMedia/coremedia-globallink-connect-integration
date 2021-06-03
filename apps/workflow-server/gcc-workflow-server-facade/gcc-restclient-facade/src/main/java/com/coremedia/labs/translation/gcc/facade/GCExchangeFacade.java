@@ -52,10 +52,10 @@ public interface GCExchangeFacade extends AutoCloseable {
    * Submit submission for the given contents uploaded before.
    *
    * @param subject      workflow subject
-   * @param comment      instructions for translators
+   * @param comment      instructions for translators (optional)
    * @param dueDate      due date for the submission; implies the priority when translation jobs should be done
-   * @param workflow     translation workflow to be used, if not the default
-   * @param submitter    name of the submitter
+   * @param workflow     translation workflow to be used, if not the default (optional)
+   * @param submitter    name of the submitter (optional)
    * @param sourceLocale source locale
    * @param contentMap   file IDs (returned by {@link #uploadContent(String, Resource)}) to translate
    *                     with the desired target locales to translate to
