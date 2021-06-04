@@ -182,9 +182,12 @@ class DefaultGCExchangeFacadeTest {
     @DisplayName("Test for successful submission.")
     void happyPath(TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
+      String comment = "Test";
       LocalDateTime dueDateLocal = LocalDateTime.now().plusHours(2);
       ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3);
       ZonedDateTime dueDate = ZonedDateTime.of(dueDateLocal, zoneOffset);
+      String workflow = "pseudo translation";
+      String submitter = "admin";
       Date expectedUtcDueDate = Date.from(dueDateLocal.atOffset(zoneOffset).toInstant());
       Locale sourceLocale = Locale.US;
       Locale targetLocale = Locale.FRANCE;
@@ -196,7 +199,7 @@ class DefaultGCExchangeFacadeTest {
       when(response.getSubmissionId()).thenReturn(expectedSubmissionId);
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        long submissionId = facade.submitSubmission(subject, dueDate, sourceLocale, singletonMap(fileId, singletonList(targetLocale)));
+        long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale)));
 
         assertThat(submissionId).isEqualTo(expectedSubmissionId);
         verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
@@ -215,9 +218,12 @@ class DefaultGCExchangeFacadeTest {
     @DisplayName("Correctly deal with communication errors.")
     void dealWithCommunicationExceptions(TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
+      String comment = "Test";
       LocalDateTime dueDateLocal = LocalDateTime.now().plusHours(2);
       ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3);
       ZonedDateTime dueDate = ZonedDateTime.of(dueDateLocal, zoneOffset);
+      String workflow = "pseudo translation";
+      String submitter = "admin";
       Locale sourceLocale = Locale.US;
       Locale targetLocale = Locale.FRANCE;
       String fileId = "1234-5678";
@@ -225,7 +231,7 @@ class DefaultGCExchangeFacadeTest {
       when(gcExchange.submitSubmission(any())).thenThrow(RuntimeException.class);
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        assertThatThrownBy(() -> facade.submitSubmission(subject, dueDate, sourceLocale, singletonMap(fileId, singletonList(targetLocale))))
+        assertThatThrownBy(() -> facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale))))
                 .isInstanceOf(GCFacadeCommunicationException.class)
                 .hasCauseInstanceOf(RuntimeException.class)
                 .hasMessageContaining(subject)

@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.facade;
 
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.springframework.core.io.Resource;
 
@@ -38,7 +39,7 @@ public interface GCExchangeFacade extends AutoCloseable {
 
   /**
    * Uploads the given content, like for example an XLIFF file. Returns
-   * the file ID which is later required in {@link #submitSubmission(String, ZonedDateTime, Locale, Map)}.
+   * the file ID which is later required in {@link #submitSubmission(String, String, ZonedDateTime, String, String, Locale, Map)}.
    *
    * @param fileName the filename of the resource
    * @param resource the resource to send
@@ -52,7 +53,10 @@ public interface GCExchangeFacade extends AutoCloseable {
    * Submit submission for the given contents uploaded before.
    *
    * @param subject      workflow subject
+   * @param comment      instructions for translators (optional)
    * @param dueDate      due date for the submission; implies the priority when translation jobs should be done
+   * @param workflow     translation workflow to be used, if not the default (optional)
+   * @param submitter    name of the submitter (optional)
    * @param sourceLocale source locale
    * @param contentMap   file IDs (returned by {@link #uploadContent(String, Resource)}) to translate
    *                     with the desired target locales to translate to
@@ -60,7 +64,9 @@ public interface GCExchangeFacade extends AutoCloseable {
    * @throws GCFacadeCommunicationException if submitting the submission failed
    * @see #uploadContent(String, Resource)
    */
-  long submitSubmission(String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap);
+  long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate,
+                        @Nullable String workflow, @Nullable String submitter, Locale sourceLocale,
+                        Map<String, List<Locale>> contentMap) ;
 
   /**
    * Cancel a submission.

@@ -97,9 +97,10 @@ GlobalLink parameters. There can be more settings content items like this with d
 names and values to enable site-specific connections. However, global settings 
 like `dayOffsetForDueDate` have to be defined in `/Settings/Options/Settings/GlobalLink`.
 
-
 Therefore, you need to add a struct to the GlobalLink settings, named
-`globalLink`. Within that struct you need to provide the following 
+`globalLink`. **Make sure to restrict read and write rights of this content to those user groups that actually need access to prevent leaking sensitive information.**
+
+Within that struct you need to provide the following 
 parameters:
 
 * `url` for GCC REST Base URL  (type:`String`)
@@ -116,12 +117,21 @@ parameters:
    Window to lie within the future in days. (type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` number of retries in case of a communication error
     with GlobalLink. By default the value is set to 5. (type:`Integer`)
+* `isSendSubmitter` defines if the name of the editor that started the workflow is send to GlobalLink as part of the submission. (type:`Boolean`). By default, this is disabled to not accidentally leak personal data to third parties.   
+
+By default, the offset is set to `20` within the test data.
+
+In addition to the configuration approach described above, the settings can be
+defined in the properties file of the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). These settings
+will be used as a global default or fallback, if there are no settings defined for the respective site
+in the content. 
+If you only have one GlobalLink connector for all your sites, 
+this approach also provides the advantage of not accidentally leaking the 
+credentials to editors.
 
 You can also define Parameters for testing with the mock facade
 (see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
 
-
-By default the offset is set to `20` within the test data.
 
 ## Questions &amp; Answers
 

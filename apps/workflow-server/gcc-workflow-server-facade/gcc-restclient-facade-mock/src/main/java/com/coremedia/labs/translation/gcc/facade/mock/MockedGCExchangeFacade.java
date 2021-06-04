@@ -4,7 +4,6 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -104,7 +102,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public long submitSubmission(String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+  public long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate, @Nullable String workflow, @Nullable String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
     List<SubmissionContent> collect = contentMap.entrySet().stream()
             .map(e -> new SubmissionContent(
                     e.getKey(),

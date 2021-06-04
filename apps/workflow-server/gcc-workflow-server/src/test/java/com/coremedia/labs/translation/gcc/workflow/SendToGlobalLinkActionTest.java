@@ -96,11 +96,14 @@ class SendToGlobalLinkActionTest {
             .when(gcExchangeFacade)
             .uploadContent(anyString(), any(Resource.class));
 
-    Mockito.doReturn(expectedSubmissionId).when(gcExchangeFacade).submitSubmission(anyString(), any(ZonedDateTime.class), any(Locale.class), anyMap());
+    Mockito.doReturn(expectedSubmissionId).when(gcExchangeFacade).submitSubmission(anyString(), anyString(), any(ZonedDateTime.class), anyString(), anyString(), any(Locale.class), anyMap());
 
     List<Content> derivedContents = singletonList(targetContent);
+    String comment = "Test";
     ZonedDateTime dueDate = ZonedDateTime.of(LocalDateTime.now().plusDays(30), ZoneId.systemDefault());
-    SendToGlobalLinkAction.Parameters params = new SendToGlobalLinkAction.Parameters(displayName, derivedContents, masterContents, dueDate);
+    String workflow = "pseudo translation";
+    String submitter = "admin";
+    SendToGlobalLinkAction.Parameters params = new SendToGlobalLinkAction.Parameters(displayName, comment, derivedContents, masterContents, dueDate, workflow, submitter);
     AtomicReference<String> resultHolder = new AtomicReference<>();
     action.doExecuteGlobalLinkAction(params, resultHolder::set, gcExchangeFacade, new HashMap<>());
     String submissionId = resultHolder.get();
@@ -109,7 +112,7 @@ class SendToGlobalLinkActionTest {
     ArgumentCaptor<Locale> masterLocaleCaptor = ArgumentCaptor.forClass(Locale.class);
 
     Mockito.verify(gcExchangeFacade).uploadContent(anyString(), any(Resource.class));
-    Mockito.verify(gcExchangeFacade).submitSubmission(anyString(), any(ZonedDateTime.class), masterLocaleCaptor.capture(), contentMapCaptor.capture());
+    Mockito.verify(gcExchangeFacade).submitSubmission(anyString(), anyString(), any(ZonedDateTime.class), anyString(), anyString(), masterLocaleCaptor.capture(), contentMapCaptor.capture());
 
     assertThat(uploadedXliff[0])
             .describedAs("XLIFF shall contain all relevant information.")

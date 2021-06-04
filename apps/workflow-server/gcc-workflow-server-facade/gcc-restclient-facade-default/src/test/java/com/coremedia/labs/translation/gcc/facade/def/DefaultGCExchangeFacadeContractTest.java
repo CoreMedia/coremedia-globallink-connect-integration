@@ -221,10 +221,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 testName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
 
@@ -287,10 +288,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 testName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
 
@@ -314,10 +316,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 submissionName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -333,10 +336,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 submissionName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -353,10 +357,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 submissionName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -407,10 +412,11 @@ class DefaultGCExchangeFacadeContractTest {
       Map<String, List<Locale>> contentMap = uploadContents(facade, testName, masterLocale, targetLocales);
       long submissionId = facade.submitSubmission(
               testName,
+              null,
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              masterLocale,
-              contentMap
-      );
+              null,
+              "admin",
+              masterLocale, contentMap);
 
       assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
 

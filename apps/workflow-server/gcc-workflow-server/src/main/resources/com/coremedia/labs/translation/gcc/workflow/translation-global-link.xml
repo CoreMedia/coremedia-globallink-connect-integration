@@ -84,6 +84,8 @@
     <Variable name="globalLinkSubmissionStatus" type="String"/>
     <!-- Date that represents dueDate for the globalLink API -->
     <Variable name="globalLinkDueDate" type="Date"/>
+    <!-- Which translation workflow is used for the submission, if not the default -->
+    <Variable name="globalLinkWorkflow" type="String"/>
     <!-- set to true if the editor requested cancellation of the translation request -->
     <Variable name="cancelRequested" type="Boolean"><Boolean value="false"/></Variable>
     <!-- set to true after a cancellation request was sent to the translation service -->
@@ -97,6 +99,7 @@
       <Writes variable="masterContentObjects"/>
       <Writes variable="targetSiteId"/>
       <Writes variable="globalLinkDueDate"/>
+      <Writes variable="globalLinkWorkflow"/>
       <Writes variable="cancellationAllowed"/>
       <Writes variable="placeholderPreparationStrategy"/>
     </InitialAssignment>
@@ -111,6 +114,7 @@
       <Writes variable="globalLinkSubmissionId"/>
       <Writes variable="globalLinkSubmissionStatus"/>
       <Writes variable="globalLinkDueDate"/>
+      <Writes variable="globalLinkWorkflow"/>
       <Writes variable="workflowActionIssues"/>
       <Writes variable="remainingAutomaticRetries"/>
       <Writes variable="cancelRequested"/>
@@ -177,11 +181,14 @@
       </Guard>
       <Action class="com.coremedia.labs.translation.gcc.workflow.SendToGlobalLinkAction"
               subjectVariable="subject"
+              commentVariable="comment"
+              performerVariable="performer"
               derivedContentsVariable="derivedContents"
               masterContentObjectsVariable="masterContentObjects"
               issuesVariable="workflowActionIssues"
               resultVariable="globalLinkSubmissionId"
               globalLinkDueDateVariable="globalLinkDueDate"
+              globalLinkWorkflowVariable="globalLinkWorkflow"
               remainingAutomaticRetriesVariable="remainingAutomaticRetries"/>
       <!-- wait 180 seconds before retrying in case of error -->
       <Action class="AssignVariable" resultVariable="sendTranslationRequestRetryDelay"><Timer value="180"/></Action>
