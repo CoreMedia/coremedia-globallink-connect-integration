@@ -7,6 +7,7 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.springframework.core.io.Resource;
 
@@ -63,7 +64,7 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public long submitSubmission(String subject, String comment, ZonedDateTime dueDate, String workflow, String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+  public long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate, @Nullable String workflow, @Nullable String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
     throw createDisabledException();
   }
 
