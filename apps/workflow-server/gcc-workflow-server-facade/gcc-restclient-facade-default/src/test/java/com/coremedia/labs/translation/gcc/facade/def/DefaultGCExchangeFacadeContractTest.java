@@ -173,7 +173,7 @@ class DefaultGCExchangeFacadeContractTest {
         GCExchange delegate = facade.getDelegate();
 
         long contentCountBefore = getTotalRecordsCount(delegate);
-        String fileId = facade.uploadContent(fileName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        String fileId = facade.uploadContent(fileName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
 
         assertThat(fileId).isNotEmpty();
 
@@ -218,7 +218,7 @@ class DefaultGCExchangeFacadeContractTest {
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
         GCExchange delegate = facade.getDelegate();
 
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
         long submissionId = facade.submitSubmission(
                 testName,
                 null,
@@ -285,7 +285,7 @@ class DefaultGCExchangeFacadeContractTest {
       String testName = testInfo.getDisplayName();
 
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
         long submissionId = facade.submitSubmission(
                 testName,
                 null,
@@ -313,7 +313,7 @@ class DefaultGCExchangeFacadeContractTest {
       String submissionName = padEnd(testName, 150, 'a', 'z');
 
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
         long submissionId = facade.submitSubmission(
                 submissionName,
                 null,
@@ -333,7 +333,7 @@ class DefaultGCExchangeFacadeContractTest {
       String submissionName = padEnd(testName, 200, 'a', 'z');
 
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
         long submissionId = facade.submitSubmission(
                 submissionName,
                 null,
@@ -354,7 +354,7 @@ class DefaultGCExchangeFacadeContractTest {
       String submissionName = padEnd(testName, 150, '\u2190', '\u21FF');
 
       try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
+        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
         long submissionId = facade.submitSubmission(
                 submissionName,
                 null,
@@ -485,7 +485,7 @@ class DefaultGCExchangeFacadeContractTest {
     for (Locale targetLocale : targetLocales) {
       String xliffContent = String.format(XLIFF_CONTENT_PATTERN, masterLocale.toLanguageTag(), targetLocale.toLanguageTag());
       String fileName = String.format("%s_%s2%s.xliff", testName, masterLocale.toLanguageTag(), targetLocale.toLanguageTag());
-      String fileId = facade.uploadContent(fileName, new ByteArrayResource(xliffContent.getBytes(StandardCharsets.UTF_8)));
+      String fileId = facade.uploadContent(fileName, new ByteArrayResource(xliffContent.getBytes(StandardCharsets.UTF_8)), masterLocale);
       contentMapBuilder.put(fileId, Collections.singletonList(targetLocale));
     }
 

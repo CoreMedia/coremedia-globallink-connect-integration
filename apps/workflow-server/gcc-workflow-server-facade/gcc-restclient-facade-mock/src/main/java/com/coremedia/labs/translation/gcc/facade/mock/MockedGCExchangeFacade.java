@@ -94,7 +94,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public String uploadContent(String fileName, Resource resource) {
+  public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
     if (mockError == MockGCExchangeFacadeProvider.MockError.UPLOAD_COMMUNICATION) {
       throw new GCFacadeCommunicationException("Exception to test upload communication errors with translation service.");
     }

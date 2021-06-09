@@ -49,7 +49,7 @@ class MockedGCExchangeFacadeTest {
       // Let the tasks proceed faster.
       facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
 
-      String fileId = facade.uploadContent(testName, xliffResource);
+      String fileId = facade.uploadContent(testName, xliffResource, null);
       long submissionId = facade.submitSubmission(
               testName,
               null,
@@ -109,7 +109,7 @@ class MockedGCExchangeFacadeTest {
       // Let the tasks proceed faster.
       facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
 
-      String fileId = facade.uploadContent(testName, xliffResource);
+      String fileId = facade.uploadContent(testName, xliffResource, Locale.US);
       long submissionId = facade.submitSubmission(
               "states:other,cancelled",
               null,

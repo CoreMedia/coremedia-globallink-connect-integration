@@ -264,7 +264,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
       Path xliffPath = exportToXliff(sourceLocale, entry);
       String fileName = sourceLocale.toLanguageTag() + '2' + targetLocale + ".xliff";
       try {
-        String fileId = gccSession.uploadContent(fileName, new FileSystemResource(xliffPath));
+        String fileId = gccSession.uploadContent(fileName, new FileSystemResource(xliffPath), sourceLocale);
         builder.put(fileId, Collections.singletonList(entry.getKey()));
         LOG.debug(
                 "submitSubmission/Upload: Succeeded for {} translation items, target locale {}. Uploaded as fileId {} to GCC.",
