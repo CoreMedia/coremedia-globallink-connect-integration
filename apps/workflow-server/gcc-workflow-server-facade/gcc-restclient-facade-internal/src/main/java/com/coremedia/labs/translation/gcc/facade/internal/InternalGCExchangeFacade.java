@@ -4,6 +4,7 @@ import com.coremedia.blueprint.translation.TranslationService;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -86,7 +88,7 @@ public final class InternalGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public long submitSubmission(String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+  public long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate, @Nullable String workflow, @Nullable String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
     List<SubmissionContent> collect = contentMap.entrySet().stream()
             .map(e -> new SubmissionContent(
                     e.getKey(),
@@ -139,8 +141,8 @@ public final class InternalGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public GCSubmissionState getSubmissionState(long submissionId) {
-    return submissionStore.getSubmissionState(submissionId);
+  public GCSubmissionModel getSubmission(long submissionId) {
+    return new GCSubmissionModel(submissionId, Collections.singletonList(Long.toString(submissionId)), submissionStore.getSubmissionState(submissionId));
   }
 
 }

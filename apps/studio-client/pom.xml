@@ -38,6 +38,7 @@
         <version>${jangaroo.version}</version> <!-- explicit version for IDEA! -->
         <extensions>true</extensions>
         <configuration>
+          <extNamespace>com.coremedia.labs.translation.gcc.studio</extNamespace>
           <namespaces>
             <namespace>
               <uri>exml:com.coremedia.labs.translation.gcc.studio.config</uri>
