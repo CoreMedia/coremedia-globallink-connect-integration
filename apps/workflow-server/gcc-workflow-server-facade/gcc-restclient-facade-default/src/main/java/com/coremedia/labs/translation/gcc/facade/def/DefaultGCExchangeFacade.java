@@ -8,6 +8,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
@@ -86,6 +87,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    */
   private static final String USER_AGENT = lookup().lookupClass().getPackage().getName();
 
+  private final Boolean isSendSubmitter;
   private final GCExchange delegate;
   private final Supplier<String> fileTypeSupplier;
 
@@ -101,6 +103,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String userName = requireNonNullConfig(config, GCConfigProperty.KEY_USERNAME);
     String password = requireNonNullConfig(config, GCConfigProperty.KEY_PASSWORD);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
+    this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
     LOG.info("Will connect to GCC endpoint: {}", apiUrl);
     try {
       delegate = new GCExchange(new GCConfig(
@@ -122,6 +125,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   DefaultGCExchangeFacade(GCExchange delegate, String fileType) {
     this.delegate = delegate;
     this.fileTypeSupplier = () -> fileType;
+    this.isSendSubmitter = false;
   }
 
   private static String requireNonNullConfig(Map<String, Object> config, String key) {
@@ -166,7 +170,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public long submitSubmission(@Nullable String subject, ZonedDateTime dueDate, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+  public long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate,
+                               @Nullable String workflow, @Nullable String submitter, Locale sourceLocale,
+                               Map<String, List<Locale>> contentMap) {
 
     List<ContentLocales> contentLocalesList = contentMap.entrySet().stream()
             .map(e ->
@@ -181,6 +187,15 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             sourceLocale.toLanguageTag(),
             contentLocalesList
     );
+    if (comment != null) {
+      request.setInstructions(comment);
+    }
+    if (isSendSubmitter && submitter != null) {
+      request.setSubmitter(submitter);
+    }
+    if (workflow != null) {
+      request.setWorkflow(workflow);
+    }
 
     try {
       SubmissionSubmit.SubmissionSubmitResponseData response = delegate.submitSubmission(request);
@@ -458,11 +473,11 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public GCSubmissionState getSubmissionState(long submissionId) {
+  public GCSubmissionModel getSubmission(long submissionId) {
     GCSubmission submission = getSubmissionById(submissionId);
     if (submission == null) {
       LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
-      return GCSubmissionState.OTHER;
+      return new GCSubmissionModel(submissionId, Collections.emptyList());
     }
     GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
     // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation
@@ -478,12 +493,13 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
        * results.
        */
       if (areAllSubmissionTasksDone(submissionId)) {
-        return GCSubmissionState.CANCELLATION_CONFIRMED;
+        state = GCSubmissionState.CANCELLATION_CONFIRMED;
+      } else {
+        // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
+        state = GCSubmissionState.CANCELLED;
       }
-      // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
-      return GCSubmissionState.CANCELLED;
     }
-    return state;
+    return new GCSubmissionModel(submissionId, submission.getPdSubmissionIds(), state);
   }
 
   /**

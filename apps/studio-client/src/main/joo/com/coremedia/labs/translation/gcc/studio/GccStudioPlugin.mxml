@@ -55,7 +55,7 @@
           <collab:additionalFields>
             <collab:WorkflowTextDisplayField
                     fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_key')}"
-                    key="globalLinkSubmissionId" transformer="{transformSubmissionId}"/>
+                    key="globalLinkPdSubmissionIds" transformer="{transformSubmissionId}"/>
             <collab:WorkflowTextDisplayField
                     fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_status_key')}"
                     key="globalLinkSubmissionStatus" transformer="{transformSubmissionStatus}"/>
@@ -88,7 +88,7 @@
           <collab:additionalFields>
             <collab:WorkflowTextDisplayField
                     fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_key')}"
-                    key="globalLinkSubmissionId" transformer="{transformSubmissionId}"/>
+                    key="globalLinkPdSubmissionIds" transformer="{transformSubmissionId}"/>
             <collab:WorkflowTextDisplayField
                     fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_status_key')}"
                     key="globalLinkSubmissionStatus" transformer="{transformSubmissionStatus}"/>
@@ -113,7 +113,7 @@
           <collab:additionalFields>
             <collab:WorkflowTextDisplayField
                     fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_id_key')}"
-                    key="globalLinkSubmissionId" transformer="{transformSubmissionId}"/>
+                    key="globalLinkPdSubmissionIds" transformer="{transformSubmissionId}"/>
             <collab:WorkflowTextDisplayField
                     fieldLabel="{ResourceManager.getInstance().getString('com.coremedia.labs.translation.gcc.studio.GccProcessDefinitions', 'TranslationGlobalLink_submission_status_key')}"
                     key="globalLinkSubmissionStatus" transformer="{transformSubmissionStatus}"/>

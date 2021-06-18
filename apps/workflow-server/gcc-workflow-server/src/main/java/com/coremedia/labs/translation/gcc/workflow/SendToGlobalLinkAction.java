@@ -1,6 +1,5 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentObject;
 import com.coremedia.cap.multisite.ContentObjectSiteAspect;
@@ -9,6 +8,8 @@ import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.translate.xliff.XliffExporter;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.translate.item.ContentToTranslateItemTransformer;
 import com.coremedia.translate.item.TranslateItem;
 import com.google.common.collect.ImmutableMap;
@@ -32,10 +33,10 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.XLIFF_EXPORT_FAILURE;
 import static com.coremedia.cap.translate.xliff.XliffExportOptions.EmptyOption.EMPTY_IGNORE;
 import static com.coremedia.cap.translate.xliff.XliffExportOptions.TargetOption.TARGET_SOURCE;
 import static com.coremedia.cap.translate.xliff.XliffExportOptions.xliffExportOptions;
+import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.XLIFF_EXPORT_FAILURE;
 import static com.coremedia.translate.item.TransformStrategy.ITEM_PER_TARGET;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.stream.Collectors.groupingBy;
@@ -51,7 +52,10 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   private String derivedContentsVariable;
   private String subjectVariable;
+  private String commentVariable;
+  private String performerVariable;
   private String globalLinkDueDateVariable;
+  private String globalLinkWorkflowVariable;
 
   // --- construct and configure ----------------------------------------------------------------------
 
@@ -85,6 +89,28 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   }
 
   /**
+   * Sets the variable to read the comment/instructions of the translation workflow from.
+   * This will be used for the translation submission accordingly.
+   *
+   * @param commentVariable subject variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setCommentVariable(String commentVariable) {
+    this.commentVariable = commentVariable;
+  }
+
+  /**
+   * Sets the variable to read the performer of the translation workflow from.
+   * This will be used to add the name of the submitter to the translation submission (if enabled=.
+   *
+   * @param performerVariable performer variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setPerformerVariable(String performerVariable) {
+    this.performerVariable = performerVariable;
+  }
+
+  /**
    * Sets the variable to read the dueDate, that will be sent to GlobalLink.
    *
    * @param globalLinkDueDateVariable subject variable name
@@ -94,6 +120,16 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     this.globalLinkDueDateVariable = globalLinkDueDateVariable;
   }
 
+  /**
+   * Sets the variable to define, which translation workflow is used on GlobalLink side.
+   *
+   * @param globalLinkWorkflowVariable workflow variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setGlobalLinkWorkflowVariable(String globalLinkWorkflowVariable) {
+    this.globalLinkWorkflowVariable = globalLinkWorkflowVariable;
+  }
+
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
 
   @Override
@@ -101,11 +137,17 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Process process = task.getContainingProcess();
 
     String subject = process.getString(subjectVariable);
+    String comment = commentVariable != null ? process.getString(commentVariable) : null;
     List<Content> derivedContents = process.getLinks(derivedContentsVariable);
     List<ContentObject> masterContentObjects = process.getLinksAndVersions(getMasterContentObjectsVariable());
     Calendar date = process.getDate(globalLinkDueDateVariable);
     ZonedDateTime dueDate = ZonedDateTime.ofInstant(date.toInstant(), date.getTimeZone().toZoneId());
-    return new Parameters(subject, derivedContents, masterContentObjects, dueDate);
+    String workflow = globalLinkWorkflowVariable != null ? process.getString(globalLinkWorkflowVariable) : null;
+    String submitterName = null;
+    if (performerVariable != null) {
+      submitterName = process.getUser(performerVariable).getName();
+    }
+    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitterName);
   }
 
   /**
@@ -135,7 +177,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Locale firstMasterLocale = findFirstMasterLocale(masterContentObjects, localeMapper)
             .orElseThrow(() -> new IllegalStateException("Unable to identify master locale."));
 
-    String submissionId = submitSubmission(facade, params.subject, firstMasterLocale, translationItemsByLocale, params.dueDate);
+    String submissionId = submitSubmission(facade, params.subject, params.comment, firstMasterLocale, translationItemsByLocale, params.dueDate, params.workflow, params.submitter);
     resultConsumer.accept(submissionId);
   }
 
@@ -189,23 +231,27 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   }
 
   /**
-   * Create a submission for the given translation items.
+   * Create a submission for the given translation items and return its unique identifier.
    *
    * @param facade                   the facade to communicate with GlobalLink
    * @param subject                  subject, will be part of the submission name
+   * @param comment                  comment, will be the instructions of the submission
    * @param sourceLocale             locale of master site
    * @param translationItemsByLocale translation items grouped by target locale
    * @param dueDate                  date that will be sent as 'dueDate' parameter
+   * @param workflow                 workflow to be used for the translation, if not the default
+   * @param submitter                username of the submitter
    * @return the result that contains the ID of the created submission or an error result
+   * @throws GCFacadeCommunicationException if submitting the submission failed
    */
-  private String submitSubmission(GCExchangeFacade facade, String subject,
+  protected String submitSubmission(GCExchangeFacade facade, String subject, String comment,
                                   Locale sourceLocale,
                                   Map<Locale, List<TranslateItem>> translationItemsByLocale,
-                                  ZonedDateTime dueDate) {
+                                  ZonedDateTime dueDate, String workflow, String submitter) {
 
     Map<String, List<Locale>> xliffFileIds = uploadContents(facade, sourceLocale, translationItemsByLocale);
 
-    long submissionId = facade.submitSubmission(subject, dueDate, sourceLocale, xliffFileIds);
+    long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, xliffFileIds);
 
     LOG.debug("Submitted submission {} for {} files to GCC.", submissionId, xliffFileIds.size());
     return String.valueOf(submissionId);
@@ -250,18 +296,27 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   static final class Parameters {
     final String subject;
+    final String comment;
     final Collection<Content> derivedContents;
     final Collection<ContentObject> masterContentObjects;
     final ZonedDateTime dueDate;
+    final String workflow;
+    final String submitter;
 
     Parameters(String subject,
+               String comment,
                Collection<Content> derivedContents,
                Collection<ContentObject> masterContentObjects,
-               ZonedDateTime dueDate) {
+               ZonedDateTime dueDate,
+               String workflow,
+               String submitter) {
       this.subject = subject;
+      this.comment = comment;
       this.derivedContents = derivedContents;
       this.masterContentObjects = masterContentObjects;
       this.dueDate = dueDate;
+      this.workflow = workflow;
+      this.submitter = submitter;
     }
   }
 

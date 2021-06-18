@@ -395,7 +395,12 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
 
     Content siteRootDocument = site.getSiteRootDocument();
-    return getGccSettings(siteRootDocument);
+    Map<String, Object> rootDocumentSettings = getGccSettings(siteRootDocument);
+    if (!rootDocumentSettings.isEmpty()) {
+      return rootDocumentSettings;
+    }
+
+    return getSpringContext().getBean("gccConfigurationProperties", Map.class);
   }
 
   private static Map<String, Object> getGccSettings(Content content) {

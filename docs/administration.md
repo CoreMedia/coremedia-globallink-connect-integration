@@ -91,12 +91,16 @@ that the integration between both systems runs smoothly:
 
 ## Configuring GlobalLink Connection Settings
 
-After you have created your GlobalLink settings and linked them to your site,
-you need to configure your personal GlobalLink parameters.
-
+After you have created your GlobalLink settings at `/Settings/Options/Settings/GlobalLink` 
+and linked them to your site, you need to configure your personal 
+GlobalLink parameters. There can be more settings content items like this with different
+names and values to enable site-specific connections. However, global settings 
+like `dayOffsetForDueDate` have to be defined in `/Settings/Options/Settings/GlobalLink`.
 
 Therefore, you need to add a struct to the GlobalLink settings, named
-`globalLink`. Within that struct you need to provide the following 
+`globalLink`. **Make sure to restrict read and write rights of this content to those user groups that actually need access to prevent leaking sensitive information.**
+
+Within that struct you need to provide the following 
 parameters:
 
 * `url` for GCC REST Base URL  (type:`String`)
@@ -108,17 +112,26 @@ parameters:
     to be used by your connector. (type:`String`)
 * `type` (_optional_) determines which facade implementation will be used
     (see [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)). (type:`String`)
-* `dayOffsetForDueDate` set the default value of the `Due Date`, that is set for
-    your GlobalLink translation. The parameter defines the offset for the
-    `Due Date` to lie within the future in days. (type:`Integer`)
+* `dayOffsetForDueDate` defines the offset for the
+   `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
+   Window to lie within the future in days. (type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` number of retries in case of a communication error
     with GlobalLink. By default the value is set to 5. (type:`Integer`)
+* `isSendSubmitter` defines if the name of the editor that started the workflow is send to GlobalLink as part of the submission. (type:`Boolean`). By default, this is disabled to not accidentally leak personal data to third parties.   
+
+By default, the offset is set to `20` within the test data.
+
+In addition to the configuration approach described above, the settings can be
+defined in the properties file of the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). These settings
+will be used as a global default or fallback, if there are no settings defined for the respective site
+in the content. 
+If you only have one GlobalLink connector for all your sites, 
+this approach also provides the advantage of not accidentally leaking the 
+credentials to editors.
 
 You can also define Parameters for testing with the mock facade
 (see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
 
-
-By default the offset is set to `20` within the test data.
 
 ## Questions &amp; Answers
 

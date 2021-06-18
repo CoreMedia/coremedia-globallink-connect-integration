@@ -221,10 +221,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 testName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
 
@@ -234,7 +235,7 @@ class DefaultGCExchangeFacadeContractTest {
                 .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
                 .pollDelay(1, TimeUnit.SECONDS)
                 .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId))
+                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
                         .isNotIn(
                                 GCSubmissionState.OTHER,
                                 GCSubmissionState.IN_PRE_PROCESS
@@ -251,7 +252,7 @@ class DefaultGCExchangeFacadeContractTest {
                 .atMost(2, TimeUnit.MINUTES)
                 .pollDelay(1, TimeUnit.SECONDS)
                 .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isEqualTo(GCSubmissionState.CANCELLED));
+                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
 
         Awaitility.await("Wait until cancellation got confirmed for submission.")
                 .atMost(2, TimeUnit.MINUTES)
@@ -263,7 +264,7 @@ class DefaultGCExchangeFacadeContractTest {
                   facade.downloadCompletedTasks(submissionId, new TrueTaskDataConsumer());
                   facade.confirmCancelledTasks(submissionId);
                 })
-                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
+                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
       }
     }
   }
@@ -287,10 +288,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 testName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
 
@@ -300,7 +302,7 @@ class DefaultGCExchangeFacadeContractTest {
                 .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
                 .pollDelay(1, TimeUnit.SECONDS)
                 .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isNotEqualTo(GCSubmissionState.OTHER));
+                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
       }
     }
 
@@ -314,10 +316,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 submissionName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -333,10 +336,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 submissionName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -353,10 +357,11 @@ class DefaultGCExchangeFacadeContractTest {
         String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)));
         long submissionId = facade.submitSubmission(
                 submissionName,
+                null,
                 ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                Locale.US,
-                singletonMap(fileId, singletonList(Locale.GERMANY))
-        );
+                null,
+                "admin",
+                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
         assertThat(submissionId).isGreaterThan(0L);
       }
@@ -407,10 +412,11 @@ class DefaultGCExchangeFacadeContractTest {
       Map<String, List<Locale>> contentMap = uploadContents(facade, testName, masterLocale, targetLocales);
       long submissionId = facade.submitSubmission(
               testName,
+              null,
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              masterLocale,
-              contentMap
-      );
+              null,
+              "admin",
+              masterLocale, contentMap);
 
       assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
 
@@ -491,7 +497,7 @@ class DefaultGCExchangeFacadeContractTest {
             .atMost(timeout, TimeUnit.MINUTES)
             .pollDelay(1, TimeUnit.MINUTES)
             .pollInterval(1, TimeUnit.MINUTES)
-            .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmissionState(submissionId), condition.getElapsedTimeInMS() / 1000L))
-            .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isEqualTo(stateToReach));
+            .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
+            .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(stateToReach));
   }
 }

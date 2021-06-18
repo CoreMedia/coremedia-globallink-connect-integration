@@ -1,6 +1,42 @@
 Changelog
 ================================================================================
 
+2104
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to reflect changes to content validators in CoreMedia Content Cloud 10.2104.1.
+
+* Added the possibility to configure the connection to GlobalLink in properties file on the server with [CoreMedia/coremedia-globallink-connect-integration#25](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/25) - Thank you @mtommila for suggesting this change and providing a Pull Request.
+
+* The notes from the Start Translation Workflow Window are now sent as instructions to GlobalLink. Optionally, the submitter's name can be added to the submission. The workflow is also prepared to take an optional string that represents the type of the workflow on the GlobalLink side. This still requires the UI to be implemented in Studio. - [CoreMedia/coremedia-globallink-connect-integration#26](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/26) - Thank you @mtommila for suggesting this change and providing a Pull Request.
+
+* Fixed concurrency issue of `DefaultGCExchangeFacadeSessionProvider` which could cause `java.util.NoSuchElementExceptions`  [CoreMedia/coremedia-globallink-connect-integration#33](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/33)
+
+2101
+--------------------------------------------------------------------------------
+### General Notes
+
+* This release requires at least CoreMedia Content Cloud 10.2101.3.
+
+### Main Changes
+
+* Updated validators and validation configuration to align with improvements in CoreMedia Content Cloud 10.2101. 
+
+* Internal API `ILocalesService` was moved and renamed in 2101 AEP. Updated usages. There is no public API for this functionality yet.
+
+* Added support for bulk cancellation of workflows
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#18](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#23](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
+
+    The API of the `GCExchangeFacade` was updated to also return the submission identifier 
+    shown in GlobalLink Project Director and Connect Cloud. If you had accessed the
+    the submission state through `GCExchangeFacade.getSubmissionState(submissionId)`, you have
+    to migrate to `GCExchangeFacade.getSubmission(submissionId).getState()`.
+
 2010
 --------------------------------------------------------------------------------
 
@@ -11,6 +47,10 @@ Changelog
 * Replaced usage of internal API usage of `MessageBoxInternal` with newly introduced public API `MessageBoxUtil`.
 
 * Internal API `LocaleService` was moved and renamed in 2010 AEP. Updated usages. There is no public API for this functionality yet.
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#20](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/20)
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#21](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/21)
 
 2007
 --------------------------------------------------------------------------------

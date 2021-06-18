@@ -52,10 +52,11 @@ class MockedGCExchangeFacadeTest {
       String fileId = facade.uploadContent(testName, xliffResource);
       long submissionId = facade.submitSubmission(
               testName,
+              null,
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              Locale.US,
-              singletonMap(fileId, singletonList(Locale.ROOT))
-      );
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
       assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED);
 
@@ -65,7 +66,7 @@ class MockedGCExchangeFacadeTest {
 
       LOG.info("XLIFF Result: {}", xliffResult);
 
-      Assertions.assertThat(facade.getSubmissionState(submissionId)).isEqualTo(GCSubmissionState.DELIVERED);
+      Assertions.assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.DELIVERED);
       assertThat(xliffResult)
         .describedAs("Some pseudo-translation should have been performed.")
         .doesNotContain(PRE_POPULATED_TARGET)
@@ -111,10 +112,11 @@ class MockedGCExchangeFacadeTest {
       String fileId = facade.uploadContent(testName, xliffResource);
       long submissionId = facade.submitSubmission(
               "states:other,cancelled",
+              null,
               ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              Locale.US,
-              singletonMap(fileId, singletonList(Locale.ROOT))
-      );
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
       assertSubmissionReachesState(facade, submissionId, GCSubmissionState.CANCELLED);
     }
@@ -132,8 +134,8 @@ class MockedGCExchangeFacadeTest {
       .atMost(TRANSLATION_TIMEOUT_MINUTES, TimeUnit.MINUTES)
       .pollDelay(1, TimeUnit.SECONDS)
       .pollInterval(1, TimeUnit.SECONDS)
-      .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmissionState(submissionId), condition.getElapsedTimeInMS() / 1000L))
-      .untilAsserted(() -> assertThat(facade.getSubmissionState(submissionId)).isEqualTo(desiredState));
+      .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
+      .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(desiredState));
   }
 
 }

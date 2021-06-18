@@ -4,8 +4,11 @@ import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -20,10 +23,11 @@ public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeF
 
   private static final GCExchangeFacadeSessionProvider INSTANCE = new DefaultGCExchangeFacadeSessionProvider();
 
-  private final ServiceLoader<GCExchangeFacadeProvider> facadeProviders;
+  private final List<GCExchangeFacadeProvider> facadeProviders;
 
   private DefaultGCExchangeFacadeSessionProvider() {
-    facadeProviders = ServiceLoader.load(GCExchangeFacadeProvider.class);
+    ServiceLoader<GCExchangeFacadeProvider> loader = ServiceLoader.load(GCExchangeFacadeProvider.class);
+    facadeProviders = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toUnmodifiableList());
   }
 
   /**

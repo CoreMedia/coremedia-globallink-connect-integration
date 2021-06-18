@@ -30,6 +30,7 @@ _Localization workflows_.
 In the _Start Localization Workflow_ window, select the workflow type
 _Translation with GlobalLink_, set a self-describing name, a due date, drop the
 to-be-translated content, and set the target locales.
+The notes are sent as instructions for the translators.
 
 ![GCC Select](img/gcc-select-type.png)
 

@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.workflow.Process;
@@ -38,6 +39,7 @@ public class CancelTranslationGlobalLinkAction extends
   private static final int HTTP_OK = 200;
 
   private String globalLinkSubmissionIdVariable;
+  private String globalLinkPdSubmissionIdsVariable;
   private String globalLinkSubmissionStatusVariable;
   private String cancelledVariable;
   private String completedLocalesVariable;
@@ -59,6 +61,17 @@ public class CancelTranslationGlobalLinkAction extends
   @SuppressWarnings("unused") // set from workflow definition
   public void setGlobalLinkSubmissionIdVariable(String globalLinkSubmissionIdVariable) {
     this.globalLinkSubmissionIdVariable = requireNonNull(globalLinkSubmissionIdVariable);
+  }
+
+  /**
+   * Sets the name of the process variable that holds the submission IDs shown to editors in Studio and
+   * in the GlobalLink tools.
+   *
+   * @param globalLinkPdSubmissionIdsVariable string workflow variable name
+   */
+  @SuppressWarnings("unused") // set from workflow definition
+  public void setGlobalLinkPdSubmissionIdsVariable(String globalLinkPdSubmissionIdsVariable) {
+    this.globalLinkPdSubmissionIdsVariable = requireNonNull(globalLinkPdSubmissionIdsVariable);
   }
 
   /**
@@ -111,10 +124,12 @@ public class CancelTranslationGlobalLinkAction extends
   void doExecuteGlobalLinkAction(Parameters params, Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
     long submissionId = params.submissionId;
-    GCSubmissionState submissionState = facade.getSubmissionState(submissionId);
+    GCSubmissionModel submission = facade.getSubmission(submissionId);
+    GCSubmissionState submissionState = submission.getState();
     boolean cancelled = params.cancelled;
 
-    Result result = new Result(submissionState, cancelled, params.completedLocales);
+    // Also store the PD submission ids - potentially they were not available before
+    Result result = new Result(submissionState, cancelled, params.completedLocales, submission.getPdSubmissionIds());
     resultConsumer.accept(result);
 
     // nothing to do, if submission is already cancelled and confirmed or delivered
@@ -128,7 +143,7 @@ public class CancelTranslationGlobalLinkAction extends
     // the workflow doesn't proceed with "ReviewDeliveredTranslation" when the submission is marked as delivered.
     if (submissionState == COMPLETED) {
       facade.confirmCompletedTasks(submissionId, result.completedLocales);
-      result.submissionState = facade.getSubmissionState(submissionId);
+      result.submissionState = facade.getSubmission(submissionId).getState();
       result.cancelled = true;
       return;
     }
@@ -136,13 +151,13 @@ public class CancelTranslationGlobalLinkAction extends
     // not yet cancelled -> cancel
     if (!cancelled && submissionState != CANCELLED) {
       result.cancelled = cancel(facade, submissionId, issues);
-      result.submissionState = facade.getSubmissionState(submissionId);
+      result.submissionState = facade.getSubmission(submissionId).getState();
     }
 
     // cancelled but not yet confirmed -> confirm
     if (result.submissionState == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
-      result.submissionState = facade.getSubmissionState(submissionId);
+      result.submissionState = facade.getSubmission(submissionId).getState();
     }
   }
 
@@ -152,6 +167,7 @@ public class CancelTranslationGlobalLinkAction extends
     Process process = task.getContainingProcess();
     process.set(globalLinkSubmissionStatusVariable, result.submissionState.toString());
     process.set(cancelledVariable, result.cancelled);
+    process.set(globalLinkPdSubmissionIdsVariable, result.pdSubmissionIds);
 
     List<String> completedLocalesStringList = result.completedLocales.stream()
             .map(Locale::toLanguageTag)
@@ -191,11 +207,13 @@ public class CancelTranslationGlobalLinkAction extends
     GCSubmissionState submissionState;
     boolean cancelled;
     final Set<Locale> completedLocales;
+    final List<String> pdSubmissionIds;
 
-    Result(GCSubmissionState submissionState, boolean cancelled, Set<Locale> completedLocales) {
+    Result(GCSubmissionState submissionState, boolean cancelled, Set<Locale> completedLocales, List<String> pdSubmissionIds) {
       this.submissionState = submissionState;
       this.cancelled = cancelled;
       this.completedLocales = completedLocales;
+      this.pdSubmissionIds = pdSubmissionIds;
     }
   }
 }
