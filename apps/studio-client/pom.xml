@@ -42,7 +42,6 @@
     <dependency>
       <groupId>net.jangaroo</groupId>
       <artifactId>ext-as</artifactId>
-      <version>7.2.0-4.1.0-alpha-1</version>
       <type>swc</type>
     </dependency>
     <dependency>
