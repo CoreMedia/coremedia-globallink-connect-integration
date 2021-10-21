@@ -1,5 +1,5 @@
 
-Lists of 21 third-party dependencies.
+Lists of 22 third-party dependencies.
      (Eclipse Public License - v 1.0) (GNU Lesser General Public License) Logback Classic Module (ch.qos.logback:logback-classic:1.2.3 - http://logback.qos.ch/logback-classic)
      (GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1) SpotBugs Annotations (com.github.spotbugs:spotbugs-annotations:3.1.5 - https://spotbugs.github.io/)
      (Apache 2.0) Gson (com.google.code.gson:gson:2.8.6 - https://github.com/google/gson/gson)
@@ -7,6 +7,7 @@ Lists of 21 third-party dependencies.
      (EDL 1.0) Jakarta Activation (com.sun.activation:jakarta.activation:1.2.2 - https://github.com/eclipse-ee4j/jaf/jakarta.activation)
      (The Apache Software License, Version 2.0) globallink-connect-restclient (com.translations.globallink:gcc-restclient:2.4.0 - http://www.translations.com/globallink/products/globallink_connect.html)
      (Apache License, Version 2.0) Apache Commons IO (commons-io:commons-io:2.8.0 - https://commons.apache.org/proper/commons-io/)
+     (Unknown license) ext-as (net.jangaroo:ext-as:7.2.0-4.1.1 - http://nexus.sonatype.org/oss-repository-hosting.html/ext-as)
      (Apache License, Version 2.0) AssertJ fluent assertions (org.assertj:assertj-core:3.16.1 - http://assertj.org/assertj-core)
      (Apache 2.0) Awaitility (org.awaitility:awaitility:3.1.2 - http://awaitility.org)
      (The MIT License) Checker Qual (org.checkerframework:checker-qual:3.7.1 - https://checkerframework.org)
@@ -16,8 +17,8 @@ Lists of 21 third-party dependencies.
      (The MIT License) mockito-core (org.mockito:mockito-core:3.5.7 - https://github.com/mockito/mockito)
      (The MIT License) mockito-junit-jupiter (org.mockito:mockito-junit-jupiter:3.5.7 - https://github.com/mockito/mockito)
      (MIT License) SLF4J API Module (org.slf4j:slf4j-api:1.7.30 - http://www.slf4j.org)
-     (Apache License, Version 2.0) Spring Beans (org.springframework:spring-beans:5.2.13.RELEASE - https://github.com/spring-projects/spring-framework)
-     (Apache License, Version 2.0) Spring Context (org.springframework:spring-context:5.2.13.RELEASE - https://github.com/spring-projects/spring-framework)
-     (Apache License, Version 2.0) Spring Core (org.springframework:spring-core:5.2.13.RELEASE - https://github.com/spring-projects/spring-framework)
-     (Apache License, Version 2.0) Spring TestContext Framework (org.springframework:spring-test:5.2.13.RELEASE - https://github.com/spring-projects/spring-framework)
-     (Apache License, Version 2.0) spring-boot (org.springframework.boot:spring-boot:2.3.9.RELEASE - https://spring.io/projects/spring-boot)
+     (Apache License, Version 2.0) Spring Beans (org.springframework:spring-beans:5.2.15.RELEASE - https://github.com/spring-projects/spring-framework)
+     (Apache License, Version 2.0) Spring Context (org.springframework:spring-context:5.2.15.RELEASE - https://github.com/spring-projects/spring-framework)
+     (Apache License, Version 2.0) Spring Core (org.springframework:spring-core:5.2.15.RELEASE - https://github.com/spring-projects/spring-framework)
+     (Apache License, Version 2.0) Spring TestContext Framework (org.springframework:spring-test:5.2.15.RELEASE - https://github.com/spring-projects/spring-framework)
+     (Apache License, Version 2.0) spring-boot (org.springframework.boot:spring-boot:2.3.11.RELEASE - https://spring.io/projects/spring-boot)

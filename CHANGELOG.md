@@ -14,6 +14,8 @@ Changelog
 
 * Added _administratoren_ group the workflows' user tasks so that they can intervene if a workflow is stalled for example.
 
+* The source locale of the submission is now also send as part of the file upload call to the gcc API. Thank you @mtommila for suggesting this change and providing a [Pull Request](https://github.com/CoreMedia/coremedia-globallink-connect-integration/pull/37).
+
 2104
 --------------------------------------------------------------------------------
 
