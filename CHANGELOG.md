@@ -1,6 +1,19 @@
 Changelog
 ================================================================================
 
+2107
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Added dependencies to Maven POM of studio-client module that are required since CoreMedia Content Cloud 10.2107.2.
+
+* Retry delays are now configured in a [properties file](https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties). The corresponding timer was removed from the [workflow definition](https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/master/apps/workflow-server/gcc-workflow-server/src/main/resources/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml). The default update interval for pending submission was increased from 3 to 30 minutes to reduce the number of requests to the GlobalLink Connect Cloud API. If you expect numerous parallel translation submissions, we recommend increasing this interval even further. Please talk to Translations.com to define a reasonable interval.
+
+  For testing purposes these delays can also be set in the GlobalLink settings content. Do not use these settings in the content in a production environment because they also affect running workflows and can cause high loads on GlobalLink's server or unexpectedly long update intervals.
+
+* Added _administratoren_ group the workflows' user tasks so that they can intervene if a workflow is stalled for example.
+
 2104
 --------------------------------------------------------------------------------
 

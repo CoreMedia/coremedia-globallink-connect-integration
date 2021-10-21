@@ -14,6 +14,13 @@
 4. [Error Handling](#scenario-error-handling)
 5. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
 
+## Prepare
+
+For quicker test feedback set the following integer parameters in the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
+* sendTranslationRequestRetryDelay -> 60
+* downloadTranslationRequestRetryDelay -> 60
+* cancelTranslationRequestRetryDelay -> 60
+
 ## Scenario: Contract Test
 
 Especially on updates of `gcc-restclient` you should run the half-automatic
