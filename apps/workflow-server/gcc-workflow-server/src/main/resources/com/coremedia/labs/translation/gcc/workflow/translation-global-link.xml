@@ -189,9 +189,8 @@
               resultVariable="globalLinkSubmissionId"
               globalLinkDueDateVariable="globalLinkDueDate"
               globalLinkWorkflowVariable="globalLinkWorkflow"
-              remainingAutomaticRetriesVariable="remainingAutomaticRetries"/>
-      <!-- wait 180 seconds before retrying in case of error -->
-      <Action class="AssignVariable" resultVariable="sendTranslationRequestRetryDelay"><Timer value="180"/></Action>
+              remainingAutomaticRetriesVariable="remainingAutomaticRetries"
+              retryDelayTimerVariable="sendTranslationRequestRetryDelay"/>
       <Action class="EnableTimer" timerVariable="sendTranslationRequestRetryDelay"/>
     </AutomatedTask>
 
@@ -248,9 +247,8 @@
               globalLinkSubmissionStatusVariable="globalLinkSubmissionStatus"
               completedLocalesVariable="completedLocales"
               cancellationAllowedVariable="cancellationAllowed"
-              remainingAutomaticRetriesVariable="remainingAutomaticRetries"/>
-      <!-- wait 180 seconds before retrying if translation is still pending or in case of error -->
-      <Action class="AssignVariable" resultVariable="downloadTranslationRetryDelay"><Timer value="180"/></Action>
+              remainingAutomaticRetriesVariable="remainingAutomaticRetries"
+              retryDelayTimerVariable="downloadTranslationRetryDelay"/>
       <Action class="EnableTimer" timerVariable="downloadTranslationRetryDelay"/>
     </AutomatedTask>
 
@@ -367,9 +365,8 @@
               globalLinkSubmissionStatusVariable="globalLinkSubmissionStatus"
               cancelledVariable="cancelled"
               completedLocalesVariable="completedLocales"
-              remainingAutomaticRetriesVariable="remainingAutomaticRetries"/>
-      <!-- wait 180 seconds before retrying in case of error or if not yet in state CANCELLATION_CONFIRMED -->
-      <Action class="AssignVariable" resultVariable="cancelTranslationRetryDelay"><Timer value="180"/></Action>
+              remainingAutomaticRetriesVariable="remainingAutomaticRetries"
+              retryDelayTimerVariable="cancelTranslationRetryDelay"/>
       <Action class="EnableTimer" timerVariable="cancelTranslationRetryDelay"/>
     </AutomatedTask>
 
