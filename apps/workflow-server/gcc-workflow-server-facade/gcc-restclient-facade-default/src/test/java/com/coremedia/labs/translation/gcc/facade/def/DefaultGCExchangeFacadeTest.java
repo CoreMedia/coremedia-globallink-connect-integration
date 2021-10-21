@@ -121,12 +121,13 @@ class DefaultGCExchangeFacadeTest {
       String expectedFileId = "1234-5678";
       String expectedFileName = testInfo.getDisplayName();
       byte[] expectedContent = {42};
+      Locale expectedSourceLocale = Locale.US;
 
       ArgumentCaptor<UploadFileRequest> uploadFileRequestCaptor = ArgumentCaptor.forClass(UploadFileRequest.class);
       when(gcExchange.uploadContent(any())).thenReturn(expectedFileId);
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        String actualFileId = facade.uploadContent(expectedFileName, new ByteArrayResource(expectedContent));
+        String actualFileId = facade.uploadContent(expectedFileName, new ByteArrayResource(expectedContent), expectedSourceLocale);
 
         assertThat(actualFileId).isEqualTo(expectedFileId);
 
@@ -136,6 +137,7 @@ class DefaultGCExchangeFacadeTest {
         assertions.assertThat(actualRequest.getFileName()).isEqualTo(expectedFileName);
         assertions.assertThat(actualRequest.getFileType()).isEqualTo("xliff");
         assertions.assertThat(actualRequest.getContents()).isEqualTo(expectedContent);
+        assertions.assertThat(actualRequest.getSourceLocale()).isEqualTo(expectedSourceLocale.toLanguageTag());
         assertions.assertAll();
       }
     }
@@ -150,7 +152,7 @@ class DefaultGCExchangeFacadeTest {
       Mockito.when(resource.getFilename()).thenReturn(someResourceFilename);
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        assertThatThrownBy(() -> facade.uploadContent(someFilename, resource))
+        assertThatThrownBy(() -> facade.uploadContent(someFilename, resource, null))
                 .isInstanceOf(GCFacadeIOException.class)
                 .hasCauseInstanceOf(IOException.class)
                 .hasMessageContaining(someResourceFilename)
@@ -164,7 +166,7 @@ class DefaultGCExchangeFacadeTest {
       when(gcExchange.uploadContent(any())).thenThrow(RuntimeException.class);
 
       try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{42})))
+        assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{42}), null))
                 .isInstanceOf(GCFacadeCommunicationException.class)
                 .hasCauseInstanceOf(RuntimeException.class)
                 .hasMessageContaining(expectedFileName);
