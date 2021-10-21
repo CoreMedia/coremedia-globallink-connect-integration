@@ -8,7 +8,7 @@
     <Rights>
       <Grant group="translation-manager-role"
              rights="create, read, write, start, suspend, resume, abort"/>
-      <Grant user="admin" rights="create, start, suspend, resume, abort"/>
+      <Grant group="administratoren" rights="create, read, write,  start, suspend, resume, abort"/>
     </Rights>
 
     <Variable name="subject" type="String"/>
@@ -212,7 +212,8 @@
     <UserTask name="HandleSendTranslationRequestError" successor="SelectTaskAfterSendTranslationRequestError">
       <Rights>
         <Grant group="translation-manager-role"
-               rights="read, write, accept, complete, cancel"/>
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
+        <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
       </Rights>
       <Assignment>
         <Reads variable="workflowActionIssues"/>
@@ -279,7 +280,8 @@
       </EntryAction>
       <Rights>
         <Grant group="translation-manager-role"
-               rights="read, write, accept, complete, cancel"/>
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
+        <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
       </Rights>
       <Assignment>
         <Reads variable="workflowActionIssues"/>
@@ -307,7 +309,8 @@
     <UserTask name="ReviewDeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
       <Rights>
         <Grant group="translation-manager-role"
-               rights="read, write, accept, complete, cancel"/>
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
+        <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
       </Rights>
       <!-- store task performer for executing CompleteTranslationAction in task "Complete" -->
       <EntryAction class="com.coremedia.translate.workflow.ExtractPerformerAction"
@@ -335,7 +338,8 @@
     <UserTask name="ReviewCancelledTranslation" successor="RollbackContent">
       <Rights>
         <Grant group="translation-manager-role"
-               rights="read, write, accept, complete, cancel"/>
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
+        <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
       </Rights>
       <Assignment>
         <Reads variable="subject"/>
@@ -394,7 +398,8 @@
     <UserTask name="HandleCancelTranslationError" successor="SelectTaskAfterCancelTranslationError">
       <Rights>
         <Grant group="translation-manager-role"
-               rights="read, write, accept, complete, cancel"/>
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
+        <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
       </Rights>
       <Assignment>
         <Reads variable="workflowActionIssues"/>
