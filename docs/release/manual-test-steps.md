@@ -18,8 +18,8 @@
 
 For quicker test feedback set the following integer parameters in the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
 * sendTranslationRequestRetryDelay -> 60
-* downloadTranslationRequestRetryDelay -> 60
-* cancelTranslationRequestRetryDelay -> 60
+* downloadTranslationRetryDelay -> 60
+* cancelTranslationRetryDelay -> 60
 
 ## Scenario: Contract Test
 
