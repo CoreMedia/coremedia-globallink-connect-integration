@@ -112,9 +112,16 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
 
   /**
-   * Minimum delay between retrying communication with GlobalLink.
+   * Minimum delay between retrying communication with GlobalLink. Firing too many update requests on the external system
+   * could be considered a DoS attack.
    */
   private static final int MIN_RETRY_DELAY_SECS = 60; // one minute
+
+  /**
+   * If the value is accidentally set to a very big delay and the workflow process picks this value, you will have
+   * to wait very long until it checks again for an update.
+   * Changing this accidentally got also a lot more likely, since times can be change in the content repository directly.
+   */
   private static final int MAX_RETRY_DELAY_SECS = 86400; // one day
 
   /**

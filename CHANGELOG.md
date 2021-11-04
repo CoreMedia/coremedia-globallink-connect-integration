@@ -6,28 +6,57 @@ Changelog
 
 ### Main Changes
 
-* Added dependencies to Maven POM of studio-client module that are required since CoreMedia Content Cloud 10.2107.2.
+* Added dependencies to Maven POM of studio-client module that are required 
+    since CoreMedia Content Cloud 10.2107.2.
 
-* Retry delays are now configured in a [properties file](https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties). The corresponding timer was removed from the [workflow definition](https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/master/apps/workflow-server/gcc-workflow-server/src/main/resources/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml). The default update interval for pending submission was increased from 3 to 30 minutes to reduce the number of requests to the GlobalLink Connect Cloud API. If you expect numerous parallel translation submissions, we recommend increasing this interval even further. Please talk to Translations.com to define a reasonable interval.
+* Retry delays are now configured in a [properties file](https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties). 
+    The corresponding timer was removed from the [workflow definition](https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/master/apps/workflow-server/gcc-workflow-server/src/main/resources/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml).
+    The default update interval for pending submission was increased from 3 to
+    30 minutes to reduce the number of requests to the GlobalLink Connect Cloud 
+    API. If you expect numerous parallel translation submissions, we recommend 
+    increasing this interval even further. Please talk to Translations.com to 
+    define a reasonable interval.
 
-  For testing purposes these delays can also be set in the GlobalLink settings content. Do not use these settings in the content in a production environment because they also affect running workflows and can cause high loads on GlobalLink's server or unexpectedly long update intervals.
+    For testing purposes these delays can also be set in the GlobalLink settings 
+    content. Do not use these settings in the content in a production environment 
+    because they also affect running workflows and can cause high loads on 
+    GlobalLink's server or unexpectedly long update intervals.
 
-* Added _administratoren_ group the workflows' user tasks so that they can intervene if a workflow is stalled for example.
+* Added _administratoren_ group the workflows' user tasks so that they can 
+    intervene if a workflow is stalled for example.
 
-* The source locale of the submission is now also send as part of the file upload call to the gcc API. Thank you @mtommila for suggesting this change and providing a [Pull Request](https://github.com/CoreMedia/coremedia-globallink-connect-integration/pull/37).
+* The _translation-manager-role_ also received the right to delegate and reject
+    offered tasks. These features are however not available in the Studio (yet).
+
+* The source locale of the submission is now also send as part of the file upload 
+    call to the gcc API. Thank you @mtommila for suggesting this change and 
+    providing a [Pull Request](https://github.com/CoreMedia/coremedia-globallink-connect-integration/pull/37).
+
+    In the context of this change `GCExchangeFacade.uploadContent(String fileName, Resource resource, Locale sourceLocale)` 
+    received another parameter `sourceLocale`. Custom implementations of the 
+    interface have to be adapted.
 
 2104
 --------------------------------------------------------------------------------
 
 ### Main Changes
 
-* Updated dependencies to reflect changes to content validators in CoreMedia Content Cloud 10.2104.1.
+* Updated dependencies to reflect changes to content validators in CoreMedia 
+    Content Cloud 10.2104.1.
 
-* Added the possibility to configure the connection to GlobalLink in properties file on the server with [CoreMedia/coremedia-globallink-connect-integration#25](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/25) - Thank you @mtommila for suggesting this change and providing a Pull Request.
+* Added the possibility to configure the connection to GlobalLink in properties 
+    file on the server with [CoreMedia/coremedia-globallink-connect-integration#25](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/25) - 
+    Thank you @mtommila for suggesting this change and providing a Pull Request.
 
-* The notes from the Start Translation Workflow Window are now sent as instructions to GlobalLink. Optionally, the submitter's name can be added to the submission. The workflow is also prepared to take an optional string that represents the type of the workflow on the GlobalLink side. This still requires the UI to be implemented in Studio. - [CoreMedia/coremedia-globallink-connect-integration#26](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/26) - Thank you @mtommila for suggesting this change and providing a Pull Request.
+* The notes from the Start Translation Workflow Window are now sent as instructions 
+    to GlobalLink. Optionally, the submitter's name can be added to the submission. 
+    The workflow is also prepared to take an optional string that represents the 
+    type of the workflow on the GlobalLink side. This still requires the UI to 
+    be implemented in Studio. - [CoreMedia/coremedia-globallink-connect-integration#26](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/26) - 
+    Thank you @mtommila for suggesting this change and providing a Pull Request.
 
-* Fixed concurrency issue of `DefaultGCExchangeFacadeSessionProvider` which could cause `java.util.NoSuchElementExceptions`  [CoreMedia/coremedia-globallink-connect-integration#33](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/33)
+* Fixed concurrency issue of `DefaultGCExchangeFacadeSessionProvider` which 
+  could cause `java.util.NoSuchElementExceptions` [CoreMedia/coremedia-globallink-connect-integration#33](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/33)
 
 2101
 --------------------------------------------------------------------------------
@@ -37,9 +66,11 @@ Changelog
 
 ### Main Changes
 
-* Updated validators and validation configuration to align with improvements in CoreMedia Content Cloud 10.2101. 
+* Updated validators and validation configuration to align with improvements in 
+    CoreMedia Content Cloud 10.2101. 
 
-* Internal API `ILocalesService` was moved and renamed in 2101 AEP. Updated usages. There is no public API for this functionality yet.
+* Internal API `ILocalesService` was moved and renamed in 2101 AEP. Updated 
+    usages. There is no public API for this functionality yet.
 
 * Added support for bulk cancellation of workflows
 
@@ -57,11 +88,14 @@ Changelog
 
 ### Main Changes
 
-* Replace `GccWorkflowDateTimeField` of `gcc-studio-client` with built-in `WorkflowDateTimeField`.
+* Replace `GccWorkflowDateTimeField` of `gcc-studio-client` with built-in 
+    `WorkflowDateTimeField`.
 
-* Replaced usage of internal API usage of `MessageBoxInternal` with newly introduced public API `MessageBoxUtil`.
+* Replaced usage of internal API usage of `MessageBoxInternal` with newly introduced 
+    public API `MessageBoxUtil`.
 
-* Internal API `LocaleService` was moved and renamed in 2010 AEP. Updated usages. There is no public API for this functionality yet.
+* Internal API `LocaleService` was moved and renamed in 2010 AEP. Updated usages. 
+    There is no public API for this functionality yet.
 
 * Fixed [CoreMedia/coremedia-globallink-connect-integration#20](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/20)
 
