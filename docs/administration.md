@@ -71,7 +71,7 @@ that the integration between both systems runs smoothly:
 * Re-opening of submissions is not yet supported by the connector. Ask your
     contacts at Translations.com to disable this functionality in GlobalLink
     Connect Cloud to avoid misunderstandings.
-    
+
 * A connector instance at GlobalLink Connect Cloud currently requires unique
     ISO-639-1 language codes in the source locales of the sites. This essentially 
     means that Translations.com would have to set up multiple connectors if your
@@ -98,36 +98,55 @@ names and values to enable site-specific connections. However, global settings
 like `dayOffsetForDueDate` have to be defined in `/Settings/Options/Settings/GlobalLink`.
 
 Therefore, you need to add a struct to the GlobalLink settings, named
-`globalLink`. **Make sure to restrict read and write rights of this content to those user groups that actually need access to prevent leaking sensitive information.**
+`globalLink`. **Make sure to restrict read and write rights of this content to 
+those user groups that actually need access to prevent leaking sensitive information.**
 
-Within that struct you need to provide the following 
-parameters:
+Within that struct the following parameters must/can be specified:
 
 * `url` for GCC REST Base URL  (type:`String`)
 * `username` Username (type:`String`)
 * `password` Password (type:`String`)
-* `key` the GCC connector key (type:`String`)
-* `fileType` (_optional_) If there is more than one file format in your
+* `key` The GCC connector key (type:`String`)
+* `fileType` If there is more than one file format in your
     GlobalLink setup, then this has to be set to the XLIFF file type identifier
-    to be used by your connector. (type:`String`)
-* `type` (_optional_) determines which facade implementation will be used
-    (see [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)). (type:`String`)
-* `dayOffsetForDueDate` defines the offset for the
-   `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
-   Window to lie within the future in days. (type:`Integer`, scope:**global**)
-* `retryCommunicationErrors` number of retries in case of a communication error
-    with GlobalLink. By default the value is set to 5. (type:`Integer`)
-* `isSendSubmitter` defines if the name of the editor that started the workflow is send to GlobalLink as part of the submission. (type:`Boolean`). By default, this is disabled to not accidentally leak personal data to third parties.   
+    to be used by your connector. (_optional_, default: `xliff`, type:`String`)
+* `type` Determines which facade implementation will be used (see
+    [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)
+    ). (_optional_, type:`String`)
+* `dayOffsetForDueDate` Defines the offset for the
+    `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
+    Window to lie within the future in days. 
+    (_optional_, default: `0`, type:`Integer`, scope:**global**)
+* `retryCommunicationErrors` Number of retries in case of a communication error
+    with GlobalLink. (_optional_, default: `5`, type:`Integer`)
+* `isSendSubmitter` Defines if the name of the editor that started the workflow 
+    is send to GlobalLink as part of the submission.
+    (_optional_, default: `false`, type:`Boolean`)
 
-By default, the offset is set to `20` within the test data.
+The following parameters of the struct should be handled carefully and only 
+after consulting Translations.com. They affect all new and running workflows, 
+and as such they can instantly cause high loads on GlobalLink's servers or 
+unexpectedly long update intervals. Intervals shorter than 60 seconds or longer 
+than a day are not allowed and will fall back to the corresponding max or min 
+values. The interval is also limited to be not longer than one day because if 
+you accidentally set it to a very big value, there would be no turning back. You
+would have to wait until it is expired.
 
-In addition to the configuration approach described above, the settings can be
-defined in the properties file of the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). These settings
-will be used as a global default or fallback, if there are no settings defined for the respective site
-in the content. 
-If you only have one GlobalLink connector for all your sites, 
-this approach also provides the advantage of not accidentally leaking the 
-credentials to editors.
+* `sendTranslationRequestRetryDelay` Overrides the default interval (secs) 
+    between retries if the XLIFF could not be sent on first try. 
+    (_optional_, default: `180`, type:`Integer`)
+* `downloadTranslationRetryDelay` Overrides the update interval (secs) of the 
+    submission's state and the translated XLIFF(s) are not immediately ready. 
+    (_optional_, default: `1800`, type:`Integer`)
+* `cancelTranslationRetryDelay` Overrides the interval (secs) for retrying the 
+    cancellation of a submission. (_optional_, default: `180`, type:`Integer`)
+
+The defaults for these values are defined globally in the properties file of 
+the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). 
+Other parameters can be defined here too. 
+If your GlobalLink connectors all use the same username and password, 
+this approach also provides the possibility to define them in a central place 
+that is not visible to editors in Studio.
 
 You can also define Parameters for testing with the mock facade
 (see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).

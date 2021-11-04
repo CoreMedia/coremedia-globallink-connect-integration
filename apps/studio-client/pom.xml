@@ -27,6 +27,56 @@
       <artifactId>control-room-editor-components</artifactId>
       <type>swc</type>
     </dependency>
+    <dependency>
+      <groupId>com.coremedia.ui.toolkit</groupId>
+      <artifactId>ui-components</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.cms</groupId>
+      <artifactId>studio-client.workflow-components</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.cms</groupId>
+      <artifactId>studio-client.cap-base-components</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+        <groupId>com.coremedia.ui.sdk</groupId>
+        <artifactId>cap-rest-client</artifactId>
+        <type>swc</type>
+      </dependency>
+      <dependency>
+        <groupId>com.coremedia.ui.toolkit</groupId>
+        <artifactId>client-core</artifactId>
+        <type>swc</type>
+      </dependency>
+      <dependency>
+        <groupId>net.jangaroo</groupId>
+        <artifactId>ext-as</artifactId>
+        <type>swc</type>
+      </dependency>
+      <dependency>
+        <groupId>com.coremedia.ui.toolkit</groupId>
+        <artifactId>client-core-impl</artifactId>
+        <type>swc</type>
+      </dependency>
+      <dependency>
+        <groupId>com.coremedia.ui.sdk</groupId>
+        <artifactId>cap-rest-client-impl</artifactId>
+        <type>swc</type>
+      </dependency>
+      <dependency>
+        <groupId>com.coremedia.cms</groupId>
+        <artifactId>studio-client.cap-base-models</artifactId>
+        <type>swc</type>
+      </dependency>
+      <dependency>
+        <groupId>com.coremedia.ui.toolkit</groupId>
+        <artifactId>core-icons</artifactId>
+        <type>swc</type>
+      </dependency>
   </dependencies>
 
   <build>
@@ -37,6 +87,7 @@
         <version>${jangaroo.version}</version> <!-- explicit version for IDEA! -->
         <extensions>true</extensions>
         <configuration>
+          <extNamespace>com.coremedia.labs.translation.gcc.studio</extNamespace>
           <namespaces>
             <namespace>
               <uri>exml:com.coremedia.labs.translation.gcc.studio.config</uri>

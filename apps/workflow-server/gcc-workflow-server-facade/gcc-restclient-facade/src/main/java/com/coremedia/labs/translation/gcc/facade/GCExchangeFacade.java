@@ -43,11 +43,12 @@ public interface GCExchangeFacade extends AutoCloseable {
    *
    * @param fileName the filename of the resource
    * @param resource the resource to send
+   * @param sourceLocale source locale (optional)
    * @return file ID to be used later on to submit the submission
    * @throws GCFacadeIOException            if the resource cannot be read
    * @throws GCFacadeCommunicationException if the file cannot be uploaded
    */
-  String uploadContent(String fileName, Resource resource);
+  String uploadContent(String fileName, Resource resource, Locale sourceLocale);
 
   /**
    * Submit submission for the given contents uploaded before.
@@ -58,11 +59,11 @@ public interface GCExchangeFacade extends AutoCloseable {
    * @param workflow     translation workflow to be used, if not the default (optional)
    * @param submitter    name of the submitter (optional)
    * @param sourceLocale source locale
-   * @param contentMap   file IDs (returned by {@link #uploadContent(String, Resource)}) to translate
+   * @param contentMap   file IDs (returned by {@link #uploadContent(String, Resource, Locale)}) to translate
    *                     with the desired target locales to translate to
    * @return ID of the submission; to be used to track the state later on
    * @throws GCFacadeCommunicationException if submitting the submission failed
-   * @see #uploadContent(String, Resource)
+   * @see #uploadContent(String, Resource, Locale)
    */
   long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate,
                         @Nullable String workflow, @Nullable String submitter, Locale sourceLocale,

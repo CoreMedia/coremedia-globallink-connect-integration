@@ -48,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
@@ -94,7 +95,7 @@ class SendToGlobalLinkActionTest {
 
     Mockito.doAnswer(invocation -> readXliff(invocation, expectedFileId, uploadedXliff))
             .when(gcExchangeFacade)
-            .uploadContent(anyString(), any(Resource.class));
+            .uploadContent(anyString(), any(Resource.class), any(Locale.class));
 
     Mockito.doReturn(expectedSubmissionId).when(gcExchangeFacade).submitSubmission(anyString(), anyString(), any(ZonedDateTime.class), anyString(), anyString(), any(Locale.class), anyMap());
 
@@ -111,7 +112,7 @@ class SendToGlobalLinkActionTest {
     ArgumentCaptor<Map<String, List<Locale>>> contentMapCaptor = ArgumentCaptor.forClass(Map.class);
     ArgumentCaptor<Locale> masterLocaleCaptor = ArgumentCaptor.forClass(Locale.class);
 
-    Mockito.verify(gcExchangeFacade).uploadContent(anyString(), any(Resource.class));
+    Mockito.verify(gcExchangeFacade).uploadContent(anyString(), any(Resource.class), eq(masterLocale));
     Mockito.verify(gcExchangeFacade).submitSubmission(anyString(), anyString(), any(ZonedDateTime.class), anyString(), anyString(), masterLocaleCaptor.capture(), contentMapCaptor.capture());
 
     assertThat(uploadedXliff[0])

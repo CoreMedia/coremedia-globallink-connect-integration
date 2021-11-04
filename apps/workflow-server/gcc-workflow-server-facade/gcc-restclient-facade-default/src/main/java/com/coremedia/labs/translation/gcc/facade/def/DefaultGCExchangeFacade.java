@@ -152,7 +152,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public String uploadContent(String fileName, Resource resource) {
+  public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
     byte[] bytes;
     try (InputStream stream = resource.getInputStream()) {
       bytes = ByteStreams.toByteArray(stream);
@@ -161,6 +161,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
     try {
       UploadFileRequest request = new UploadFileRequest(bytes, fileName, fileTypeSupplier.get());
+      if (sourceLocale != null) {
+        request.setSourceLocale(sourceLocale.toLanguageTag());
+      }
       return delegate.uploadContent(request);
     } catch (GCFacadeException e) {
       throw e;

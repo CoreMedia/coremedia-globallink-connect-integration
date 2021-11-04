@@ -1,14 +1,7 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.cap.util.StructUtil;
-import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.cap.common.Blob;
+import com.coremedia.cap.common.RelativeTimeLimit;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentObject;
 import com.coremedia.cap.multisite.ContentObjectSiteAspect;
@@ -16,9 +9,17 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.struct.Struct;
 import com.coremedia.cap.translate.xliff.XliffImportResultCode;
+import com.coremedia.cap.util.StructUtil;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.cap.workflow.plugin.ActionResult;
+import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
@@ -96,6 +97,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    */
   private static final String CONFIG_RETRY_COMMUNICATION_ERRORS = "retryCommunicationErrors";
   private static final int DEFAULT_RETRY_COMMUNICATION_ERRORS = 5;
+
   private static final MimeType MIME_TYPE_JSON = mimeType("application/json");
   private static final Gson contentObjectReturnsIdGson = new GsonBuilder()
           .enableComplexMapKeySerialization()
@@ -106,6 +108,26 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private String masterContentObjectsVariable;
   private String remainingAutomaticRetriesVariable;
   private String issuesVariable;
+  private String retryDelayTimerVariable;
+
+
+  /**
+   * Minimum delay between retrying communication with GlobalLink. Firing too many update requests on the external system
+   * could be considered a DoS attack.
+   */
+  private static final int MIN_RETRY_DELAY_SECS = 60; // one minute
+
+  /**
+   * If the value is accidentally set to a very big delay and the workflow process picks this value, you will have
+   * to wait very long until it checks again for an update.
+   * Changing this accidentally got also a lot more likely, since times can be change in the content repository directly.
+   */
+  private static final int MAX_RETRY_DELAY_SECS = 86400; // one day
+
+  /**
+   * Fallback delay between retrying communication with GlobalLink for illegal values.
+   */
+  private static final int FALLBACK_RETRY_COMMUNICATION_DELAY_SECS = 900;
 
   // --- construct and configure ----------------------------------------------------------------------
 
@@ -167,6 +189,15 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     this.issuesVariable = requireNonNull(issuesVariable);
   }
 
+  /**
+   * The name of the Timer variable that will be initialized with value from the corresponding Spring properties or content
+   * setting.
+   * @param retryDelayTimerVariable the name of the Timer variable
+   */
+  public void setRetryDelayTimerVariable(String retryDelayTimerVariable) {
+    this.retryDelayTimerVariable = retryDelayTimerVariable;
+  }
+
   // --- LongAction interface ----------------------------------------------------------------------
 
   @Override
@@ -178,10 +209,35 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
 
     List<ContentObject> masterContentObjects = process.getLinksAndVersions(getMasterContentObjectsVariable());
+
+    if (retryDelayTimerVariable != null) {
+      Site masterSite = getMasterSite(masterContentObjects);
+      Map<String, Object> settings = getGccSettings(masterSite);
+      Integer delaySeconds = ensureRetryDelayConfig(settings, retryDelayTimerVariable);
+      process.set(retryDelayTimerVariable, new RelativeTimeLimit(delaySeconds));
+    }
+
     Integer i = process.getInteger(remainingAutomaticRetriesVariable);
     int remainingAutomaticRetries = i != null ? i : 0;
     P extendedParameters = doExtractParameters(task);
     return new Parameters<>(extendedParameters, masterContentObjects, remainingAutomaticRetries);
+  }
+
+  private static Integer ensureRetryDelayConfig(Map<String, Object> config, String key) {
+    Object value = config.get(key);
+    if (value == null) {
+      LOG.warn("\"{}\" value must not be null. Falling back to {}.", key, FALLBACK_RETRY_COMMUNICATION_DELAY_SECS);
+      return FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
+    }
+    int retryDelayInSec = Integer.parseInt(String.valueOf(value));
+    if (retryDelayInSec < MIN_RETRY_DELAY_SECS) {
+      LOG.warn("\"{}\" must not be smaller than {} seconds, but is {}. Falling back to minimum.", key, MIN_RETRY_DELAY_SECS, retryDelayInSec);
+      retryDelayInSec = MIN_RETRY_DELAY_SECS;
+    } else if (retryDelayInSec > MAX_RETRY_DELAY_SECS) {
+      LOG.warn("\"{}\" must not be bigger than {} seconds, but is {}. Falling back to maximum.", key, MAX_RETRY_DELAY_SECS, retryDelayInSec);
+      retryDelayInSec = MAX_RETRY_DELAY_SECS;
+    }
+    return retryDelayInSec;
   }
 
   @Override
@@ -389,18 +445,23 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   Map<String, Object> getGccSettings(Site site) {
     Content siteIndicator = site.getSiteIndicator();
 
+    @SuppressWarnings("unchecked")
+    Map<String, Object> defaultSettings = new HashMap<String,Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
+
     Map<String, Object> siteIndicatorSettings = getGccSettings(siteIndicator);
     if (!siteIndicatorSettings.isEmpty()) {
-      return siteIndicatorSettings;
+      defaultSettings.putAll(siteIndicatorSettings);
+      return Collections.unmodifiableMap(defaultSettings);
     }
 
     Content siteRootDocument = site.getSiteRootDocument();
     Map<String, Object> rootDocumentSettings = getGccSettings(siteRootDocument);
     if (!rootDocumentSettings.isEmpty()) {
-      return rootDocumentSettings;
+      defaultSettings.putAll(rootDocumentSettings);
+      return Collections.unmodifiableMap(defaultSettings);
     }
 
-    return getSpringContext().getBean("gccConfigurationProperties", Map.class);
+    return defaultSettings;
   }
 
   private static Map<String, Object> getGccSettings(Content content) {
