@@ -16,7 +16,6 @@
   ]]></description>
 
   <modules>
-    <!--module>apps/studio-client</module-->
     <module>apps/studio-server</module>
     <module>apps/user-changes</module>
     <module>apps/workflow-server</module>

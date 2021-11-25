@@ -1,0 +1,30 @@
+import ResourceBundleUtil from "@jangaroo/runtime/l10n/ResourceBundleUtil";
+import GccProcessDefinitions_properties from "./Gcc_properties";
+
+ResourceBundleUtil.override(GccProcessDefinitions_properties, {
+  TranslationGlobalLink_submission_id_key: "Auftragsnummer",
+  TranslationGlobalLink_submission_status_key: "Status",
+  TranslationGlobalLink_submission_dueDate_key: "Fälligkeit",
+  TranslationGlobalLink_submission_id_unavailable: "Noch nicht verfügbar",
+  TranslationGlobalLink_submission_status_IN_PRE_PROCESS: "Vorverarbeitung",
+  TranslationGlobalLink_submission_status_STARTED: "Begonnen",
+  TranslationGlobalLink_submission_status_ANALYZED: "Analysiert",
+  TranslationGlobalLink_submission_status_AWAITING_APPROVAL: "Genehmigung ausstehend",
+  TranslationGlobalLink_submission_status_AWAITING_QUOTE_APPROVAL: "Angebotsbestätigung ausstehend",
+  TranslationGlobalLink_submission_status_IN_PROGRESS: "In Bearbeitung",
+  TranslationGlobalLink_submission_status_CANCELLED: "Abgebrochen",
+  TranslationGlobalLink_submission_status_CANCELLATION_CONFIRMED: "Abbruch bestätigt",
+  TranslationGlobalLink_submission_status_TRANSLATE: "Übersetzung",
+  TranslationGlobalLink_submission_status_REVIEW: "Überprüfung",
+  TranslationGlobalLink_submission_status_COMPLETED: "Abgeschlossen",
+  TranslationGlobalLink_submission_status_DELIVERED: "Ausgeliefert",
+  TranslationGlobalLink_submission_status_OTHER: "Unbekannt",
+  TranslationGlobalLink_submission_status_unavailable: "Nicht verfügbar",
+  TranslationGlobalLink_submission_dueDate_tooltip: "Bitte Datum in der Zukunft auswählen.",
+  translationResultXliff_Button_text: "ZIP Datei mit Detailinformationen herunterladen",
+  confirm_cancellation_title: "Üersetzungsaufträge Abbrechen",
+  confirm_cancellation: "Die ausgewählten Üersetzungsaufträge werden abgebrochen. Wollen Sie fortfahren?",
+  Action_Tooltip_Cancel_Process: "Die ausgewählten Übersetzungsaufträge abbrechen.",
+  TranslationGlobalLink_completed_Locales: "Bereits übersetzte Locales",
+  TranslationGlobalLink_Multi_Target_Locale_Text: "{0} Locales",
+});

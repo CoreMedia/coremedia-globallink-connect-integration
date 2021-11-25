@@ -47,7 +47,6 @@ tramp
 
 # cask packages
 .cask/
-dist/
 
 # Flycheck
 flycheck_*.el
@@ -190,3 +189,14 @@ $RECYCLE.BIN/
 
 # Microsoft Office Temporary Files
 ~*.*
+
+# NodeJS
+node_modules/
+
+# config
+.npmrc
+
+# Jangaroo Build
+dist/
+build/
+generated/
