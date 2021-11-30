@@ -1,4 +1,0 @@
-packages:
-  - "studio-client/apps/main/gcc"
-  - "studio-client/apps/workflow/gcc"
-  - "studio-client/shared/ext/gcc"
