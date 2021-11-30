@@ -42,7 +42,7 @@ class InternalGCExchangeFacadeTest {
 
     try (InternalGCExchangeFacade facade = new InternalGCExchangeFacade()) {
 
-      String fileId = facade.uploadContent(testName, xliffResource);
+      String fileId = facade.uploadContent(testName, xliffResource, Locale.getDefault());
       long submissionId = facade.submitSubmission(
               "states:other,cancelled",
               null,

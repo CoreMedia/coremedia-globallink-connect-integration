@@ -83,7 +83,7 @@ public final class InternalGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public String uploadContent(String fileName, Resource resource) {
+  public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
     return contentStore.addContent(resource);
   }
 
