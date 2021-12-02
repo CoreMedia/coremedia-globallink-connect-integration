@@ -19,6 +19,7 @@
   "devDependencies": {
     "@jangaroo/build": "^1.0.0-beta",
     "@jangaroo/core": "^1.0.0-beta",
+    "@jangaroo/eslint-config": "^1.0.0-beta",
     "@jangaroo/publish": "^1.0.0-beta",
     "eslint": "7.27.0",
     "rimraf": "^3.0.2"
