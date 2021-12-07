@@ -53,7 +53,7 @@
         "../node_modules/@jangaroo/ext-ts/src/*"
       ],
       "@jangaroo/jangaroo-net/*": [
-        "../../../../../../../../../apps/studio-client/node_modules/.pnpm/@jangaroo+jangaroo-net@1.0.0-beta.3/node_modules/@jangaroo/jangaroo-net/src/*"
+        "../../../../../../../../../apps/studio-client/node_modules/.pnpm/@jangaroo+jangaroo-net@1.0.0/node_modules/@jangaroo/jangaroo-net/src/*"
       ],
       "@jangaroo/runtime/*": [
         "../node_modules/@jangaroo/runtime/src/*"
