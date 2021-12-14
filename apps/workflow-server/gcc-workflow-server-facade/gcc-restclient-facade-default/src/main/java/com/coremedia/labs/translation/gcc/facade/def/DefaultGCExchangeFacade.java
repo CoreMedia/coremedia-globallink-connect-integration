@@ -332,7 +332,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             .map(GCTaskModel::getTaskId)
             .collect(toList());
 
-    LOG.debug("Cancelled Task IDs of submission {}: {}", submissionId, taskIds);
+    LOG.info("Cancelling Task IDs of submission {}: {}", submissionId, taskIds);
     confirmTaskCancellations(taskIds);
   }
 

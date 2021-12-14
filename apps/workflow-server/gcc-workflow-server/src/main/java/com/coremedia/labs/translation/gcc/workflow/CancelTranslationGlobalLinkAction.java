@@ -181,7 +181,7 @@ public class CancelTranslationGlobalLinkAction extends
   private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<Content>> issues) {
     int httpStatus = facade.cancelSubmission(submissionId);
     if (httpStatus == HTTP_OK) {
-      LOG.debug("Cancelled submission {}", submissionId);
+      LOG.info("Cancelled submission {}", submissionId);
       return true;
 
     }
