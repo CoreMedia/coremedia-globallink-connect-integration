@@ -52,6 +52,19 @@ and finish it.
 
 Well done.
 
+### Pitfalls
+
+*Publishing content of active submissions* - Once a language is completely 
+translated at GlobalLink, it is downloaded and applied to the content for 
+editorial review in the Studio. While it is fine to review this content and even 
+publish it, especially publishing content can cause issues later on. When 
+publishing content the content server can destroy previous versions of this 
+content, that is otherwise required to be able to roll back the changes, if 
+triggered with "Abort And Rollback Changes". So, you should make sure that
+a submission does not have to be aborted when publishing content of an active
+workflow.
+
+
 --------------------------------------------------------------------------------
 
 \[[Up](README.md)\] \[[Top](#top)\]
