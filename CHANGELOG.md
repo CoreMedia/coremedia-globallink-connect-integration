@@ -6,6 +6,16 @@ Changelog
 
 ### Main Changes
 
+* Renamed "Reject Changes" step to "Abort And Rollback Changes" to clearly point
+    what actually happens when choosing this option.
+* Increased log level for cancellation messages from `debug` to `info` so that 
+    you can easily follow cancellation requests in the log file.
+
+2107
+--------------------------------------------------------------------------------
+
+### Main Changes
+
 * Added dependencies to Maven POM of studio-client module that are required 
     since CoreMedia Content Cloud 10.2107.2.
 

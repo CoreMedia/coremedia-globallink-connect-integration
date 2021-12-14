@@ -132,7 +132,7 @@ home folder
 7. Go back to the Studio
     1. The workflow appears in Rick's inbox.
     2. Rick can only choose to reject the previous changes and accept the cancellation.
-    3. Reject the changes to rollback
+    3. Choose "Abort and Rollback Changes"
 9. Open the “Finished” area
     1. The workflow should appear here
     2. The “Status” variable should display “Cancelled”
@@ -156,21 +156,21 @@ home folder
 6. Wait for the Workflow to appear in the inbox
     1. The icon should be a Warning sign
     2. The TaskName should be “Upload Error”
-    3. You have the ability to “Reject Changes” or “Continue and Retry”
-    4. A click on “Reject Changes” should perform a Rollback of the content (if you perform that you need to redo steps from 1 to 6)
+    3. You have the ability to “Abort And Rollback Changes” or “Continue and Retry”
+    4. A click on “Abort And Rollback Changes” should perform a Rollback of the content (if you perform that you need to redo steps from 1 to 6)
 7. Reset the “username” to its valid value and click “Continue and Retry”
 8. Select the workflow in “pending” and wait for the Status to change to “Translate” or for the Submission ID to be set
 9. Reset the “username” in the GlobalLinkSettings to something wrong
 10. Wait for the Workflow to appear in the inbox
     1. The icon should be a Warning sign
     2. The TaskName should be “Download Error”
-    3. You have the ability to “Reject Changes” or “Continue and Retry”
-11. Click “Reject Changes”
+    3. You have the ability to “Abort And Rollback Changes” or “Continue and Retry”
+11. Click “Abort And Rollback Changes”
 12. Wait for the Workflow to appear in the inbox
     1. The icon should be a Warning sign
     2. The TaskName should be “Cancellation Error”
     3. You have the ability to “Reject Changes without cancelling the submission at GlobalLink.” or “Continue and Retry”
-13. Continue and Retry should lead to a cancellation of the workflow, reject changes should lead to a direct rollback
+13. Continue and Retry should lead to a cancellation of the workflow, "Abort And Rollback Changes" should lead to a direct rollback
 
 ## Scenario: XLIFF Import Error Handling
 
@@ -189,7 +189,7 @@ home folder
 5. Wait for the Workflow to appear in the inbox
     1. The icon should be a Warning sign
     2. The TaskName should be “Download Error”
-    3. You have the ability to “Reject Changes” or “Continue and Retry”
+    3. You have the ability to “Abort And Rollback Changes” or “Continue and Retry”
     4. There should be a field “Issue Details” with clickable link that links to a download of the broken XLIFF
 
 --------------------------------------------------------------------------------
