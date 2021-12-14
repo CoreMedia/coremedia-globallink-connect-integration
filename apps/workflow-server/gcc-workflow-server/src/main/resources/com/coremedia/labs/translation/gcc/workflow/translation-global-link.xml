@@ -434,14 +434,11 @@
               performerVariable="performer"/>
     </AutomatedTask>
 
-    <Variable name="finishTaskRetryTimer" type="Timer"/>
-    <TimerHandler class="RetryTaskTimerHandler" task="Finish" timerName="finishTaskRetryTimer"/>
+    <AutomatedTask name="Finish" final="true"/>
 
-    <AutomatedTask name="Finish" final="true">
-      <Action class="AssignVariable" resultVariable="finishTaskRetryTimer"><Timer value="30"/></Action>
-      <Action class="EnableTimer" timerVariable="finishTaskRetryTimer"/>
-      <Action class="ArchiveProcess" maxProcessesPerUser="100"/>
-    </AutomatedTask>
+    <!-- Finally, make sure finished processes are archived and appear in the list of finished workflows for
+         participating users, i.e. for users for whom the RegisterPendingProcess action was called. -->
+    <FinalAction class="ArchiveProcessFinalAction" maxProcessesPerUser="100"/>
 
   </Process>
 </Workflow>

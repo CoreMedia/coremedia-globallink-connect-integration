@@ -1,7 +1,7 @@
 Changelog
 ================================================================================
 
-2107
+CoreMedia v11.2110.1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -10,6 +10,11 @@ Changelog
     what actually happens when choosing this option.
 * Increased log level for cancellation messages from `debug` to `info` so that 
     you can easily follow cancellation requests in the log file.
+* In v11.2110.1 the `FinalAction` interface was introduced to archive workflows 
+   consistently. `ArchiveProcessFinalAction` now takes care of archiving the
+   completed as well as the aborted (escalated) workflows. The workflow
+   definition was updated accordingly. When upgrading, you will have to upload
+   workflow definition again.
 
 2107
 --------------------------------------------------------------------------------
