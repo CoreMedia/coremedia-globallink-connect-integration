@@ -104,7 +104,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String password = requireNonNullConfig(config, GCConfigProperty.KEY_PASSWORD);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
-    LOG.info("Will connect to GCC endpoint: {}", apiUrl);
+    LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {
       delegate = new GCExchange(new GCConfig(
               apiUrl,
@@ -145,7 +145,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public void close() {
     try {
       delegate.logout();
-      LOG.info("Successfully closed GCC connection.");
+      LOG.debug("Successfully closed GCC connection.");
     } catch (RuntimeException e) {
       LOG.warn("Failed to logout. Ignored assuming the session will automatically timeout.", e);
     }
@@ -332,7 +332,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             .map(GCTaskModel::getTaskId)
             .collect(toList());
 
-    LOG.info("Cancelling Task IDs of submission {}: {}", submissionId, taskIds);
+    LOG.debug("Cancelling Task IDs of submission {}: {}", submissionId, taskIds);
     confirmTaskCancellations(taskIds);
   }
 
