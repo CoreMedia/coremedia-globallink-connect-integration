@@ -39,13 +39,6 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.coremedia.cms</groupId>
-        <artifactId>studio-server-core-bom</artifactId>
-        <version>${cm.workflow-server.core.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
         <groupId>com.translations.globallink</groupId>
         <artifactId>gcc-restclient</artifactId>
         <version>${gcc-restclient.version}</version>

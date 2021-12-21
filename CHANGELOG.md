@@ -1,6 +1,46 @@
 Changelog
 ================================================================================
 
+CoreMedia v11.2110.1
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* CMCCv11 introduces the Workflow App 🥳 and some changes to the way of handling 
+   extensions of the Studio Client. The Studio code was migrated to TypeScript
+   and adpated to the new API of the Workflow App. The module structure is also
+   compatible with the new version of the extension tool for centralized 
+   extensions.
+* Renamed "Reject Changes" step to "Abort And Rollback Changes" to clearly point
+    what actually happens when choosing this option.
+* Tweaked log levels so that you can more easily follow state changes in the 
+   log file.
+   * Opening and closing session is now logged at debug level. These messages 
+      were spamming the log without providing additional details why a session
+      was opened at all.
+   * Instead state changing actions like downloading completed locales or 
+     cancelling a submission are now logged at info level.
+* In v11.2110.1 the `FinalAction` API was introduced in the workflow server to 
+   archive workflows consistently. `ArchiveProcessFinalAction` now takes care of 
+   archiving the completed as well as the aborted (escalated) workflows. The workflow
+   definition was updated accordingly. When upgrading, you will have to upload
+   workflow definition again.
+* Renaming branch `master` to `main`
+
+   Follow these steps to rename your local master branch as well:
+   ```bash
+   # Switch to the "master" branch
+   $ git checkout master
+   # Rename it to "main"
+   $ git branch -m master main
+   # Get the latest commits (and branches!) from the remote
+   $ git fetch
+   # Remove the existing tracking connection with "origin/master"
+   $ git branch --unset-upstream
+   # Create a new tracking connection with the new "origin/main" branch
+   $ git branch -u origin/main
+   ```
+
 2107
 --------------------------------------------------------------------------------
 

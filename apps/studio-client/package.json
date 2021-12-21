@@ -1,8 +1,0 @@
-{
-  "studioPlugins": [
-    {
-      "mainClass": "com.coremedia.labs.translation.gcc.studio.GccStudioPlugin",
-      "name": "GlobalLink Studio Plugin"
-    }
-  ]
-}

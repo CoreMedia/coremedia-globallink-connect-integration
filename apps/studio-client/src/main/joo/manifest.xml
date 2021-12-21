@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<componentPackage>
-  <component class="com.coremedia.labs.translation.gcc.studio.GccStudioPlugin"/>
-  <component class="com.coremedia.labs.translation.gcc.studio.GccStudioPluginBase"/>
-  <component class="com.coremedia.labs.translation.gcc.studio.GCCStartTranslationWorkflowForm"/>
-</componentPackage>

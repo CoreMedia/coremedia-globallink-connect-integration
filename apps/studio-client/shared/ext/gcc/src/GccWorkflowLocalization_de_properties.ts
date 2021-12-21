@@ -1,0 +1,46 @@
+import ResourceBundleUtil from "@jangaroo/runtime/l10n/ResourceBundleUtil";
+import GccWorkflowLocalization_properties from "./GccWorkflowLocalization_properties";
+
+ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
+  TranslationGlobalLink_displayName: "Übersetzung mit GlobalLink",
+  TranslationGlobalLink_description: "Übersetzung mit GlobalLink",
+
+  TranslationGlobalLink_task_Prepare_displayName: "Vorbereitung",
+  TranslationGlobalLink_task_AutoMerge_displayName: "Aktualisierung nicht zu übersetzender Felder",
+  TranslationGlobalLink_task_SendTranslationRequest_displayName: "Senden der Übersetzungsanfrage",
+  TranslationGlobalLink_task_DownloadTranslation_displayName: "Warten auf Übersetzung",
+  TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: "Übersetzung prüfen",
+  TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: "Abbruch prüfen",
+  TranslationGlobalLink_task_RollbackContent_displayName: "Verwerfen der Änderungen",
+  TranslationGlobalLink_task_Complete_displayName: "Aktualisierung des Status der abgeleiteten Inhalte",
+  TranslationGlobalLink_task_Finish_displayName: "Archivierung des Workflows",
+  TranslationGlobalLink_task_HandleSendTranslationRequestError_displayName: "Fehler beim Senden",
+  TranslationGlobalLink_task_HandleDownloadTranslationError_displayName: "Fehler beim Empfangen",
+  TranslationGlobalLink_task_HandleCancelTranslationError_displayName: "Fehler beim Abbrechen",
+
+  TranslationGlobalLink_state_Translate_displayName: "Übersetzungs-Workflow annehmen",
+  TranslationGlobalLink_state_rollbackTranslation_displayName: "Beeenden und Änderungen verwerfen",
+  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: "Änderungen verwerfen ohne Abbruch des GlobalLink-Auftrags",
+  TranslationGlobalLink_state_finishTranslation_displayName: "Lokalisierung abschließen",
+  TranslationGlobalLink_state_DownloadTranslation_displayName: "Warten auf Übersetzung",
+  TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: "Übersetzung prüfen",
+  TranslationGlobalLink_state_ReviewCancelledTranslation_displayName: "Abbruch prüfen",
+  TranslationGlobalLink_state_translationReviewed_displayName: "Lokalisierung abschließen (Übersetzung geprüft)",
+  TranslationGlobalLink_state_continueRetry_displayName: "Weiter, und erneut versuchen",
+  TranslationGlobalLink_state_HandleSendTranslationRequestError_displayName: "Fehler beim Senden",
+  TranslationGlobalLink_state_HandleDownloadTranslationError_displayName: "Fehler beim Empfangen",
+  TranslationGlobalLink_state_HandleCancelTranslationError_displayName: "Fehler beim Abbrechen",
+
+  "GCC-WF-10000_text": "An unexpected error occurred.",
+  "GCC-WF-20000_text": "Error communicating with GlobalLink.",
+  "GCC-WF-30001_text": "A local IO error occurred.",
+  "GCC-WF-40000_text": "The GlobalLink configuration settings are inconsistent.",
+  "GCC-WF-40001_text": "The GlobalLink configuration settings contain an unsupported value for 'fileType'.",
+  "GCC-WF-40050_text": "Encountered an illegal submission ID.",
+  "GCC-WF-50050_text": "An xliff export failure occurred.",
+  "GCC-WF-61001_text": "Failure while trying to cancel GlobalLink submission.",
+  dateLiesInPast_globalLinkDueDate_text: "Please choose a future Due Date.",
+  dateInvalid_globalLinkDueDate_text: "Please enter a valid Due Date.",
+  SUCCESS_singular_text: "The translation result has successfully been imported.",
+  SUCCESS_plural_text: "The translation results have successfully been imported.",
+});

@@ -34,49 +34,109 @@ To summarize the steps below, everything you need to do:
 5. Later on: Ensure that your homepages link to `/Settings/Options/Settings/GlobalLink`
     in their linked settings.
 
-## Adding GCC Submodule
+### Branches
 
-The GCC extension can be added the Blueprint workspace as a Git submodule as follwos:
-```bash
-$ mkdir -p modules/extensions
-$ cd modules/extensions
-$ git submodule add https://github.com/CoreMedia/coremedia-globallink-connect-integration.git gcc
-$ git submodule init
-$ git checkout -b <tag-name> <your-branch-name>
+![Branch Model](img/branch-model.png)
+
+* **main:** Will be initially used to create `develop` branch. Afterwards,
+  it will just be used to merge changes from `develop` branch to `main`,
+  i.e., it will just be recipient afterwards. On _release_ the main merge
+  commit will be tagged. See below for details on tagging.
+
+* **develop:** After initial creation, all development by CoreMedia and
+  merging pull request will happen here.
+
+* **ci/develop:** An artificial branch required for CoreMedia CI systems. It is
+  required, as for CoreMedia CI we need to change the parent POMs in that way,
+  that we set the version to `9999.9` and add a relative path, so that
+  it matches our workspace setup.
+
+  As soon as changes from `develop` shall be published to CI, we rebase
+  the adaptions:
+
+    ```bash
+    $ git checkout "ci/develop"
+    $ git rebase "origin/develop"
+    $ git push --force-with-lease
+    ```
+
+### Tags
+
+The structure of tags is as follows:
+
+```text
+<CMCC Version>-<GlobalLink Workspace Version>
 ```
-If you plan to customize the extension, create a fork of the repository and adjust the repository parameters accordingly. 
 
-## Adding GCC as extension
+Thus, `1907.1-1` signals compatibility with CMCC 1907.1 and is the first
+version of this GlobalLink workspace. `1907.1-2` is a patch version for
+version `1907.1-1`, which is based on the same CMCC version, but for example
+contains bug fixes.
 
-In order to add the gcc extension to your workspace you need to configure your
-extension tool. The configuration for the tool can be found under
-`workspace-configuration/extensions`. Make sure that you use at least version
-4.0.1 of the extension tool.
+## Adding GCC Adapter to the Blueprint
 
-Here you need to add the following configuration for the `extensions-maven-plugin`
-```xml
-<configuration>
-  <projectRoot>../..</projectRoot>
-  <extensionsRoot>modules/extensions</extensionsRoot>
-  <extensionPointsPath>modules/extension-config</extensionPointsPath>
-</configuration>
+There are many approaches for integrating the extension into
+the Blueprint. Each one comes with its own pros and cons depending on your use
+case.
+
+With `git subtree` you can easily change the adapter code and cherry-pick important
+fixes of upcoming releases without having to create a fork of the adapter itself.
+This is one of the main advantages of the subtree approach over `git submodule`. 
+Contributing back upstream is however slightly more complicated.
+
+Feel free to choose the strategy that fits your needs best. For example:
+
+* As a Git Subtree from the workspace root (recommended)
+   ```bash
+   $ mkdir -p modules/extensions
+   $ # Add sub-project as a remote to enable short form
+   $ git remote add -f gcc https://github.com/CoreMedia/coremedia-globallink-connect-integration.git
+   $ git subtree add --prefix modules/extensions/gcc gcc main --squash
+   $ # For example - update the sub-project at a later date...
+   $ git fetch gcc main
+   $ git subtree pull --prefix modules/extensions/gcc gcc main --squash
+   ```
+  See [Issue 28](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/28) for a more detailed description of a similar approach.
+* Or as a Git Submodule from the workspace root
+   ```bash
+   $ git submodule add https://github.com/CoreMedia/coremedia-globallink-connect-integration.git modules/extensions/gcc
+   $ git submodule update --init --recursive
+   $ cd modules/extensions/gcc
+   $ git checkout <release-tag>
+   $ cd ..
+   $ # Add and commit .gitmodules and current HEAD of submodule 
+   $ git add .
+   $ git commit -m "Initial integration of submodule based on <release-tag>"
+   ```
+  
+If you want to contribute to this project - which we hope for - you 
+need to fork the project. For example, with the `git subtree` approach, pushing 
+to your fork could look as follows:
+```bash
+$ # Add your fork as another remote
+$ git remote add -f my-gcc https://github.com/my-company/coremedia-globallink-connect-extended.git
+$ # For example - update the sub-project at a later date...
+$ git subtree push --prefix=modules/extensions/gcc my-gcc main
 ```
+You can then send us the corresponding pull request.
 
-After adapting the configuration you may run the extension tool in
-`workspace-configuration/extensions`:
+## Enabling the Extension
+
+Execute the following command in `workspace-configuration/extensions` below the
+workspace root folder:
 
 ```bash
-$ mvn extensions:sync
+$ cd workspace-configuration/extensions
 $ mvn extensions:sync -Denable=gcc
 ``` 
 
-This will activate the globalLink extension. The extension tool will
+This will activate the extension. The extension tool will
 also set the relative path for the parents of the extension modules.
 
 ## Adding GCC Workflow to Workflow Server Deployment
 
 You need to add `translation-global-link.xml` to your workflow definitions
-in `global/management-tools/docker/management-tools/src/docker/import-default-workflows`.
+in `global/management-tools/management-tools-image/src/main/image/coremedia/import-default-workflows`.
 Add `TranslationGlobalLink:/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml`
 to the variable `DEFAULT_WORKFLOWS`.
 
