@@ -38,9 +38,9 @@ To summarize the steps below, everything you need to do:
 
 ![Branch Model](img/branch-model.png)
 
-* **master:** Will be initially used to create `develop` branch. Afterwards,
-  it will just be used to merge changes from `develop` branch to `master`,
-  i.e., it will just be recipient afterwards. On _release_ the master merge
+* **main:** Will be initially used to create `develop` branch. Afterwards,
+  it will just be used to merge changes from `develop` branch to `main`,
+  i.e., it will just be recipient afterwards. On _release_ the main merge
   commit will be tagged. See below for details on tagging.
 
 * **develop:** After initial creation, all development by CoreMedia and

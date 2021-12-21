@@ -11,9 +11,9 @@ of this workspace.
 
 ## Quick Path
 
-Assuming all branches (master, develop, ci/develop) already exist, proceed as
+Assuming all branches (main, develop, ci/develop) already exist, proceed as
 follows (example here: update GCC REST Client and CMCC version; assuming
-that `origin/master` is the default branch):
+that `origin/main` is the default branch):
 
 ```bash
 $ git clone https://github.com/CoreMedia/coremedia-globallink-connect-integration.git gcc
@@ -67,9 +67,9 @@ Now that you have updated the documentation, the third-party reports, the
 changelog, and the version badges, you can proceed with creating the tag.
 
 ```bash
-$ git checkout master
+$ git checkout main
 $ git merge "origin/develop"
-$ git push origin master
+$ git push origin main
 $ git tag "v1910.1-1"
 $ git push origin "v1910.1-1"
 ```
