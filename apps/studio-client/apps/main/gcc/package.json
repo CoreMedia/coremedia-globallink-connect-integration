@@ -1,5 +1,5 @@
 {
-  "name": "@coremedia-labs/studio-client.ext.gcc-studio-client.main",
+  "name": "@coremedia-labs/studio-client.main.gcc-studio-client",
   "author": "CoreMedia GmbH",
   "version": "1.0.0-SNAPSHOT",
   "license": "CoreMedia Open Source License",
@@ -12,7 +12,7 @@
     "@jangaroo/core": "^1.0.0",
     "@jangaroo/eslint-config": "^1.0.0",
     "@jangaroo/publish": "^1.0.0",
-    "eslint": "7.27.0",
+    "eslint": "^7.27.0",
     "rimraf": "^3.0.2"
   },
   "scripts": {

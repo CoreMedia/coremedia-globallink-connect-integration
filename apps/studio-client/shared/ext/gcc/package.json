@@ -21,7 +21,7 @@
     "@jangaroo/core": "^1.0.0",
     "@jangaroo/eslint-config": "^1.0.0",
     "@jangaroo/publish": "^1.0.0",
-    "eslint": "7.27.0",
+    "eslint": "^7.27.0",
     "rimraf": "^3.0.2"
   },
   "scripts": {
@@ -34,11 +34,11 @@
   "exports": {
     "./*": {
       "types": "./src/*.ts",
-      "default": "./build/src/*.js"
+      "default": "./dist/src/*.js"
     }
   },
   "publishConfig": {
-    "directory": "build",
+    "directory": "dist",
     "exports": {
       "./*": {
         "types": "./src/*.d.ts",
