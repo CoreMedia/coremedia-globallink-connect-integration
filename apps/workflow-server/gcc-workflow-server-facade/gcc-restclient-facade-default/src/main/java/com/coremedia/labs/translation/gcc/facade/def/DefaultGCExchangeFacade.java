@@ -48,13 +48,13 @@ import java.util.IllformedLocaleException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.google.common.base.Strings.nullToEmpty;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
@@ -248,7 +248,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static String createSubmissionName(@Nullable String subject,
                                              Locale sourceLocale,
                                              Map<String, List<Locale>> contentMap) {
-    String trimmedSubject = nullToEmpty(subject).trim();
+    String trimmedSubject = Objects.toString(subject, "").trim();
     if (trimmedSubject.length() >= SUBMISSION_NAME_MAX_LENGTH) {
       if (trimmedSubject.length() == SUBMISSION_NAME_MAX_LENGTH) {
         LOG.debug("Given subject at maximum length {}. Skipping applying further information to subject.", SUBMISSION_NAME_MAX_LENGTH);
