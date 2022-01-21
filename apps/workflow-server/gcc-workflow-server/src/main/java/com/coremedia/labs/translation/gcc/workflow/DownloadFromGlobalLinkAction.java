@@ -1,11 +1,5 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
-import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.coremedia.cap.common.Blob;
 import com.coremedia.cap.common.CapSession;
 import com.coremedia.cap.content.Content;
@@ -18,6 +12,12 @@ import com.coremedia.cap.user.User;
 import com.coremedia.cap.user.UserRepository;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
+import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -45,9 +45,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLATION_CONFIRMED;
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.DUPLICATE_NAME;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.EMPTY_TRANSUNIT_TARGET;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.EMPTY_TRANSUNIT_TARGET_FOR_WHITESPACE_SOURCE;
@@ -55,6 +52,9 @@ import static com.coremedia.cap.translate.xliff.XliffImportResultCode.FAILED;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_INTERNAL_LINK;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_LOCALE;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.SUCCESS;
+import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLATION_CONFIRMED;
+import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
+import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
 import static java.util.Objects.requireNonNull;
 
 /**

@@ -1,9 +1,9 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.cap.multisite.DefaultSiteModel;
 import com.coremedia.cap.multisite.SiteModel;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import com.coremedia.translate.TranslatablePredicate;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
