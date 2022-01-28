@@ -22,10 +22,10 @@ import { as, is } from "@jangaroo/runtime";
 import resourceManager from "@jangaroo/runtime/l10n/resourceManager";
 import GccWorkflowLocalization_properties from "./GccWorkflowLocalization_properties";
 import Gcc_properties from "./Gcc_properties";
-import gccCanceledIcon from "./icons/abort-workflow_24.svg";
-import gccIcon from "./icons/global-link-workflow_24.svg";
-import gccCancelActionIcon from "./icons/remove_24.svg";
-import gccWarningIcon from "./icons/warning_24.svg";
+import gccCanceledIcon from "./icons/global-link-workflow-canceled.svg";
+import gccIcon from "./icons/global-link-workflow.svg";
+import gccCancelActionIcon from "./icons/remove.svg";
+import gccWarningIcon from "./icons/warning.svg";
 
 const UNAVAILABLE_SUBMISSION_STATE: string = "unavailable";
 const BLOB_FILE_PROCESS_VARIABLE_NAME: string = "translationResultXliff";
@@ -63,7 +63,7 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
 
   customizeWorkflowIcon: (process, task?) => {
     if (!!task
-      && !task.getWarnings()
+      && (!task.getWarnings() || task.getWarnings().length === 0)
       && !task.isEscalated()
       && !task.isAccepted()
       && (task.getDefinition().getName() === HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME
