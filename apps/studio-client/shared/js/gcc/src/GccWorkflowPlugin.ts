@@ -145,7 +145,11 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
           allowAlways: true,
         },
         {
-          name: "continueRetry",
+          name: "retryCancellation",
+          allowAlways: true,
+        },
+        {
+          name: "continueTranslation",
           allowAlways: true,
         },
       ],
@@ -292,6 +296,8 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
     ReviewCancelledTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewCancelledTranslation_displayName,
     translationReviewed: GccWorkflowLocalization_properties.TranslationGlobalLink_state_translationReviewed_displayName,
     continueRetry: GccWorkflowLocalization_properties.TranslationGlobalLink_state_continueRetry_displayName,
+    retryCancellation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_retryCancellation_displayName,
+    continueTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_continueTranslation_displayName,
     HandleSendTranslationRequestError: GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleSendTranslationRequestError_displayName,
     HandleDownloadTranslationError: GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleDownloadTranslationError_displayName,
     HandleCancelTranslationError: GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleCancelTranslationError_displayName,

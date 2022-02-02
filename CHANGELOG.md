@@ -1,7 +1,7 @@
 Changelog
 ================================================================================
 
-CoreMedia v11.2110.1
+CoreMedia v11.2110
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -11,7 +11,7 @@ CoreMedia v11.2110.1
    and adpated to the new API of the Workflow App. The module structure is also
    compatible with the new version of the extension tool for centralized 
    extensions.
-* Renamed "Reject Changes" step to "Abort And Rollback Changes" to clearly point
+* Renamed "Reject Changes" step to "Abort and rollback changes" to clearly point
     what actually happens when choosing this option.
 * Tweaked log levels so that you can more easily follow state changes in the 
    log file.
@@ -20,7 +20,12 @@ CoreMedia v11.2110.1
       was opened at all.
    * Instead state changing actions like downloading completed locales or 
      cancelling a submission are now logged at info level.
-* In v11.2110.1 the `FinalAction` API was introduced in the workflow server to 
+* When upgrading, you will have to upload workflow definition again to benefit
+from the latest changes:
+  * There is a new optional next step in the _Handle Cancellation Error_ task
+    that enables continuing with the regular translation process in case a
+    submission cannot be cancelled anymore at GlobalLink.
+  * In v11.2110.1 the `FinalAction` API was introduced in the workflow server to 
    archive workflows consistently. `ArchiveProcessFinalAction` now takes care of 
    archiving the completed as well as the aborted (escalated) workflows. The workflow
    definition was updated accordingly. When upgrading, you will have to upload

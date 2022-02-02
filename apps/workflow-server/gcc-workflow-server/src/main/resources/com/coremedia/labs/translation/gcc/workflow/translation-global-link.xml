@@ -409,13 +409,21 @@
       <ExitAction class="EnableTimer" timerVariable="cancelTranslationRetryDelay"/>
     </UserTask>
 
-    <If name="SelectTaskAfterCancelTranslationError">
-      <Condition>
+    <Switch name="SelectTaskAfterCancelTranslationError" defaultSuccessor="CancelTranslation">
+      <Case successor="RollbackContent">
         <Equal><Get variable="translationAction"/><String value="rollbackTranslation_afterCancellationFailed"/></Equal>
-      </Condition>
-      <Then successor="RollbackContent"/>
-      <Else successor="CancelTranslation"/>
-    </If>
+      </Case>
+      <Case successor="CancelTranslation">
+        <Equal><Get variable="translationAction"/><String value="retryCancellation"/></Equal>
+      </Case>
+      <Case successor="resetCancelRequest">
+        <Equal><Get variable="translationAction"/><String value="continueTranslation"/></Equal>
+      </Case>
+    </Switch>
+
+    <AutomatedTask name="resetCancelRequest" successor="DownloadTranslation">
+      <Action class="AssignVariable" resultVariable="cancelRequested"><Boolean value="false"/></Action>
+    </AutomatedTask>
 
     <AutomatedTask name="RollbackContent" successor="Finish">
       <Action class="com.coremedia.translate.workflow.RollbackVersionsAction"

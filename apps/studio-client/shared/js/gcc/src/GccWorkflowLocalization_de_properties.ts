@@ -27,6 +27,8 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
   TranslationGlobalLink_state_ReviewCancelledTranslation_displayName: "Abbruch prüfen",
   TranslationGlobalLink_state_translationReviewed_displayName: "Lokalisierung abschließen (Übersetzung geprüft)",
   TranslationGlobalLink_state_continueRetry_displayName: "Weiter, und erneut versuchen",
+  TranslationGlobalLink_state_retryCancellation_displayName: "Abbrechen erneut versuchen",
+  TranslationGlobalLink_state_continueTranslation_displayName: "Lokalisierung fortsetzen",
   TranslationGlobalLink_state_HandleSendTranslationRequestError_displayName: "Fehler beim Senden",
   TranslationGlobalLink_state_HandleDownloadTranslationError_displayName: "Fehler beim Empfangen",
   TranslationGlobalLink_state_HandleCancelTranslationError_displayName: "Fehler beim Abbrechen",
