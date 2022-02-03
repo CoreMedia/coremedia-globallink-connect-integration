@@ -413,15 +413,12 @@
       <Case successor="RollbackContent">
         <Equal><Get variable="translationAction"/><String value="rollbackTranslation_afterCancellationFailed"/></Equal>
       </Case>
-      <Case successor="CancelTranslation">
-        <Equal><Get variable="translationAction"/><String value="retryCancellation"/></Equal>
-      </Case>
-      <Case successor="resetCancelRequest">
+      <Case successor="ResetCancelRequest">
         <Equal><Get variable="translationAction"/><String value="continueTranslation"/></Equal>
       </Case>
     </Switch>
 
-    <AutomatedTask name="resetCancelRequest" successor="DownloadTranslation">
+    <AutomatedTask name="ResetCancelRequest" successor="DownloadTranslation">
       <Action class="AssignVariable" resultVariable="cancelRequested"><Boolean value="false"/></Action>
     </AutomatedTask>
 
