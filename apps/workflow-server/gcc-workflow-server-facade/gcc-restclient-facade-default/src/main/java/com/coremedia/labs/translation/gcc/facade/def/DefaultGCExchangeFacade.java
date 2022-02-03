@@ -519,10 +519,12 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             () -> createTaskListRequestBase(submissionId),
             r -> executeRequest(r, t -> {
               TaskStatus status = TaskStatus.valueOf(t.getStatus());
+              LOG.debug("Checking status {} of task with id {} of submission {}", status.text(), t.getTaskId(), submissionId);
               switch (status) {
                 case Delivered:
                   break;
                 case Cancelled:
+                  LOG.debug("Verifying cancellation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
                   // Logical AND: Only use confirmed state, if value
                   // is still true. Otherwise, keep false state.
                   allDone.compareAndSet(true, t.getIsCancelConfirmed());
