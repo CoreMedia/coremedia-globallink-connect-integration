@@ -162,7 +162,6 @@ public class CancelTranslationGlobalLinkAction extends
     if (result.submissionState == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
       result.submissionState = facade.getSubmission(submissionId).getState();
-      LOG.info("Confirmed cancellation of submission {} (PD ID {}) with completed locales {} and new state {}.", submission.getSubmissionId(), submission.getPdSubmissionIds(), result.completedLocales, result.submissionState);
     }
   }
 

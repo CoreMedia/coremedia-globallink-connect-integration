@@ -519,7 +519,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             () -> createTaskListRequestBase(submissionId),
             r -> executeRequest(r, t -> {
               TaskStatus status = TaskStatus.valueOf(t.getStatus());
-              LOG.debug("Checking status {} of task with id {} of submission {}", status.text(), t.getTaskId(), submissionId);
+              LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
               switch (status) {
                 case Delivered:
                   break;
