@@ -41,11 +41,9 @@ public class ActionTestBaseConfiguration {
   @Scope(SCOPE_SINGLETON)
   @Bean
   public GCExchangeFacade gcExchangeFacade() {
-    GCExchangeFacade mock = Mockito.mock(GCExchangeFacade.class, invocation -> {
+    return Mockito.mock(GCExchangeFacade.class, invocation -> {
       throw new IllegalStateException("Unexpected method called on GCExchangeFacade Mock. You may require to extend your mock setup. Invocation: " + invocation);
     });
-    Mockito.doNothing().when(mock).close();
-    return mock;
   }
 
   @Bean

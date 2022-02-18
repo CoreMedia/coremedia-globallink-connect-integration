@@ -100,19 +100,15 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    */
   DefaultGCExchangeFacade(Map<String, Object> config) {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
-    String userName = requireNonNullConfig(config, GCConfigProperty.KEY_USERNAME);
-    String password = requireNonNullConfig(config, GCConfigProperty.KEY_PASSWORD);
-    String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
+    String connectorKey = requireNonNullConfig(config, GCConfigProperty.CONNECTOR_KEY);
+    String apiKey = requireNonNullConfig(config, GCConfigProperty.API_KEY);
     this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
     LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {
-      delegate = new GCExchange(new GCConfig(
-              apiUrl,
-              userName,
-              password,
-              connectorKey,
-              USER_AGENT
-      ));
+      GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
+      gcConfig.setUserAgent(USER_AGENT);
+      gcConfig.setConnectorKey(connectorKey);
+      delegate = new GCExchange(gcConfig);
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);
     }
@@ -136,19 +132,6 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       );
     }
     return String.valueOf(value);
-  }
-
-  /**
-   * Closes the GCC Session, which is that a logout is triggered at the GCC REST Backend.
-   */
-  @Override
-  public void close() {
-    try {
-      delegate.logout();
-      LOG.debug("Successfully closed GCC connection.");
-    } catch (RuntimeException e) {
-      LOG.warn("Failed to logout. Ignored assuming the session will automatically timeout.", e);
-    }
   }
 
   @Override
@@ -347,7 +330,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         MessageResponse messageResponse = delegate.confirmTaskCancellation(taskId);
         if (!HTTP_OK.equals(messageResponse.getStatus())) {
           LOG.debug("Failed to confirm task cancellation for the task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
-          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task: " + taskId);
+          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task " + taskId);
         }
       } catch (RuntimeException e) {
         throw new GCFacadeCommunicationException(e, "Failed to confirm the cancelled task: " + taskId);
@@ -439,7 +422,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       try {
         Locale localeFromGCCTask = new Locale.Builder().setLanguageTag(t.getTargetLocale().getLocale()).build();
         GCTaskModel gcTaskModel = new GCTaskModel(t.getTaskId(), localeFromGCCTask);
-        tasksByState.merge(TaskStatus.valueOf(t.getStatus()), Sets.newHashSet(gcTaskModel),
+        tasksByState.merge(TaskStatus.valueOf(t.getState()), Sets.newHashSet(gcTaskModel),
                 (oldValue, newValue) -> {
                   oldValue.addAll(newValue);
                   return oldValue;
@@ -502,7 +485,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         state = GCSubmissionState.CANCELLED;
       }
     }
-    return new GCSubmissionModel(submissionId, submission.getPdSubmissionIds(), state);
+    return new GCSubmissionModel(submissionId, new ArrayList<>(submission.getPdSubmissionIds().keySet()), state);
   }
 
   /**
@@ -518,7 +501,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     GCUtil.processAllPages(
             () -> createTaskListRequestBase(submissionId),
             r -> executeRequest(r, t -> {
-              TaskStatus status = TaskStatus.valueOf(t.getStatus());
+              TaskStatus status = TaskStatus.valueOf(t.getState());
               LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
               switch (status) {
                 case Delivered:
