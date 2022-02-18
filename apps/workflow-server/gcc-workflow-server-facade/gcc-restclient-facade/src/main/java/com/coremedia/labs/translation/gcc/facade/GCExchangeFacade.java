@@ -23,7 +23,7 @@ import java.util.function.BiPredicate;
  * </p>
  */
 @DefaultAnnotation(NonNull.class)
-public interface GCExchangeFacade extends AutoCloseable {
+public interface GCExchangeFacade {
   /**
    * This is a convenience access to the embedded delegate. It should not be
    * used within production code, but may help to develop faster and later
@@ -33,9 +33,6 @@ public interface GCExchangeFacade extends AutoCloseable {
    */
   @SuppressWarnings("unused")
   GCExchange getDelegate();
-
-  @Override
-  void close();
 
   /**
    * Uploads the given content, like for example an XLIFF file. Returns

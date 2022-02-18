@@ -45,33 +45,32 @@ class MockedGCExchangeFacadeTest {
 
     Resource xliffResource = new ClassPathResource(XLIFF_FILE, MockedGCExchangeFacade.class);
 
-    try (MockedGCExchangeFacade facade = new MockedGCExchangeFacade()) {
-      // Let the tasks proceed faster.
-      facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
+    MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
+    // Let the tasks proceed faster.
+    facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
 
-      String fileId = facade.uploadContent(testName, xliffResource, null);
-      long submissionId = facade.submitSubmission(
-              testName,
-              null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
+    String fileId = facade.uploadContent(testName, xliffResource, null);
+    long submissionId = facade.submitSubmission(
+            testName,
+            null,
+            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            null,
+            "admin",
+            Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
-      assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED);
+    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED);
 
-      StringBuilder xliffResult = new StringBuilder();
+    StringBuilder xliffResult = new StringBuilder();
 
-      facade.downloadCompletedTasks(submissionId, new TaskDataConsumer(xliffResult));
+    facade.downloadCompletedTasks(submissionId, new TaskDataConsumer(xliffResult));
 
-      LOG.info("XLIFF Result: {}", xliffResult);
+    LOG.info("XLIFF Result: {}", xliffResult);
 
-      Assertions.assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.DELIVERED);
-      assertThat(xliffResult)
-        .describedAs("Some pseudo-translation should have been performed.")
-        .doesNotContain(PRE_POPULATED_TARGET)
-        .matches("(?s).*<target>[^<]+</target>.*");
-    }
+    Assertions.assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.DELIVERED);
+    assertThat(xliffResult)
+      .describedAs("Some pseudo-translation should have been performed.")
+      .doesNotContain(PRE_POPULATED_TARGET)
+      .matches("(?s).*<target>[^<]+</target>.*");
 
   }
 
@@ -105,28 +104,26 @@ class MockedGCExchangeFacadeTest {
 
     Resource xliffResource = new ClassPathResource(XLIFF_FILE, MockedGCExchangeFacade.class);
 
-    try (MockedGCExchangeFacade facade = new MockedGCExchangeFacade()) {
-      // Let the tasks proceed faster.
-      facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
+    MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
+    // Let the tasks proceed faster.
+    facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
 
-      String fileId = facade.uploadContent(testName, xliffResource, Locale.US);
-      long submissionId = facade.submitSubmission(
-              "states:other,cancelled",
-              null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
+    String fileId = facade.uploadContent(testName, xliffResource, Locale.US);
+    long submissionId = facade.submitSubmission(
+            "states:other,cancelled",
+            null,
+            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            null,
+            "admin",
+            Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
-      assertSubmissionReachesState(facade, submissionId, GCSubmissionState.CANCELLED);
-    }
+    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.CANCELLED);
   }
 
   @Test
   void facadeAvailableViaServiceLoader() {
-    try (GCExchangeFacade facade = DefaultGCExchangeFacadeSessionProvider.defaultFactory().openSession(singletonMap(GCConfigProperty.KEY_TYPE, MockGCExchangeFacadeProvider.TYPE_TOKEN))) {
-      assertThat(facade).isInstanceOf(MockedGCExchangeFacade.class);
-    }
+    GCExchangeFacade facade = DefaultGCExchangeFacadeSessionProvider.defaultFactory().openSession(singletonMap(GCConfigProperty.KEY_TYPE, MockGCExchangeFacadeProvider.TYPE_TOKEN));
+    assertThat(facade).isInstanceOf(MockedGCExchangeFacade.class);
   }
 
   private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState desiredState) {

@@ -66,10 +66,9 @@ class GlobalLinkActionTest {
 
   @Test
   void testOpenSession() {
-    try (GCExchangeFacade facade = globalLinkAction.openSession(site)) {
-      assertThat(facade).isNotNull();
-      assertThat(facade).isInstanceOf(MockedGCExchangeFacade.class);
-    }
+    GCExchangeFacade facade = globalLinkAction.openSession(site);
+    assertThat(facade).isNotNull();
+    assertThat(facade).isInstanceOf(MockedGCExchangeFacade.class);
   }
 
   private static class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
@@ -100,9 +99,8 @@ class GlobalLinkActionTest {
     protected Map<String, Object> getGccSettings(Site site) {
       return ImmutableMap.of(
               GCConfigProperty.KEY_URL, "http://lorem.ipsum.fun/",
-              GCConfigProperty.KEY_USERNAME, "Horst",
-              GCConfigProperty.KEY_PASSWORD, "Walter",
-              GCConfigProperty.KEY_KEY, "012345",
+              GCConfigProperty.API_KEY, "abcd",
+              GCConfigProperty.CONNECTOR_KEY, "012345",
               GCConfigProperty.KEY_TYPE, "mock");
     }
   }

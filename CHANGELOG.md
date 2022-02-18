@@ -1,6 +1,19 @@
 Changelog
 ================================================================================
 
+2201
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated to API v3 of GlobalLink Connect Cloud. The API now uses an API Key 
+for authentication instead of username and password. You have to request the
+API Key from your contacts at Translations.com.
+   
+  You will also have to adapt your configuration of the workflow in the content
+repository or in your properties file. Remove `username` and `password` and 
+set the `apiKey` instead. You will also have to update the `url` to point to v3. 
+
 CoreMedia v11.2110
 --------------------------------------------------------------------------------
 
