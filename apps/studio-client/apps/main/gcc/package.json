@@ -8,10 +8,10 @@
     "@coremedia-labs/studio-client.ext.gcc-studio-client": "1.0.0-SNAPSHOT"
   },
   "devDependencies": {
-    "@jangaroo/build": "^1.0.0",
-    "@jangaroo/core": "^1.0.0",
+    "@jangaroo/build": "^1.0.3",
+    "@jangaroo/core": "^1.0.3",
     "@jangaroo/eslint-config": "^1.0.0",
-    "@jangaroo/publish": "^1.0.0",
+    "@jangaroo/publish": "^1.0.3",
     "eslint": "7.27.0",
     "rimraf": "^3.0.2"
   },
