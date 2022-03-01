@@ -57,7 +57,7 @@ home folder
    displays “0 Locales”
 6. Wait for the workflow to be finished
     1. The Workflow should disappear from the "Running" workflows in the Workflow 
-   App and appear on the “Open” list.
+       App and appear on the “Open” list.
     2. In the Content App the Workflow should now also be shown in the Inbox.
 7. Select the Workflow in your “Open” list in the Workflow App
     1. The “Status” variable should display “Delivered”
