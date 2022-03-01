@@ -34,11 +34,11 @@ $ git push origin "ci/develop" --force-with-lease
 $ git checkout develop
 ```
 
-## 2. Verify Release Versions of Studio Client Core Packages
+## 2. Verify Release Versions of Core Packages
 
 If the release of this adapter targets a newer CMCC release, make sure that the
-versions mentioned in the `package.json` match. If not, update them and repeat
-the manual tests.
+versions mentioned in the `package.json` files of the Studio Client and 
+the `gcc-workflow-server-parent` Maven module match.
 
 ## 3. Documentation Update
 
@@ -61,7 +61,11 @@ the manual tests.
 * And, do not forget to mention all the changes including upgrade advice in 
   `CHANGELOG.md`
 
-## 4. Create Tag for the Release
+## 4. Manual Testing
+
+Follow the test steps as described in [Manual Test Steps](manual-test-steps.md).
+
+## 5. Create Tag for the Release
 
 Now that you have updated the documentation, the third-party reports, the 
 changelog, and the version badges, you can proceed with creating the tag.
@@ -74,7 +78,7 @@ $ git tag "v1910.1-1"
 $ git push origin "v1910.1-1"
 ```
 
-## 5. Create Release
+## 6. Create GitHub Release
 
 * Create a GitHub release from the tag and the copy the changelog entries to the
   release description. Please use the same pattern for release title as the
