@@ -9,7 +9,7 @@
 In here you will find a description of steps to perform a release
 of this workspace.
 
-## Quick Path
+## 1. Development Workflow
 
 Assuming all branches (main, develop, ci/develop) already exist, proceed as
 follows (example here: update GCC REST Client and CMCC version; assuming
@@ -34,13 +34,13 @@ $ git push origin "ci/develop" --force-with-lease
 $ git checkout develop
 ```
 
-## Verify Release Versions of Studio Client Core Packages
+## 2. Verify Release Versions of Studio Client Core Packages
 
 If the release of this adapter targets a newer CMCC release, make sure that the
 versions mentioned in the `package.json` match. If not, update them and repeat
 the manual tests.
 
-## Documentation Update
+## 3. Documentation Update
 
 * Ensure you have built the CMCC version (snapshot versions) which this
     workspace dedicates to. Otherwise, the third-party versions won't
@@ -61,7 +61,7 @@ the manual tests.
 * And, do not forget to mention all the changes including upgrade advice in 
   `CHANGELOG.md`
 
-## Create Tag for the Release
+## 4. Create Tag for the Release
 
 Now that you have updated the documentation, the third-party reports, the 
 changelog, and the version badges, you can proceed with creating the tag.
@@ -74,14 +74,14 @@ $ git tag "v1910.1-1"
 $ git push origin "v1910.1-1"
 ```
 
-## Create Release
+## 5. Create Release
 
 * Create a GitHub release from the tag and the copy the changelog entries to the
   release description. Please use the same pattern for release title as the
   previous releases.
 * Review GitHub issues and possibly adjust state.
 
-## Sketch: Incorporating Pull Requests for Given CMCC Versions
+## * Sketch: Incorporating Pull Requests for Given CMCC Versions
 
 If customers want to provide a patch for a given workspace version, create
 a branch from the given tag. This will then receive the PR results. If
