@@ -86,7 +86,7 @@ home folder
 4. Click “Start”
     1. The dialog should close without any error
     2. In the "Running" area from “Localization Workflows” the workflow should 
-   pop up
+       pop up
 5. Open the "Running" area and select the started workflow
     1. A “X” should be activated in the header bar
     2. Multi-selection is possible. If you select a "normal" and a GlobalLink 
