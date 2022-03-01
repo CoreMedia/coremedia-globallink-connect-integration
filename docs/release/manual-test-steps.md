@@ -67,7 +67,7 @@ home folder
        to its master content in the Content App
     4. The text should be pseudo translated
 8. Click “Accept Task” in the Workflow App and then "Next Step" -> 
-“Finish Content Localization”
+   “Finish Content Localization”
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
 
