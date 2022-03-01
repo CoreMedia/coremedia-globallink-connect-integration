@@ -53,7 +53,7 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
   TranslationGlobalLink_task_SendTranslationRequest_displayName: "Sending translation request",
   TranslationGlobalLink_task_DownloadTranslation_displayName: "Awaiting translation results",
   TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: "Review translation",
-  TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: "Review cancellation",
+  TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: "Review cancelation",
   TranslationGlobalLink_task_RollbackContent_displayName: "Performing rollback",
   TranslationGlobalLink_task_Complete_displayName: "Updating derived content states",
   TranslationGlobalLink_task_Finish_displayName: "Archiving workflow",
