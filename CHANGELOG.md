@@ -6,30 +6,37 @@ CoreMedia v11.2110
 
 ### Main Changes
 
-* CMCCv11 introduces the Workflow App 🥳 and some changes to the way of handling 
-   extensions of the Studio Client. The Studio code was migrated to TypeScript
-   and adpated to the new API of the Workflow App. The module structure is also
-   compatible with the new version of the extension tool for centralized 
-   extensions.
+* CMCCv11 introduces the Workflow App 🥳 and some changes to the way of handling
+  extensions of the Studio Client. The Studio code was migrated to TypeScript
+  and adapted to the new API of the Workflow App. The module structure is also
+  compatible with the new version of the extension tool for centralized
+  extensions.
+
 * Renamed "Reject Changes" step to "Abort and rollback changes" to clearly point
-    what actually happens when choosing this option.
-* Tweaked log levels so that you can more easily follow state changes in the 
-   log file.
-   * Opening and closing session is now logged at debug level. These messages 
+  what actually happens when choosing this option.
+
+* Tweaked log levels so that you can more easily follow state changes in the
+  log file.
+
+    * Opening and closing session is now logged at debug level. These messages
       were spamming the log without providing additional details why a session
       was opened at all.
-   * Instead state changing actions like downloading completed locales or 
-     cancelling a submission are now logged at info level.
+
+    * Instead, state changing actions like downloading completed locales or
+      canceling a submission are now logged at info level.
+
 * When upgrading, you will have to upload workflow definition again to benefit
-from the latest changes:
-  * There is a new optional next step in the _Handle Cancellation Error_ task
-    that enables continuing with the regular translation process in case a
-    submission cannot be cancelled anymore at GlobalLink.
-  * In v11.2110.1 the `FinalAction` API was introduced in the workflow server to 
-   archive workflows consistently. `ArchiveProcessFinalAction` now takes care of 
-   archiving the completed as well as the aborted (escalated) workflows. The workflow
-   definition was updated accordingly. When upgrading, you will have to upload
-   workflow definition again.
+  from the latest changes:
+
+    * There is a new optional next step in the _Handle Cancelation Error_ task
+      that enables continuing with the regular translation process in case a
+      submission cannot be canceled anymore at GlobalLink.
+
+    * In v11.2110.1 the `FinalAction` API was introduced in the workflow server to
+      archive workflows consistently. `ArchiveProcessFinalAction` now takes care of
+      archiving the completed as well as the aborted (escalated) workflows. The workflow
+      definition was updated accordingly.
+
 * Renaming branch `master` to `main`
 
    Follow these steps to rename your local master branch as well:
