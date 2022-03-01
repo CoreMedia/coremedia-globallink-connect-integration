@@ -34,11 +34,11 @@
   "exports": {
     "./*": {
       "types": "./src/*.ts",
-      "default": "./build/src/*.js"
+      "default": "./dist/src/*.js"
     }
   },
   "publishConfig": {
-    "directory": "build",
+    "directory": "dist",
     "exports": {
       "./*": {
         "types": "./src/*.d.ts",

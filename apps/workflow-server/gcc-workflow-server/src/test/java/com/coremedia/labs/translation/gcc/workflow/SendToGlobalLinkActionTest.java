@@ -1,6 +1,5 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.cap.common.CapConnection;
 import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
@@ -8,6 +7,7 @@ import com.coremedia.cap.content.ContentObject;
 import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.content.Version;
 import com.coremedia.cap.translate.xliff.config.XliffExporterConfiguration;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.translate.item.TranslateItemConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;

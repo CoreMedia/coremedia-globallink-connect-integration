@@ -29,6 +29,7 @@
       see https://github.com/translations-com/globallink-connect-cloud-api-java
     -->
     <gcc-restclient.version>2.4.0</gcc-restclient.version>
+    <cm.middle.core.version>2110.1</cm.middle.core.version>
   </properties>
 
   <dependencyManagement>
@@ -36,14 +37,7 @@
       <dependency>
         <groupId>com.coremedia.cms</groupId>
         <artifactId>middle-core-bom</artifactId>
-        <version>${cm.workflow-server.core.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.coremedia.cms</groupId>
-        <artifactId>studio-server-core-bom</artifactId>
-        <version>${cm.workflow-server.core.version}</version>
+        <version>${cm.middle.core.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

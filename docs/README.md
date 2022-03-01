@@ -46,4 +46,4 @@ This extension adds the following functionality to the CoreMedia Studio:
 * [Used Third-Party Libraries](THIRD-PARTY.txt)
 
     <!-- GitHub Pages is not able to list directory contents. Jump back to GitHub directly.  -->
-    For license texts have a look at [third-party-licenses/](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/docs/third-party-licenses).
+    For license texts have a look at [third-party-licenses/](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/docs/third-party-licenses).

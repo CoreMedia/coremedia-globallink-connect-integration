@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <style type="text/css">
+    @media screen {
+    #small {
+    display: initial;
+    }
+    #medium, #large {
+    display: none;
+    }
+    }
+    @media screen and (min-width: 24px) {
+    #small {
+    display: none;
+    }
+    #medium {
+    display: initial;
+    }
+    }
+    @media screen and (min-width: 32px) {
+    #medium {
+    display: none;
+    }
+    #large {
+    display: initial;
+    }
+    }
+  </style>
+  <svg id="small" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+       viewBox="0 0 16 16" enable-background="new 0 0 16 16">
+    <path d="M14.86,12.49l-6-10C8.68,2.18,8.35,2,8,2C7.65,2,7.32,2.18,7.14,2.49l-6,10c-0.19,0.31-0.19,0.69-0.01,1.01
+	C1.31,13.81,1.64,14,2,14h12c0.36,0,0.69-0.19,0.87-0.51C15.05,13.18,15.04,12.79,14.86,12.49z M9,13H7v-2h2V13z M9,10H7V5h2V10z"/>
+  </svg>
+
+  <svg id="medium" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+       viewBox="0 0 24 24" enable-background="new 0 0 24 24">
+    <path d="M22.78 18.62L13.35 2.76C13.06 2.29 12.55 2 12 2C11.45 2 10.94 2.29 10.65 2.76L1.21999 18.62C0.929992 19.11 0.919992 19.71 1.19999 20.2C1.47999 20.7 2.00999 21 2.56999 21H21.43C22 21 22.52 20.7 22.8 20.2C23.08 19.71 23.07 19.11 22.78 18.62ZM11 6H13V15H11V6ZM12 19C11.17 19 10.5 18.33 10.5 17.5C10.5 16.67 11.17 16 12 16C12.83 16 13.5 16.67 13.5 17.5C13.5 18.33 12.83 19 12 19Z" fill="#3F3F3F"/>
+  </svg>
+
+  <svg id="large" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+       viewBox="0 0 32 32" enable-background="new 0 0 32 32">
+    <path d="M30.69 24.75L17.84 3.33004C17.45 2.68004 16.75 2.29004 16 2.29004C15.25 2.29004 14.55 2.68004 14.16 3.33004L1.31001 24.75C0.910012 25.41 0.900012 26.24 1.28001 26.91C1.66001 27.58 2.37001 28 3.14001 28H28.85C29.62 28 30.33 27.58 30.71 26.91C31.1 26.24 31.09 25.42 30.69 24.75ZM16 26C14.9 26 14 25.1 14 24C14 22.9 14.9 22 16 22C17.1 22 18 22.9 18 24C18 25.1 17.1 26 16 26ZM18 20H14V8.00004H18V20Z" fill="#3F3F3F"/>
+  </svg>
+
+</svg>
