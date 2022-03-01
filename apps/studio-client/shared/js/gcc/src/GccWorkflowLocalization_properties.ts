@@ -63,7 +63,7 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
 
   TranslationGlobalLink_state_Translate_displayName: "Accept translation workflow",
   TranslationGlobalLink_state_rollbackTranslation_displayName: "Abort and rollback changes",
-  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: "Abort and rollback without cancelling at GlobalLink.",
+  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: "Abort and rollback without canceling at GlobalLink.",
   TranslationGlobalLink_state_finishTranslation_displayName: "Finish content localization",
   TranslationGlobalLink_state_DownloadTranslation_displayName: "Awaiting translation results",
   TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: "Review translation",
