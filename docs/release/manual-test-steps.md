@@ -62,9 +62,9 @@ home folder
 7. Select the Workflow in your “Open” list in the Workflow App
     1. The “Status” variable should display “Delivered”
     2. The “Completed Locales” variable should display the target locales of 
-   the workflow
+       the workflow
     3. When clicking on the translated content, it opens in the comparison view 
-   to its master content in the Content App
+       to its master content in the Content App
     4. The text should be pseudo translated
 8. Click “Accept Task” in the Workflow App and then "Next Step" -> 
 “Finish Content Localization”
