@@ -34,23 +34,46 @@ The notes are sent as instructions for the translators.
 
 ![GCC Select](img/gcc-select-type.png)
 
-After having started the workflow, it is shown in the pending workflow section,
-and the details contain the submission id and the current state.
+After having started the workflow, it is shown in the pending workflow section. 
+Double click the workflow to open it in the detail view in the Workflow app.
+Here you will see the submission state, the id and other information once
+available.
 
 ![GCC Running](img/gcc-running.png)
 
-In case an error occurs, it is shown in your inbox, and you can select to cancel
-the workflow, or you can try to fix the problem and retry.
+In case an error occurs, the workflow re-appears in your inbox, and you can 
+select to cancel the workflow, or you can try to fix the problem and retry.
 
 ![GCC Error Handling](img/gcc-connect-error.png)
 
 After the translation is finished, you will receive a notification. The workflow
-is shown in the inbox and once accepting the task, you can review the content
-and finish it. 
+is shown in the inbox and once accepting the task, you can review the content in
+the content app and finish it. 
 
 ![GCC Success](img/gcc-success.png)
 
 Well done.
+
+### Pitfalls
+
+**Publishing content of active submissions** - Once a language is completely 
+translated at GlobalLink, it is downloaded and applied to the content for 
+editorial review in the Studio. While it is fine to review this content and even 
+publish it, especially publishing content can cause issues later on. When 
+publishing content the content server can destroy previous versions of this 
+content, that is otherwise required to be able to roll back the changes, if 
+triggered with "Abort and rollback changes". So, you should make sure that
+a submission does not have to be aborted when publishing content of an active
+workflow.
+
+**Canceling submissions** - Additionally to _Abort and destroy workflows_ the 
+workflows of type _Translation with GlobalLink_ can be canceled so that also
+GlobalLink gets notified about the cancelation. In rare cases, when for example
+the submission was at the same time completed in GlobalLink, then you will see 
+the workflow with a symbol for being canceled in the _Closed_ list of the 
+Workflow App, but the detail view will state that the status is completed. 
+In this case, the translation was completed at GlobalLink, but the translated
+texts were not applied because of the cancelation.
 
 --------------------------------------------------------------------------------
 

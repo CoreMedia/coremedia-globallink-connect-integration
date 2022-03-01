@@ -48,13 +48,13 @@ import java.util.IllformedLocaleException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.google.common.base.Strings.nullToEmpty;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
@@ -104,7 +104,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String password = requireNonNullConfig(config, GCConfigProperty.KEY_PASSWORD);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
-    LOG.info("Will connect to GCC endpoint: {}", apiUrl);
+    LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {
       delegate = new GCExchange(new GCConfig(
               apiUrl,
@@ -145,7 +145,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public void close() {
     try {
       delegate.logout();
-      LOG.info("Successfully closed GCC connection.");
+      LOG.debug("Successfully closed GCC connection.");
     } catch (RuntimeException e) {
       LOG.warn("Failed to logout. Ignored assuming the session will automatically timeout.", e);
     }
@@ -248,7 +248,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static String createSubmissionName(@Nullable String subject,
                                              Locale sourceLocale,
                                              Map<String, List<Locale>> contentMap) {
-    String trimmedSubject = nullToEmpty(subject).trim();
+    String trimmedSubject = Objects.toString(subject, "").trim();
     if (trimmedSubject.length() >= SUBMISSION_NAME_MAX_LENGTH) {
       if (trimmedSubject.length() == SUBMISSION_NAME_MAX_LENGTH) {
         LOG.debug("Given subject at maximum length {}. Skipping applying further information to subject.", SUBMISSION_NAME_MAX_LENGTH);
@@ -332,7 +332,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             .map(GCTaskModel::getTaskId)
             .collect(toList());
 
-    LOG.debug("Cancelled Task IDs of submission {}: {}", submissionId, taskIds);
+    LOG.debug("Canceling Task IDs of submission {}: {}", submissionId, taskIds);
     confirmTaskCancellations(taskIds);
   }
 
@@ -519,10 +519,12 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             () -> createTaskListRequestBase(submissionId),
             r -> executeRequest(r, t -> {
               TaskStatus status = TaskStatus.valueOf(t.getStatus());
+              LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
               switch (status) {
                 case Delivered:
                   break;
                 case Cancelled:
+                  LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
                   // Logical AND: Only use confirmed state, if value
                   // is still true. Otherwise, keep false state.
                   allDone.compareAndSet(true, t.getIsCancelConfirmed());

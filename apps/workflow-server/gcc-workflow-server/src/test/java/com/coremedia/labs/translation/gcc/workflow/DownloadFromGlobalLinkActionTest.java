@@ -1,9 +1,5 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.cap.common.CapConnection;
 import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
@@ -11,6 +7,10 @@ import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.content.Version;
 import com.coremedia.cap.translate.xliff.XliffImportResultItem;
 import com.coremedia.cap.translate.xliff.config.XliffImporterConfiguration;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
+import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,12 +45,12 @@ import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import static com.coremedia.cap.translate.xliff.XliffImportIssueSeverity.MAJOR;
+import static com.coremedia.cap.translate.xliff.XliffImportResultCode.NO_SUCH_PROPERTY;
 import static com.coremedia.labs.translation.gcc.workflow.ActionTestBaseConfiguration.CONTENT_TYPE_NAME;
 import static com.coremedia.labs.translation.gcc.workflow.ActionTestBaseConfiguration.LOCALE_PROPERTY;
 import static com.coremedia.labs.translation.gcc.workflow.ActionTestBaseConfiguration.MASTER_PROPERTY;
 import static com.coremedia.labs.translation.gcc.workflow.ActionTestBaseConfiguration.MASTER_VERSION_PROPERTY;
-import static com.coremedia.cap.translate.xliff.XliffImportIssueSeverity.MAJOR;
-import static com.coremedia.cap.translate.xliff.XliffImportResultCode.NO_SUCH_PROPERTY;
 import static com.google.common.io.Resources.getResource;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;

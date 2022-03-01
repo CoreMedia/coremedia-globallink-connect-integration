@@ -253,7 +253,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
     long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, xliffFileIds);
 
-    LOG.debug("Submitted submission {} for {} files to GCC.", submissionId, xliffFileIds.size());
+    LOG.info("Submitted submission with internal id {} for {} files to GCC.", submissionId, xliffFileIds.size());
     return String.valueOf(submissionId);
   }
 

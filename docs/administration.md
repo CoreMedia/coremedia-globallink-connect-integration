@@ -111,7 +111,7 @@ Within that struct the following parameters must/can be specified:
     GlobalLink setup, then this has to be set to the XLIFF file type identifier
     to be used by your connector. (_optional_, default: `xliff`, type:`String`)
 * `type` Determines which facade implementation will be used (see
-    [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)
+    [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)
     ). (_optional_, type:`String`)
 * `dayOffsetForDueDate` Defines the offset for the
     `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
@@ -142,14 +142,14 @@ would have to wait until it is expired.
     cancellation of a submission. (_optional_, default: `180`, type:`Integer`)
 
 The defaults for these values are defined globally in the properties file of 
-the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). 
+the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). 
 Other parameters can be defined here too. 
 If your GlobalLink connectors all use the same username and password, 
 this approach also provides the possibility to define them in a central place 
 that is not visible to editors in Studio.
 
 You can also define Parameters for testing with the mock facade
-(see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
+(see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
 
 
 ## Questions &amp; Answers

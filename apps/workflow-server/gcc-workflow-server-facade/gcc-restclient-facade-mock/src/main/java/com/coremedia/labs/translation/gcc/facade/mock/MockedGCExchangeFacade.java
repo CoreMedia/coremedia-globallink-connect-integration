@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -103,6 +104,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate, @Nullable String workflow, @Nullable String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
+    String trimmedSubject = Objects.toString(subject, "").trim();
     List<SubmissionContent> collect = contentMap.entrySet().stream()
             .map(e -> new SubmissionContent(
                     e.getKey(),
@@ -110,7 +112,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
                     contentStore.removeContent(e.getKey()),
                     e.getValue()))
             .collect(toList());
-    return submissionStore.addSubmission(subject, collect);
+    return submissionStore.addSubmission(trimmedSubject, collect);
   }
 
   @Override

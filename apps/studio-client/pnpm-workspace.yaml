@@ -1,0 +1,4 @@
+packages:
+  - "apps/main/gcc"
+  - "apps/workflow/gcc"
+  - "shared/js/gcc"

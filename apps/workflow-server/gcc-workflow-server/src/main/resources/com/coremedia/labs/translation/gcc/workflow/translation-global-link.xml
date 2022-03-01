@@ -409,13 +409,18 @@
       <ExitAction class="EnableTimer" timerVariable="cancelTranslationRetryDelay"/>
     </UserTask>
 
-    <If name="SelectTaskAfterCancelTranslationError">
-      <Condition>
+    <Switch name="SelectTaskAfterCancelTranslationError" defaultSuccessor="CancelTranslation">
+      <Case successor="RollbackContent">
         <Equal><Get variable="translationAction"/><String value="rollbackTranslation_afterCancellationFailed"/></Equal>
-      </Condition>
-      <Then successor="RollbackContent"/>
-      <Else successor="CancelTranslation"/>
-    </If>
+      </Case>
+      <Case successor="ResetCancelRequest">
+        <Equal><Get variable="translationAction"/><String value="continueTranslation"/></Equal>
+      </Case>
+    </Switch>
+
+    <AutomatedTask name="ResetCancelRequest" successor="DownloadTranslation">
+      <Action class="AssignVariable" resultVariable="cancelRequested"><Boolean value="false"/></Action>
+    </AutomatedTask>
 
     <AutomatedTask name="RollbackContent" successor="Finish">
       <Action class="com.coremedia.translate.workflow.RollbackVersionsAction"
@@ -434,14 +439,11 @@
               performerVariable="performer"/>
     </AutomatedTask>
 
-    <Variable name="finishTaskRetryTimer" type="Timer"/>
-    <TimerHandler class="RetryTaskTimerHandler" task="Finish" timerName="finishTaskRetryTimer"/>
+    <AutomatedTask name="Finish" final="true"/>
 
-    <AutomatedTask name="Finish" final="true">
-      <Action class="AssignVariable" resultVariable="finishTaskRetryTimer"><Timer value="30"/></Action>
-      <Action class="EnableTimer" timerVariable="finishTaskRetryTimer"/>
-      <Action class="ArchiveProcess" maxProcessesPerUser="100"/>
-    </AutomatedTask>
+    <!-- Finally, make sure finished processes are archived and appear in the list of finished workflows for
+         participating users, i.e. for users for whom the RegisterPendingProcess action was called. -->
+    <FinalAction class="ArchiveProcessFinalAction" maxProcessesPerUser="100"/>
 
   </Process>
 </Workflow>
