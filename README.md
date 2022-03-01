@@ -7,7 +7,7 @@
 -->
 
 ![CoreMedia Content Cloud Version](https://img.shields.io/static/v1?message=2201&label=CoreMedia%20Content%20Cloud&style=for-the-badge&color=672779)
-![GCC Used](https://img.shields.io/static/v1?message=v2.4.0&label=GCC%20REST%20API%20%28Used%29&style=for-the-badge&color=green)
+![GCC Used](https://img.shields.io/static/v1?message=v3.1.0&label=GCC%20REST%20API%20%28Used%29&style=for-the-badge&color=green)
 [![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient.svg?label=GCC%20REST%20API%20%28Recent%29&style=for-the-badge)](https://search.maven.org/search?q=g:%22com.translations.globallink%22%20AND%20a:%22gcc-restclient%22)
 
 # Translation via GlobalLink Connect Cloud
