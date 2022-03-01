@@ -332,7 +332,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
             .map(GCTaskModel::getTaskId)
             .collect(toList());
 
-    LOG.debug("Cancelling Task IDs of submission {}: {}", submissionId, taskIds);
+    LOG.debug("Canceling Task IDs of submission {}: {}", submissionId, taskIds);
     confirmTaskCancellations(taskIds);
   }
 
@@ -524,7 +524,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
                 case Delivered:
                   break;
                 case Cancelled:
-                  LOG.debug("Verifying cancellation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
+                  LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
                   // Logical AND: Only use confirmed state, if value
                   // is still true. Otherwise, keep false state.
                   allDone.compareAndSet(true, t.getIsCancelConfirmed());

@@ -54,11 +54,10 @@ To summarize the steps below, everything you need to do:
   As soon as changes from `develop` shall be published to CI, we rebase
   the adaptions:
 
-    ```bash
-    $ git checkout "ci/develop"
-    $ git rebase "origin/develop"
-    $ git push --force-with-lease
-    ```
+  ```bash
+  $ git checkout "ci/develop"
+  $ git rebase "origin/develop"
+  $ git push --force-with-lease
 
 ### Tags
 
@@ -87,37 +86,44 @@ Contributing back upstream is however slightly more complicated.
 Feel free to choose the strategy that fits your needs best. For example:
 
 * As a Git Subtree from the workspace root (recommended)
-   ```bash
-   $ mkdir -p modules/extensions
-   $ # Add sub-project as a remote to enable short form
-   $ git remote add -f gcc https://github.com/CoreMedia/coremedia-globallink-connect-integration.git
-   $ git subtree add --prefix modules/extensions/gcc gcc main --squash
-   $ # For example - update the sub-project at a later date...
-   $ git fetch gcc main
-   $ git subtree pull --prefix modules/extensions/gcc gcc main --squash
-   ```
-  See [Issue 28](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/28) for a more detailed description of a similar approach.
+
+    ```bash
+    $ mkdir -p modules/extensions
+    $ # Add sub-project as a remote to enable short form
+    $ git remote add -f gcc https://github.com/CoreMedia/coremedia-globallink-connect-integration.git
+    $ git subtree add --prefix modules/extensions/gcc gcc main --squash
+    $ # For example - update the sub-project at a later date...
+    $ git fetch gcc main
+    $ git subtree pull --prefix modules/extensions/gcc gcc main --squash
+    ```
+
+    See [Issue 28](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/28) for
+    a more detailed description of a similar approach.
+
 * Or as a Git Submodule from the workspace root
-   ```bash
-   $ git submodule add https://github.com/CoreMedia/coremedia-globallink-connect-integration.git modules/extensions/gcc
-   $ git submodule update --init --recursive
-   $ cd modules/extensions/gcc
-   $ git checkout <release-tag>
-   $ cd ..
-   $ # Add and commit .gitmodules and current HEAD of submodule 
-   $ git add .
-   $ git commit -m "Initial integration of submodule based on <release-tag>"
-   ```
+
+    ```bash
+    $ git submodule add https://github.com/CoreMedia/coremedia-globallink-connect-integration.git modules/extensions/gcc
+    $ git submodule update --init --recursive
+    $ cd modules/extensions/gcc
+    $ git checkout <release-tag>
+    $ cd ..
+    $ # Add and commit .gitmodules and current HEAD of submodule 
+    $ git add .
+    $ git commit -m "Initial integration of submodule based on <release-tag>"
+    ```
   
 If you want to contribute to this project - which we hope for - you 
 need to fork the project. For example, with the `git subtree` approach, pushing 
 to your fork could look as follows:
+
 ```bash
 $ # Add your fork as another remote
 $ git remote add -f my-gcc https://github.com/my-company/coremedia-globallink-connect-extended.git
 $ # For example - update the sub-project at a later date...
 $ git subtree push --prefix=modules/extensions/gcc my-gcc main
 ```
+
 You can then send us the corresponding pull request.
 
 ## Enabling the Extension

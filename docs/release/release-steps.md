@@ -59,7 +59,7 @@ the manual tests.
     the bottom of the MarkDown file.
 
 * And, do not forget to mention all the changes including upgrade advice in 
-   `CHANGELOG.md`
+  `CHANGELOG.md`
 
 ## Create Tag for the Release
 
@@ -77,8 +77,8 @@ $ git push origin "v1910.1-1"
 ## Create Release
 
 * Create a GitHub release from the tag and the copy the changelog entries to the
-   release description. Please use the same pattern for release title as the
-   previous releases.
+  release description. Please use the same pattern for release title as the
+  previous releases.
 * Review GitHub issues and possibly adjust state.
 
 ## Sketch: Incorporating Pull Requests for Given CMCC Versions

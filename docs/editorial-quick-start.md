@@ -42,7 +42,7 @@ available.
 ![GCC Running](img/gcc-running.png)
 
 In case an error occurs, the workflow re-appears in your inbox, and you can 
-select to cancel  the workflow, or you can try to fix the problem and retry.
+select to cancel the workflow, or you can try to fix the problem and retry.
 
 ![GCC Error Handling](img/gcc-connect-error.png)
 
@@ -56,7 +56,7 @@ Well done.
 
 ### Pitfalls
 
-*Publishing content of active submissions* - Once a language is completely 
+**Publishing content of active submissions** - Once a language is completely 
 translated at GlobalLink, it is downloaded and applied to the content for 
 editorial review in the Studio. While it is fine to review this content and even 
 publish it, especially publishing content can cause issues later on. When 
@@ -66,14 +66,14 @@ triggered with "Abort and rollback changes". So, you should make sure that
 a submission does not have to be aborted when publishing content of an active
 workflow.
 
-*Cancelling submissions* - Additionally to _Abort and destroy workflows_ the 
-workflows of type _Translation with GlobalLink_ can be cancelled so that also
-GlobalLink gets notified about the cancellation. In rare cases, when for example
+**Canceling submissions** - Additionally to _Abort and destroy workflows_ the 
+workflows of type _Translation with GlobalLink_ can be canceled so that also
+GlobalLink gets notified about the cancelation. In rare cases, when for example
 the submission was at the same time completed in GlobalLink, then you will see 
-the workflow with a symbol for being cancelled in the _Closed_ list of the 
+the workflow with a symbol for being canceled in the _Closed_ list of the 
 Workflow App, but the detail view will state that the status is completed. 
 In this case, the translation was completed at GlobalLink, but the translated
-texts were not applied because of the cancellation.
+texts were not applied because of the cancelation.
 
 --------------------------------------------------------------------------------
 
