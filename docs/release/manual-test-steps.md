@@ -90,8 +90,8 @@ home folder
 5. Open the "Running" area and select the started workflow
     1. A “X” should be activated in the header bar
     2. Multi-selection is possible. If you select a "normal" and a GlobalLink 
-   workflow, the button remains deactivated. It is also  possible to select and 
-   cancel multiple GlobalLink workflows at once.
+       workflow, the button remains deactivated. It is also  possible to select and 
+       cancel multiple GlobalLink workflows at once.
 6. Press the “X”
     1. A dialog should pop
 7. Confirm the dialog
