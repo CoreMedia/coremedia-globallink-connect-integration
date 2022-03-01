@@ -59,7 +59,7 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
   TranslationGlobalLink_task_Finish_displayName: "Archiving workflow",
   TranslationGlobalLink_task_HandleSendTranslationRequestError_displayName: "Upload error",
   TranslationGlobalLink_task_HandleDownloadTranslationError_displayName: "Download error",
-  TranslationGlobalLink_task_HandleCancelTranslationError_displayName: "Cancellation error",
+  TranslationGlobalLink_task_HandleCancelTranslationError_displayName: "Cancelation error",
 
   TranslationGlobalLink_state_Translate_displayName: "Accept translation workflow",
   TranslationGlobalLink_state_rollbackTranslation_displayName: "Abort and rollback changes",
