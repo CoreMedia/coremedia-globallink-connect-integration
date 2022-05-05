@@ -14,16 +14,6 @@ public final class GCConfigProperty {
   public static final String KEY_GLOBALLINK_ROOT = "globalLink";
 
   /**
-   * Username for GCC connection.
-   */
-  public static final String KEY_USERNAME = "username";
-
-  /**
-   * Password for GCC connection.
-   */
-  public static final String KEY_PASSWORD = "password"; // NOSONAR squid:S2068 this is not a hard-coded password
-
-  /**
    * The API URL for GCC REST endpoint.
    */
   public static final String KEY_URL = "url";
@@ -31,7 +21,12 @@ public final class GCConfigProperty {
   /**
    * Connector Key for GCC connection.
    */
-  public static final String KEY_KEY = "key";
+  public static final String CONNECTOR_KEY = "key";
+
+  /**
+   * Connector Key for GCC connection.
+   */
+  public static final String API_KEY = "apiKey";
 
   /**
    * GlobalLink file type to use. Optional setting.

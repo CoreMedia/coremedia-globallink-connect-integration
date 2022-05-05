@@ -255,7 +255,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     Map<String, List<Content>> issues = new HashMap<>();
 
     Site masterSite = getMasterSite(parameters.masterContentObjects);
-    try (GCExchangeFacade gccSession = openSession(masterSite)) {
+    try {
+      GCExchangeFacade gccSession = openSession(masterSite);
 
       // call subclass implementation and store the result as result.extendedResult
       Consumer<R> resultConsumer = r -> result.extendedResult = Optional.of(r);

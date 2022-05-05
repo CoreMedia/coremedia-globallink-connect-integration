@@ -20,8 +20,7 @@
 Ensure you have your GCC parameters at hand:
 
 * GCC REST Base URL
-* Username
-* Password
+* API Key
 * File Type
 * _Optional:_ Client Secret Key (see below)
 
@@ -31,7 +30,7 @@ Studio read [this](#configuring-globallink-connection-settings).
 ## Retrieve Client Secret Key
 
 If you did not receive a client secret key as part of your _Client Onboarding_
-you can query it via REST API `/api/v2/connectors` which, provides a response
+you can query it via REST API `/api/v3/connectors` which, provides a response
 similar to this:
 
 ```json
@@ -104,8 +103,7 @@ those user groups that actually need access to prevent leaking sensitive informa
 Within that struct the following parameters must/can be specified:
 
 * `url` for GCC REST Base URL  (type:`String`)
-* `username` Username (type:`String`)
-* `password` Password (type:`String`)
+* `apiKey` The API key (type:`String`)
 * `key` The GCC connector key (type:`String`)
 * `fileType` If there is more than one file format in your
     GlobalLink setup, then this has to be set to the XLIFF file type identifier
@@ -144,7 +142,7 @@ would have to wait until it is expired.
 The defaults for these values are defined globally in the properties file of 
 the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). 
 Other parameters can be defined here too. 
-If your GlobalLink connectors all use the same username and password, 
+If your GlobalLink connectors all use the same apiKey, 
 this approach also provides the possibility to define them in a central place 
 that is not visible to editors in Studio.
 

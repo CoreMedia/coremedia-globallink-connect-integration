@@ -178,7 +178,7 @@ home folder
     1. A StartTranslation window should pop up
     2. There should be no warnings or errors
     3. The Due Date should be set to the current dateTime plus 20 days
-4. Reset the “username” in the GlobalLinkSettings to something wrong
+4. Reset the “apiKey” in the GlobalLinkSettings to something wrong
 5. Click “Start”
     1. The dialog should close without any error
     2. In the "Running" area from “Localization Workflows” the workflow should 
@@ -190,10 +190,10 @@ home folder
        “Continue and retry”
     4. A click on “Abort and rollback changes” should perform a Rollback of the 
        content (if you perform that you need to redo steps from 1 to 6)
-7. Reset the “username” to its valid value and click “Continue and retry”
+7. Reset the “apiKey” to its valid value and click “Continue and retry”
 8. Select the workflow in "Running" and wait for the Status to change to 
    “Translate” or for the Submission ID to be set
-9. Reset the “username” in the GlobalLinkSettings to something wrong
+9. Reset the “apiKey” in the GlobalLinkSettings to something wrong
 10. Wait for the Workflow to appear in the open workflows
     1. The icon should be a Warning sign
     2. The TaskName should be “Download Error”
