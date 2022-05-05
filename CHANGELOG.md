@@ -14,6 +14,8 @@ API Key from your contacts at Translations.com.
 repository or in your properties file. Remove `username` and `password` and 
 set the `apiKey` instead. You will also have to update the `url` to point to v3. 
 
+* Updated dependencies to match the CMCC v11.2201.2 release.
+
 CoreMedia v11.2110
 --------------------------------------------------------------------------------
 
