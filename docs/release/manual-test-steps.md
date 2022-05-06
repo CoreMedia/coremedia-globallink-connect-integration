@@ -49,8 +49,8 @@ home folder
     3. The Due Date should be set to the current dateTime plus 20 days
 4. Click “Start”
     1. The dialog should close without any error
-    2. In the "Running" area from “Localization Workflows” the process should 
-       pop up
+    2. In the "Running" area of the Control Room from “Localization Workflows” 
+       the process should pop up.
 2. Double-Click on the Workflow to open it the Workflow App
 3. The workflow can be tracked in the detail view in the Workflow App
     1. After some time the Status, Submission ID, Due Date are shown
@@ -71,7 +71,6 @@ home folder
    “Finish Content Localization”
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
-
 
 ## Scenario: Cancellation
 

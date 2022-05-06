@@ -14,6 +14,10 @@ API Key from your contacts at Translations.com.
 repository or in your properties file. Remove `username` and `password` and 
 set the `apiKey` instead. You will also have to update the `url` to point to v3. 
 
+* A new error code was introduced to reflect the new authentication method  
+  via `apiKey` and to be able to distinguish between the different types of 
+  issues in the Studio.
+
 * Updated dependencies to match the CMCC v11.2201.2 release.
 
 CoreMedia v11.2110
