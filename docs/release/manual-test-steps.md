@@ -203,9 +203,9 @@ home folder
     1. The icon should be a Warning sign
     2. The TaskName should be “Cancelation Error”
     3. You have the ability to “Abort and rollback without canceling the 
-       submission at GlobalLink.” or “Continue and retry”
-13. Continue and retry should lead to a cancelation of the workflow, 
-    "Abort and rollback changes" should lead to a direct rollback
+       submission at GlobalLink.”, "Retry cancelation" or “Continue Translation”
+13. Correct the "apiKey" and press "Continue Translation". The workflow appears 
+    in the Open workflows at some point. Accept it and finish it.
 
 ## Scenario: XLIFF Import Error Handling
 
