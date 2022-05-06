@@ -1,16 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
-import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.facade.*;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
@@ -111,6 +101,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       delegate = new GCExchange(gcConfig);
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);
+    } catch (IllegalAccessError e) {
+      throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
     this.fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
             String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))

@@ -13,13 +13,7 @@ import com.coremedia.cap.util.StructUtil;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.cap.workflow.plugin.ActionResult;
-import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
-import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.*;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
@@ -288,6 +282,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     } catch (GCFacadeConfigException e) {
       LOG.warn("{}: Communication failed because of invalid/missing settings ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, Collections.emptyList());
+    } catch (GCFacadeAccessException e) {
+      LOG.warn("{}: Authentication with API key failed ({})", getName(), GlobalLinkWorkflowErrorCodes.INVALID_KEY_ERROR, e);
+      issues.put(GlobalLinkWorkflowErrorCodes.INVALID_KEY_ERROR, Collections.emptyList());
     } catch (GCFacadeException e) {
       LOG.warn("{}: Unknown error occurred ({})", getName(), GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, Collections.emptyList());
