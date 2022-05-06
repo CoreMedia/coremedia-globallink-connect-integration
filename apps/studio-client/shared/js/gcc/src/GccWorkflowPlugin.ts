@@ -195,10 +195,7 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
     },
 
     saveViewModel(viewModel: GccViewModel) {
-      return {
-        globalLinkSubmissionStatus: viewModel.globalLinkSubmissionStatus,
-        globalLinkDueDate: viewModel.globalLinkDueDate,
-      };
+      return {};
     },
 
     fields: [
