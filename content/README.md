@@ -17,10 +17,9 @@ those master sites which shall use GlobalLink for translation.
 The Settings Struct for GlobalLink contains the following entries:
 
 * **`globalLink`**
-    * **`url`:** for example `http://yourhostname:9095/api/v2`
+    * **`url`:** for example `http://yourhostname:9095/api/v3`
     * **`key`:** connector key provided by GlobalLink
-    * **`username`:** your GCC username
-    * **`password`:** your GCC password
+    * **`apiKey`:** API key provided by GlobalLink
     * **`fileType`:** _(optional)_ the name of the file type to use when uploading XLIFF. Defaults to first entry of supported file types as returned by GCC connector config. If set, it must be one of the file types from the connector config.
     * **`type`:** _(optional)_ the type of your connection; Available types:
         * `default`: _(default and fallback)_ the standard GCC connection which
