@@ -90,8 +90,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    */
   DefaultGCExchangeFacade(Map<String, Object> config) {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
-    String connectorKey = requireNonNullConfig(config, GCConfigProperty.CONNECTOR_KEY);
-    String apiKey = requireNonNullConfig(config, GCConfigProperty.API_KEY);
+    String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
+    String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
     this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
     LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {

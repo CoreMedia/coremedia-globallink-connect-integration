@@ -82,15 +82,15 @@ class DefaultGCExchangeFacadeTest {
   @DisplayName("Constructor should signal missing required keys in configuration.")
   @ValueSource(strings = {
           GCConfigProperty.KEY_URL,
-          GCConfigProperty.API_KEY,
-          GCConfigProperty.CONNECTOR_KEY
+          GCConfigProperty.KEY_API_KEY,
+          GCConfigProperty.KEY_KEY
   })
   void failOnMissingRequiredConfiguration(String excludedKey) {
     Map<String, Object> config = new HashMap<>();
     List<String> requiredKeys = new ArrayList<>(asList(
             GCConfigProperty.KEY_URL,
-            GCConfigProperty.API_KEY,
-            GCConfigProperty.CONNECTOR_KEY
+            GCConfigProperty.KEY_API_KEY,
+            GCConfigProperty.KEY_KEY
     ));
     requiredKeys.remove(excludedKey);
 

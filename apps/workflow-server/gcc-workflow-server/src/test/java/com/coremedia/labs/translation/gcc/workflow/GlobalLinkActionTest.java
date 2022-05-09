@@ -99,8 +99,8 @@ class GlobalLinkActionTest {
     protected Map<String, Object> getGccSettings(Site site) {
       return ImmutableMap.of(
               GCConfigProperty.KEY_URL, "http://lorem.ipsum.fun/",
-              GCConfigProperty.API_KEY, "abcd",
-              GCConfigProperty.CONNECTOR_KEY, "012345",
+              GCConfigProperty.KEY_API_KEY, "abcd",
+              GCConfigProperty.KEY_KEY, "012345",
               GCConfigProperty.KEY_TYPE, "mock");
     }
   }
