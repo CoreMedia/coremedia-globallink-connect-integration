@@ -14,19 +14,19 @@ public final class GCConfigProperty {
   public static final String KEY_GLOBALLINK_ROOT = "globalLink";
 
   /**
-   * The API URL for GCC REST endpoint.
+   * The API URL for GCC REST endpoint (v3).
    */
   public static final String KEY_URL = "url";
 
   /**
    * Connector Key for GCC connection.
    */
-  public static final String CONNECTOR_KEY = "key";
+  public static final String KEY_KEY = "key";
 
   /**
-   * Connector Key for GCC connection.
+   * API Key for GCC connection.
    */
-  public static final String API_KEY = "apiKey";
+  public static final String KEY_API_KEY = "apiKey";
 
   /**
    * GlobalLink file type to use. Optional setting.
