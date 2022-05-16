@@ -19,6 +19,7 @@ class GlobalLinkWorkflowErrorCodes {
   static final String SETTINGS_ERROR                    = "GCC-WF-40000";
   static final String SETTINGS_FILE_TYPE_ERROR          = "GCC-WF-40001";
   static final String ILLEGAL_SUBMISSION_ID_ERROR       = "GCC-WF-40050";
+  static final String INVALID_KEY_ERROR = "GCC-WF-40002";
 
   // ==== 50###: XLIFF Problems
   static final String XLIFF_EXPORT_FAILURE = "GCC-WF-50050";

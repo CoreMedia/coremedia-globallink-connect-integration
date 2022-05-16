@@ -28,8 +28,8 @@
       Version of GCC RestClient
       see https://github.com/translations-com/globallink-connect-cloud-api-java
     -->
-    <gcc-restclient.version>2.4.0</gcc-restclient.version>
-    <cm.middle.core.version>2110.1</cm.middle.core.version>
+    <gcc-restclient.version>3.1.3</gcc-restclient.version>
+    <cm.middle.core.version>2201.2</cm.middle.core.version>
   </properties>
 
   <dependencyManagement>

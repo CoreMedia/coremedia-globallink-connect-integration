@@ -54,11 +54,6 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public void close() {
-    // nothing to do
-  }
-
-  @Override
   public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
     throw createDisabledException();
   }

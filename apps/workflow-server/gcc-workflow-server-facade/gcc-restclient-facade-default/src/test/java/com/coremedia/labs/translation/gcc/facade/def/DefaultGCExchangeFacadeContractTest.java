@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.collect.ImmutableMap;
@@ -68,9 +69,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  * to your user home folder:
  * </p>
  * <pre>
- * username=JohnDoe
- * password=secret!
- * url=https://connect-dev.translations.com/api/v2/
+ * apiKey=ab12cd34
+ * url=https://connect-dev.translations.com/api/v3/
  * key=0e...abc
  * fileType=xliff
  * </pre>
@@ -97,9 +97,8 @@ class DefaultGCExchangeFacadeContractTest {
   @DisplayName("Validate that login works.")
   void login(Map<String, Object> gccProperties) {
     LOG.info("Properties: {}", gccProperties);
-    try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-      assertThat(facade.getDelegate()).isNotNull();
-    }
+    GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+    assertThat(facade.getDelegate()).isNotNull();
   }
 
   @Nested
@@ -123,12 +122,11 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     private void assertFileTypeAvailable(String type, Map<String, Object> gccProperties) {
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        GCExchange delegate = facade.getDelegate();
-        ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
-        List<String> availableTypes = connectorsConfig.getFileTypes();
-        assertThat(type).isIn(availableTypes);
-      }
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      GCExchange delegate = facade.getDelegate();
+      ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
+      List<String> availableTypes = connectorsConfig.getFileTypes();
+      assertThat(type).isIn(availableTypes);
     }
   }
 
@@ -150,13 +148,12 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     private void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, Object> gccProperties) {
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
-        List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
-        Locale expected = Locale.forLanguageTag(expectedSupportedLocale);
-        LOG.info("Available locales: {}", supportedLocales);
-        assertThat(supportedLocales).anySatisfy(tl -> assertThat(tl).isEqualTo(expected));
-      }
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
+      List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
+      Locale expected = Locale.forLanguageTag(expectedSupportedLocale);
+      LOG.info("Available locales: {}", supportedLocales);
+      assertThat(supportedLocales).anySatisfy(tl -> assertThat(tl).isEqualTo(expected));
     }
   }
 
@@ -169,36 +166,35 @@ class DefaultGCExchangeFacadeContractTest {
       Instant startTimeUtc = Instant.now().atZone(ZoneOffset.UTC).toInstant();
       String fileName = testInfo.getDisplayName();
 
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        GCExchange delegate = facade.getDelegate();
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      GCExchange delegate = facade.getDelegate();
 
-        long contentCountBefore = getTotalRecordsCount(delegate);
-        String fileId = facade.uploadContent(fileName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long contentCountBefore = getTotalRecordsCount(delegate);
+      String fileId = facade.uploadContent(fileName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
 
-        assertThat(fileId).isNotEmpty();
+      assertThat(fileId).isNotEmpty();
 
-        long contentCountAfter = getTotalRecordsCount(delegate);
+      long contentCountAfter = getTotalRecordsCount(delegate);
 
-        // Fail-early test: Ensure that we actually received any content.
-        // Note, that we expect no latency here. If we experience that the
-        // uploaded content is not immediately available, we have to introduce
-        // a wait statement here (e. g. using Awaitility).
-        assertThat(contentCountAfter).isGreaterThan(contentCountBefore);
+      // Fail-early test: Ensure that we actually received any content.
+      // Note, that we expect no latency here. If we experience that the
+      // uploaded content is not immediately available, we have to introduce
+      // a wait statement here (e. g. using Awaitility).
+      assertThat(contentCountAfter).isGreaterThan(contentCountBefore);
 
-        Content.ContentResponseData contentList = delegate.getContentList(new PageableRequest(1L, contentCountAfter));
+      Content.ContentResponseData contentList = delegate.getContentList(new PageableRequest(1L, contentCountAfter));
 
-        List<GCFile> filesWithToString = contentList.getResponseData().stream().map(f -> {
-          GCFile spy = Mockito.spy(f);
-          Mockito.when(spy.toString()).thenReturn(String.format("%s [id=%s, contentId=%s, type=%s, updated=%s]", f.getName(), f.getId(), f.getContentId(), f.getFileType(), f.getUpdatedAt()));
-          return spy;
-        }).collect(Collectors.toList());
-        assertThat(filesWithToString).anySatisfy(
-                f -> {
-                  assertThat(f).extracting(GCFile::getContentId).isEqualTo(fileId);
-                  assertThat(f.getUpdatedAt()).matches((Predicate<Date>) date -> date.toInstant().isAfter(startTimeUtc));
-                }
-        );
-      }
+      List<GCFile> filesWithToString = contentList.getResponseData().stream().map(f -> {
+        GCFile spy = Mockito.spy(f);
+        Mockito.when(spy.toString()).thenReturn(String.format("%s [id=%s, contentId=%s, type=%s, updated=%s]", f.getName(), f.getId(), f.getContentId(), f.getFileType(), f.getUpdatedAt()));
+        return spy;
+      }).collect(Collectors.toList());
+      assertThat(filesWithToString).anySatisfy(
+              f -> {
+                assertThat(f).extracting(GCFile::getContentId).isEqualTo(fileId);
+                assertThat(f.getUpdatedAt()).matches((Predicate<Date>) date -> date.toInstant().isAfter(startTimeUtc));
+              }
+      );
     }
 
     long getTotalRecordsCount(GCExchange exchange) {
@@ -215,57 +211,60 @@ class DefaultGCExchangeFacadeContractTest {
     void shouldBeCancellationAware(TestInfo testInfo, Map<String, Object> gccProperties) {
       String testName = testInfo.getDisplayName();
 
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        GCExchange delegate = facade.getDelegate();
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      GCExchange delegate = facade.getDelegate();
 
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
-        long submissionId = facade.submitSubmission(
-                testName,
-                null,
-                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                null,
-                "admin",
-                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long submissionId = facade.submitSubmission(
+              testName,
+              null,
+              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
-        assertThat(submissionId).isGreaterThan(0L);
+      assertThat(submissionId).isGreaterThan(0L);
 
-        // Yes, we need to wait here. Directly after being started, a submission state
-        // may be 'null' (which we internally map to "other").
-        Awaitility.await("Wait for submission to be valid (has some well-known state).")
-                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-                .pollDelay(1, TimeUnit.SECONDS)
-                .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
-                        .isNotIn(
-                                GCSubmissionState.OTHER,
-                                GCSubmissionState.IN_PRE_PROCESS
-                        )
-                );
+      // Yes, we need to wait here. Directly after being started, a submission state
+      // may be 'null' (which we internally map to "other").
+      Awaitility.await("Wait for submission to be valid (has some well-known state).")
+              .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+              .pollDelay(1, TimeUnit.SECONDS)
+              .pollInterval(10, TimeUnit.SECONDS)
+              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
+                      .isNotIn(
+                              GCSubmissionState.OTHER,
+                              GCSubmissionState.IN_PRE_PROCESS
+                      )
+              );
 
-        /*
-         * If cancellation fails because of invalid state: Extend the forbidden
-         * states in the Awaitility call above.
-         */
-        delegate.cancelSubmission(submissionId);
+      /*
+       * If cancellation fails because of invalid state: Extend the forbidden
+       * states in the Awaitility call above.
+       */
+      delegate.cancelSubmission(submissionId);
 
-        Awaitility.await("Wait until submission is marked as cancelled.")
-                .atMost(2, TimeUnit.MINUTES)
-                .pollDelay(1, TimeUnit.SECONDS)
-                .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
+      Awaitility.await("Wait until submission is marked as cancelled.")
+              .atMost(2, TimeUnit.MINUTES)
+              .pollDelay(5, TimeUnit.SECONDS)
+              .pollInterval(10, TimeUnit.SECONDS)
+              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
 
-        Awaitility.await("Wait until cancellation got confirmed for submission.")
-                .atMost(2, TimeUnit.MINUTES)
-                .pollDelay(1, TimeUnit.SECONDS)
-                .pollInterval(10, TimeUnit.SECONDS)
-                .conditionEvaluationListener(condition -> {
+      Awaitility.await("Wait until cancellation got confirmed for submission.")
+              .atMost(2, TimeUnit.MINUTES)
+              .pollDelay(10, TimeUnit.SECONDS)
+              .pollInterval(20, TimeUnit.SECONDS)
+              .conditionEvaluationListener(condition -> {
+                try {
                   // Some tasks may have already reached completed state.
                   // Thus simulate a successful download for them.
                   facade.downloadCompletedTasks(submissionId, new TrueTaskDataConsumer());
                   facade.confirmCancelledTasks(submissionId);
-                })
-                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
-      }
+                } catch (GCFacadeCommunicationException e) {
+                  LOG.info("Ignoring communication exception. Rather trying again later.", e);
+                }
+              })
+              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
     }
   }
 
@@ -284,26 +283,25 @@ class DefaultGCExchangeFacadeContractTest {
     void submitXml(TestInfo testInfo, Map<String, Object> gccProperties) {
       String testName = testInfo.getDisplayName();
 
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
-        long submissionId = facade.submitSubmission(
-                testName,
-                null,
-                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                null,
-                "admin",
-                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long submissionId = facade.submitSubmission(
+              testName,
+              null,
+              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
-        assertThat(submissionId).isGreaterThan(0L);
+      assertThat(submissionId).isGreaterThan(0L);
 
-        // Yes, we need to wait here. Directly after being started, a submission state
-        // may be 'null' (which we internally map to "other").
-        Awaitility.await("Wait for submission to be valid (has some well-known state).")
-                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-                .pollDelay(1, TimeUnit.SECONDS)
-                .pollInterval(10, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
-      }
+      // Yes, we need to wait here. Directly after being started, a submission state
+      // may be 'null' (which we internally map to "other").
+      Awaitility.await("Wait for submission to be valid (has some well-known state).")
+              .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+              .pollDelay(1, TimeUnit.SECONDS)
+              .pollInterval(10, TimeUnit.SECONDS)
+              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
     }
 
     @Test
@@ -312,18 +310,17 @@ class DefaultGCExchangeFacadeContractTest {
       String testName = testInfo.getDisplayName();
       String submissionName = padEnd(testName, 150, 'a', 'z');
 
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
-        long submissionId = facade.submitSubmission(
-                submissionName,
-                null,
-                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                null,
-                "admin",
-                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long submissionId = facade.submitSubmission(
+              submissionName,
+              null,
+              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
-        assertThat(submissionId).isGreaterThan(0L);
-      }
+      assertThat(submissionId).isGreaterThan(0L);
     }
 
     @Test
@@ -332,18 +329,17 @@ class DefaultGCExchangeFacadeContractTest {
       String testName = testInfo.getDisplayName();
       String submissionName = padEnd(testName, 200, 'a', 'z');
 
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
-        long submissionId = facade.submitSubmission(
-                submissionName,
-                null,
-                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                null,
-                "admin",
-                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long submissionId = facade.submitSubmission(
+              submissionName,
+              null,
+              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
-        assertThat(submissionId).isGreaterThan(0L);
-      }
+      assertThat(submissionId).isGreaterThan(0L);
     }
 
     @Test
@@ -353,18 +349,17 @@ class DefaultGCExchangeFacadeContractTest {
       // 2190..21FF Arrows
       String submissionName = padEnd(testName, 150, '\u2190', '\u21FF');
 
-      try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-        String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
-        long submissionId = facade.submitSubmission(
-                submissionName,
-                null,
-                ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-                null,
-                "admin",
-                Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long submissionId = facade.submitSubmission(
+              submissionName,
+              null,
+              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
-        assertThat(submissionId).isGreaterThan(0L);
-      }
+      assertThat(submissionId).isGreaterThan(0L);
     }
 
     private String padEnd(String str, int minLength, char startChar, char endChar) {
@@ -398,40 +393,39 @@ class DefaultGCExchangeFacadeContractTest {
   void translateXliff(TestInfo testInfo, Map<String, Object> gccProperties) {
     String testName = testInfo.getDisplayName();
 
-    try (GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties)) {
-      ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
-      List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).collect(Collectors.toList());
-      Locale masterLocale = getSupportedLocaleStream(connectorsConfig, LocaleConfig::getIsSource)
-              .findFirst()
-              .orElseThrow(() -> new IllegalStateException("At least one source locale required."));
+    GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+    ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
+    List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).collect(Collectors.toList());
+    Locale masterLocale = getSupportedLocaleStream(connectorsConfig, LocaleConfig::getIsSource)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("At least one source locale required."));
 
-      if (targetLocales.isEmpty()) {
-        throw new IllegalStateException("At least one target locale (non-source) required.");
-      }
-
-      Map<String, List<Locale>> contentMap = uploadContents(facade, testName, masterLocale, targetLocales);
-      long submissionId = facade.submitSubmission(
-              testName,
-              null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              null,
-              "admin",
-              masterLocale, contentMap);
-
-      assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
-
-      List<String> xliffResults = new ArrayList<>();
-
-      facade.downloadCompletedTasks(submissionId, new TaskDataConsumer(xliffResults));
-
-      assertThat(xliffResults)
-              .describedAs("All XLIFFs shall have been pseudo-translated.")
-              .hasSize(targetLocales.size())
-              .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
-
-      //After all tasks have been marked as delivered also the submission shall be marked as delivered.
-      assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5);
+    if (targetLocales.isEmpty()) {
+      throw new IllegalStateException("At least one target locale (non-source) required.");
     }
+
+    Map<String, List<Locale>> contentMap = uploadContents(facade, testName, masterLocale, targetLocales);
+    long submissionId = facade.submitSubmission(
+            testName,
+            null,
+            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            null,
+            "admin",
+            masterLocale, contentMap);
+
+    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
+
+    List<String> xliffResults = new ArrayList<>();
+
+    facade.downloadCompletedTasks(submissionId, new TaskDataConsumer(xliffResults));
+
+    assertThat(xliffResults)
+            .describedAs("All XLIFFs shall have been pseudo-translated.")
+            .hasSize(targetLocales.size())
+            .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
+
+    //After all tasks have been marked as delivered also the submission shall be marked as delivered.
+    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5);
   }
 
   private static class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {

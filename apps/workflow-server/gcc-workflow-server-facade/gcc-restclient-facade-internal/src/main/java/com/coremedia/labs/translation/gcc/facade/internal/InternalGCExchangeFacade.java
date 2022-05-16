@@ -70,19 +70,6 @@ public final class InternalGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public void close() {
-    /*
-     * Nothing to do.
-     *
-     * Note, that we will also not clear any store. This is because the intended
-     * usage of this mock is, that it gets opened and closed multiple times
-     * during translation process. The stores actually represent GCC, i. e.
-     * they shall keep their data across all open-close-sequences of this
-     * facade.
-     */
-  }
-
-  @Override
   public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
     return contentStore.addContent(resource);
   }

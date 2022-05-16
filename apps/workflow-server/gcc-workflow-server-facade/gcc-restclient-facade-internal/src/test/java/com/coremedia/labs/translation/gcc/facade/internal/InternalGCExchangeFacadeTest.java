@@ -1,7 +1,5 @@
 package com.coremedia.labs.translation.gcc.facade.internal;
 
-import com.coremedia.labs.translation.gcc.facade.DefaultGCExchangeFacadeSessionProvider;
-import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import org.awaitility.Awaitility;
@@ -40,26 +38,18 @@ class InternalGCExchangeFacadeTest {
 
     Resource xliffResource = new ClassPathResource(XLIFF_FILE, InternalGCExchangeFacade.class);
 
-    try (InternalGCExchangeFacade facade = new InternalGCExchangeFacade()) {
+    InternalGCExchangeFacade facade = new InternalGCExchangeFacade();
 
-      String fileId = facade.uploadContent(testName, xliffResource, Locale.getDefault());
-      long submissionId = facade.submitSubmission(
-              "states:other,cancelled",
-              null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
+    String fileId = facade.uploadContent(testName, xliffResource, Locale.US);
+    long submissionId = facade.submitSubmission(
+            "states:other,cancelled",
+            null,
+            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            null,
+            "admin",
+            Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
-      assertSubmissionReachesState(facade, submissionId, GCSubmissionState.CANCELLED);
-    }
-  }
-
-  @Test
-  void facadeAvailableViaServiceLoader() {
-    try (GCExchangeFacade facade = DefaultGCExchangeFacadeSessionProvider.defaultFactory().openSession(singletonMap(GCConfigProperty.KEY_TYPE, InternalGCExchangeFacadeProvider.TYPE_TOKEN))) {
-      assertThat(facade).isInstanceOf(InternalGCExchangeFacade.class);
-    }
+    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.CANCELLED);
   }
 
   private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState desiredState) {

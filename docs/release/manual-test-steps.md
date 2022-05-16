@@ -49,8 +49,8 @@ home folder
     3. The Due Date should be set to the current dateTime plus 20 days
 4. Click “Start”
     1. The dialog should close without any error
-    2. In the "Running" area from “Localization Workflows” the process should 
-       pop up
+    2. In the "Running" area of the Control Room from “Localization Workflows” 
+       the process should pop up.
 2. Double-Click on the Workflow to open it the Workflow App
 3. The workflow can be tracked in the detail view in the Workflow App
     1. After some time the Status, Submission ID, Due Date are shown
@@ -71,7 +71,6 @@ home folder
    “Finish Content Localization”
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
-
 
 ## Scenario: Cancellation
 
@@ -178,7 +177,7 @@ home folder
     1. A StartTranslation window should pop up
     2. There should be no warnings or errors
     3. The Due Date should be set to the current dateTime plus 20 days
-4. Reset the “username” in the GlobalLinkSettings to something wrong
+4. Reset the “apiKey” in the GlobalLinkSettings to something wrong
 5. Click “Start”
     1. The dialog should close without any error
     2. In the "Running" area from “Localization Workflows” the workflow should 
@@ -190,10 +189,10 @@ home folder
        “Continue and retry”
     4. A click on “Abort and rollback changes” should perform a Rollback of the 
        content (if you perform that you need to redo steps from 1 to 6)
-7. Reset the “username” to its valid value and click “Continue and retry”
+7. Reset the “apiKey” to its valid value and click “Continue and retry”
 8. Select the workflow in "Running" and wait for the Status to change to 
    “Translate” or for the Submission ID to be set
-9. Reset the “username” in the GlobalLinkSettings to something wrong
+9. Reset the “apiKey” in the GlobalLinkSettings to something wrong
 10. Wait for the Workflow to appear in the open workflows
     1. The icon should be a Warning sign
     2. The TaskName should be “Download Error”
@@ -204,9 +203,9 @@ home folder
     1. The icon should be a Warning sign
     2. The TaskName should be “Cancelation Error”
     3. You have the ability to “Abort and rollback without canceling the 
-       submission at GlobalLink.” or “Continue and retry”
-13. Continue and retry should lead to a cancelation of the workflow, 
-    "Abort and rollback changes" should lead to a direct rollback
+       submission at GlobalLink.”, "Retry cancelation" or “Continue Translation”
+13. Correct the "apiKey" and press "Continue Translation". The workflow appears 
+    in the Open workflows at some point. Accept it and finish it.
 
 ## Scenario: XLIFF Import Error Handling
 

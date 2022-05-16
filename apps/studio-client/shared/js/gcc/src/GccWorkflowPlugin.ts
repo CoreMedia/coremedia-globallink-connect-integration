@@ -195,10 +195,7 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
     },
 
     saveViewModel(viewModel: GccViewModel) {
-      return {
-        globalLinkSubmissionStatus: viewModel.globalLinkSubmissionStatus,
-        globalLinkDueDate: viewModel.globalLinkDueDate,
-      };
+      return {};
     },
 
     fields: [
@@ -324,6 +321,7 @@ workflowLocalizationRegistry._.addIssuesLocalization({
   "GCC-WF-30001": GccWorkflowLocalization_properties["GCC-WF-30001_text"],
   "GCC-WF-40000": GccWorkflowLocalization_properties["GCC-WF-40000_text"],
   "GCC-WF-40001": GccWorkflowLocalization_properties["GCC-WF-40001_text"],
+  "GCC-WF-40002": GccWorkflowLocalization_properties["GCC-WF-40002_text"],
   "GCC-WF-40050": GccWorkflowLocalization_properties["GCC-WF-40050_text"],
   "GCC-WF-50050": GccWorkflowLocalization_properties["GCC-WF-50050_text"],
   "GCC-WF-61001": GccWorkflowLocalization_properties["GCC-WF-61001_text"],

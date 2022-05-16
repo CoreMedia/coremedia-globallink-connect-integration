@@ -78,30 +78,18 @@ class DefaultGCExchangeFacadeTest {
   @Mock
   private GCExchange gcExchange;
 
-  @Test
-  void ignoreFailuresOnClose() {
-    when(gcExchange.logout()).thenThrow(RuntimeException.class);
-    assertThatCode(() -> {
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        assertThat(facade.getDelegate()).isNotNull();
-      }
-    }).doesNotThrowAnyException();
-  }
-
   @ParameterizedTest(name = "[{index}] Missing required parameter: ''{0}''")
   @DisplayName("Constructor should signal missing required keys in configuration.")
   @ValueSource(strings = {
           GCConfigProperty.KEY_URL,
-          GCConfigProperty.KEY_USERNAME,
-          GCConfigProperty.KEY_PASSWORD,
+          GCConfigProperty.KEY_API_KEY,
           GCConfigProperty.KEY_KEY
   })
   void failOnMissingRequiredConfiguration(String excludedKey) {
     Map<String, Object> config = new HashMap<>();
     List<String> requiredKeys = new ArrayList<>(asList(
             GCConfigProperty.KEY_URL,
-            GCConfigProperty.KEY_USERNAME,
-            GCConfigProperty.KEY_PASSWORD,
+            GCConfigProperty.KEY_API_KEY,
             GCConfigProperty.KEY_KEY
     ));
     requiredKeys.remove(excludedKey);
@@ -126,52 +114,49 @@ class DefaultGCExchangeFacadeTest {
       ArgumentCaptor<UploadFileRequest> uploadFileRequestCaptor = ArgumentCaptor.forClass(UploadFileRequest.class);
       when(gcExchange.uploadContent(any())).thenReturn(expectedFileId);
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        String actualFileId = facade.uploadContent(expectedFileName, new ByteArrayResource(expectedContent), expectedSourceLocale);
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      String actualFileId = facade.uploadContent(expectedFileName, new ByteArrayResource(expectedContent), expectedSourceLocale);
 
-        assertThat(actualFileId).isEqualTo(expectedFileId);
+      assertThat(actualFileId).isEqualTo(expectedFileId);
 
-        verify(gcExchange).uploadContent(uploadFileRequestCaptor.capture());
-        UploadFileRequest actualRequest = uploadFileRequestCaptor.getValue();
-        SoftAssertions assertions = new SoftAssertions();
-        assertions.assertThat(actualRequest.getFileName()).isEqualTo(expectedFileName);
-        assertions.assertThat(actualRequest.getFileType()).isEqualTo("xliff");
-        assertions.assertThat(actualRequest.getContents()).isEqualTo(expectedContent);
-        assertions.assertThat(actualRequest.getSourceLocale()).isEqualTo(expectedSourceLocale.toLanguageTag());
-        assertions.assertAll();
-      }
+      verify(gcExchange).uploadContent(uploadFileRequestCaptor.capture());
+      UploadFileRequest actualRequest = uploadFileRequestCaptor.getValue();
+      SoftAssertions assertions = new SoftAssertions();
+      assertions.assertThat(actualRequest.getFileName()).isEqualTo(expectedFileName);
+      assertions.assertThat(actualRequest.getFileType()).isEqualTo("xliff");
+      assertions.assertThat(actualRequest.getContents()).isEqualTo(expectedContent);
+      assertions.assertThat(actualRequest.getSourceLocale()).isEqualTo(expectedSourceLocale.toLanguageTag());
+      assertions.assertAll();
     }
+  }
 
-    @Test
-    @DisplayName("IOExceptions should be wrapped into GCFacadeIOException")
-    void wrapIOExceptions() throws Exception {
-      String someResourceFilename = "some resource filename";
-      String someFilename = "some filename";
-      Resource resource = Mockito.mock(Resource.class);
-      Mockito.when(resource.getInputStream()).thenThrow(IOException.class);
-      Mockito.when(resource.getFilename()).thenReturn(someResourceFilename);
+  @Test
+  @DisplayName("IOExceptions should be wrapped into GCFacadeIOException")
+  void wrapIOExceptions() throws Exception {
+    String someResourceFilename = "some resource filename";
+    String someFilename = "some filename";
+    Resource resource = Mockito.mock(Resource.class);
+    Mockito.when(resource.getInputStream()).thenThrow(IOException.class);
+    Mockito.when(resource.getFilename()).thenReturn(someResourceFilename);
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        assertThatThrownBy(() -> facade.uploadContent(someFilename, resource, null))
-                .isInstanceOf(GCFacadeIOException.class)
-                .hasCauseInstanceOf(IOException.class)
-                .hasMessageContaining(someResourceFilename)
-                .hasMessageContaining(someFilename);
-      }
-    }
+    GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+    assertThatThrownBy(() -> facade.uploadContent(someFilename, resource, null))
+            .isInstanceOf(GCFacadeIOException.class)
+            .hasCauseInstanceOf(IOException.class)
+            .hasMessageContaining(someResourceFilename)
+            .hasMessageContaining(someFilename);
+  }
 
-    @Test
-    void wrapExceptionsDuringUpload(TestInfo testInfo) {
-      String expectedFileName = testInfo.getDisplayName();
-      when(gcExchange.uploadContent(any())).thenThrow(RuntimeException.class);
+  @Test
+  void wrapExceptionsDuringUpload(TestInfo testInfo) {
+    String expectedFileName = testInfo.getDisplayName();
+    when(gcExchange.uploadContent(any())).thenThrow(RuntimeException.class);
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{42}), null))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(expectedFileName);
-      }
-    }
+    GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+    assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{42}), null))
+            .isInstanceOf(GCFacadeCommunicationException.class)
+            .hasCauseInstanceOf(RuntimeException.class)
+            .hasMessageContaining(expectedFileName);
   }
 
   @Nested
@@ -200,20 +185,19 @@ class DefaultGCExchangeFacadeTest {
       when(gcExchange.submitSubmission(any())).thenReturn(response);
       when(response.getSubmissionId()).thenReturn(expectedSubmissionId);
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale)));
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale)));
 
-        assertThat(submissionId).isEqualTo(expectedSubmissionId);
-        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
-        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+      assertThat(submissionId).isEqualTo(expectedSubmissionId);
+      verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+      SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
 
-        SoftAssertions assertions = new SoftAssertions();
-        assertions.assertThat(request.getSubmissionName()).contains(subject);
-        assertions.assertThat(request.getDueDate()).isEqualTo(expectedUtcDueDate);
-        assertions.assertThat(request.getSourceLocale()).isEqualTo(sourceLocale.toLanguageTag());
-        assertions.assertThat(request.getContentLocales()).hasSize(1);
-        assertions.assertAll();
-      }
+      SoftAssertions assertions = new SoftAssertions();
+      assertions.assertThat(request.getSubmissionName()).contains(subject);
+      assertions.assertThat(request.getDueDate()).isEqualTo(expectedUtcDueDate);
+      assertions.assertThat(request.getSourceLocale()).isEqualTo(sourceLocale.toLanguageTag());
+      assertions.assertThat(request.getContentLocales()).hasSize(1);
+      assertions.assertAll();
     }
 
     @Test
@@ -232,14 +216,13 @@ class DefaultGCExchangeFacadeTest {
 
       when(gcExchange.submitSubmission(any())).thenThrow(RuntimeException.class);
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        assertThatThrownBy(() -> facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale))))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(subject)
-                .hasMessageContaining(sourceLocale.toString())
-        ;
-      }
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      assertThatThrownBy(() -> facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale))))
+              .isInstanceOf(GCFacadeCommunicationException.class)
+              .hasCauseInstanceOf(RuntimeException.class)
+              .hasMessageContaining(subject)
+              .hasMessageContaining(sourceLocale.toString())
+      ;
     }
   }
 
@@ -268,20 +251,19 @@ class DefaultGCExchangeFacadeTest {
       void happyPath() {
         when(tasksListResponse.getTasks()).thenReturn(singletonList(gcTask));
         when(gcTask.getTaskId()).thenReturn(expectedTaskId);
-        when(gcTask.getStatus()).thenReturn(TaskStatus.Completed.text());
+        when(gcTask.getState()).thenReturn(TaskStatus.Completed.text());
         org.gs4tr.gcc.restclient.model.Locale gccLocale = new org.gs4tr.gcc.restclient.model.Locale();
         gccLocale.setLocale("de-DE");
         when(gcTask.getTargetLocale()).thenReturn(gccLocale);
         when(gcExchange.downloadTask(eq(expectedTaskId))).thenReturn(new ByteArrayInputStream(expectedContent));
         when(gcExchange.confirmTask(eq(expectedTaskId))).thenReturn(true);
 
-        try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-          String[] actualContentRead = {null};
+        GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+        String[] actualContentRead = {null};
 
-          facade.downloadCompletedTasks(expectedSubmissionId, new HappyPathTaskDataConsumer(actualContentRead));
+        facade.downloadCompletedTasks(expectedSubmissionId, new HappyPathTaskDataConsumer(actualContentRead));
 
-          assertThat(actualContentRead[0]).isEqualTo(LOREM_IPSUM);
-        }
+        assertThat(actualContentRead[0]).isEqualTo(LOREM_IPSUM);
       }
 
       private class HappyPathTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
@@ -307,18 +289,17 @@ class DefaultGCExchangeFacadeTest {
       void unhappyPathInputStream() {
         when(tasksListResponse.getTasks()).thenReturn(singletonList(gcTask));
         when(gcTask.getTaskId()).thenReturn(expectedTaskId);
-        when(gcTask.getStatus()).thenReturn(TaskStatus.Completed.text());
+        when(gcTask.getState()).thenReturn(TaskStatus.Completed.text());
         org.gs4tr.gcc.restclient.model.Locale locale = new org.gs4tr.gcc.restclient.model.Locale();
         locale.setLocale("de-DE");
         when(gcTask.getTargetLocale()).thenReturn(locale);
         when(gcExchange.downloadTask(eq(expectedTaskId))).thenReturn(new ByteArrayInputStream(expectedContent));
 
-        try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-          assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new ExceptionTaskDataConsumer()))
-                  .isInstanceOf(GCFacadeCommunicationException.class)
-                  .hasCauseInstanceOf(RuntimeException.class)
-                  .hasMessageContaining(String.valueOf(expectedTaskId));
-        }
+        GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+        assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new ExceptionTaskDataConsumer()))
+                .isInstanceOf(GCFacadeCommunicationException.class)
+                .hasCauseInstanceOf(RuntimeException.class)
+                .hasMessageContaining(String.valueOf(expectedTaskId));
 
         verify(gcExchange, never()).confirmTask(any());
       }
@@ -335,11 +316,10 @@ class DefaultGCExchangeFacadeTest {
       void unhappyPathFailureOnGetTaskList() {
         when(gcExchange.getTasksList(any())).thenThrow(RuntimeException.class);
 
-        try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-          assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                  .isInstanceOf(GCFacadeCommunicationException.class)
-                  .hasCauseInstanceOf(RuntimeException.class);
-        }
+        GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+        assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
+                .isInstanceOf(GCFacadeCommunicationException.class)
+                .hasCauseInstanceOf(RuntimeException.class);
 
         verify(gcExchange, never()).downloadTask(any());
         verify(gcExchange, never()).confirmTask(any());
@@ -357,18 +337,17 @@ class DefaultGCExchangeFacadeTest {
       void unhappyPathFailureOnDownloadTask() {
         when(tasksListResponse.getTasks()).thenReturn(singletonList(gcTask));
         when(gcTask.getTaskId()).thenReturn(expectedTaskId);
-        when(gcTask.getStatus()).thenReturn(TaskStatus.Completed.text());
+        when(gcTask.getState()).thenReturn(TaskStatus.Completed.text());
         org.gs4tr.gcc.restclient.model.Locale locale = new org.gs4tr.gcc.restclient.model.Locale();
         locale.setLocale("de-DE");
         when(gcTask.getTargetLocale()).thenReturn(locale);
         when(gcExchange.downloadTask(eq(expectedTaskId))).thenThrow(RuntimeException.class);
 
-        try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-          assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                  .isInstanceOf(GCFacadeCommunicationException.class)
-                  .hasCauseInstanceOf(RuntimeException.class)
-                  .hasMessageContaining(String.valueOf(expectedTaskId));
-        }
+        GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+        assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
+                .isInstanceOf(GCFacadeCommunicationException.class)
+                .hasCauseInstanceOf(RuntimeException.class)
+                .hasMessageContaining(String.valueOf(expectedTaskId));
 
         verify(gcExchange, never()).confirmTask(any());
 
@@ -379,19 +358,18 @@ class DefaultGCExchangeFacadeTest {
       void unhappyPathFailureOnConfirmTask() {
         when(tasksListResponse.getTasks()).thenReturn(singletonList(gcTask));
         when(gcTask.getTaskId()).thenReturn(expectedTaskId);
-        when(gcTask.getStatus()).thenReturn(TaskStatus.Completed.text());
+        when(gcTask.getState()).thenReturn(TaskStatus.Completed.text());
         when(gcExchange.downloadTask(eq(expectedTaskId))).thenReturn(new ByteArrayInputStream(expectedContent));
         org.gs4tr.gcc.restclient.model.Locale locale = new org.gs4tr.gcc.restclient.model.Locale();
         locale.setLocale("de-DE");
         when(gcTask.getTargetLocale()).thenReturn(locale);
         when(gcExchange.confirmTask(eq(expectedTaskId))).thenThrow(RuntimeException.class);
 
-        try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-          assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                  .isInstanceOf(GCFacadeCommunicationException.class)
-                  .hasCauseInstanceOf(RuntimeException.class)
-                  .hasMessageContaining(String.valueOf(expectedTaskId));
-        }
+        GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+        assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
+                .isInstanceOf(GCFacadeCommunicationException.class)
+                .hasCauseInstanceOf(RuntimeException.class)
+                .hasMessageContaining(String.valueOf(expectedTaskId));
       }
     }
   }
@@ -424,16 +402,15 @@ class DefaultGCExchangeFacadeTest {
 
       when(tasksListResponse.getTasks()).thenReturn(singletonList(gcTask));
       when(gcTask.getTaskId()).thenReturn(taskId);
-      when(gcTask.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+      when(gcTask.getState()).thenReturn(TaskStatus.Cancelled.text());
       org.gs4tr.gcc.restclient.model.Locale locale = new org.gs4tr.gcc.restclient.model.Locale();
       locale.setLocale("de-DE");
       when(gcTask.getTargetLocale()).thenReturn(locale);
       when(gcExchange.confirmTaskCancellation(any())).thenReturn(messageResponse);
       when(messageResponse.getStatus()).thenReturn(200);
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        facade.confirmCancelledTasks(submissionId);
-      }
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      facade.confirmCancelledTasks(submissionId);
 
       verify(gcExchange).getTasksList(taskListRequestCaptor.capture());
       TaskListRequest request = taskListRequestCaptor.getValue();
@@ -452,9 +429,8 @@ class DefaultGCExchangeFacadeTest {
 
       when(tasksListResponse.getTasks()).thenReturn(emptyList());
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        facade.confirmCancelledTasks(submissionId);
-      }
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      facade.confirmCancelledTasks(submissionId);
 
       verify(gcExchange, never()).confirmTaskCancellation(any());
     }
@@ -488,10 +464,9 @@ class DefaultGCExchangeFacadeTest {
     @Test
     @DisplayName("Standard Submission State Retrieval")
     void happyPath() {
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
-        assertThat(state).isEqualTo(GCSubmissionState.STARTED);
-      }
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+      assertThat(state).isEqualTo(GCSubmissionState.STARTED);
     }
 
     @Test
@@ -499,10 +474,9 @@ class DefaultGCExchangeFacadeTest {
     void dealWithUnavailableSubmission() {
       when(submissionsResponseData.getSubmissions()).thenReturn(emptyList());
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
-        assertThat(state).isEqualTo(GCSubmissionState.OTHER);
-      }
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+      assertThat(state).isEqualTo(GCSubmissionState.OTHER);
     }
 
     @Test
@@ -513,11 +487,10 @@ class DefaultGCExchangeFacadeTest {
 
       when(submissionsResponseData.getSubmissions()).thenReturn(asList(submission, additionalSubmission));
 
-      try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-        GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
-        // Does not matter, just one should be chosen.
-        assertThat(state).isIn(GCSubmissionState.STARTED, GCSubmissionState.TRANSLATE);
-      }
+      GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+      // Does not matter, just one should be chosen.
+      assertThat(state).isIn(GCSubmissionState.STARTED, GCSubmissionState.TRANSLATE);
     }
 
     @Nested
@@ -545,44 +518,41 @@ class DefaultGCExchangeFacadeTest {
         @Test
         @DisplayName("'cancelled', if task is not in cancelled state")
         void taskNotCancelled() {
-          when(task.getStatus()).thenReturn(TaskStatus.Processing.text());
+          when(task.getState()).thenReturn(TaskStatus.Processing.text());
 
-          try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+          GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+          GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
-            assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
-          }
+          assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
         }
 
         @Test
         @DisplayName("'cancelled', if task is cancelled but cancellation not confirmed")
         void taskUnconfirmedCancellation() {
-          when(task.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+          when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.FALSE);
 
-          try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+          GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+          GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
-            assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
-          }
+          assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
         }
 
         @Test
         @DisplayName("'cancelled', if not all tasks have their cancellation confirmed")
         void someTasksUnconfirmedCancellation() {
           when(tasksListResponse.getTasks()).thenReturn(asList(task, additionalTask1, additionalTask2));
-          when(task.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+          when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
-          when(additionalTask1.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+          when(additionalTask1.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(additionalTask1.getIsCancelConfirmed()).thenReturn(Boolean.FALSE);
-          when(additionalTask2.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+          when(additionalTask2.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(additionalTask2.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
 
-          try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+          GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+          GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
-            assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
-          }
+          assertThat(state).isEqualTo(GCSubmissionState.CANCELLED);
         }
       }
 
@@ -592,14 +562,13 @@ class DefaultGCExchangeFacadeTest {
         @Test
         @DisplayName("'cancellation confirmed', if all tasks are confirmed")
         void taskIsCancellationConfirmed() {
-          when(task.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+          when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
 
-          try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+          GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+          GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
-            assertThat(state).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED);
-          }
+          assertThat(state).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED);
         }
 
         /**
@@ -612,17 +581,16 @@ class DefaultGCExchangeFacadeTest {
         @DisplayName("'cancellation confirmed', if all tasks are either confirmed or delivered")
         void tasksAreCancellationConfirmedOrDelivered() {
           when(tasksListResponse.getTasks()).thenReturn(asList(task, additionalTask1, additionalTask2));
-          when(task.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+          when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
-          when(additionalTask1.getStatus()).thenReturn(TaskStatus.Delivered.text());
-          when(additionalTask2.getStatus()).thenReturn(TaskStatus.Cancelled.text());
+          when(additionalTask1.getState()).thenReturn(TaskStatus.Delivered.text());
+          when(additionalTask2.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(additionalTask2.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
 
-          try (GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange)) {
-            GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
+          GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+          GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
 
-            assertThat(state).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED);
-          }
+          assertThat(state).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED);
         }
       }
     }

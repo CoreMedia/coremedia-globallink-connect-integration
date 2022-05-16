@@ -22,9 +22,8 @@ If the contract is not fulfilled, you typically adapt the facade's implementatio
      credentials and will look like this:
      
      ```properties
-     username=JohnDoe
-     password=secret!
-     url=https://connect-dev.translations.com/api/v2/
+     apiKey=12ab34cd
+     url=https://connect-dev.translations.com/api/v3/
      key=0e...abc
      fileType=xliff
      ```
