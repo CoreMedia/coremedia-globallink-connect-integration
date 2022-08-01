@@ -179,7 +179,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       SubmissionSubmit.SubmissionSubmitResponseData response = delegate.submitSubmission(request);
       return response.getSubmissionId();
     } catch (RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to create submission: subject=%s, source-locale=%s", subject, sourceLocale);
+      throw new GCFacadeCommunicationException(e, "Failed to create submission: subject=%s, source-locale=%s",
+              subject, sourceLocale.toLanguageTag());
     }
   }
 

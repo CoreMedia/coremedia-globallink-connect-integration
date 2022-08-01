@@ -221,7 +221,7 @@ class DefaultGCExchangeFacadeTest {
               .isInstanceOf(GCFacadeCommunicationException.class)
               .hasCauseInstanceOf(RuntimeException.class)
               .hasMessageContaining(subject)
-              .hasMessageContaining(sourceLocale.toString())
+              .hasMessageContaining(sourceLocale.toLanguageTag())
       ;
     }
   }

@@ -233,7 +233,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     } else {
       facade.downloadCompletedTasks(submissionId,
               (inputStream, task) -> importXliffFile(inputStream, task, result.completedLocales, issues, result));
-      LOG.info("Checked for update of submission {} (PD ID {}) in state {} with completed locales [{}].", submissionId, submission.getPdSubmissionIds(), submission.getState(), result.completedLocales);
+      LOG.info("Checked for update of submission {} (PD ID {}) in state {} with completed locales [{}].",
+              submissionId, submission.getPdSubmissionIds(), submission.getState(),
+              result.completedLocales.stream().map(Locale::toLanguageTag).collect(Collectors.toList()));
       //disable cancel if any tasks are completed
       disableCancelWhenCompletedLocalesExist(result);
     }
