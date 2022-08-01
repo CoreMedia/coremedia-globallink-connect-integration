@@ -152,7 +152,7 @@ class DefaultGCExchangeFacadeContractTest {
       ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
       List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
       Locale expected = Locale.forLanguageTag(expectedSupportedLocale);
-      LOG.info("Available locales: {}", supportedLocales);
+      LOG.info("Available locales: {}", supportedLocales.stream().map(Locale::toLanguageTag).collect(Collectors.toList()));
       assertThat(supportedLocales).anySatisfy(tl -> assertThat(tl).isEqualTo(expected));
     }
   }
