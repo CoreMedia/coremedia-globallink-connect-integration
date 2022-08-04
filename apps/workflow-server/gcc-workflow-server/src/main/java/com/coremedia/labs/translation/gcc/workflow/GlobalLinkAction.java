@@ -28,6 +28,7 @@ import com.google.gson.reflect.TypeToken;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -391,7 +392,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   // --- Helper methods for subclasses ----------------------------------------
 
   SitesService getSitesService() {
-    return getSpringContext().getBean(SitesService.class);
+    ApplicationContext springContext = getSpringContext();
+    return springContext.getBean(SitesService.class);
   }
 
   static long parseSubmissionId(String submissionId, String wfTaskId) {

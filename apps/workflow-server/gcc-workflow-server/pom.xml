@@ -63,6 +63,7 @@
     <dependency>
       <groupId>com.coremedia.cms</groupId>
       <artifactId>cap-translate</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
@@ -83,6 +84,7 @@
     <dependency>
       <groupId>com.coremedia.cms</groupId>
       <artifactId>coremedia-spring</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
@@ -117,10 +119,6 @@
       <artifactId>spring-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot</artifactId>
     </dependency>
@@ -134,16 +132,6 @@
     <dependency>
       <groupId>com.coremedia.cms</groupId>
       <artifactId>cap-client-xml</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.coremedia.cms</groupId>
-      <artifactId>coremedia-spring</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.coremedia.cms</groupId>
-      <artifactId>cap-translate</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -203,9 +191,9 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <configuration>
-          <ignoredUnusedDeclaredDependencies combine.children="append">
-            <ignoredUnusedDeclaredDependency>org.springframework:spring-beans</ignoredUnusedDeclaredDependency>
-          </ignoredUnusedDeclaredDependencies>
+          <ignoredNonTestScopedDependencies combine.children="append">
+            <ignoredNonTestScopedDependency>org.springframework:spring-beans</ignoredNonTestScopedDependency>
+          </ignoredNonTestScopedDependencies>
         </configuration>
       </plugin>
     </plugins>
