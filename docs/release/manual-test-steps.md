@@ -16,7 +16,7 @@
 
 ## Prepare
 
-For quicker test feedback set the following integer parameters in the 
+For quicker test feedback set the following integer parameters in the
 GlobalLink-Settings `/Settings/Options/Settings/GlobalLink`
 
 * sendTranslationRequestRetryDelay -> 60
@@ -28,207 +28,244 @@ GlobalLink-Settings `/Settings/Options/Settings/GlobalLink`
 
 Especially on updates of `gcc-restclient` you should run the half-automatic
 test `DefaultGCExchangeFacadeContractTest`. Read the JavaDoc to know how to
-configure and run the test. 
-Lately, when using the automatic workflow, the submission is not marked as 
-`DELIVERED` anymore. This is why the `translateXliff` test fails. It seems to 
+configure and run the test.
+Lately, when using the automatic workflow, the submission is not marked as
+`DELIVERED` anymore. This is why the `translateXliff` test fails. It seems to
 work with the manual workflow though.
 
-In order run the test you need to create a file with the name [.gcc.properties](example.gcc.properties.txt) in your user 
+In order run the test you need to create a file with the name
+[.gcc.properties](example.gcc.properties.txt) in your user
 home folder
 
 ## Scenario: Happy Path
 
-1. Login as Rick C.
-2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
-    1. type should not be set to “mock”
-    2. dayOffsetForDueDate should be set to 20
-    3. Credentials for gcc should be entered (automatic workflow key)
-3. Choose an article and drag it into the “Localization Workflows” drop area
-    1. A StartTranslation window should pop up
+1. Log in as Rick C.
+2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+    1. _type_ is set to “default”
+    2. _dayOffsetForDueDate_ is set to 20
+    3. Credentials for gcc are entered (**automatic** workflow key)
+    4. Document _GlobalLink_ is linked in homepage document of site you want to
+       test translation on
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
     2. There should be no warnings or errors
-    3. The Due Date should be set to the current dateTime plus 20 days
+    3. Field _Due Date_ should be set to the current date/time plus 20 days
 4. Click “Start”
     1. The dialog should close without any error
-    2. In the "Running" area of the Control Room from “Localization Workflows” 
-       the process should pop up.
-2. Double-Click on the Workflow to open it the Workflow App
-3. The workflow can be tracked in the detail view in the Workflow App
-    1. After some time the Status, Submission ID, Due Date are shown
-    2. As long as the Workflow is in "Running" the variable “Completed Locales”
-       displays “0 Locales”
-6. Wait for the workflow to be finished
-    1. The Workflow should disappear from the "Running" workflows in the Workflow 
-       App and appear on the “Open” list.
-    2. In the Content App the Workflow should now also be shown in the Inbox.
-7. Select the Workflow in your “Open” list in the Workflow App
-    1. The “Status” variable should display “Delivered”
-    2. The “Completed Locales” variable should display the target locales of 
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Double-Click the workflow
+    1. A sidebar with workflow information should open
+6. Click "Open workflow details"
+    1. A new tab with the _Workflow App_'s detail view for the workflow should
+       open
+    2. After some time, _Status_, _Submission ID_, and _Due Date_ should be
+       shown
+    3. As long as the workflow is in "Running", field “Completed Locales”
+       should display “0 Locales”
+7. Click "Go to overview" and wait for the workflow to be finished
+    1. The workflow should disappear from the "Running" workflows and appear on
+       the “Open” list.
+    2. The workflow should now also be shown in the "Open" workflows of Control
+       Room's “Localization Workflows”.
+8. Double-click the workflow in _Workflow App_'s “Open” list
+    1. The “Status” field should display “Delivered”
+    2. The “Completed Locales” field should display the target locales of
        the workflow
-    3. When clicking on the translated content, it opens in the comparison view 
-       to its master content in the Content App
-    4. The text should be pseudo translated
-8. Click “Accept Task” in the Workflow App and then "Next Step" -> 
-   “Finish Content Localization”
+    3. When clicking on the translated content, it should open in language
+       comparison view
+       in _Studio_
+    4. The text should be pseudo-translated
+9. In the _Workflow App_, click “Accept Task”, "Next Step", “Finish Content
+   Localization”, and "Yes, continue"
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
 
 ## Scenario: Cancellation
 
-1. Login as Rick C.
-2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
-    1. type should not be set to “mock”
-    2. dayOffsetForDueDate should be set to 20
-    3. Credentials for gcc should be entered (manual workflow key)
-3. Choose an article and drag it into the “Localization Workflows” drop area
-    1. A StartTranslation window should pop up
+1. Log in as Rick C.
+2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+    1. _type_ is set to “default”
+    3. Credentials for gcc are entered (**manual** workflow key)
+    4. Document _GlobalLink_ is linked in homepage document of site you want to
+       test translation on
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
     2. There should be no warnings or errors
-    3. The Due Date should be set to the current dateTime plus 20 days
 4. Click “Start”
     1. The dialog should close without any error
-    2. In the "Running" area from “Localization Workflows” the workflow should 
-       pop up
-5. Open the "Running" area and select the started workflow
-    1. A “X” should be activated in the header bar
-    2. Multi-selection is possible. If you select a "normal" and a GlobalLink 
-       workflow, the button remains deactivated. It is also  possible to select and 
-       cancel multiple GlobalLink workflows at once.
-6. Press the “X”
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Repeat workflow creation twice, once with a "Translation" workflow and once
+   with a "Translation with GlobalLink" workflow
+6. Open the "Running" area of Control Room's “Localization Workflows”
+    1. An “X” should be activated in the header bar, if a "Translation with
+       GlobalLink" workflow is selected
+    2. An “X” should be activated in the header bar, if two "Translation with
+       GlobalLink" workflows are selected (multi-selection)
+    3. No “X” should be activated in the header bar, if a "Translation"
+       workflow is selected
+    4. No “X” should be activated in the header bar, if a "Translation"
+       workflow and a "Translation with GlobalLink" workflow are selected
+       (multi-selection)
+7. Select both "Translation with GlobalLink" workflows and click the “X”
     1. A dialog should pop
-7. Confirm the dialog
-    1. The Dialog should close
-    2. The icon of the workflow should change (now it has a little “x” on the 
-   bottom right)
-    3. The “X” should appear disabled in the header bar 
-    4. The workflow should disappear in the "Running" list after some time
-8. Depending on timing there might be a “Review Cancelation” task or a "Handle
-   Cancelation Error" task in your open workflows. Or, the workflow will be 
-   directly canceled, if the workflow at GlobalLink completed in the meantime.
-9. In case of the “Handle Cancelation Error” Task, try out "Continue 
-   translation" or "Abort and rollback without canceling at GlobalLink.".
-10. After regularly reviewing the cancelation open the "Closed" list in the
-    Workflow App.
-    1. The workflow should appear here
-    2. The “Status” variable should display “Canceled” (not sure why but the
-       automatic workflow shows "Delivered")
-    3. The icon should mark the workflow as canceled (little “x” on the 
-       bottom right)
-12. Login to the GlobalLink dashboard and the Project Director and verify that
-    the workflow appears as "Canceled" here as well.
+8. Confirm the dialog
+    1. The dialog should close
+    2. The “X” should appear disabled in the header bar
+    3. in the _Workflow App_, the workflows' icons should change (now they have
+       a little “x” on the bottom right)
+    4. The workflows should disappear from the "Running" list after some time
+       (until then the status in _Workflow App_'s overview will be
+       "CancelTranslation")
+    5. Field "Current Task" in _Workflow App_'s detail view should
+       show "Cancelation Error". Depending on timing, it could also show
+       "Review Cancelation" or the workflow will be
+       directly canceled. The test cannot be continued in these cases.
+9. Click "Accept Task" and "Next Step"
+    1. Options "Abort and rollback without canceling at
+       GlobalLink", "Retry cancelation", and "Continue translation" should be
+       presented
+    2. Click "Abort and rollback without canceling at GlobalLink" and open the
+       target site's document
+        1. The document should remain in its previous version
+    3. Go back to the _Workflow App_ overview
+        1. The workflow should be moved from the "Running" to the "Closed" list
+        2. The “Status” field in _Workflow App_'s overview should display
+           “Workflow completed”
+        3. The icon should mark the workflow as canceled (little “x” on the
+           bottom right)
 
 ## Scenario: Submitter and Instructions
 
-1. Login as Rick C.
-2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
-    1. type should not be set to “mock”
-    3. Credentials for gcc should be entered (manual workflow key)
-    4. Activate the boolean property "isSendSubmitter"
-3. Choose an article and drag it into the “Localization Workflows” drop area
-    1. A StartTranslation window should pop up
-    2. Add a text to the notes field
+1. Log in as Rick C.
+2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+    1. _type_ is set to “default”
+    2. Credentials for gcc are entered (**manual** workflow key)
+    4. Boolean property _isSendSubmitter_ is activated
+    3. Document _GlobalLink_ is linked in homepage document of site you want to
+       test translation on
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
+    2. Add a text to field _Notes_
 4. Click “Start”
     1. The dialog should close without any error
-    2. In the "Running" area from “Localization Workflows” the workflow should 
-       pop up
-5. Login to the GlobalLink Connect Dashboard
-    1. The submitter and the instructions added to the notes field are visible 
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Log in to the GlobalLink Management Dashboard
+    1. The submitter and the instructions added to field _Notes_ are visible
        in the submission's detail view
-    2. Not required - If you login to the Project Director the submitter is set 
-       to the API user. Instructions should be available though.
-6. Switch back to the Studio or Workflow App and cancel the workflow in the 
-   pending list.
+6. Switch back to Studio or _Workflow App_ and cancel the workflow in the
+   "Running" list.
 
 ## Scenario: Cancelation in GlobalLink
 
-1. Login as Rick C.
-2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
-    1. type should not be set to “mock”
-    2. dayOffsetForDueDate should be set to 20
-    3. Credentials for gcc should be entered (manual workflow key)
-3. Choose an article and drag it into the “Localization Workflows” drop area
-    1. A StartTranslation window should pop up
+1. Log in as Rick C.
+2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+    1. _type_ is set to “default”
+    3. Credentials for gcc are entered (**manual** workflow key)
+    4. Document _GlobalLink_ is linked in homepage document of site you want to
+       test translation on
+4. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
     2. There should be no warnings or errors
-    3. The Due Date should be set to the current dateTime plus 20 days
-4. Click “Start”
-    1. The dialog should close without any error
-    2. In the "Running" area from “Localization Workflows” the workflow should 
-       pop up
-5. Login to GlobalLink project director by using the credentials for the manual
-    workflow account.
-6. Login to the GlobalLink dashboard and cancel the workflow.
-7. Go back to the Workflow App
-    1. The workflow appears in Rick's Open workflows.
-    2. Rick can only choose to abort and rollback the previous changes and
-       accept the cancelation.
-    3. Choose "Abort and rollback changes"
-8. Open the "Closed" area
-    1. The workflow should appear here
-    2. The “Status” variable should display “Canceled”
-    3. The icon should mark the workflow as canceled (little “x” on the 
-       bottom right)
-  
-## Scenario: Error Handling
-
-1. Login as Rick C.
-2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
-    1. type should not be set to “mock”
-    2. dayOffsetForDueDate should be set to 20
-    3. Credentials for gcc should be entered (automatic workflow key)
-3. Choose an article and drag it into the “Localization Workflows” drop area
-    1. A StartTranslation window should pop up
-    2. There should be no warnings or errors
-    3. The Due Date should be set to the current dateTime plus 20 days
-4. Reset the “apiKey” in the GlobalLinkSettings to something wrong
 5. Click “Start”
     1. The dialog should close without any error
-    2. In the "Running" area from “Localization Workflows” the workflow should 
-       pop up
-6. Wait for the Workflow to appear in the open workflows
-    1. The icon should be a Warning sign
-    2. The TaskName should be “Upload Error”
-    3. You have the ability to “Abort and rollback changes” or 
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+6. Log in to the _GlobalLink Management Dashboard_ and cancel the workflow
+7. Go back to the _Workflow App_
+    1. After a while, the workflow appears in Rick's "Open" workflows
+    2. When accepting the task, Rick can only choose to abort and rollback the
+       previous changes and accept the cancelation
+    3. Choose "Abort and rollback changes"
+8. Open the "Closed" area and double-click the cancelled workflow
+    2. Field “Status” should display “Canceled”
+    3. The icon should mark the workflow as canceled (little “x” on the
+       bottom right)
+
+## Scenario: Error Handling
+
+1. Log in as Rick C.
+2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+    1. _type_ is set to “default”
+    2. Credentials for gcc are entered (**automatic** workflow key) **but**
+       _apiKey_ key is set to something wrong
+    3. Document _GlobalLink_ is linked in homepage document of site you want to
+       test translation on
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
+    2. There should be no warnings or errors
+4. Click “Start”
+    1. The dialog should close without any error
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
+    1. The icon should be a warning sign
+    2. The "Current Task" in _Workflow App_'s detail view should be “Upload
+       Error”
+6. Click "Accept Task" and "Next Step"
+    1. You have the ability to “Abort and rollback changes” or
        “Continue and retry”
-    4. A click on “Abort and rollback changes” should perform a Rollback of the 
-       content (if you perform that you need to redo steps from 1 to 6)
-7. Reset the “apiKey” to its valid value and click “Continue and retry”
-8. Select the workflow in "Running" and wait for the Status to change to 
-   “Translate” or for the Submission ID to be set
-9. Reset the “apiKey” in the GlobalLinkSettings to something wrong
-10. Wait for the Workflow to appear in the open workflows
+    2. A click on “Abort and rollback changes” should perform a rollback of the
+       content (if you perform that you need to redo steps from 1 to 4)
+7. Set _apiKey_ in GlobalLink settings to its valid value and click “Continue
+   and retry”
+8. Double-click the workflow in "Running" and wait for field "Status" to change
+   to
+   “Translate” or for field "Submission ID" to be set
+9. Set _apiKey_ in GlobalLink settings to something wrong
+10. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
     1. The icon should be a Warning sign
-    2. The TaskName should be “Download Error”
-    3. You have the ability to “Abort and rollback changes” or 
+    2. Column "Status" should show “Download Error”
+    3. When accepting the task, you have the ability to “Abort and rollback
+       changes” or
        “Continue and retry”
 11. Click “Abort and rollback changes”
-12. Wait for the Workflow to appear in the open workflows
-    1. The icon should be a Warning sign
-    2. The TaskName should be “Cancelation Error”
-    3. You have the ability to “Abort and rollback without canceling the 
-       submission at GlobalLink.”, "Retry cancelation" or “Continue Translation”
-13. Correct the "apiKey" and press "Continue Translation". The workflow appears 
-    in the Open workflows at some point. Accept it and finish it.
+12. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
+    1. The icon should be a warning sign
+    2. Column "Status" should show “Cancelation Error”
+13. Double-click the workfow and click "Accept Task" and "Next Step"
+    1. You have the ability to “Abort and rollback without canceling at
+       GlobalLink.”, "Retry cancelation", or “Continue Translation”
+14. Set _apiKey_ in GlobalLink settings to its valid value and click "Continue
+    Translation"
+    1. After some time, the workflow appears in _Workflow App_'s "Open" workflows
+15. Accept and finish the workflow
+    1. There should not be further errors
 
 ## Scenario: XLIFF Import Error Handling
 
-1. Login as Rick C.
-2. Open the GlobalLinkSettings `/Settings/Options/Settings/GlobalLink`
-    1. type should be set to “mock”
-    2. dayOffsetForDueDate should be set to 20
-    3. mockError should be set to “DOWNLOAD_XLIFF”
-3. Choose an article and drag it into the “Localization Workflows” drop area
-    1. A StartTranslation window should pop up
+1. Log in as Rick C.
+2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+    1. _type_ is set to “mock”
+    2. _mockError_ is set to “DOWNLOAD_XLIFF”
+    3. Document _GlobalLink_ is linked in homepage document of site you want to
+       test translation on
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
     2. There should be no warnings or errors
-    3. The Due Date should be set to the current dateTime plus 20 days
 4. Click “Start”
     1. The dialog should close without any error
-    2. In the "Running" area from “Localization Workflows” the workflow should 
-       pop up
-5. Wait for the Workflow to appear in the open workflows
-    1. The icon should be a Warning sign
-    2. The TaskName should be “Download Error”
-    3. You have the ability to “Abort and rollback changes” or 
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
+    1. The icon should be a warning sign
+    2. In the workflow's detail view, field "Current Task" should be “Download
+       error”
+13. Click "Accept Task" and "Next Step"
+    3. You have the ability to “Abort and rollback changes” or
        “Continue and retry”
-    4. There should be a field “Issue Details” with clickable link that links to 
-       a download of the broken XLIFF
+    4. There should be a red section with heading “The following error occurred”
+       and a clickable link "Show Details" that links to a download of the
+       broken XLIFF **TODO: there is no field "Issue Details", nor can I
+       download the XLIFF**
 
 --------------------------------------------------------------------------------
 
