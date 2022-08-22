@@ -82,7 +82,7 @@ home folder
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
 
-## Scenario: Cancellation
+## Scenario: Cancelation Failure Handling
 
 1. Log in as Rick C.
 2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
@@ -161,6 +161,33 @@ home folder
 6. Switch back to Studio or _Workflow App_ and cancel the workflow in the
    "Running" list.
 
+## Scenario: Cancelation in Studio
+
+1. Log in as Rick C.
+2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+    1. _type_ is set to “default”
+    3. Credentials for gcc are entered (**manual** workflow key)
+    4. Document _GlobalLink_ is linked in homepage document of site you want to
+       test translation on
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
+    2. There should be no warnings or errors
+4. Click “Start”
+    1. The dialog should close without any error
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Select the workflow and click "X"
+    1. A dialog should pop
+6. Confirm the dialog
+    1. The dialog should close
+7. Go to the _Workflow App_'s overview
+    1. After a while, the workflow should appear in Rick's "Closed" workflows
+8. Double-click the canceled workflow
+    1. Field “Status” should display “Canceled”
+    3. The icon should mark the workflow as canceled (little “x” on the
+       bottom right)
+
 ## Scenario: Cancelation in GlobalLink
 
 1. Log in as Rick C.
@@ -179,11 +206,11 @@ home folder
        Room's' “Localization Workflows”
 6. Log in to the _GlobalLink Management Dashboard_ and cancel the workflow
 7. Go back to the _Workflow App_
-    1. After a while, the workflow appears in Rick's "Open" workflows
+    1. After a while, the workflow should appear in Rick's "Open" workflows
     2. When accepting the task, Rick can only choose to abort and rollback the
        previous changes and accept the cancelation
     3. Choose "Abort and rollback changes"
-8. Open the "Closed" area and double-click the cancelled workflow
+8. Open the "Closed" area and double-click the canceled workflow
     2. Field “Status” should display “Canceled”
     3. The icon should mark the workflow as canceled (little “x” on the
        bottom right)
@@ -235,7 +262,8 @@ home folder
        GlobalLink.”, "Retry cancelation", or “Continue Translation”
 14. Set _apiKey_ in GlobalLink settings to its valid value and click "Continue
     Translation"
-    1. After some time, the workflow appears in _Workflow App_'s "Open" workflows
+    1. After some time, the workflow appears in _Workflow App_'s "Open"
+       workflows
 15. Accept and finish the workflow
     1. There should not be further errors
 
@@ -257,15 +285,15 @@ home folder
        Room's' “Localization Workflows”
 5. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
     1. The icon should be a warning sign
-    2. In the workflow's detail view, field "Current Task" should be “Download
-       error”
-13. Click "Accept Task" and "Next Step"
-    3. You have the ability to “Abort and rollback changes” or
+6. Double-click the workflow
+    1. Field "Current Task" should be “Download error”
+    2. In section "More", a download link for the broken XLIFF should be shown
+       under "Issue Details"
+7. Click the XLIFF download link
+   1. Both the XLIFF and an issue details text file should be included
+8. Click "Accept Task" and "Next Step"
+    3. You should have the ability to “Abort and rollback changes” or
        “Continue and retry”
-    4. There should be a red section with heading “The following error occurred”
-       and a clickable link "Show Details" that links to a download of the
-       broken XLIFF **TODO: there is no field "Issue Details", nor can I
-       download the XLIFF**
 
 --------------------------------------------------------------------------------
 
