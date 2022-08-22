@@ -144,7 +144,10 @@ public class CancelTranslationGlobalLinkAction extends
     if (submissionState == COMPLETED) {
       facade.confirmCompletedTasks(submissionId, result.completedLocales);
       result.submissionState = facade.getSubmission(submissionId).getState();
-      LOG.info("Canceling completed submission {} (PD ID {}) with completed locales {} and new state {} is not allowed at GlobalLink. Confirming completion so that workflow can finish.", submission.getSubmissionId(), submission.getPdSubmissionIds(), result.completedLocales, result.submissionState);
+      LOG.info("Canceling completed submission {} (PD ID {}) with completed locales {} and new state {} is not allowed at GlobalLink. Confirming completion so that workflow can finish.",
+              submission.getSubmissionId(), submission.getPdSubmissionIds(),
+              result.completedLocales.stream().map(Locale::toLanguageTag).collect(Collectors.toList()),
+              result.submissionState);
       result.cancelled = true;
       return;
     }
@@ -154,7 +157,10 @@ public class CancelTranslationGlobalLinkAction extends
       result.cancelled = cancel(facade, submissionId, issues);
       result.submissionState = facade.getSubmission(submissionId).getState();
       if (result.cancelled) {
-        LOG.info("Canceled submission {} (PD ID {}) with completed locales {} and new state {}.", submission.getSubmissionId(), submission.getPdSubmissionIds(), result.completedLocales, result.submissionState);
+        LOG.info("Canceled submission {} (PD ID {}) with completed locales {} and new state {}.",
+                submission.getSubmissionId(), submission.getPdSubmissionIds(),
+                result.completedLocales.stream().map(Locale::toLanguageTag).collect(Collectors.toList()),
+                result.submissionState);
       }
     }
 
