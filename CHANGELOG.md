@@ -1,6 +1,21 @@
 Changelog
 ================================================================================
 
+2207
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2207.1.
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#48](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/48)
+
+2204
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2204.1.
+
 2201
 --------------------------------------------------------------------------------
 
@@ -25,30 +40,53 @@ CoreMedia v11.2110
 
 ### Main Changes
 
-* CMCCv11 introduces the Workflow App 🥳 and some changes to the way of handling 
-   extensions of the Studio Client. The Studio code was migrated to TypeScript
-   and adpated to the new API of the Workflow App. The module structure is also
-   compatible with the new version of the extension tool for centralized 
-   extensions.
+* CMCCv11 introduces the Workflow App 🥳 and some changes to the way of handling
+  extensions of the Studio Client. The Studio code was migrated to TypeScript
+  and adapted to the new API of the Workflow App. The module structure is also
+  compatible with the new version of the extension tool for centralized
+  extensions.
+
 * Renamed "Reject Changes" step to "Abort and rollback changes" to clearly point
-    what actually happens when choosing this option.
-* Tweaked log levels so that you can more easily follow state changes in the 
-   log file.
-   * Opening and closing session is now logged at debug level. These messages 
+  what actually happens when choosing this option.
+
+* Tweaked log levels so that you can more easily follow state changes in the
+  log file.
+
+    * Opening and closing session is now logged at debug level. These messages
       were spamming the log without providing additional details why a session
       was opened at all.
-   * Instead state changing actions like downloading completed locales or 
-     cancelling a submission are now logged at info level.
+
+    * Instead, state changing actions like downloading completed locales or
+      canceling a submission are now logged at info level.
+
 * When upgrading, you will have to upload workflow definition again to benefit
-from the latest changes:
-  * There is a new optional next step in the _Handle Cancellation Error_ task
-    that enables continuing with the regular translation process in case a
-    submission cannot be cancelled anymore at GlobalLink.
-  * In v11.2110.1 the `FinalAction` API was introduced in the workflow server to 
-   archive workflows consistently. `ArchiveProcessFinalAction` now takes care of 
-   archiving the completed as well as the aborted (escalated) workflows. The workflow
-   definition was updated accordingly. When upgrading, you will have to upload
-   workflow definition again.
+  from the latest changes:
+
+    * There is a new optional next step in the _Handle Cancelation Error_ task
+      that enables continuing with the regular translation process in case a
+      submission cannot be canceled anymore at GlobalLink.
+
+    * In v11.2110.1 the `FinalAction` API was introduced in the workflow server to
+      archive workflows consistently. `ArchiveProcessFinalAction` now takes care of
+      archiving the completed as well as the aborted (escalated) workflows. The workflow
+      definition was updated accordingly.
+
+* Renaming branch `master` to `main`
+
+    Follow these steps to rename your local master branch as well:
+
+    ```bash
+    # Switch to the "master" branch
+    $ git checkout master
+    # Rename it to "main"
+    $ git branch -m master main
+    # Get the latest commits (and branches!) from the remote
+    $ git fetch
+    # Remove the existing tracking connection with "origin/master"
+    $ git branch --unset-upstream
+    # Create a new tracking connection with the new "origin/main" branch
+    $ git branch -u origin/main
+    ```
 
 2107
 --------------------------------------------------------------------------------
