@@ -1,6 +1,14 @@
 Changelog
 ================================================================================
 
+2207
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2207.1.
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#48](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/48)
+
 2204
 --------------------------------------------------------------------------------
 

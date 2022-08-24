@@ -342,7 +342,7 @@ be linked to your site root documents (also known as Homepages).
 
 <!-- Links, keep at bottom -->
 
-[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
-[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
-[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
-[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-10/artifacts/2001/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
+[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
+[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
+[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
+[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
