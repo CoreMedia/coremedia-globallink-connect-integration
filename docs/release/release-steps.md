@@ -34,6 +34,8 @@ $ git push origin "ci/develop" --force-with-lease
 $ git checkout develop
 ```
 
+See https://github.com/CoreMedia/coremedia-globallink-connect-integration for current and most recent version of GCC REST Client (labels on top of page). 
+
 ## 2. Verify Release Versions of Core Packages
 
 If the release of this adapter targets a newer CMCC release, make sure that the
