@@ -211,9 +211,9 @@ home folder
        previous changes and accept the cancelation
     3. Choose "Abort and rollback changes"
 8. Open the "Closed" area and double-click the canceled workflow
-    2. Field “Status” should display “Canceled”
-    3. The icon should mark the workflow as canceled (little “x” on the
-       bottom right)
+   1. Field “Status” should display “Canceled”
+   2. The icon should mark the workflow as canceled (little “x” on the
+      bottom right)
 
 ## Scenario: Error Handling
 
@@ -292,7 +292,7 @@ home folder
 7. Click the XLIFF download link
    1. Both the XLIFF and an issue details text file should be included
 8. Click "Accept Task" and "Next Step"
-    3. You should have the ability to “Abort and rollback changes” or
+   1. You should have the ability to “Abort and rollback changes” or
        “Continue and retry”
 
 --------------------------------------------------------------------------------
