@@ -49,7 +49,7 @@
                                             nextSteps="{[{nextStep: 'rollbackTranslation', allowAlways:true}, {nextStep: 'continueRetry', allowAlways:true}]}"
                                             defaultStep="rollbackTranslation"/>
             <collab:WorkflowStateTransition task="HandleCancelTranslationError"
-                                            nextSteps="{[{nextStep: 'rollbackTranslation_afterCancellationFailed', allowAlways:true}, {nextStep: 'continueRetry', allowAlways:true}]}"
+                                            nextSteps="{[{nextStep: 'rollbackTranslation_afterCancellationFailed', allowAlways:true}, {nextStep: 'retryCancellation', allowAlways:true}, {nextStep: 'continueTranslation', allowAlways:true}]}"
                                             defaultStep="rollbackTranslation"/>
           </collab:workflowStateTransitions>
           <collab:additionalFields>
