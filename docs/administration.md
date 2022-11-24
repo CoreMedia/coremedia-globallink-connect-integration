@@ -108,7 +108,8 @@ next chapter, but it is not recommended. The same applies to the parameters
 ### Configuration in Studio
 
 GlobalLink Settings can be configured globally for all sites or specifically 
-for some site. The Settings can be located in the following folders:
+for some site. The name of the Settings must be `GlobalLink`. The Settings 
+can be located in the following folders:
 
 * `/Settings/Options/Settings/Translation Services`: Once you have configured
 the integration in a Settings content in this folder the GlobalLink
@@ -145,6 +146,9 @@ in CoreMedia Studio and add a struct named
 * `isSendSubmitter` Defines if the name of the editor that started the workflow 
     is send to GlobalLink as part of the submission.
     (_optional_, default: `false`, type:`Boolean`)
+
+Be aware the `dayOffsetForDueDate` can only be configured in the global
+Settings location.
 
 The following parameters of the struct should be handled carefully and only 
 after consulting Translations.com. They affect all new and running workflows, 

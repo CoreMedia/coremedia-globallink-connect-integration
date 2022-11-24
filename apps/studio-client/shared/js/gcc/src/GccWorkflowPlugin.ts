@@ -428,7 +428,7 @@ function createQuickTipText(locales: Array<any>, localesService: ILocalesService
 }
 
 function getDefaultDueDate(): Calendar {
-  const gccSettings: Content = session._.getConnection().getContentRepository().getChild("/Settings/Options/Settings/GlobalLink");
+  const gccSettings: Content = session._.getConnection().getContentRepository().getChild("/Settings/Options/Settings/Translation Services/GlobalLink");
   if (!RemoteBeanUtil.isAccessible(gccSettings)) {
     return undefined;
   }
