@@ -1,6 +1,36 @@
 Changelog
 ================================================================================
 
+2210-2
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Documentation now clearly states that it is recommended to store the `apiKey`
+in the properties file.
+
+* Configuration has been refactored so that the GlobalLink settings are not 
+automatically published with the pages that they are linked to. 
+When updating, please proceed as follows:
+
+  1. Create new folders for your global- and site-specific Settings at  
+  `/Settings/Options/Settings/Translation Services` and
+  `<SITE_ROOT>/Options/Settings/Translation Service`
+  2. Move the existing GlobalLink settings into the global- and site-specific 
+  folders respectively.
+  3. Remove the links to the GlobalLink settings from the site's pages and publish
+  these pages.
+  4. De-publish the GlobalLink settings and make sure that there are no links to
+  them anymore by checking the system tab. In the future, you don't need to
+  publish them again.
+
+2210
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2210.1.
+
 2207
 --------------------------------------------------------------------------------
 

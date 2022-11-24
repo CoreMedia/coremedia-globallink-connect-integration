@@ -9,7 +9,6 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.struct.Struct;
 import com.coremedia.cap.translate.xliff.XliffImportResultCode;
-import com.coremedia.cap.util.StructUtil;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.cap.workflow.plugin.ActionResult;
@@ -33,15 +32,8 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.coremedia.labs.translation.gcc.facade.DefaultGCExchangeFacadeSessionProvider.defaultFactory;
 import static java.util.Objects.requireNonNull;
@@ -84,6 +76,21 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final String LOCAL_SETTINGS = "localSettings";
   private static final String LINKED_SETTINGS = "linkedSettings";
   private static final String CMSETTINGS_SETTINGS = "settings";
+  private static final String CM_SETTINGS = "CMSettings";
+
+  /**
+   * Defines the global configuration path.
+   * The integration will look up a 'GlobalLink' settings document in this folder.
+   */
+  private static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
+
+  /**
+   * Defines the site specific configuration path.
+   * If a GlobalLink parameter should be different in a specific site,
+   * then the 'GlobalLink' settings document can additionally be but in this subfolder of the site.
+   */
+  private static final String SITE_CONFIGURATION_PATH ="/Options/Settings/Translation Service";
+
 
   /**
    * Name of the config parameter in {@link #getGccSettings(Site)} to control how many times communication
@@ -446,38 +453,68 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     @SuppressWarnings("unchecked")
     Map<String, Object> defaultSettings = new HashMap<String,Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
 
-    Map<String, Object> siteIndicatorSettings = getGccSettings(siteIndicator);
-    if (!siteIndicatorSettings.isEmpty()) {
-      defaultSettings.putAll(siteIndicatorSettings);
-      return Collections.unmodifiableMap(defaultSettings);
-    }
-
-    Content siteRootDocument = site.getSiteRootDocument();
-    Map<String, Object> rootDocumentSettings = getGccSettings(siteRootDocument);
-    if (!rootDocumentSettings.isEmpty()) {
-      defaultSettings.putAll(rootDocumentSettings);
+    Map<String, Object> settingsByConvention = getGccConfigFromGlobalAndSiteSettings(site);
+    if (!settingsByConvention.isEmpty()) {
+      defaultSettings.putAll(settingsByConvention);
       return Collections.unmodifiableMap(defaultSettings);
     }
 
     return defaultSettings;
   }
 
-  private static Map<String, Object> getGccSettings(Content content) {
-    Struct localSettings = getStruct(content, LOCAL_SETTINGS);
-    Struct struct = StructUtil.mergeStructList(
-            localSettings,
-            content.getLinks(LINKED_SETTINGS)
-                    .stream()
-                    .map(link -> getStruct(link, CMSETTINGS_SETTINGS))
-                    .collect(Collectors.toList())
-    );
+  private static Map<String, Object> getGccConfigFromGlobalAndSiteSettings(Site site) {
+    // Global configuration
+    Map<String, Object> result = getGccConfigsFromLocation(site, GLOBAL_CONFIGURATION_PATH);
+
+    // Site specific configuration overrides global configuration
+    Content siteRootFolder = site.getSiteRootFolder();
+    String sitePath = siteRootFolder.getPath() + SITE_CONFIGURATION_PATH;
+    result.putAll(getGccConfigsFromLocation(site, sitePath));
+
+    return result;
+  }
+
+  private static Map<String, Object> getGccConfigsFromLocation(Site site, String location) {
+    Map<String, Object> result = new HashMap<>();
+    for (Content content : getSettingsInTranslationServicesFolder(site ,location)) {
+      Map<String, Object> struct = getGccConfigFromSetting(content);
+      if (struct != null && !struct.isEmpty()) {
+        result.putAll(struct);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Collect contents with configuration settings
+   * <p>
+   * Returns a CMSettings document itself or all direct CMSettings children
+   * of a folder or an empty list otherwise.
+   *
+   * @return a list of CMSettings contents
+   */
+  private static Collection<Content> getSettingsInTranslationServicesFolder(Site site, String location) {
+    Content root = site.getSiteIndicator().getRepository().getChild(location);
+    if (root == null) {
+      return Collections.emptyList();
+    } else if (root.isFolder()) {
+      return root.getChildrenWithType(CM_SETTINGS);
+    } else if (root.getType().isSubtypeOf(CM_SETTINGS)) {
+      return Collections.singletonList(root);
+    } else {
+      LOG.info("{} is of type {} and thus no suitable translation service connection configuration content", location, root.getType());
+      return Collections.emptyList();
+    }
+  }
+
+  private static Map<String, Object> getGccConfigFromSetting(Content content) {
+    Struct struct =  content.getStruct(CMSETTINGS_SETTINGS);
     if (struct != null) {
       Object value = struct.get(GCConfigProperty.KEY_GLOBALLINK_ROOT);
       if (value instanceof Struct) {
         return ((Struct) value).toNestedMaps();
       }
     }
-
     return Collections.emptyMap();
   }
 
