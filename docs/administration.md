@@ -90,6 +90,23 @@ that the integration between both systems runs smoothly:
 
 ## Configuring GlobalLink Connection Settings
 
+### Server-side configuration
+
+Various default values are defined globally in the properties file of
+the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)).
+
+The following configuration shall only be stored there so that you do not
+accidentally leak it to clients that have read access to the content repository:
+
+`gcc.apiKey` the API key to authenticate at GlobalLink. In the content configuration
+it is just called `apiKey` (type:`String`).
+
+You can theoretically set it in the content like the parameters in the
+next chapter, but it is not recommended. The same applies to the parameters
+`gcc.username` and `gcc.password` in previous versions of this integration.
+
+### Configuration in Studio
+
 After you have created your GlobalLink settings at `/Settings/Options/Settings/GlobalLink` 
 and linked them to your site, you need to configure your personal 
 GlobalLink parameters. There can be more settings content items like this with different
@@ -103,8 +120,10 @@ those user groups that actually need access to prevent leaking sensitive informa
 Within that struct the following parameters must/can be specified:
 
 * `url` for GCC REST Base URL  (type:`String`)
-* `apiKey` The API key (type:`String`)
-* `key` The GCC connector key (type:`String`)
+* `key` The GCC connector key. If there is only one key, then setting it as 
+    part of the _Server-side configuration_ is recommended. Otherwise you can 
+    create separate site-specific GlobalLink settings that only contain 
+    this parameter. (type:`String`)
 * `fileType` If there is more than one file format in your
     GlobalLink setup, then this has to be set to the XLIFF file type identifier
     to be used by your connector. (_optional_, default: `xliff`, type:`String`)
@@ -139,16 +158,8 @@ would have to wait until it is expired.
 * `cancelTranslationRetryDelay` Overrides the interval (secs) for retrying the 
     cancellation of a submission. (_optional_, default: `180`, type:`Integer`)
 
-The defaults for these values are defined globally in the properties file of 
-the `gcc-workflow-server` module (see [gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)). 
-Other parameters can be defined here too. 
-If your GlobalLink connectors all use the same apiKey, 
-this approach also provides the possibility to define them in a central place 
-that is not visible to editors in Studio.
-
-You can also define Parameters for testing with the mock facade
-(see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
-
+You can also define parameters for testing with the mock facade
+(see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
 
 ## Questions &amp; Answers
 
