@@ -107,17 +107,23 @@ next chapter, but it is not recommended. The same applies to the parameters
 
 ### Configuration in Studio
 
-After you have created your GlobalLink settings at `/Settings/Options/Settings/GlobalLink` 
-and linked them to your site, you need to configure your personal 
-GlobalLink parameters. There can be more settings content items like this with different
-names and values to enable site-specific connections. However, global settings 
-like `dayOffsetForDueDate` have to be defined in `/Settings/Options/Settings/GlobalLink`.
+GlobalLink Settings can be configured globally for all sites or specifically 
+for some site. The Settings can be located in the following folders:
 
-Therefore, you need to add a struct to the GlobalLink settings, named
-`globalLink`. **Make sure to restrict read and write rights of this content to 
-those user groups that actually need access to prevent leaking sensitive information.**
+* `/Settings/Options/Settings/Translation Services`: Once you have configured
+the integration in a Settings content in this folder the GlobalLink
+workflow will be available to all sites.
+* `<SITE_ROOT>/Options/Settings/Translation Service`: Only define 
+the Settings here, if the GlobalLink workflow should only be available 
+if you translate content from this site to one of its derived sites. But, you 
+can also define Settings in this folder to overwrite specific parameters from 
+the global Settings.
 
-Within that struct the following parameters must/can be specified:
+After you have created your GlobalLink settings for example at 
+`/Settings/Options/Settings/Translation Services/GlobalLink` 
+you need to configure your personal GlobalLink parameters. Open the Settings
+in CoreMedia Studio and add a struct named
+`globalLink`. Within that struct the following parameters must/can be specified:
 
 * `url` for GCC REST Base URL  (type:`String`)
 * `key` The GCC connector key. If there is only one key, then setting it as 
@@ -132,7 +138,7 @@ Within that struct the following parameters must/can be specified:
     ). (_optional_, type:`String`)
 * `dayOffsetForDueDate` Defines the offset for the
     `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
-    Window to lie within the future in days. 
+    Window to lie within the future in days.
     (_optional_, default: `0`, type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` Number of retries in case of a communication error
     with GlobalLink. (_optional_, default: `5`, type:`Integer`)
@@ -160,6 +166,11 @@ would have to wait until it is expired.
 
 You can also define parameters for testing with the mock facade
 (see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
+
+**⚠️ Make sure to restrict read and write rights to the Settings content to
+those user groups that actually need access. Do not publish the 
+Settings and follow the recommendations from the previous chapter.
+This will reduce the risk of accidentally leaking sensitive information.**
 
 ## Questions &amp; Answers
 
