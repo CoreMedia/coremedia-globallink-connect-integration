@@ -31,8 +31,8 @@ To summarize the steps below, everything you need to do:
 2. Configure your extension tool.
 3. Run your extension tool to activate the gcc extension.
 4. Add `translation-global-link.xml` to your workflow server deployment.
-5. Later on: Ensure that your homepages link to `/Settings/Options/Settings/GlobalLink`
-    in their linked settings.
+5. Later on: Ensure that your GlobalLink Settings reside in
+    `/Settings/Options/Settings/Translation Services/GlobalLink`
 
 ### Branches
 
@@ -143,13 +143,13 @@ to the variable `DEFAULT_WORKFLOWS`.
 ## Patch/Edit Site Homepages
 
 For each master site for which you want to start GlobalLink Translation Workflows
-from, you need to add `/Settings/Options/Settings/GlobalLink` settings document
+from, you need to add `/Settings/Options/Settings/Translation Services/GlobalLink` settings document
 to the linked settings. To patch a homepage in server export you can use
 the following SED command:
 
 ```bash
 sed --in-place --expression \
-  "\\#.*<linkedSettings>.*#a <link href=\"../../../../../../Settings/Options/Settings/GlobalLink.xml\" path=\"/Settings/Options/Settings/GlobalLink\"/>" \
+  "\\#.*<linkedSettings>.*#a <link href=\"../../../../../../Settings/Options/Settings/Translation Services/GlobalLink.xml\" path=\"/Settings/Options/Settings/Translation Services/GlobalLink\"/>" \
   "${HOMEPAGE}"
 ```
 

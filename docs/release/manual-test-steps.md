@@ -17,7 +17,7 @@
 ## Prepare
 
 For quicker test feedback set the following integer parameters in the
-GlobalLink-Settings `/Settings/Options/Settings/GlobalLink`
+GlobalLink-Settings `/Settings/Options/Settings/Translation Services/GlobalLink`
 
 * sendTranslationRequestRetryDelay -> 60
 * downloadTranslationRetryDelay -> 60
@@ -40,7 +40,7 @@ home folder
 ## Scenario: Happy Path
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. _dayOffsetForDueDate_ is set to 20
     3. Credentials for gcc are entered (**automatic** workflow key)
@@ -85,7 +85,7 @@ home folder
 ## Scenario: Cancelation Failure Handling
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     3. Credentials for gcc are entered (**manual** workflow key)
     4. Document _GlobalLink_ is linked in homepage document of site you want to
@@ -141,7 +141,7 @@ home folder
 ## Scenario: Submitter and Instructions
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**manual** workflow key)
     4. Boolean property _isSendSubmitter_ is activated
@@ -164,7 +164,7 @@ home folder
 ## Scenario: Cancelation in Studio
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     3. Credentials for gcc are entered (**manual** workflow key)
     4. Document _GlobalLink_ is linked in homepage document of site you want to
@@ -191,7 +191,7 @@ home folder
 ## Scenario: Cancelation in GlobalLink
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     3. Credentials for gcc are entered (**manual** workflow key)
     4. Document _GlobalLink_ is linked in homepage document of site you want to
@@ -218,7 +218,7 @@ home folder
 ## Scenario: Error Handling
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**automatic** workflow key) **but**
        _apiKey_ key is set to something wrong
@@ -270,7 +270,7 @@ home folder
 ## Scenario: XLIFF Import Error Handling
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/GlobalLink`
+2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “mock”
     2. _mockError_ is set to “DOWNLOAD_XLIFF”
     3. Document _GlobalLink_ is linked in homepage document of site you want to

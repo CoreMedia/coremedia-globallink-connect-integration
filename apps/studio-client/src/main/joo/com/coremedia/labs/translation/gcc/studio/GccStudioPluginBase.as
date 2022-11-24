@@ -141,7 +141,7 @@ public class GccStudioPluginBase extends StudioPlugin {
   }
 
   private function getDayOffsetFromSettings(offSetValueExpression:ValueExpression):void {
-    var globalLinkSettings:Content = SESSION.getConnection().getContentRepository().getChild("/Settings/Options/Settings/GlobalLink");
+    var globalLinkSettings:Content = SESSION.getConnection().getContentRepository().getChild("/Settings/Options/Settings/Translation Services/GlobalLink");
     if (globalLinkSettings) {
       globalLinkSettings.load(function ():void {
         var settings:Struct = globalLinkSettings.getProperties().get("settings") as Struct;
