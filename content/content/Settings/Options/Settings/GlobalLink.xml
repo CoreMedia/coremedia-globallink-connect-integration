@@ -6,7 +6,6 @@
         <Struct>
           <StringProperty Name="url">https://connect-dev.translations.com/api/v3</StringProperty>
           <StringProperty Name="key">Your Connector Key</StringProperty>
-          <StringProperty Name="apiKey">Your API Key</StringProperty>
           <StringProperty Name="fileType">xliff</StringProperty>
           <IntProperty Name="dayOffsetForDueDate">20</IntProperty>
           <!-- Uses translation type "mock" by default. Additional options: "disabled" or "default" (which again is the default if unset. -->
