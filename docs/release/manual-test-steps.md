@@ -44,8 +44,6 @@ home folder
     1. _type_ is set to “default”
     2. _dayOffsetForDueDate_ is set to 20
     3. Credentials for gcc are entered (**automatic** workflow key)
-    4. Document _GlobalLink_ is linked in homepage document of site you want to
-       test translation on
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -87,9 +85,7 @@ home folder
 1. Log in as Rick C.
 2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
-    3. Credentials for gcc are entered (**manual** workflow key)
-    4. Document _GlobalLink_ is linked in homepage document of site you want to
-       test translation on
+    2. Credentials for gcc are entered (**manual** workflow key)
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -144,9 +140,7 @@ home folder
 2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**manual** workflow key)
-    4. Boolean property _isSendSubmitter_ is activated
-    3. Document _GlobalLink_ is linked in homepage document of site you want to
-       test translation on
+    3. Boolean property _isSendSubmitter_ is activated
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -166,9 +160,7 @@ home folder
 1. Log in as Rick C.
 2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
-    3. Credentials for gcc are entered (**manual** workflow key)
-    4. Document _GlobalLink_ is linked in homepage document of site you want to
-       test translation on
+    2. Credentials for gcc are entered (**manual** workflow key)
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -193,27 +185,25 @@ home folder
 1. Log in as Rick C.
 2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
-    3. Credentials for gcc are entered (**manual** workflow key)
-    4. Document _GlobalLink_ is linked in homepage document of site you want to
-       test translation on
-4. Choose an article and drag it into Control Room's “Localization Workflows”
+    2. Credentials for gcc are entered (**manual** workflow key)
+3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
     2. There should be no warnings or errors
-5. Click “Start”
+4. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
        Room's' “Localization Workflows”
-6. Log in to the _GlobalLink Management Dashboard_ and cancel the workflow
-7. Go back to the _Workflow App_
+5. Log in to the _GlobalLink Management Dashboard_ and cancel the workflow
+6. Go back to the _Workflow App_
     1. After a while, the workflow should appear in Rick's "Open" workflows
     2. When accepting the task, Rick can only choose to abort and rollback the
        previous changes and accept the cancelation
     3. Choose "Abort and rollback changes"
-8. Open the "Closed" area and double-click the canceled workflow
-   1. Field “Status” should display “Canceled”
-   2. The icon should mark the workflow as canceled (little “x” on the
-      bottom right)
+7. Open the "Closed" area and double-click the canceled workflow
+    1. Field “Status” should display “Canceled”
+    2. The icon should mark the workflow as canceled (little “x” on the
+       bottom right)
 
 ## Scenario: Error Handling
 
@@ -222,8 +212,6 @@ home folder
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**automatic** workflow key) **but**
        _apiKey_ key is set to something wrong
-    3. Document _GlobalLink_ is linked in homepage document of site you want to
-       test translation on
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -273,8 +261,6 @@ home folder
 2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “mock”
     2. _mockError_ is set to “DOWNLOAD_XLIFF”
-    3. Document _GlobalLink_ is linked in homepage document of site you want to
-       test translation on
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -292,7 +278,7 @@ home folder
 7. Click the XLIFF download link
    1. Both the XLIFF and an issue details text file should be included
 8. Click "Accept Task" and "Next Step"
-   1. You should have the ability to “Abort and rollback changes” or
+    1. You should have the ability to “Abort and rollback changes” or
        “Continue and retry”
 
 --------------------------------------------------------------------------------
