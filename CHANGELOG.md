@@ -1,80 +1,50 @@
 Changelog
 ================================================================================
 
-2210-2
+2107-2
 --------------------------------------------------------------------------------
 
 ### Main Changes
 
-* Documentation now clearly states that it is recommended to store the `apiKey`
-in the properties file.
-
-* Configuration has been refactored so that the GlobalLink settings are not 
-automatically published with the pages that they are linked to. 
-When updating, please proceed as follows:
-
-  1. Create new folders for your global- and site-specific Settings at  
-  `/Settings/Options/Settings/Translation Services` and
-  `<SITE_ROOT>/Options/Settings/Translation Service`
-  2. Move the existing GlobalLink settings into the global- and site-specific 
-  folders respectively.
-  3. Remove the links to the GlobalLink settings from the site's pages and publish
-  these pages.
-  4. De-publish the GlobalLink settings and make sure that there are no links to
-  them anymore by checking the system tab. In the future, you don't need to
-  publish them again.
-
-2210
---------------------------------------------------------------------------------
-
-### Main Changes
-
-* Updated dependencies to CoreMedia Content Cloud v11.2210.1.
-
-2207
---------------------------------------------------------------------------------
-
-### Main Changes
-
-* Updated dependencies to CoreMedia Content Cloud v11.2207.1.
-* Fixed [CoreMedia/coremedia-globallink-connect-integration#48](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/48)
-
-2204
---------------------------------------------------------------------------------
-
-### Main Changes
-
-* Updated dependencies to CoreMedia Content Cloud v11.2204.1.
-
-2201
---------------------------------------------------------------------------------
-
-### Main Changes
-
-* Updated to API v3 of GlobalLink Connect Cloud. The API now uses an API Key 
-for authentication instead of username and password. You have to request the
-API Key from your contacts at Translations.com.
-   
-  You will also have to adapt your configuration of the workflow in the content
-repository or in your properties file. Remove `username` and `password` and 
-set the `apiKey` instead. You will also have to update the `url` to point to v3. 
+* Updated to API v3 of GlobalLink Connect Cloud. The API now uses an API Key
+  for authentication instead of username and password.
+  
+  **Upgrade Steps**
+   1. Request the API Key from your contacts at Translations.com. 
+   2. Exchange the configuration of the workflow in the content
+      repository or in your properties file. Remove `username` and `password` and
+      set the `apiKey` instead. You will also have to update the `url` to point to v3.
 
 * A new error code was introduced to reflect the new authentication method  
-  via `apiKey` and to be able to distinguish between the different types of 
+  via `apiKey` and to be able to distinguish between the different types of
   issues in the Studio.
 
-* Updated dependencies to match the CMCC v11.2201.2 release.
+* Configuration has been refactored so that the GlobalLink settings are not
+  automatically published with the pages that they are linked to.
+  When updating, please proceed as follows:
 
-CoreMedia v11.2110
---------------------------------------------------------------------------------
+  1. Create new folders for your global- and site-specific Settings at  
+       `/Settings/Options/Settings/Translation Services` and
+       `<SITE_ROOT>/Options/Settings/Translation Service`
+  2. Move the existing GlobalLink settings into the global- and site-specific
+     folders respectively.
+  3. Remove the links to the GlobalLink settings from the site's pages and publish
+     these pages.
+  4. De-publish the GlobalLink settings and make sure that there are no links to
+     them anymore by checking the system tab. In the future, you don't need to
+     publish them again.
 
-### Main Changes
+* There is a new optional next step in the _Handle Cancelation Error_ task
+  that enables continuing with the regular translation process in case a
+  submission cannot be canceled anymore at GlobalLink.
 
-* CMCCv11 introduces the Workflow App 🥳 and some changes to the way of handling
-  extensions of the Studio Client. The Studio code was migrated to TypeScript
-  and adapted to the new API of the Workflow App. The module structure is also
-  compatible with the new version of the extension tool for centralized
-  extensions.
+  **Upgrade Steps**
+  Upload the updated workflow definition.
+
+* Documentation clearly states that it is recommended to store the `apiKey`
+in the properties file.
+
+* Fixed [CoreMedia/coremedia-globallink-connect-integration#48](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/48)
 
 * Renamed "Reject Changes" step to "Abort and rollback changes" to clearly point
   what actually happens when choosing this option.
@@ -88,35 +58,6 @@ CoreMedia v11.2110
 
     * Instead, state changing actions like downloading completed locales or
       canceling a submission are now logged at info level.
-
-* When upgrading, you will have to upload workflow definition again to benefit
-  from the latest changes:
-
-    * There is a new optional next step in the _Handle Cancelation Error_ task
-      that enables continuing with the regular translation process in case a
-      submission cannot be canceled anymore at GlobalLink.
-
-    * In v11.2110.1 the `FinalAction` API was introduced in the workflow server to
-      archive workflows consistently. `ArchiveProcessFinalAction` now takes care of
-      archiving the completed as well as the aborted (escalated) workflows. The workflow
-      definition was updated accordingly.
-
-* Renaming branch `master` to `main`
-
-    Follow these steps to rename your local master branch as well:
-
-    ```bash
-    # Switch to the "master" branch
-    $ git checkout master
-    # Rename it to "main"
-    $ git branch -m master main
-    # Get the latest commits (and branches!) from the remote
-    $ git fetch
-    # Remove the existing tracking connection with "origin/master"
-    $ git branch --unset-upstream
-    # Create a new tracking connection with the new "origin/main" branch
-    $ git branch -u origin/main
-    ```
 
 2107
 --------------------------------------------------------------------------------
