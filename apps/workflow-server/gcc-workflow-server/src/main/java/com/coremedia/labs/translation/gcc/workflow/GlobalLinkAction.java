@@ -73,8 +73,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   private static final long serialVersionUID = -7130959823193680910L;
 
-  private static final String LOCAL_SETTINGS = "localSettings";
-  private static final String LINKED_SETTINGS = "linkedSettings";
   private static final String CMSETTINGS_SETTINGS = "settings";
   private static final String CM_SETTINGS = "CMSettings";
 
@@ -89,7 +87,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * If a GlobalLink parameter should be different in a specific site,
    * then the 'GlobalLink' settings document can additionally be but in this subfolder of the site.
    */
-  private static final String SITE_CONFIGURATION_PATH ="/Options/Settings/Translation Service";
+  private static final String SITE_CONFIGURATION_PATH ="/Options/Settings/Translation Services";
 
 
   /**
@@ -448,10 +446,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   Map<String, Object> getGccSettings(Site site) {
-    Content siteIndicator = site.getSiteIndicator();
-
-    @SuppressWarnings("unchecked")
-    Map<String, Object> defaultSettings = new HashMap<String,Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
+    Map<String, Object> defaultSettings = getGccSettingsFromProperties();
+    if (!defaultSettings.isEmpty()) {
+      LOG.debug("Applying default settings for GCC connection with keys \"{}\" from properties file.", defaultSettings.keySet());
+    }
 
     Map<String, Object> settingsByConvention = getGccConfigFromGlobalAndSiteSettings(site);
     if (!settingsByConvention.isEmpty()) {
@@ -462,14 +460,28 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return defaultSettings;
   }
 
+  @VisibleForTesting
+  @SuppressWarnings("unchecked")
+  Map<String, Object> getGccSettingsFromProperties() {
+    return new HashMap<String,Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
+  }
+
   private static Map<String, Object> getGccConfigFromGlobalAndSiteSettings(Site site) {
     // Global configuration
-    Map<String, Object> result = getGccConfigsFromLocation(site, GLOBAL_CONFIGURATION_PATH);
+    Map<String, Object> result = new HashMap<>();
+    Map<String, Object> globalSettings = getGccConfigsFromLocation(site, GLOBAL_CONFIGURATION_PATH);
+    if (!globalSettings.isEmpty()) {
+      LOG.debug("Applying global settings for GCC connection.");
+    }
 
     // Site specific configuration overrides global configuration
     Content siteRootFolder = site.getSiteRootFolder();
     String sitePath = siteRootFolder.getPath() + SITE_CONFIGURATION_PATH;
-    result.putAll(getGccConfigsFromLocation(site, sitePath));
+    Map<String, Object> siteSettings = getGccConfigsFromLocation(site, sitePath);
+    if (!siteSettings.isEmpty()) {
+      LOG.debug("Applying site settings from location {} for GCC Connection.", sitePath);
+      result.putAll(siteSettings);
+    }
 
     return result;
   }
@@ -479,6 +491,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     for (Content content : getSettingsInTranslationServicesFolder(site ,location)) {
       Map<String, Object> struct = getGccConfigFromSetting(content);
       if (struct != null && !struct.isEmpty()) {
+        LOG.debug("Found GCC settings in \"{}\".", content.getPath());
         result.putAll(struct);
       }
     }
@@ -508,7 +521,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   private static Map<String, Object> getGccConfigFromSetting(Content content) {
-    Struct struct =  content.getStruct(CMSETTINGS_SETTINGS);
+    Struct struct =  getStruct(content, CMSETTINGS_SETTINGS);
     if (struct != null) {
       Object value = struct.get(GCConfigProperty.KEY_GLOBALLINK_ROOT);
       if (value instanceof Struct) {
