@@ -108,8 +108,7 @@ next chapter, but it is not recommended. The same applies to the parameters
 ### Configuration in Studio
 
 GlobalLink Settings can be configured globally for all sites or specifically 
-for some site. The name of the Settings must be `GlobalLink`. The Settings 
-can be located in the following folders:
+for some site. The Settings can be located in the following folders:
 
 * `/Settings/Options/Settings/Translation Services`: Once you have configured
 the integration in a Settings content in this folder the GlobalLink
@@ -195,6 +194,31 @@ should be equal to your derived site locale as IETF BCP 47 language tag.
 
 You will find the language tags in `/Settings/Options/Settings/LocaleSettings`
 in your CMS.
+
+### Why does my workflow show "Status: Completed" but the content is not translated, and it is still in the list of running workflows?
+
+**Short:** _Ask GlobalLink to check task states and to complete all tasks 
+of the submission._
+
+In GlobalLink the state can be handled separately for the submission 
+and the actual translation tasks. A submission can be accidentally marked as 
+completed by the translator while the actual tasks might not be completed yet.
+
+The workflow in CoreMedia Studio requires the tasks to be completed, 
+so that it can download the translated content of a single task. Other
+tasks might still be in translation. Only if all tasks 
+in GlobalLink are completed the workflow in CoreMedia Studio can finish.
+
+This only happened rarely in the past, but if you are wondering why a workflow
+seems to hang forever, then ask the GlobalLink support to check the states of 
+the individual tasks of the submission and complete them if possible.
+
+As a system administrator you can enable DEBUG logging for 
+`com.coremedia.labs.translation.gcc` in the workflow-server application. 
+You should find an entry like `Checked for update of submission 1669718090545 
+(PD ID [45360]) in state COMPLETED with completed locales [[]].` which indicates
+that tasks at GlobalLink that are represented by `completed locales` 
+have not been completed properly.
 
 ## See Also
 
