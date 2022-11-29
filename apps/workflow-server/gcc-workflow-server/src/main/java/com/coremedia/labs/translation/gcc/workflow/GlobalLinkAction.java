@@ -446,32 +446,20 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   Map<String, Object> getGccSettings(Site site) {
+
+    Map<String, Object> result = new HashMap<>();
+
     Map<String, Object> defaultSettings = getGccSettingsFromProperties();
     if (!defaultSettings.isEmpty()) {
       LOG.debug("Applying default settings for GCC connection with keys \"{}\" from properties file.", defaultSettings.keySet());
+      result.putAll(defaultSettings);
     }
 
-    Map<String, Object> settingsByConvention = getGccConfigFromGlobalAndSiteSettings(site);
-    if (!settingsByConvention.isEmpty()) {
-      defaultSettings.putAll(settingsByConvention);
-      return Collections.unmodifiableMap(defaultSettings);
-    }
-
-    return defaultSettings;
-  }
-
-  @VisibleForTesting
-  @SuppressWarnings("unchecked")
-  Map<String, Object> getGccSettingsFromProperties() {
-    return new HashMap<String,Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
-  }
-
-  private static Map<String, Object> getGccConfigFromGlobalAndSiteSettings(Site site) {
     // Global configuration
-    Map<String, Object> result = new HashMap<>();
     Map<String, Object> globalSettings = getGccConfigsFromLocation(site, GLOBAL_CONFIGURATION_PATH);
     if (!globalSettings.isEmpty()) {
-      LOG.debug("Applying global settings for GCC connection.");
+      LOG.debug("Applying global settings for GCC connection with keys \"{}\".", globalSettings.keySet());
+      result.putAll(globalSettings);
     }
 
     // Site specific configuration overrides global configuration
@@ -479,11 +467,16 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     String sitePath = siteRootFolder.getPath() + SITE_CONFIGURATION_PATH;
     Map<String, Object> siteSettings = getGccConfigsFromLocation(site, sitePath);
     if (!siteSettings.isEmpty()) {
-      LOG.debug("Applying site settings from location {} for GCC Connection.", sitePath);
+      LOG.debug("Applying site settings for GCC Connection with keys \"{}\".", globalSettings.keySet());
       result.putAll(siteSettings);
     }
 
-    return result;
+    return Collections.unmodifiableMap(result);
+  }
+
+  @SuppressWarnings("unchecked")
+  Map<String, Object> getGccSettingsFromProperties() {
+    return new HashMap<String,Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
   }
 
   private static Map<String, Object> getGccConfigsFromLocation(Site site, String location) {
