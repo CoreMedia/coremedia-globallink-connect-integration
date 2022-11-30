@@ -4,6 +4,12 @@ Changelog
 2210-2
 --------------------------------------------------------------------------------
 
+### General Notes
+
+⚠️ Before upgrading to this version make sure that there no workflows
+running on older versions of the integration anymore. The new Settings are not
+compatible with older workflow processes.
+
 ### Main Changes
 
 * Documentation now clearly states that it is recommended to store the `apiKey`
@@ -11,8 +17,8 @@ in the properties file.
 
 * Configuration has been refactored so that the GlobalLink settings are not 
 automatically published with the pages that they are linked to. 
-When updating, please proceed as follows:
 
+  **Upgrade Steps:**
   1. Create new folders for your global- and site-specific Settings at  
   `/Settings/Options/Settings/Translation Services` and
   `<SITE_ROOT>/Options/Settings/Translation Service`
@@ -48,6 +54,12 @@ When updating, please proceed as follows:
 
 2201
 --------------------------------------------------------------------------------
+
+### General Notes
+
+⚠️ Before upgrading to this version make sure that there no workflows
+running on older versions of the integration anymore. The new Settings are not
+compatible with older workflow processes.
 
 ### Main Changes
 
