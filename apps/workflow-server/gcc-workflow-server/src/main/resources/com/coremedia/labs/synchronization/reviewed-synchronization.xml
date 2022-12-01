@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workflow>
+  <Process name="ReviewedSynchronization"
+           description="Reviewed Synchronization Workflow"
+           startTask="IsfFork">
+
+    <Rights>
+      <Grant group="translation-manager-role"
+             rights="create, read, write, start, suspend, resume, abort"/>
+      <Grant user="admin" rights="create, start, suspend, resume, abort"/>
+    </Rights>
+
+    <Variable name="subject" type="String"/>
+    <Variable name="comment" type="String"/>
+    <Variable name="siteId" type="String"/>
+    <Variable name="performer" type="User"/>
+    <Variable name="parentSiteId" type="String"/>
+    <Variable name="derivedSyncSiteId" type="String"/>
+    <Variable name="mergeStrategy" type="String"/>
+
+    <!-- list of derived synced sites -->
+    <AggregationVariable name="derivedSyncSiteIds" type="String"/>
+
+    <!-- list of contents or versions to be synchronized -->
+    <AggregationVariable name="masterContentObjects" type="Resource"/>
+    <AggregationVariable name="currentMasterContentObjects" type="Resource"/>
+
+    <!-- list of site ids to be synchronized, empty for all -->
+    <AggregationVariable name="targetSiteIds" type="String"/>
+
+    <!-- list of derived contents -->
+    <AggregationVariable name="derivedContents" type="Resource"/>
+    <!-- list of content for that sync is skipped -->
+    <AggregationVariable name="skippedContents" type="Resource"/>
+    <!-- list of derived contents that did not exist before the workflow was started -->
+    <AggregationVariable name="createdContents" type="Resource"/>
+    <!-- list of contents that were changed both in the derived and in the master site at conflicting places -->
+    <AggregationVariable name="autoMergeConflicts" type="Resource"/>
+
+    <!-- string that defines the strategy how to calculate derived content-->
+    <Variable name="placeholderPreparationStrategy" type="String"/>
+
+    <InitialAssignment>
+      <Writes variable="subject"/>
+      <Writes variable="comment"/>
+      <Writes variable="masterContentObjects"/>
+      <Writes variable="parentSiteId"/>
+      <Writes variable="siteId"/>
+      <Writes variable="targetSiteIds"/>
+      <Writes variable="mergeStrategy"/>
+      <Writes variable="placeholderPreparationStrategy"/>
+    </InitialAssignment>
+
+    <Assignment>
+      <Reads variable="autoMergeConflicts"/>
+      <Writes variable="subject"/>
+      <Writes variable="comment"/>
+      <Writes variable="masterContentObjects"/>
+      <Writes variable="currentMasterContentObjects"/>
+      <Writes variable="derivedContents"/>
+      <Writes variable="createdContents"/>
+      <Writes variable="parentSiteId"/>
+      <Writes variable="siteId"/>
+      <Writes variable="targetSiteIds"/>
+      <Writes variable="performer"/>
+      <Writes variable="derivedSyncSiteIds"/>
+      <Writes variable="derivedSyncSiteId"/>
+      <Writes variable="skippedContents"/>
+      <Writes variable="mergeStrategy"/>
+      <Writes variable="placeholderPreparationStrategy"/>
+    </Assignment>
+
+    <If name="IsFork">
+      <Condition>
+        <NotEmpty variable="parentSiteId"/>
+      </Condition>
+      <Then successor="ValidateParameters"/>
+      <Else successor="StartSyncWFForChildren"/>
+    </If>
+
+    <AutomatedTask name="ValidateParameters" successor="StartSyncFromParentToTarget">
+      <Action class="RegisterPendingProcess" userVariable="OWNER_"/>
+      <Action class="com.coremedia.translate.workflow.ValidateTranslationParametersAction"
+              masterContentObjectsVariable="masterContentObjects"
+              targetSiteIdVariable="siteId"/>
+    </AutomatedTask>
+
+    <!-- Here the synchronization takes place-->
+    <AutomatedTask name="StartSyncFromParentToTarget" successor="CheckIfDerivedContentsEmpty">
+      <Action class="com.coremedia.translate.workflow.GetDerivedContentsAction"
+              masterContentObjectsVariable="masterContentObjects"
+              derivedContentsVariable="derivedContents"
+              placeholderPreparationStrategyVariable="placeholderPreparationStrategy"
+              createdContentsVariable="createdContents"
+              targetSiteIdVariable="siteId"/>
+      <Action class="com.coremedia.translate.workflow.FilterDerivedContentsAction"
+              masterContentObjectsVariable="masterContentObjects"
+              derivedContentsVariable="derivedContents"
+              skippedContentsVariable="skippedContents"/>
+    </AutomatedTask>
+
+    <If name="CheckIfDerivedContentsEmpty">
+      <Condition>
+        <Equal>
+          <IsEmpty variable="derivedContents"/>
+          <Boolean value="true"/>
+        </Equal>
+      </Condition>
+      <Then successor="CheckIfSkippedContentsEmpty"/>
+      <Else successor="Synchronize"/>
+    </If>
+
+    <If name="CheckIfSkippedContentsEmpty">
+      <Condition>
+        <Equal>
+          <IsEmpty variable="skippedContents"/>
+          <Boolean value="true"/>
+        </Equal>
+      </Condition>
+      <Then successor="StartSyncWFForChildren"/>
+      <Else successor="Finish"/>
+    </If>
+
+    <AutomatedTask name="Synchronize" successor="CompleteSynchronize">
+      <Action class="com.coremedia.translate.workflow.ExtractPerformerAction"
+              performerVariable="performer"/>
+      <Action class="com.coremedia.translate.workflow.GetCheckedInVersionsAction"
+              contentsVariable="derivedContents"
+              performerVariable="performer"/>
+      <Action class="com.coremedia.translate.workflow.synchronization.AutoMergeSyncAction"
+              autoMergePredicateFactoryName="allMergeablePropertiesPredicateFactory"
+              derivedContentsVariable="derivedContents"
+              masterContentObjectsVariable="masterContentObjects"
+              resultVariable="autoMergeConflicts"
+              performerVariable="performer"
+              escalateOnConflict="true"
+              mergeStrategyVariable="mergeStrategy"/>
+    </AutomatedTask>
+
+    <AutomatedTask name="CompleteSynchronize" successor="StartSyncWFForChildren">
+      <Action class="com.coremedia.translate.workflow.CompleteTranslationAction"
+              derivedContentsVariable="derivedContents"
+              masterContentObjectsVariable="masterContentObjects"
+              performerVariable="performer"/>
+    </AutomatedTask>
+
+    <AutomatedTask name="StartSyncWFForChildren" successor="HasDerivedSyncSites">
+      <Action class="com.coremedia.translate.workflow.GetDerivedSyncSitesAction"
+              targetSiteIdVariable="siteId"
+              derivedSyncSiteIdsVariable="derivedSyncSiteIds"/>
+    </AutomatedTask>
+
+    <If name="HasDerivedSyncSites">
+      <Condition>
+        <Equal>
+          <IsEmpty variable="derivedSyncSiteIds"/>
+          <Boolean value="true"/>
+        </Equal>
+      </Condition>
+      <Then successor="Finish"/>
+      <Else successor="GetNextDerivedSyncSiteId"/>
+    </If>
+
+    <AutomatedTask name="GetNextDerivedSyncSiteId" successor="IsToBeDerived">
+      <Action class="com.coremedia.translate.workflow.GetNextDerivedSyncSiteIdAction"
+              nextDerivedSyncSiteIdVariable="derivedSyncSiteId"
+              derivedSyncSiteIdsVariable="derivedSyncSiteIds"/>
+    </AutomatedTask>
+
+    <If name="IsToBeDerived">
+      <Condition>
+        <Or>
+          <Equal>
+            <IsEmpty variable="targetSiteIds"/>
+            <Boolean value="true"/>
+          </Equal>
+          <Exists variable="targetSite" aggregate="targetSiteIds">
+            <Equal>
+              <Read variable="targetSite"/>
+              <Read variable="derivedSyncSiteId"/>
+            </Equal>
+          </Exists>
+        </Or>
+      </Condition>
+      <Then successor="IsForkAgain"/>
+      <Else successor="HasDerivedSyncSites"/>
+    </If>
+
+    <If name="IsForkAgain">
+      <Condition>
+        <NotEmpty variable="parentSiteId"/>
+      </Condition>
+      <Then successor="AssignDerivedMasterObjects"/>
+      <Else successor="AssignCurrentMasterObjects"/>
+    </If>
+
+    <AutomatedTask name="AssignDerivedMasterObjects" successor="ForkSyncForDerived">
+      <Action class="AssignVariable" resultVariable="currentMasterContentObjects">
+        <Get variable="derivedContents"/>
+      </Action>
+    </AutomatedTask>
+
+    <AutomatedTask name="AssignCurrentMasterObjects" successor="ForkSyncForDerived">
+      <Action class="AssignVariable" resultVariable="currentMasterContentObjects">
+        <Get variable="masterContentObjects"/>
+      </Action>
+    </AutomatedTask>
+
+    <ForkSubprocess name="ForkSyncForDerived" subprocess="ReviewedSynchronization" successor="HasDerivedSyncSites"
+                    detached="true">
+      <Parameters>
+        <Assign variable="subject">
+          <Get variable="subject"/>
+        </Assign>
+        <Assign variable="comment">
+          <Get variable="comment"/>
+        </Assign>
+        <Assign variable="parentSiteId">
+          <Get variable="siteId"/>
+        </Assign>
+        <Assign variable="siteId">
+          <Get variable="derivedSyncSiteId"/>
+        </Assign>
+        <Assign variable="masterContentObjects">
+          <Get variable="currentMasterContentObjects"/>
+        </Assign>
+        <Assign variable="targetSiteIds">
+          <Get variable="targetSiteIds"/>
+        </Assign>
+        <Assign variable="mergeStrategy">
+          <Get variable="mergeStrategy"/>
+        </Assign>
+        <Assign variable="placeholderPreparationStrategy">
+          <Get variable="placeholderPreparationStrategy"/>
+        </Assign>
+      </Parameters>
+    </ForkSubprocess>
+
+    <AutomatedTask name="Finish" final="true"/>
+
+    <!-- Finally, make sure finished processes are archived and appear in the list of finished workflows for
+         the process creator, i.e. the user for whom the RegisterPendingProcess action was called. -->
+    <FinalAction class="ArchiveProcessFinalAction" maxProcessesPerUser="100"/>
+
+  </Process>
+</Workflow>
