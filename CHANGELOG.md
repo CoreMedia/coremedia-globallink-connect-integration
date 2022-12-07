@@ -26,20 +26,26 @@ compatible with older workflow processes.
   issues in the Studio.
 
 * Configuration has been refactored so that the GlobalLink settings are not
-  automatically published with the pages that they are linked to.
-  
-  **Upgrade Steps**
-  1. Create new folders for your global- and site-specific Settings at  
-       `/Settings/Options/Settings/Translation Services` and
-       `<SITE_ROOT>/Options/Settings/Translation Service`
-  2. Move the existing GlobalLink settings into the global- and site-specific
-     folders respectively.
-  3. Remove the links to the GlobalLink settings from the site's pages and publish
-     these pages.
-  4. De-publish the GlobalLink settings and make sure that there are no links to
-     them anymore by checking the system tab. In the future, you don't need to
-     publish them again.
+  automatically published with the pages that they are linked to. The Settings
+  have to be located in specific folders instead. Ensure that the name of the
+  path and the folder match the convention mentioned below.
 
+
+**Upgrade Steps:**
+1. Create new folders for your global- or site-specific Settings at  
+   `/Settings/Options/Settings/Translation Services` or
+   `<SITE_ROOT>/Options/Settings/Translation Services`.
+   Read the [documentation](https://coremedia.github.io/coremedia-globallink-connect-integration/administration.html#configuring-globallink-connection-settings)
+   for more details about the new settings mechanism.
+2. Move the existing GlobalLink settings into the global- and site-specific
+   folders respectively.
+3. If you haven't done it earlier, move the `apiKey` setting to the
+   properties file on the workflow server and restart it.
+4. Remove the links to the GlobalLink settings from the site's pages and publish
+   these pages.
+5. Unpublish the GlobalLink settings and make sure that there are no links to
+   them anymore by checking the system tab. In the future, you should not
+   publish them again.
 * There is a new optional next step in the _Handle Cancelation Error_ task
   that enables continuing with the regular translation process in case a
   submission cannot be canceled anymore at GlobalLink.

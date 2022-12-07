@@ -12,11 +12,10 @@
 2. [Adding GCC Submodule](#adding-gcc-submodule)
 3. [Adding GCC as extension](#adding-gcc-as-extension)
 4. [Adding GCC Workflow to Workflow Server Deployment](#adding-gcc-workflow-to-workflow-server-deployment)
-5. [Patch/Edit Site Homepages](#patchedit-site-homepages)
-6. [Extension Point for Custom Properties](#extension-point-for-custom-properties)
-7. [Design Details](#design-details)
-6. [Workspace Structure](#workspace-structure)
-6. [See Also](#see-also)
+5. [Extension Point for Custom Properties](#extension-point-for-custom-properties)
+6. [Design Details](#design-details)
+7. [Workspace Structure](#workspace-structure)
+8. [See Also](#see-also)
 
 ## Introduction
 
@@ -139,24 +138,6 @@ You need to add `translation-global-link.xml` to your workflow definitions
 in `global/management-tools/management-tools-image/src/main/image/coremedia/import-default-workflows`.
 Add `TranslationGlobalLink:/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml`
 to the variable `DEFAULT_WORKFLOWS`.
-
-## Patch/Edit Site Homepages
-
-For each master site for which you want to start GlobalLink Translation Workflows
-from, you need to add `/Settings/Options/Settings/Translation Services/GlobalLink` settings document
-to the linked settings. To patch a homepage in server export you can use
-the following SED command:
-
-```bash
-sed --in-place --expression \
-  "\\#.*<linkedSettings>.*#a <link href=\"../../../../../../Settings/Options/Settings/Translation Services/GlobalLink.xml\" path=\"/Settings/Options/Settings/Translation Services/GlobalLink\"/>" \
-  "${HOMEPAGE}"
-```
-
-where `${HOMEPAGE}` is the server export XML file of your homepage to patch.
-
-As alternative you may manually edit the corresponding homepages later on
-in CoreMedia Studio.
 
 ## Extension Point for Custom Properties
 
