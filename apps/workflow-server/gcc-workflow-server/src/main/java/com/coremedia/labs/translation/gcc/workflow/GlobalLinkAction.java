@@ -484,7 +484,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     for (Content content : getSettingsInTranslationServicesFolder(site ,location)) {
       Map<String, Object> struct = getGccConfigFromSetting(content);
       if (struct != null && !struct.isEmpty()) {
-        LOG.debug("Found GCC settings in \"{}\".", content.getPath());
+        LOG.debug("Found GCC settings \"{}\" in \"{}\".", struct.keySet(), content.getPath());
         result.putAll(struct);
       }
     }
