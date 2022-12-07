@@ -108,12 +108,14 @@ next chapter, but it is not recommended. The same applies to the parameters
 ### Configuration in Studio
 
 GlobalLink Settings can be configured globally for all sites or specifically 
-for some site. The Settings can be located in the following folders:
+for some site. Site-specific settings override global settings except for
+`dayOffsetForDueDate`. The Settings can be located in the following folders:
 
 * `/Settings/Options/Settings/Translation Services`: Once you have configured
 the integration in a Settings content in this folder the GlobalLink
-workflow will be available to all sites.
-* `<SITE_ROOT>/Options/Settings/Translation Service`: Only define 
+workflow will be available to all sites. The content must be named
+`GlobalLink`.
+* `<SITE_ROOT>/Options/Settings/Translation Services`: Only define 
 the Settings here, if the GlobalLink workflow should only be available 
 if you translate content from this site to one of its derived sites. But, you 
 can also define Settings in this folder to overwrite specific parameters from 
@@ -127,7 +129,7 @@ in CoreMedia Studio and add a struct named
 
 * `url` for GCC REST Base URL  (type:`String`)
 * `key` The GCC connector key. If there is only one key, then setting it as 
-    part of the _Server-side configuration_ is recommended. Otherwise you can 
+    part of the _Server-side configuration_ is recommended. Otherwise, you can 
     create separate site-specific GlobalLink settings that only contain 
     this parameter. (type:`String`)
 * `fileType` If there is more than one file format in your
@@ -146,7 +148,7 @@ in CoreMedia Studio and add a struct named
     is send to GlobalLink as part of the submission.
     (_optional_, default: `false`, type:`Boolean`)
 
-Be aware the `dayOffsetForDueDate` can only be configured in the global
+Be aware that the `dayOffsetForDueDate` can only be configured in the global
 Settings location.
 
 The following parameters of the struct should be handled carefully and only 
