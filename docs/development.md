@@ -9,13 +9,14 @@
 ## Table of Content
 
 1. [Introduction](#introduction)
-2. [Adding GCC Submodule](#adding-gcc-submodule)
-3. [Adding GCC as extension](#adding-gcc-as-extension)
+2. [Adding GCC Adapter to the Blueprint](#adding-gcc-adapter-to-the-blueprint)
+3. [Enabling the Extension](#enabling-the-extension)
 4. [Adding GCC Workflow to Workflow Server Deployment](#adding-gcc-workflow-to-workflow-server-deployment)
-5. [Extension Point for Custom Properties](#extension-point-for-custom-properties)
-6. [Design Details](#design-details)
-7. [Workspace Structure](#workspace-structure)
-8. [See Also](#see-also)
+5. [Enabling External Definition of API Key](#enabling-external-definition-of-api-key)
+6. [Extension Point for Custom Properties](#extension-point-for-custom-properties)
+7. [Design Details](#design-details)
+8. [Workspace Structure](#workspace-structure)
+9. [See Also](#see-also)
 
 ## Introduction
 
@@ -138,6 +139,20 @@ You need to add `translation-global-link.xml` to your workflow definitions
 in `global/management-tools/management-tools-image/src/main/image/coremedia/import-default-workflows`.
 Add `TranslationGlobalLink:/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml`
 to the variable `DEFAULT_WORKFLOWS`.
+
+## Enabling External Definition of API Key
+
+If the _API key_ for communication with GlobalLink is to be set externally
+upon system startup, add the following lines to file `apps/workflow-server/spring-boot/workflow-server-app/src/main/resources/application.properties`:
+
+```
+# GlobalLink
+gcc.apiKey=
+```
+
+If in doubt, check with the system's administrator how the API key is to be 
+defined. See [Server-side configuration](administration.md#server-side-configuration)
+in _Administration Guide_.
 
 ## Extension Point for Custom Properties
 
