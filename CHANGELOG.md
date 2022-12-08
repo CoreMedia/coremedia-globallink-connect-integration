@@ -1,6 +1,42 @@
 Changelog
 ================================================================================
 
+2210-2
+--------------------------------------------------------------------------------
+
+### General Notes
+
+⚠️ Before upgrading to this version make sure that there no workflows
+running on older versions of the integration anymore. The new Settings are not
+compatible with older workflow processes.
+
+### Main Changes
+
+* Documentation now clearly states that it is recommended to store the `apiKey`
+in the properties file.
+
+* Configuration has been refactored so that the GlobalLink settings are not 
+automatically published with the pages that they are linked to. The Settings 
+have to be located in specific folders instead. Ensure that the name of the 
+path and the folder match the convention mentioned below.
+
+
+  **Upgrade Steps:**
+  1. Create new folders for your global- or site-specific Settings at  
+    `/Settings/Options/Settings/Translation Services` or
+    `<SITE_ROOT>/Options/Settings/Translation Services`.
+    Read the [documentation](https://coremedia.github.io/coremedia-globallink-connect-integration/administration.html#configuring-globallink-connection-settings)
+    for more details about the new settings mechanism.
+  2. Move the existing GlobalLink settings into the global- and site-specific 
+  folders respectively.
+  3. If you haven't done it earlier, move the `apiKey` setting to the 
+  properties file on the workflow server and restart it.
+  4. Remove the links to the GlobalLink settings from the site's pages and publish
+  these pages.
+  5. Unpublish the GlobalLink settings and make sure that there are no links to
+  them anymore by checking the system tab. In the future, you should not 
+  publish them again.
+
 2210
 --------------------------------------------------------------------------------
 
@@ -26,15 +62,23 @@ Changelog
 2201
 --------------------------------------------------------------------------------
 
+### General Notes
+
+⚠️ Before upgrading to this version make sure that there no workflows
+running on older versions of the integration anymore. The new Settings are not
+compatible with older workflow processes.
+
 ### Main Changes
 
 * Updated to API v3 of GlobalLink Connect Cloud. The API now uses an API Key 
 for authentication instead of username and password. You have to request the
 API Key from your contacts at Translations.com.
    
-  You will also have to adapt your configuration of the workflow in the content
-repository or in your properties file. Remove `username` and `password` and 
-set the `apiKey` instead. You will also have to update the `url` to point to v3. 
+  You will also have to adapt your configuration of the workflow in 
+  your properties file. Remove `username` and `password` and set the `apiKey` 
+  instead. Please make sure to only define these settings in the properties 
+  file on the workflow server. You will also have to update the `url` to 
+  point to v3. 
 
 * A new error code was introduced to reflect the new authentication method  
   via `apiKey` and to be able to distinguish between the different types of 

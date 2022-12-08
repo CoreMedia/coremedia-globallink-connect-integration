@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<CMSettings folder="/Settings/Options/Settings" name="GlobalLink">
+<CMSettings folder="/Settings/Options/Settings/Translation Services" name="GlobalLink">
   <settings>
     <Struct xmlns="http://www.coremedia.com/2008/struct">
       <StructProperty Name="globalLink">
