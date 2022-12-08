@@ -101,6 +101,14 @@ accidentally leak it to clients that have read access to the content repository:
 `gcc.apiKey` the API key to authenticate at GlobalLink. In the content configuration
 it is just called `apiKey` (type:`String`).
 
+If the API key is to be set upon system startup, you can do so by defining
+variable `GCC_APIKEY` with the appropriate value. Check with development that the 
+required actions have been taken on the code (see 
+[Enabling External Definition of API Key](development.md#enabling-external-definition-of-api-key)).
+In context of a CoreMedia-hosted cloud instance, store the values in
+_Cloud Manager Secrets_ and request activation through _CoreMedia
+Cloud Support_.
+
 You can theoretically set it in the content like the parameters in the
 next chapter, but it is not recommended. The same applies to the parameters
 `gcc.username` and `gcc.password` in previous versions of this integration.
