@@ -3,6 +3,7 @@ import com.coremedia.cap.common.SESSION;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.impl.ContentRepositoryImpl;
 import com.coremedia.cap.struct.Struct;
+import com.coremedia.cap.struct.StructRemoteBean;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.cap.workflow.WorkflowObject;
@@ -15,9 +16,11 @@ import com.coremedia.ui.components.IconButton;
 import com.coremedia.ui.data.Blob;
 import com.coremedia.ui.data.Calendar;
 import com.coremedia.ui.data.Locale;
+import com.coremedia.ui.data.RemoteBeanUtil;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.coremedia.ui.data.impl.RemoteService;
+import com.coremedia.ui.logging.Logger;
 import com.coremedia.ui.messagebox.MessageBoxUtil;
 import com.coremedia.ui.util.createComponentSelector;
 
@@ -51,6 +54,8 @@ public class GccStudioPluginBase extends StudioPlugin {
   private static const CANCELLATION_CONFIRMED_SUBMISSION_STATE:String = "CANCELLATION_CONFIRMED";
   private static const CANCELLED_SUBMISSION_STATE:String = "CANCELLED";
   private static const UNAVAILABLE_SUBMISSION_STATE:String = 'unavailable';
+
+  private static const CMSETTINGS_TYPE:String = "CMSettings";
 
   internal var dayOffsetValueExpression:ValueExpression;
 
@@ -141,26 +146,46 @@ public class GccStudioPluginBase extends StudioPlugin {
   }
 
   private function getDayOffsetFromSettings(offSetValueExpression:ValueExpression):void {
-    var globalLinkSettings:Content = SESSION.getConnection().getContentRepository().getChild("/Settings/Options/Settings/Translation Services/GlobalLink");
-    if (globalLinkSettings) {
-      globalLinkSettings.load(function ():void {
-        var settings:Struct = globalLinkSettings.getProperties().get("settings") as Struct;
-        if (settings) {
-          var gccSettingsVE:ValueExpression = ValueExpressionFactory.createFromFunction(function ():Struct {
-            var gccSettings:Struct = settings.get("globalLink") as Struct;
-            if (!gccSettings) {
-              return undefined;
-            }
-            return gccSettings;
-          });
+    var translationServices:Content = SESSION.getConnection().getContentRepository().getChild("/Settings/Options/Settings/Translation Services");
+    if (translationServices) {
+      translationServices.load(function() {
 
-          gccSettingsVE.loadValue(function ():void {
-            offSetValueExpression.setValue(gccSettingsVE.getValue().get("dayOffsetForDueDate") as int);
-          });
+        var settings:Array = [];
+        if (translationServices.isFolder()) {
+          settings.push(translationServices.getChildDocuments());
+        } else if (translationServices.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
+          settings.push(translationServices)
         }
+
+        RemoteBeanUtil.loadAll(function () {
+          for (var setting: Content in settings) {
+            if (setting.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
+              setOffsetFromSingleSetting(setting, offSetValueExpression);
+            }
+          }
+        },settings)
+      })
+    }
+  }
+
+  private function setOffsetFromSingleSetting(globalLinkSettings:Content, offSetValueExpression:ValueExpression): void {
+    var settings:Struct = globalLinkSettings.getProperties().get("settings") as Struct;
+    if (settings) {
+      var gccSettingsVE:ValueExpression = ValueExpressionFactory.createFromFunction(function ():Struct {
+        var gccSettings:Struct = settings.get("globalLink") as Struct;
+        if (!gccSettings) {
+          return undefined;
+        }
+        return gccSettings;
+      });
+
+      gccSettingsVE.loadValue(function ():void {
+        Logger.debug("Using due date from setting at " + globalLinkSettings.getPath());
+        offSetValueExpression.setValue(gccSettingsVE.getValue().get("dayOffsetForDueDate") as int);
       });
     }
   }
+
 
 
   //noinspection JSMethodCanBeStatic => method cannot be called if static

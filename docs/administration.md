@@ -121,8 +121,7 @@ for some site. Site-specific settings override global settings except for
 
 * `/Settings/Options/Settings/Translation Services`: Once you have configured
 the integration in a Settings content in this folder the GlobalLink
-workflow will be available to all sites. The content must be named
-`GlobalLink`.
+workflow will be available to all sites.
 * `<SITE_ROOT>/Options/Settings/Translation Services`: Only define 
 the Settings here, if the GlobalLink workflow should only be available 
 if you translate content from this site to one of its derived sites. But, you 
