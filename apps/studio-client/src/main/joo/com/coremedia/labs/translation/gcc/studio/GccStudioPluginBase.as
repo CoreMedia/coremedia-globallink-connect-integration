@@ -150,17 +150,18 @@ public class GccStudioPluginBase extends StudioPlugin {
     if (translationServices) {
       translationServices.load(function() {
 
-        var settings:Array = [];
+        var settings:Array;
         if (translationServices.isFolder()) {
-          settings.push(translationServices.getChildDocuments());
+          settings = translationServices.getChildDocuments();
         } else if (translationServices.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
-          settings.push(translationServices)
+          settings = [translationServices];
         }
 
         RemoteBeanUtil.loadAll(function () {
-          for (var setting: Content in settings) {
-            if (setting.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
-              setOffsetFromSingleSetting(setting, offSetValueExpression);
+          for (var i:int=0; i < settings.length; i++) {
+            var content:Content = settings[i];
+            if (content.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
+              setOffsetFromSingleSetting(content, offSetValueExpression);
             }
           }
         },settings)
