@@ -13,6 +13,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.translate.item.ContentToTranslateItemTransformer;
 import com.coremedia.translate.item.TranslateItem;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -49,6 +50,8 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   private static final Logger LOG = LoggerFactory.getLogger(lookup().lookupClass());
 
   private static final long serialVersionUID = 7530762957907324426L;
+
+  private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "sendTranslationRequestRetryDelay";
 
   private String derivedContentsVariable;
   private String subjectVariable;
@@ -131,6 +134,12 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   }
 
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
+
+  @Override
+  @NonNull
+  protected String getGCCRetryDelaySettingsKey() {
+    return GCC_RETRY_DELAY_SETTINGS_KEY;
+  }
 
   @Override
   Parameters doExtractParameters(Task task) {

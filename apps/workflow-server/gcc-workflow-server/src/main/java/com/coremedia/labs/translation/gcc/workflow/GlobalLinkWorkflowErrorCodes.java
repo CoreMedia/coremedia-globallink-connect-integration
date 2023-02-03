@@ -27,6 +27,9 @@ class GlobalLinkWorkflowErrorCodes {
   // ==== 60###: GCC State Problems
   static final String SUBMISSION_CANCEL_FAILURE = "GCC-WF-61001";
 
+  // ==== 70###: CMS Communication Problems
+  static final String CMS_COMMUNICATION_ERROR = "GCC-WF-70000";
+
   private GlobalLinkWorkflowErrorCodes() {
   }
 

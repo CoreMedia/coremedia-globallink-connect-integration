@@ -113,6 +113,16 @@ You can theoretically set it in the content like the parameters in the
 next chapter, but it is not recommended. The same applies to the parameters
 `gcc.username` and `gcc.password` in previous versions of this integration.
 
+Property setting `gcc.cms-retry-delay` defines the delay in seconds between two attempts to
+retrieve data from or write data to the Content Management Server, should the
+Content Management Server be unavailable temporarily (_optional_, default: `60`
+type: `Integer`). Intervals shorter than 60 seconds or longer
+than a day are not allowed and will fall back to the corresponding max or min
+values.
+
+If the delay is to be set upon system startup, you can do so by defining
+variable `GCC_CMS_RETRY_DELAY` with the appropriate value.
+
 ### Configuration in Studio
 
 GlobalLink Settings can be configured globally for all sites or specifically 
@@ -150,7 +160,7 @@ in CoreMedia Studio and add a struct named
     Window to lie within the future in days.
     (_optional_, default: `0`, type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` Number of retries in case of a communication error
-    with GlobalLink. (_optional_, default: `5`, type:`Integer`)
+    with GlobalLink or Content Management Server. (_optional_, default: `5`, type:`Integer`)
 * `isSendSubmitter` Defines if the name of the editor that started the workflow 
     is send to GlobalLink as part of the submission.
     (_optional_, default: `false`, type:`Boolean`)
@@ -174,7 +184,7 @@ would have to wait until it is expired.
     submission's state and the translated XLIFF(s) are not immediately ready. 
     (_optional_, default: `1800`, type:`Integer`)
 * `cancelTranslationRetryDelay` Overrides the interval (secs) for retrying the 
-    cancellation of a submission. (_optional_, default: `180`, type:`Integer`)
+    cancellation of a submission. (_optional_, default: `180`, type: `Integer`)
 
 You can also define parameters for testing with the mock facade
 (see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
