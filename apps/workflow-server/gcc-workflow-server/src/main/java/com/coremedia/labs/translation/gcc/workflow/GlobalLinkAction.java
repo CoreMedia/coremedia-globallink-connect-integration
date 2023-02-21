@@ -1,9 +1,12 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.cap.common.Blob;
+import com.coremedia.cap.common.CapException;
 import com.coremedia.cap.common.RelativeTimeLimit;
+import com.coremedia.cap.common.RepositoryNotAvailableException;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentObject;
+import com.coremedia.cap.errorcodes.CapErrorCodes;
 import com.coremedia.cap.multisite.ContentObjectSiteAspect;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
@@ -23,6 +26,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -31,7 +35,9 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.coremedia.labs.translation.gcc.facade.DefaultGCExchangeFacadeSessionProvider.defaultFactory;
@@ -137,6 +144,12 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * Fallback delay between retrying communication with GlobalLink for illegal values.
    */
   private static final int FALLBACK_RETRY_COMMUNICATION_DELAY_SECS = 900;
+
+  private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = ImmutableSet.of(
+          CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
+          CapErrorCodes.USER_REPOSITORY_UNAVAILABLE,
+          CapErrorCodes.REPOSITORY_NOT_AVAILABLE
+  );
 
   private String skipVariable;
   private String masterContentObjectsVariable;
@@ -558,9 +571,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * Returns a {@link Result} object to trigger a retry in case of (temporary) CMS connection errors. Re-throws the
    * given exception, if another error.
    */
-  private Result<R> getResultForCMSConnectionError(RuntimeException exception) {
+  private Result<R> getResultForCMSConnectionError(@NonNull RuntimeException exception) {
     // if exception is not indicating a curable CMS connection error situation, re-throw it without configuring a retry
-    if (!RepositoryUnavailableThrowablePredicate.matches(exception)) {
+    if (!isRepositoryUnavailableException(exception)) {
       throw exception;
     }
     LOG.info("{}: Failed to connect to CMS. Will retry.", getName(), exception);
@@ -574,6 +587,20 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     issues.put(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR, Collections.emptyList());
     result.issues = issuesAsJsonBlob(issues);
     return result;
+  }
+
+  @VisibleForTesting
+  static boolean isRepositoryUnavailableException(Exception exception) {
+    Throwable cause = exception;
+    while (cause != null) {
+      if (cause instanceof RepositoryNotAvailableException
+              || cause instanceof SystemException
+              || (cause instanceof CapException && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(((CapException) cause).getErrorCode()))) {
+        return true;
+      }
+      cause = cause.getCause();
+    }
+    return false;
   }
 
   /**
@@ -601,8 +628,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return result;
   }
 
+  @VisibleForTesting
   @Nullable
-  private Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+  Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
     if (issues.isEmpty()) {
       return null;
     }
@@ -630,7 +658,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
   }
 
-  private static class Parameters<P> {
+  @VisibleForTesting
+  static class Parameters<P> {
     final P extendedParameters;
     final Collection<ContentObject> masterContentObjects;
     final int remainingAutomaticRetries;
@@ -642,7 +671,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
   }
 
-  private static class Result<R> {
+  @VisibleForTesting
+  static class Result<R> {
     /** holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // suppress warning for non-typical usage of Optional
     Optional<R> extendedResult = Optional.empty();
