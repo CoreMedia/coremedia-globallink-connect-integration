@@ -144,9 +144,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private String issuesVariable;
   private String retryDelayTimerVariable;
 
-  private int gccRetryDelaySeconds = FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
-  private int cmsRetryDelaySeconds = FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
-
   // --- construct and configure ----------------------------------------------------------------------
 
   GlobalLinkAction(boolean rethrowResultException) {
@@ -229,22 +226,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
 
     List<ContentObject> masterContentObjects = process.getLinksAndVersions(getMasterContentObjectsVariable());
-
-    if (retryDelayTimerVariable != null) {
-      // get delay for retries on CMS connection error *just* from properties because in CMS connection error case,
-      // settings may not be readable anyhow
-      Map<String, Object> properties = getGccSettingsFromProperties();
-      cmsRetryDelaySeconds = ensureRetryDelayConfig(properties, CMS_RETRY_DELAY_SETTINGS_KEY);
-      try {
-        Site masterSite = getMasterSite(masterContentObjects);
-        Map<String, Object> settings = getGccSettings(masterSite);
-        gccRetryDelaySeconds = ensureRetryDelayConfig(settings, getGCCRetryDelaySettingsKey());
-      } catch (RuntimeException e) {
-        // return dedicated parameters object to trigger retry handling in #doExecute(Object)
-        return new CMSConnectionErrorParameters<>(e);
-      }
-    }
-
     Integer i = process.getInteger(remainingAutomaticRetriesVariable);
     int remainingAutomaticRetries = i != null ? i : 0;
     P extendedParameters = doExtractParameters(task);
@@ -286,20 +267,16 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     @SuppressWarnings("unchecked" /* per interface contract: params is the return value of #extractParameters */)
     Parameters<P> parameters = (Parameters<P>) params;
 
-    // may have received an error in #extractParameters(Task) which we have to handle here
-    if (params instanceof CMSConnectionErrorParameters) {
-      @SuppressWarnings("unchecked")
-      CMSConnectionErrorParameters<P> cmsConnectionErrorParameters = (CMSConnectionErrorParameters<P>) params;
-      return getResultForCMSConnectionError(cmsConnectionErrorParameters.exception);
-    }
-
     Result<R> result = new Result<>();
     // maps error codes to affected contents; list of contents may be empty for some errors */
     Map<String, List<Content>> issues = new HashMap<>();
 
+    int gccRetryDelaySeconds = FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
     try {
       Site masterSite = getMasterSite(parameters.masterContentObjects);
+      Map<String, Object> settings = getGccSettings(masterSite);
+      gccRetryDelaySeconds = ensureRetryDelayConfig(settings, getGCCRetryDelaySettingsKey());
       maxAutomaticRetries = maxAutomaticRetries(masterSite);
 
       GCExchangeFacade gccSession = openSession(masterSite);
@@ -311,7 +288,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     } catch (GCFacadeCommunicationException e) {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
-      return getResultForGCCConnectionError(e, issues, parameters, maxAutomaticRetries);
+      return getResultForGCCConnectionError(e, issues, parameters, gccRetryDelaySeconds, maxAutomaticRetries);
     } catch (GCFacadeIOException e) {
       LOG.warn("{}: Local I/O error ({}).", getName(), GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, Collections.emptyList());
@@ -589,7 +566,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     LOG.info("{}: Failed to connect to CMS. Will retry.", getName(), exception);
     Result<R> result = new Result<>();
     result.remainingAutomaticRetries = Integer.MAX_VALUE;
-    result.retryDelaySeconds = cmsRetryDelaySeconds;
+    // get delay for retries on CMS connection error *just* from properties
+    Map<String, Object> properties = getGccSettingsFromProperties();
+    result.retryDelaySeconds = ensureRetryDelayConfig(properties, CMS_RETRY_DELAY_SETTINGS_KEY);
     // issue type is irrelevant, it's just required to have *some* issue
     Map<String, List<Content>> issues = new HashMap<>();
     issues.put(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR, Collections.emptyList());
@@ -600,7 +579,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   /**
    * Returns a {@link Result} object to trigger a retry in case of GCC connection errors.
    */
-  private Result<R> getResultForGCCConnectionError(Exception exception, Map<String, List<Content>> issues, Parameters<P> parameters, int maxAutomaticRetries) {
+  private Result<R> getResultForGCCConnectionError(Exception exception, Map<String, List<Content>> issues,
+                                                   Parameters<P> parameters, int gccRetryDelaySeconds, int maxAutomaticRetries) {
     Result<R> result = new Result<>();
     if (issues.isEmpty()) {
       boolean isInRetryLoop =
@@ -659,20 +639,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       this.extendedParameters = extendedParameters;
       this.masterContentObjects = masterContentObjects;
       this.remainingAutomaticRetries = remainingAutomaticRetries;
-    }
-  }
-
-  /**
-   * Dedicated {@link Parameters} subclass used to communicate CMS connection error information from
-   * {@link #extractParameters(Task)} to {@link #doExecuteGlobalLinkAction(Object, Consumer, GCExchangeFacade, Map)}.
-   */
-  private static class CMSConnectionErrorParameters<P> extends Parameters<P> {
-
-    final RuntimeException exception;
-
-    CMSConnectionErrorParameters(RuntimeException exception) {
-      super(null, null, 0);
-      this.exception = exception;
     }
   }
 

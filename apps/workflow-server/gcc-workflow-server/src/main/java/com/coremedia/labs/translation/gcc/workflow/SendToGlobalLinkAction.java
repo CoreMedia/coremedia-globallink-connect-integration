@@ -6,6 +6,7 @@ import com.coremedia.cap.multisite.ContentObjectSiteAspect;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.translate.xliff.XliffExporter;
+import com.coremedia.cap.user.User;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
@@ -152,11 +153,11 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Calendar date = process.getDate(globalLinkDueDateVariable);
     ZonedDateTime dueDate = ZonedDateTime.ofInstant(date.toInstant(), date.getTimeZone().toZoneId());
     String workflow = globalLinkWorkflowVariable != null ? process.getString(globalLinkWorkflowVariable) : null;
-    String submitterName = null;
+    User submitter = null;
     if (performerVariable != null) {
-      submitterName = process.getUser(performerVariable).getName();
+      submitter = process.getUser(performerVariable);
     }
-    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitterName);
+    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitter);
   }
 
   /**
@@ -186,7 +187,8 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Locale firstMasterLocale = findFirstMasterLocale(masterContentObjects, localeMapper)
             .orElseThrow(() -> new IllegalStateException("Unable to identify master locale."));
 
-    String submissionId = submitSubmission(facade, params.subject, params.comment, firstMasterLocale, translationItemsByLocale, params.dueDate, params.workflow, params.submitter);
+    String submissionId = submitSubmission(facade, params.subject, params.comment, firstMasterLocale,
+            translationItemsByLocale, params.dueDate, params.workflow, params.submitter.getName());
     resultConsumer.accept(submissionId);
   }
 
@@ -310,7 +312,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     final Collection<ContentObject> masterContentObjects;
     final ZonedDateTime dueDate;
     final String workflow;
-    final String submitter;
+    final User submitter;
 
     Parameters(String subject,
                String comment,
@@ -318,7 +320,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
                Collection<ContentObject> masterContentObjects,
                ZonedDateTime dueDate,
                String workflow,
-               String submitter) {
+               User submitter) {
       this.subject = subject;
       this.comment = comment;
       this.derivedContents = derivedContents;
