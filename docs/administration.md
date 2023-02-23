@@ -160,7 +160,7 @@ in CoreMedia Studio and add a struct named
     Window to lie within the future in days.
     (_optional_, default: `0`, type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` Number of retries in case of a communication error
-    with GlobalLink or Content Management Server. (_optional_, default: `5`, type:`Integer`)
+    with GlobalLink. (_optional_, default: `5`, type:`Integer`)
 * `isSendSubmitter` Defines if the name of the editor that started the workflow 
     is send to GlobalLink as part of the submission.
     (_optional_, default: `false`, type:`Boolean`)

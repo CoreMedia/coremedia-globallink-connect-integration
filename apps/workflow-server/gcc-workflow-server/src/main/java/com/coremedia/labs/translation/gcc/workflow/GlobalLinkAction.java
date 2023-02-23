@@ -301,7 +301,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     } catch (GCFacadeCommunicationException e) {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
-      return getResultForGCCConnectionError(e, issues, parameters, gccRetryDelaySeconds, maxAutomaticRetries);
+      return getResultForGCCConnectionError(e, result, issues, parameters, gccRetryDelaySeconds, maxAutomaticRetries);
     } catch (GCFacadeIOException e) {
       LOG.warn("{}: Local I/O error ({}).", getName(), GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, Collections.emptyList());
@@ -322,9 +322,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       issues.put(e.getErrorCode(), Collections.emptyList());
     } catch (RuntimeException e) {
       // automatically retry upon CMS connection errors
-      return getResultForCMSConnectionError(e);
+      return getResultForCMSConnectionError(e, result);
     }
 
+    // set retry delay in case issues have been added by #doExecuteGlobalLinkAction(...) and we're in a retry loop already
     result.retryDelaySeconds = gccRetryDelaySeconds;
     result.issues = issuesAsJsonBlob(issues);
     return result;
@@ -344,7 +345,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     @SuppressWarnings("unchecked" /* per interface contract: result is the return value of #doExecute */)
     Result<R> r = (Result<R>) result;
 
-    LOG.info("action result retries {}, delay {}", r.remainingAutomaticRetries, r.retryDelaySeconds);
     Process process = task.getContainingProcess();
     process.set(remainingAutomaticRetriesVariable, r.remainingAutomaticRetries);
     process.set(retryDelayTimerVariable, new RelativeTimeLimit(r.retryDelaySeconds));
@@ -570,18 +570,21 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   /**
    * Returns a {@link Result} object to trigger a retry in case of (temporary) CMS connection errors. Re-throws the
    * given exception, if another error.
+   *
+   * @param exception the exception to handle.
+   * @param result    the execution result so far.
    */
-  private Result<R> getResultForCMSConnectionError(@NonNull RuntimeException exception) {
+  private Result<R> getResultForCMSConnectionError(@NonNull RuntimeException exception, Result<R> result) {
     // if exception is not indicating a curable CMS connection error situation, re-throw it without configuring a retry
     if (!isRepositoryUnavailableException(exception)) {
       throw exception;
     }
-    LOG.info("{}: Failed to connect to CMS. Will retry.", getName(), exception);
-    Result<R> result = new Result<>();
-    result.remainingAutomaticRetries = Integer.MAX_VALUE;
     // get delay for retries on CMS connection error *just* from properties
     Map<String, Object> properties = getGccSettingsFromProperties();
-    result.retryDelaySeconds = ensureRetryDelayConfig(properties, CMS_RETRY_DELAY_SETTINGS_KEY);
+    int cmsRetryDelaySeconds = ensureRetryDelayConfig(properties, CMS_RETRY_DELAY_SETTINGS_KEY);
+    LOG.info("{}: Failed to connect to CMS. Will retry after {} seconds.", getName(), cmsRetryDelaySeconds, exception);
+    result.remainingAutomaticRetries = Integer.MAX_VALUE;
+    result.retryDelaySeconds = cmsRetryDelaySeconds;
     // issue type is irrelevant, it's just required to have *some* issue
     Map<String, List<Content>> issues = new HashMap<>();
     issues.put(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR, Collections.emptyList());
@@ -605,10 +608,17 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   /**
    * Returns a {@link Result} object to trigger a retry in case of GCC connection errors.
+   *
+   * @param exception            the GlobalLink exception to handle.
+   * @param result               the execution result so far.
+   * @param issues               issues in execution so far.
+   * @param parameters           action parameters.
+   * @param gccRetryDelaySeconds seconds to wait before retrying the GlobalLink action.
+   * @param maxAutomaticRetries  maximum number of retries for the current GlobalLink action.
    */
-  private Result<R> getResultForGCCConnectionError(Exception exception, Map<String, List<Content>> issues,
-                                                   Parameters<P> parameters, int gccRetryDelaySeconds, int maxAutomaticRetries) {
-    Result<R> result = new Result<>();
+  private Result<R> getResultForGCCConnectionError(GCFacadeCommunicationException exception, Result<R> result,
+                                                   Map<String, List<Content>> issues, Parameters<P> parameters,
+                                                   int gccRetryDelaySeconds, int maxAutomaticRetries) {
     if (issues.isEmpty()) {
       boolean isInRetryLoop =
               parameters.remainingAutomaticRetries > 0 && parameters.remainingAutomaticRetries != Integer.MAX_VALUE;
@@ -617,8 +627,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
               : maxAutomaticRetries;
     }
     if (result.remainingAutomaticRetries > 0) {
-      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s).", getName(),
-              GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries, exception);
+      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} seconds delay.", getName(),
+              GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries,
+              gccRetryDelaySeconds, exception);
     } else {
       LOG.warn("{}: Failed to connect to GCC ({}).", getName(), GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, exception);
     }
@@ -673,14 +684,22 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   static class Result<R> {
-    /** holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result */
+    /**
+     * holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
+     */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // suppress warning for non-typical usage of Optional
-    Optional<R> extendedResult = Optional.empty();
-    /** json with map from studio severity to map of error codes to possibly empty list of affected contents */
+            Optional<R> extendedResult = Optional.empty();
+    /**
+     * json with map from studio severity to map of error codes to possibly empty list of affected contents
+     */
     Blob issues;
-    /** number of remaining automatic retries, if there are issues */
+    /**
+     * number of remaining automatic retries, if there are issues
+     */
     int remainingAutomaticRetries;
-    /** seconds to delay before next retry */
+    /**
+     * seconds to delay before next retry
+     */
     int retryDelaySeconds;
   }
 }

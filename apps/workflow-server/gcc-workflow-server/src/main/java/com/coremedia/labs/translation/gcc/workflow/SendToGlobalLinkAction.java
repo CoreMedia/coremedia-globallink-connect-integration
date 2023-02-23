@@ -187,8 +187,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Locale firstMasterLocale = findFirstMasterLocale(masterContentObjects, localeMapper)
             .orElseThrow(() -> new IllegalStateException("Unable to identify master locale."));
 
+    String submitterName = params.submitter != null ? params.submitter.getName() : null;
     String submissionId = submitSubmission(facade, params.subject, params.comment, firstMasterLocale,
-            translationItemsByLocale, params.dueDate, params.workflow, params.submitter.getName());
+            translationItemsByLocale, params.dueDate, params.workflow, submitterName);
     resultConsumer.accept(submissionId);
   }
 
