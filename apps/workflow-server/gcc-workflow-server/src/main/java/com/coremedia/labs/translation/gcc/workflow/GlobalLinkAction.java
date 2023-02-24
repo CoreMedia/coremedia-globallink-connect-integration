@@ -123,8 +123,19 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
           .registerTypeAdapter(Content.class, new ContentObjectSerializer())
           .create();
 
+  /**
+   * Property for specification of delay in seconds before retrying Content Management Server communication
+   * (GlobalLinkAction.MIN_RETRY_DELAY_SECS <= value <= GlobalLinkAction.MAX_RETRY_DELAY_SECS).
+   * This value cannot be overwritten by the corresponding settings in the content repository.
+   */
   private static final String CMS_RETRY_DELAY_SETTINGS_KEY = "cms-retry-delay";
 
+  /**
+   * Property for specification of delay in seconds before retrying GlobalLink communication
+   * (GlobalLinkAction.MIN_RETRY_DELAY_SECS <= value <= GlobalLinkAction.MAX_RETRY_DELAY_SECS).
+   * This is only a fallback for sub-classing actions that don't provide a unique retry delay by
+   * overwriting method {@link #getGCCRetryDelaySettingsKey()}.
+   */
   private static final String DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY = "gcc-retry-delay";
 
   /**
@@ -145,7 +156,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    */
   private static final int FALLBACK_RETRY_COMMUNICATION_DELAY_SECS = 900;
 
-  private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = ImmutableSet.of(
+  private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = Set.of(
           CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
           CapErrorCodes.USER_REPOSITORY_UNAVAILABLE,
           CapErrorCodes.REPOSITORY_NOT_AVAILABLE
@@ -325,7 +336,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       return getResultForCMSConnectionError(e, result);
     }
 
-    // set retry delay in case issues have been added by #doExecuteGlobalLinkAction(...) and we're in a retry loop already
+    // set retry delay for continuation of non-completed GlobalLink task, e.g., download of translations that are
+    // still missing
     result.retryDelaySeconds = gccRetryDelaySeconds;
     result.issues = issuesAsJsonBlob(issues);
     return result;
@@ -347,7 +359,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     Process process = task.getContainingProcess();
     process.set(remainingAutomaticRetriesVariable, r.remainingAutomaticRetries);
-    process.set(retryDelayTimerVariable, new RelativeTimeLimit(r.retryDelaySeconds));
+    // check for existence of variable to support backwards compatibility with old workflow definitions
+    if (retryDelayTimerVariable != null) {
+      process.set(retryDelayTimerVariable, new RelativeTimeLimit(r.retryDelaySeconds));
+    }
     process.set(issuesVariable, r.issues);
 
     Object resultValue = r.extendedResult
@@ -598,12 +613,18 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     while (cause != null) {
       if (cause instanceof RepositoryNotAvailableException
               || cause instanceof SystemException
-              || (cause instanceof CapException && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(((CapException) cause).getErrorCode()))) {
+              || isCapExceptionWithMatchingErrorCode(cause)) {
         return true;
       }
       cause = cause.getCause();
     }
     return false;
+  }
+
+  static boolean isCapExceptionWithMatchingErrorCode(Throwable throwable) {
+    return throwable instanceof CapException
+            && ((CapException) throwable).getErrorCode() != null
+            && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(((CapException) throwable).getErrorCode());
   }
 
   /**
