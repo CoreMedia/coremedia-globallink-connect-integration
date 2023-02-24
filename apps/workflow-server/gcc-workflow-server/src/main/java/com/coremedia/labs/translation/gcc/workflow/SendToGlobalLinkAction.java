@@ -6,6 +6,7 @@ import com.coremedia.cap.multisite.ContentObjectSiteAspect;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.translate.xliff.XliffExporter;
+import com.coremedia.cap.user.User;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
@@ -13,6 +14,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.translate.item.ContentToTranslateItemTransformer;
 import com.coremedia.translate.item.TranslateItem;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -49,6 +51,8 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   private static final Logger LOG = LoggerFactory.getLogger(lookup().lookupClass());
 
   private static final long serialVersionUID = 7530762957907324426L;
+
+  private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "sendTranslationRequestRetryDelay";
 
   private String derivedContentsVariable;
   private String subjectVariable;
@@ -133,6 +137,12 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
 
   @Override
+  @NonNull
+  protected String getGCCRetryDelaySettingsKey() {
+    return GCC_RETRY_DELAY_SETTINGS_KEY;
+  }
+
+  @Override
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
 
@@ -143,11 +153,11 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Calendar date = process.getDate(globalLinkDueDateVariable);
     ZonedDateTime dueDate = ZonedDateTime.ofInstant(date.toInstant(), date.getTimeZone().toZoneId());
     String workflow = globalLinkWorkflowVariable != null ? process.getString(globalLinkWorkflowVariable) : null;
-    String submitterName = null;
+    User submitter = null;
     if (performerVariable != null) {
-      submitterName = process.getUser(performerVariable).getName();
+      submitter = process.getUser(performerVariable);
     }
-    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitterName);
+    return new Parameters(subject, comment, derivedContents, masterContentObjects, dueDate, workflow, submitter);
   }
 
   /**
@@ -177,7 +187,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     Locale firstMasterLocale = findFirstMasterLocale(masterContentObjects, localeMapper)
             .orElseThrow(() -> new IllegalStateException("Unable to identify master locale."));
 
-    String submissionId = submitSubmission(facade, params.subject, params.comment, firstMasterLocale, translationItemsByLocale, params.dueDate, params.workflow, params.submitter);
+    String submitterName = params.submitter != null ? params.submitter.getName() : null;
+    String submissionId = submitSubmission(facade, params.subject, params.comment, firstMasterLocale,
+            translationItemsByLocale, params.dueDate, params.workflow, submitterName);
     resultConsumer.accept(submissionId);
   }
 
@@ -301,7 +313,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     final Collection<ContentObject> masterContentObjects;
     final ZonedDateTime dueDate;
     final String workflow;
-    final String submitter;
+    final User submitter;
 
     Parameters(String subject,
                String comment,
@@ -309,7 +321,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
                Collection<ContentObject> masterContentObjects,
                ZonedDateTime dueDate,
                String workflow,
-               String submitter) {
+               User submitter) {
       this.subject = subject;
       this.comment = comment;
       this.derivedContents = derivedContents;

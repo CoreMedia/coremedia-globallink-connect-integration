@@ -69,6 +69,10 @@ public class ActionTestBaseConfiguration {
     siteModel.setMasterProperty(MASTER_PROPERTY);
     siteModel.setLocaleProperty(LOCALE_PROPERTY);
     siteModel.setTranslationWorkflowRobotUser("admin");
+    siteModel.setIdProperty("abc123");
+    siteModel.setNameProperty("name");
+    siteModel.setRootProperty("root");
+    siteModel.setSiteIndicatorDocumentType("CMSite");
     return siteModel;
   }
 }
