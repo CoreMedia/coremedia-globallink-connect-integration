@@ -19,6 +19,7 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,8 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   private static final long serialVersionUID = 5160741359795894412L;
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "downloadTranslationRetryDelay";
 
   private static final String WORKING_DIR_PREFIX = "cmsgccwf";
   // Corresponds to Studio's "Upload Files" magic name functionality
@@ -174,6 +177,12 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
 
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
+
+  @Override
+  @NonNull
+  protected String getGCCRetryDelaySettingsKey() {
+    return GCC_RETRY_DELAY_SETTINGS_KEY;
+  }
 
   @Override
   Parameters doExtractParameters(Task task) {

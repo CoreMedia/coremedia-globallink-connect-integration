@@ -6,6 +6,7 @@ import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ public class CancelTranslationGlobalLinkAction extends
   private static final long serialVersionUID = -4912724475227423848L;
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "cancelTranslationRetryDelay";
 
   private static final int HTTP_OK = 200;
 
@@ -108,6 +111,12 @@ public class CancelTranslationGlobalLinkAction extends
 
 
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
+
+  @Override
+  @NonNull
+  protected String getGCCRetryDelaySettingsKey() {
+    return GCC_RETRY_DELAY_SETTINGS_KEY;
+  }
 
   @Override
   Parameters doExtractParameters(Task task) {

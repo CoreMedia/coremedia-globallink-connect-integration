@@ -1,6 +1,14 @@
 Changelog
 ================================================================================
 
+2301-1
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2301.1.
+* _Robustness to Content Management Server outages_: in case of outages of the Content Management Server, translation workflows may fail with an exception and escalate. This improvement lets the workflow retry failed connections to the Content Management Server in certain cases until it is available again. The workflow cannot proceed until the Content Management Server is available again.
+
 2210-2
 --------------------------------------------------------------------------------
 

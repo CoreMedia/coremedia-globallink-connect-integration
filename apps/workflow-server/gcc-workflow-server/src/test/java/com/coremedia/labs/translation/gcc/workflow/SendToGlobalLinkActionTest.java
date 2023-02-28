@@ -7,6 +7,7 @@ import com.coremedia.cap.content.ContentObject;
 import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.content.Version;
 import com.coremedia.cap.translate.xliff.config.XliffExporterConfiguration;
+import com.coremedia.cap.user.User;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.translate.item.TranslateItemConfiguration;
 import com.google.common.collect.ImmutableMap;
@@ -49,6 +50,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
@@ -67,7 +70,8 @@ class SendToGlobalLinkActionTest {
   void startTranslationJob(TestInfo testInfo,
                            @Autowired SendToGlobalLinkAction action,
                            @Autowired GCExchangeFacade gcExchangeFacade,
-                           @Autowired CapConnection connection) {
+                           @Autowired CapConnection connection,
+                           @Autowired User user) {
     ContentType contentType = requireNonNull(connection.getContentRepository().getContentType(ActionTestBaseConfiguration.CONTENT_TYPE_NAME), "Required content type not available.");
 
     long expectedSubmissionId = 42L;
@@ -103,17 +107,17 @@ class SendToGlobalLinkActionTest {
     String comment = "Test";
     ZonedDateTime dueDate = ZonedDateTime.of(LocalDateTime.now().plusDays(30), ZoneId.systemDefault());
     String workflow = "pseudo translation";
-    String submitter = "admin";
-    SendToGlobalLinkAction.Parameters params = new SendToGlobalLinkAction.Parameters(displayName, comment, derivedContents, masterContents, dueDate, workflow, submitter);
+    SendToGlobalLinkAction.Parameters params = new SendToGlobalLinkAction.Parameters(displayName, comment, derivedContents, masterContents, dueDate, workflow, user);
     AtomicReference<String> resultHolder = new AtomicReference<>();
     action.doExecuteGlobalLinkAction(params, resultHolder::set, gcExchangeFacade, new HashMap<>());
     String submissionId = resultHolder.get();
 
     ArgumentCaptor<Map<String, List<Locale>>> contentMapCaptor = ArgumentCaptor.forClass(Map.class);
     ArgumentCaptor<Locale> masterLocaleCaptor = ArgumentCaptor.forClass(Locale.class);
+    ArgumentCaptor<String> submitterCaptor = ArgumentCaptor.forClass(String.class);
 
     Mockito.verify(gcExchangeFacade).uploadContent(anyString(), any(Resource.class), eq(masterLocale));
-    Mockito.verify(gcExchangeFacade).submitSubmission(anyString(), anyString(), any(ZonedDateTime.class), anyString(), anyString(), masterLocaleCaptor.capture(), contentMapCaptor.capture());
+    Mockito.verify(gcExchangeFacade).submitSubmission(anyString(), anyString(), any(ZonedDateTime.class), anyString(), submitterCaptor.capture(), masterLocaleCaptor.capture(), contentMapCaptor.capture());
 
     assertThat(uploadedXliff[0])
             .describedAs("XLIFF shall contain all relevant information.")
@@ -124,7 +128,7 @@ class SendToGlobalLinkActionTest {
     assertThat(contentMapCaptor.getValue())
             .describedAs("All files shall be submitted with the correct target locales.")
             .containsOnlyKeys(expectedFileId)
-            .hasValueSatisfying(new Condition<List<Locale>>("contains target locale de-DE") {
+            .hasValueSatisfying(new Condition<>("contains target locale de-DE") {
               @Override
               public boolean matches(List<Locale> value) {
                 return value.size() == 1 && derivedLocale.equals(value.get(0));
@@ -132,6 +136,7 @@ class SendToGlobalLinkActionTest {
             });
     assertThat(masterLocaleCaptor.getValue()).isEqualTo(masterLocale);
     assertThat(submissionId).isEqualTo(String.valueOf(expectedSubmissionId));
+    assertThat(submitterCaptor.getValue()).isEqualTo("admin");
   }
 
   private static Object readXliff(InvocationOnMock invocation, String expectedFileId, String[] uploadedXliff) throws IOException {
@@ -152,6 +157,14 @@ class SendToGlobalLinkActionTest {
     public SendToGlobalLinkAction sendToGlobalLinkAction(ApplicationContext context) {
       return new MockedSendToGlobalLinkAction(context);
     }
+
+    @Scope(SCOPE_SINGLETON)
+    @Bean
+    public User user() {
+      User user = mock(User.class);
+      when(user.getName()).thenReturn("admin");
+      return user;
+    }
   }
 
   private static final class MockedSendToGlobalLinkAction extends SendToGlobalLinkAction {
@@ -166,6 +179,5 @@ class SendToGlobalLinkActionTest {
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }
-
   }
 }
