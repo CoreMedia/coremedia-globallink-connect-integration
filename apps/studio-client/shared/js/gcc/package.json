@@ -39,6 +39,7 @@
   },
   "publishConfig": {
     "directory": "dist",
+    "linkDirectory": false,
     "exports": {
       "./*": {
         "types": "./src/*.d.ts",
