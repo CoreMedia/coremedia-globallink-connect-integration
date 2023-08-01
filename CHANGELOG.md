@@ -7,6 +7,8 @@ Changelog
 ### Main Changes
 
 * Updated dependencies to CoreMedia Content Cloud v11.2307.1.
+* `DownloadFromGlobalLinkAction` now uses the newly introduced API to
+  execute the XLIFF import as the robot user.
 * When upgrading, you will have to upload workflow definition again to benefit
     from the latest changes:
 

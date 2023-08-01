@@ -1,15 +1,11 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.cap.common.Blob;
-import com.coremedia.cap.common.CapSession;
 import com.coremedia.cap.content.Content;
-import com.coremedia.cap.multisite.SiteModel;
 import com.coremedia.cap.translate.xliff.CapXliffImportException;
 import com.coremedia.cap.translate.xliff.XliffImportResultCode;
 import com.coremedia.cap.translate.xliff.XliffImportResultItem;
 import com.coremedia.cap.translate.xliff.XliffImporter;
-import com.coremedia.cap.user.User;
-import com.coremedia.cap.user.UserRepository;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
@@ -18,6 +14,7 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.util.Zipper;
+import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.FileUtils;
@@ -43,7 +40,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.DUPLICATE_NAME;
@@ -382,8 +378,8 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
     List<XliffImportResultItem> resultItems;
     XliffImporter importer = getSpringContext().getBean(XliffImporter.class);
-    try (InputStream xliffStream = new FileInputStream(xliffFile)) {
-      resultItems = asRobotUser(() -> importer.importXliff(xliffStream));
+    try (InputStream xliffStream = new FileInputStream(xliffFile); AsRobotUser asRobotUser =  getAsRobotUser()) {
+      resultItems = asRobotUser.call(() -> importer.importXliff(xliffStream));
     } catch (CapXliffImportException e) {
       LOG.warn("Failed to import XLIFF", e);
       xliffImportIssueToContents.put(FAILED.toString(), Collections.emptyList());
@@ -413,36 +409,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     return false;
   }
 
-  <T> T asRobotUser(Supplier<T> run) {
-    User robotUser = getRobotUser();
-
-    // Perform content operations in the name of the robot user.
-    final CapSession session = getCapSessionPool().acquireSession(robotUser);
-    try {
-      final CapSession oldSession = session.activate();
-      try {
-        return run.get();
-      } finally {
-        oldSession.activate();
-      }
-    } finally {
-      getCapSessionPool().releaseSession(session);
-    }
-  }
-
-  /**
-   * Returns the user defined in {@link com.coremedia.cap.multisite.SiteModel#getTranslationWorkflowRobotUser()}.
-   *
-   * @return the translationWorkflowRobotUser
-   * @throws java.lang.NullPointerException if the user does not exist.
-   */
-  private User getRobotUser() {
-    final SiteModel siteModel = getSpringContext().getBean(SiteModel.class);
-    String robotUserName = siteModel.getTranslationWorkflowRobotUser();
-    UserRepository userRepository = requireNonNull(getConnection().getUserRepository(), "UserRepository not available");
-    User robotUser = userRepository.getUserByName(robotUserName);
-    requireNonNull(robotUser, "No translationWorkflowRobotUser found with name '" + robotUserName + '\'');
-    return robotUser;
+  @VisibleForTesting
+  AsRobotUser getAsRobotUser() {
+    return new AsRobotUser(getConnection(), getSpringContext(), getCapSessionPool());
   }
 
   private static File prepareWorkingDir() {

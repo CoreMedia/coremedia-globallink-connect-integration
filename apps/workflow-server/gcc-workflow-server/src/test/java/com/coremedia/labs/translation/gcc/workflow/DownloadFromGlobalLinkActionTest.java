@@ -1,7 +1,9 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.cap.common.CapConnection;
+import com.coremedia.cap.common.CapSession;
 import com.coremedia.cap.common.IdHelper;
+import com.coremedia.cap.common.pool.CapSessionPool;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.content.Version;
@@ -11,6 +13,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,8 +179,10 @@ class DownloadFromGlobalLinkActionTest {
     }
 
     @Override
-    <T> T asRobotUser(Supplier<T> run) {
-      return run.get();
+    AsRobotUser getAsRobotUser() {
+      AsRobotUser asRobotUser = Mockito.mock(AsRobotUser.class);
+      Mockito.doCallRealMethod().when(asRobotUser).call(any());
+      return asRobotUser;
     }
   }
 }
