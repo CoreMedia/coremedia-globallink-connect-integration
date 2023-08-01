@@ -7,6 +7,13 @@ Changelog
 ### Main Changes
 
 * Updated dependencies to CoreMedia Content Cloud v11.2307.1.
+* When upgrading, you will have to upload workflow definition again to benefit
+    from the latest changes:
+
+    * In v11.2307.1 the `CleanInTranslationFinalAction` is now taking care of
+      cleaning up so called _mergeVersions_ on the content. These marked were 
+      previously only removed asynchronously after aborting the workflow. This
+      caused temporary confusing validation messages in CoreMedia Studio. 
 
 
 2304-1

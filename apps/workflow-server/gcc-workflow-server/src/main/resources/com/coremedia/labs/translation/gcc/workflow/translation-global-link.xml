@@ -427,19 +427,23 @@
               rollbackVersionsVariable="rollbackVersions"
               performerVariable="robotUser"/>
       <Action class="com.coremedia.translate.workflow.RollbackTranslationAction"
-              derivedContentsVariable="derivedContents"
-              masterContentObjectsVariable="masterContentObjects"
-              contentsVariable="createdContents"/>
+              contentsVariable="createdContents"
+              skipCleanInTranslation="true"/>
     </AutomatedTask>
 
     <AutomatedTask name="Complete" successor="Finish">
       <Action class="com.coremedia.translate.workflow.CompleteTranslationAction"
               derivedContentsVariable="derivedContents"
               masterContentObjectsVariable="masterContentObjects"
-              performerVariable="performer"/>
+              performerVariable="performer"
+              skipCleanInTranslation="true"/>
     </AutomatedTask>
 
     <AutomatedTask name="Finish" final="true"/>
+
+    <FinalAction class="com.coremedia.translate.workflow.CleanInTranslationFinalAction"
+                 derivedContentsVariable="derivedContents"
+                 masterContentObjectsVariable="masterContentObjects"/>
 
     <!-- Finally, make sure finished processes are archived and appear in the list of finished workflows for
          participating users, i.e. for users for whom the RegisterPendingProcess action was called. -->
