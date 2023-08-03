@@ -13,9 +13,10 @@ Changelog
     from the latest changes:
 
     * In v11.2307.1 the `CleanInTranslationFinalAction` is now taking care of
-      cleaning up so called _mergeVersions_ on the content. These marked were 
-      previously only removed asynchronously after aborting the workflow. This
-      caused temporary confusing validation messages in CoreMedia Studio. 
+      cleaning up so called _mergeVersions_ on the content. When aborting a 
+      workflow in previous releases, the _mergeVersions_ were only removed by a 
+      separate process after some time. Until the removal, the CoreMedia Studio
+      mistakenly reported the content to be in translation.
 
 
 2304-1
