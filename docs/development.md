@@ -9,14 +9,14 @@
 ## Table of Content
 
 1. [Introduction](#introduction)
-2. [Adding GCC Submodule](#adding-gcc-submodule)
-3. [Adding GCC as extension](#adding-gcc-as-extension)
+2. [Adding GCC Adapter to the Blueprint](#adding-gcc-adapter-to-the-blueprint)
+3. [Enabling the Extension](#enabling-the-extension)
 4. [Adding GCC Workflow to Workflow Server Deployment](#adding-gcc-workflow-to-workflow-server-deployment)
-5. [Patch/Edit Site Homepages](#patchedit-site-homepages)
+5. [Enabling External Definition of API Key](#enabling-external-definition-of-api-key)
 6. [Extension Point for Custom Properties](#extension-point-for-custom-properties)
 7. [Design Details](#design-details)
-6. [Workspace Structure](#workspace-structure)
-6. [See Also](#see-also)
+8. [Workspace Structure](#workspace-structure)
+9. [See Also](#see-also)
 
 ## Introduction
 
@@ -31,8 +31,8 @@ To summarize the steps below, everything you need to do:
 2. Configure your extension tool.
 3. Run your extension tool to activate the gcc extension.
 4. Add `translation-global-link.xml` to your workflow server deployment.
-5. Later on: Ensure that your homepages link to `/Settings/Options/Settings/GlobalLink`
-    in their linked settings.
+5. Later on: Ensure that your GlobalLink Settings reside in
+    `/Settings/Options/Settings/Translation Services/GlobalLink`
 
 ### Branches
 
@@ -146,23 +146,19 @@ in `global/management-tools/management-tools-image/src/main/image/coremedia/impo
 Add `TranslationGlobalLink:/com/coremedia/labs/translation/gcc/workflow/translation-global-link.xml`
 to the variable `DEFAULT_WORKFLOWS`.
 
-## Patch/Edit Site Homepages
+## Enabling External Definition of API Key
 
-For each master site for which you want to start GlobalLink Translation Workflows
-from, you need to add `/Settings/Options/Settings/GlobalLink` settings document
-to the linked settings. To patch a homepage in server export you can use
-the following SED command:
+If the _API key_ for communication with GlobalLink is to be set externally
+upon system startup, add the following lines to file `apps/workflow-server/spring-boot/workflow-server-app/src/main/resources/application.properties`:
 
-```bash
-sed --in-place --expression \
-  "\\#.*<linkedSettings>.*#a <link href=\"../../../../../../Settings/Options/Settings/GlobalLink.xml\" path=\"/Settings/Options/Settings/GlobalLink\"/>" \
-  "${HOMEPAGE}"
+```
+# GlobalLink
+gcc.apiKey=
 ```
 
-where `${HOMEPAGE}` is the server export XML file of your homepage to patch.
-
-As alternative you may manually edit the corresponding homepages later on
-in CoreMedia Studio.
+If in doubt, check with the system's administrator how the API key is to be 
+defined. See [Server-side configuration](administration.md#server-side-configuration)
+in _Administration Guide_.
 
 ## Extension Point for Custom Properties
 
@@ -342,7 +338,7 @@ be linked to your site root documents (also known as Homepages).
 
 <!-- Links, keep at bottom -->
 
-[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
-[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
-[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
-[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-11/artifacts/2207/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
+[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-11/artifacts/2301/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
+[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-11/artifacts/2301/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
+[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-11/artifacts/2301/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
+[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-11/artifacts/2301/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"

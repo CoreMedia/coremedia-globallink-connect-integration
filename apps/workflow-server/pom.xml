@@ -6,7 +6,6 @@
     <artifactId>workflow-server.extensions</artifactId>
     <groupId>com.coremedia.blueprint</groupId>
     <version>1-SNAPSHOT</version>
-    <relativePath>../../../../../apps/workflow-server/modules/extensions/pom.xml</relativePath>
   </parent>
 
   <packaging>pom</packaging>
@@ -17,7 +16,6 @@
     <module>gcc-workflow-server-facade/gcc-restclient-facade</module>
     <module>gcc-workflow-server-facade/gcc-restclient-facade-default</module>
     <module>gcc-workflow-server-facade/gcc-restclient-facade-disabled</module>
-    <module>gcc-workflow-server-facade/gcc-restclient-facade-internal</module>
     <module>gcc-workflow-server-facade/gcc-restclient-facade-mock</module>
     <module>gcc-workflow-server-util</module>
     <module>gcc-workflow-server</module>
@@ -29,7 +27,7 @@
       see https://github.com/translations-com/globallink-connect-cloud-api-java
     -->
     <gcc-restclient.version>3.1.3</gcc-restclient.version>
-    <cm.middle.core.version>2304.1</cm.middle.core.version>
+    <cm.middle.core.version>2307.1</cm.middle.core.version>
   </properties>
 
   <dependencyManagement>

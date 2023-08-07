@@ -26,6 +26,7 @@ import gccCanceledIcon from "./icons/global-link-workflow-canceled.svg";
 import gccIcon from "./icons/global-link-workflow.svg";
 import gccCancelActionIcon from "./icons/remove.svg";
 import gccWarningIcon from "./icons/warning.svg";
+import Logger from "@coremedia/studio-client.client-core-impl/logging/Logger";
 
 const UNAVAILABLE_SUBMISSION_STATE: string = "unavailable";
 const BLOB_FILE_PROCESS_VARIABLE_NAME: string = "translationResultXliff";
@@ -41,6 +42,7 @@ const HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME: string = "HandleSendTrans
 const HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME: string = "HandleDownloadTranslationError";
 const HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME: string = "HandleCancelTranslationError";
 const MILLISECONDS_FOR_ONE_DAY: number = 86400000;
+const CMSETTINGS_TYPE: string = "CMSettings";
 
 interface GccViewModel {
   globalLinkPdSubmissionIds?: string;
@@ -428,24 +430,48 @@ function createQuickTipText(locales: Array<any>, localesService: ILocalesService
 }
 
 function getDefaultDueDate(): Calendar {
-  const gccSettings: Content = session._.getConnection().getContentRepository().getChild("/Settings/Options/Settings/GlobalLink");
-  if (!RemoteBeanUtil.isAccessible(gccSettings)) {
+  const translationServices: Content = session._.getConnection().getContentRepository().getChild("/Settings/Options/Settings/Translation Services");
+  let settings: Array<Content> = [];
+  if (!RemoteBeanUtil.isAccessible(translationServices)) {
+    return undefined;
+  } else if (translationServices.isFolder()) {
+    settings.push(...translationServices.getChildDocuments());
+  } else if (translationServices.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
+    settings.push(translationServices)
+  } else {
     return undefined;
   }
 
-  const gccConfig = gccSettings.getProperties().get("settings") as StructRemoteBean;
-  if (!RemoteBeanUtil.isAccessible(gccConfig)) {
-    return undefined;
+  for (let content of settings) {
+    if (RemoteBeanUtil.isAccessible(content) && content.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
+      const calendar: Calendar = getDueDateFromSetting(content);
+      if (calendar) {
+        Logger.debug("Using due date from setting at " + content.getPath());
+        return calendar;
+      }
+    }
   }
 
-  const dateInFutureInMillieSeconds: number = new Date().getTime() + (MILLISECONDS_FOR_ONE_DAY * as(gccConfig.get("globalLink"), Struct).get("dayOffsetForDueDate"));
-  const dateInFuture = new Date(dateInFutureInMillieSeconds);
-  return new Calendar({
-    year: dateInFuture.getFullYear(),
-    month: dateInFuture.getMonth(),
-    day: dateInFuture.getDate(),
-    offset: -dateInFuture.getTimezoneOffset() * (60 * 1000),
-    timeZone: as(session._.getConnection().getContentRepository(), ContentRepositoryImpl).getDefaultTimeZone(),
-    normalized: true,
-  });
+  return undefined;
 }
+
+function getDueDateFromSetting(setting:Content): Calendar {
+  const gccConfig = setting.getProperties().get("settings") as StructRemoteBean;
+  if (RemoteBeanUtil.isAccessible(gccConfig)) {
+    const dayOffsetForDueDate: number = as(gccConfig.get("globalLink"), Struct).get("dayOffsetForDueDate");
+    if (dayOffsetForDueDate) {
+      const dateInFutureInMillieSeconds: number = new Date().getTime() + (MILLISECONDS_FOR_ONE_DAY * dayOffsetForDueDate);
+      const dateInFuture = new Date(dateInFutureInMillieSeconds);
+      return new Calendar({
+        year: dateInFuture.getFullYear(),
+        month: dateInFuture.getMonth(),
+        day: dateInFuture.getDate(),
+        offset: -dateInFuture.getTimezoneOffset() * (60 * 1000),
+        timeZone: as(session._.getConnection().getContentRepository(), ContentRepositoryImpl).getDefaultTimeZone(),
+        normalized: true,
+      });
+    }
+  }
+  return undefined;
+}
+

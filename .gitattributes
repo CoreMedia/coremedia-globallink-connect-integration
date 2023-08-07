@@ -1,0 +1,4 @@
+# Calm GitHub not to Show Diffs for Auto-Generated Files
+# https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
+
+docs/third-party-licenses/** linguist-generated=true

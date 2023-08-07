@@ -1,6 +1,83 @@
 Changelog
 ================================================================================
 
+2307-1
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2307.1.
+* `DownloadFromGlobalLinkAction` now uses the newly introduced API to
+  execute the XLIFF import as the robot user.
+* When upgrading, you will have to upload workflow definition again to benefit
+    from the latest changes:
+
+    * In v11.2307.1 the `CleanInTranslationFinalAction` is now taking care of
+      cleaning up so called _mergeVersions_ on the content. When aborting a 
+      workflow in previous releases, the _mergeVersions_ were only removed by a 
+      separate process after some time. Until the removal, the CoreMedia Studio
+      mistakenly reported the content to be in translation.
+
+
+2304-1
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2304.1.
+
+
+2301-1
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2301.1.
+* _Robustness to Content Management Server outages_: in case of outages of the Content Management Server, translation workflows may fail with an exception and escalate. This improvement lets the workflow retry failed connections to the Content Management Server in certain cases until it is available again. The workflow cannot proceed until the Content Management Server is available again.
+
+2210-2
+--------------------------------------------------------------------------------
+
+### General Notes
+
+⚠️ Before upgrading to this version make sure that there no workflows
+running on older versions of the integration anymore. The new Settings are not
+compatible with older workflow processes.
+
+### Main Changes
+
+* Documentation now clearly states that it is recommended to store the `apiKey`
+in the properties file.
+
+* Configuration has been refactored so that the GlobalLink settings are not 
+automatically published with the pages that they are linked to. The Settings 
+have to be located in specific folders instead. Ensure that the name of the 
+path and the folder match the convention mentioned below.
+
+
+  **Upgrade Steps:**
+  1. Create new folders for your global- or site-specific Settings at  
+    `/Settings/Options/Settings/Translation Services` or
+    `<SITE_ROOT>/Options/Settings/Translation Services`.
+    Read the [documentation](https://coremedia.github.io/coremedia-globallink-connect-integration/administration.html#configuring-globallink-connection-settings)
+    for more details about the new settings mechanism.
+  2. Move the existing GlobalLink settings into the global- and site-specific 
+  folders respectively.
+  3. If you haven't done it earlier, move the `apiKey` setting to the 
+  properties file on the workflow server and restart it.
+  4. Remove the links to the GlobalLink settings from the site's pages and publish
+  these pages.
+  5. Unpublish the GlobalLink settings and make sure that there are no links to
+  them anymore by checking the system tab. In the future, you should not 
+  publish them again.
+
+2210
+--------------------------------------------------------------------------------
+
+### Main Changes
+
+* Updated dependencies to CoreMedia Content Cloud v11.2210.1.
+
 2207
 --------------------------------------------------------------------------------
 
@@ -19,15 +96,23 @@ Changelog
 2201
 --------------------------------------------------------------------------------
 
+### General Notes
+
+⚠️ Before upgrading to this version make sure that there no workflows
+running on older versions of the integration anymore. The new Settings are not
+compatible with older workflow processes.
+
 ### Main Changes
 
 * Updated to API v3 of GlobalLink Connect Cloud. The API now uses an API Key 
 for authentication instead of username and password. You have to request the
 API Key from your contacts at Translations.com.
    
-  You will also have to adapt your configuration of the workflow in the content
-repository or in your properties file. Remove `username` and `password` and 
-set the `apiKey` instead. You will also have to update the `url` to point to v3. 
+  You will also have to adapt your configuration of the workflow in 
+  your properties file. Remove `username` and `password` and set the `apiKey` 
+  instead. Please make sure to only define these settings in the properties 
+  file on the workflow server. You will also have to update the `url` to 
+  point to v3. 
 
 * A new error code was introduced to reflect the new authentication method  
   via `apiKey` and to be able to distinguish between the different types of 

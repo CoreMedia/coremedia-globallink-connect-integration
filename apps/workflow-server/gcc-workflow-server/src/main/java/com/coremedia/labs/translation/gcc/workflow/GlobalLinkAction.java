@@ -1,22 +1,32 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.cap.common.Blob;
+import com.coremedia.cap.common.CapException;
 import com.coremedia.cap.common.RelativeTimeLimit;
+import com.coremedia.cap.common.RepositoryNotAvailableException;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentObject;
+import com.coremedia.cap.errorcodes.CapErrorCodes;
 import com.coremedia.cap.multisite.ContentObjectSiteAspect;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.struct.Struct;
 import com.coremedia.cap.translate.xliff.XliffImportResultCode;
-import com.coremedia.cap.util.StructUtil;
 import com.coremedia.cap.workflow.Process;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.cap.workflow.plugin.ActionResult;
-import com.coremedia.labs.translation.gcc.facade.*;
+import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -25,10 +35,11 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -41,8 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.coremedia.labs.translation.gcc.facade.DefaultGCExchangeFacadeSessionProvider.defaultFactory;
 import static java.util.Objects.requireNonNull;
@@ -82,9 +93,22 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   private static final long serialVersionUID = -7130959823193680910L;
 
-  private static final String LOCAL_SETTINGS = "localSettings";
-  private static final String LINKED_SETTINGS = "linkedSettings";
   private static final String CMSETTINGS_SETTINGS = "settings";
+  private static final String CM_SETTINGS = "CMSettings";
+
+  /**
+   * Defines the global configuration path.
+   * The integration will look up a 'GlobalLink' settings document in this folder.
+   */
+  private static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
+
+  /**
+   * Defines the site specific configuration path.
+   * If a GlobalLink parameter should be different in a specific site,
+   * then the 'GlobalLink' settings document can additionally be but in this subfolder of the site.
+   */
+  private static final String SITE_CONFIGURATION_PATH = "/Options/Settings/Translation Services";
+
 
   /**
    * Name of the config parameter in {@link #getGccSettings(Site)} to control how many times communication
@@ -99,12 +123,20 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
           .registerTypeAdapter(Content.class, new ContentObjectSerializer())
           .create();
 
-  private String skipVariable;
-  private String masterContentObjectsVariable;
-  private String remainingAutomaticRetriesVariable;
-  private String issuesVariable;
-  private String retryDelayTimerVariable;
+  /**
+   * Property for specification of delay in seconds before retrying Content Management Server communication
+   * (GlobalLinkAction.MIN_RETRY_DELAY_SECS <= value <= GlobalLinkAction.MAX_RETRY_DELAY_SECS).
+   * This value cannot be overwritten by the corresponding settings in the content repository.
+   */
+  private static final String CMS_RETRY_DELAY_SETTINGS_KEY = "cms-retry-delay";
 
+  /**
+   * Property for specification of delay in seconds before retrying GlobalLink communication
+   * (GlobalLinkAction.MIN_RETRY_DELAY_SECS <= value <= GlobalLinkAction.MAX_RETRY_DELAY_SECS).
+   * This is only a fallback for sub-classing actions that don't provide a unique retry delay by
+   * overwriting method {@link #getGCCRetryDelaySettingsKey()}.
+   */
+  private static final String DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY = "gcc-retry-delay";
 
   /**
    * Minimum delay between retrying communication with GlobalLink. Firing too many update requests on the external system
@@ -123,6 +155,18 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * Fallback delay between retrying communication with GlobalLink for illegal values.
    */
   private static final int FALLBACK_RETRY_COMMUNICATION_DELAY_SECS = 900;
+
+  private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = Set.of(
+          CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
+          CapErrorCodes.USER_REPOSITORY_UNAVAILABLE,
+          CapErrorCodes.REPOSITORY_NOT_AVAILABLE
+  );
+
+  private String skipVariable;
+  private String masterContentObjectsVariable;
+  private String remainingAutomaticRetriesVariable;
+  private String issuesVariable;
+  private String retryDelayTimerVariable;
 
   // --- construct and configure ----------------------------------------------------------------------
 
@@ -187,8 +231,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   /**
    * The name of the Timer variable that will be initialized with value from the corresponding Spring properties or content
    * setting.
+   *
    * @param retryDelayTimerVariable the name of the Timer variable
    */
+  @SuppressWarnings("unused") // set from workflow definition
   public void setRetryDelayTimerVariable(String retryDelayTimerVariable) {
     this.retryDelayTimerVariable = retryDelayTimerVariable;
   }
@@ -204,18 +250,18 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
 
     List<ContentObject> masterContentObjects = process.getLinksAndVersions(getMasterContentObjectsVariable());
-
-    if (retryDelayTimerVariable != null) {
-      Site masterSite = getMasterSite(masterContentObjects);
-      Map<String, Object> settings = getGccSettings(masterSite);
-      Integer delaySeconds = ensureRetryDelayConfig(settings, retryDelayTimerVariable);
-      process.set(retryDelayTimerVariable, new RelativeTimeLimit(delaySeconds));
-    }
-
     Integer i = process.getInteger(remainingAutomaticRetriesVariable);
     int remainingAutomaticRetries = i != null ? i : 0;
     P extendedParameters = doExtractParameters(task);
     return new Parameters<>(extendedParameters, masterContentObjects, remainingAutomaticRetries);
+  }
+
+  /**
+   * Returns the name of the setting to define the retry delay for GCC communication errors. Should be
+   * overwritten by subclassing actions.
+   */
+  protected String getGCCRetryDelaySettingsKey() {
+    return DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
   private static Integer ensureRetryDelayConfig(Map<String, Object> config, String key) {
@@ -249,8 +295,14 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     // maps error codes to affected contents; list of contents may be empty for some errors */
     Map<String, List<Content>> issues = new HashMap<>();
 
-    Site masterSite = getMasterSite(parameters.masterContentObjects);
+    int gccRetryDelaySeconds = FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
+    int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
     try {
+      Site masterSite = getMasterSite(parameters.masterContentObjects);
+      Map<String, Object> settings = getGccSettings(masterSite);
+      gccRetryDelaySeconds = ensureRetryDelayConfig(settings, getGCCRetryDelaySettingsKey());
+      maxAutomaticRetries = maxAutomaticRetries(masterSite);
+
       GCExchangeFacade gccSession = openSession(masterSite);
 
       // call subclass implementation and store the result as result.extendedResult
@@ -258,22 +310,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       doExecuteGlobalLinkAction(parameters.extendedParameters, resultConsumer, gccSession, issues);
 
     } catch (GCFacadeCommunicationException e) {
-      // automatically retry communication errors until configured maximum of retries has been reached
+      // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
-      //noinspection ConstantConditions - false positive; issues is not always empty, it can be modified by #doExecuteGlobalLinkAction
-      if (issues.isEmpty()) {
-        result.remainingAutomaticRetries = parameters.remainingAutomaticRetries > 0
-                ? parameters.remainingAutomaticRetries - 1
-                : maxAutomaticRetries(masterSite);
-      }
-      if (result.remainingAutomaticRetries > 0) {
-        LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s)", getName(),
-                GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries, e);
-      } else {
-        LOG.warn("{}: Failed to connect to GCC ({}).", getName(), GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, e);
-      }
-      issues.put(GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, Collections.emptyList());
-
+      return getResultForGCCConnectionError(e, result, issues, parameters, gccRetryDelaySeconds, maxAutomaticRetries);
     } catch (GCFacadeIOException e) {
       LOG.warn("{}: Local I/O error ({}).", getName(), GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, Collections.emptyList());
@@ -292,8 +331,14 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     } catch (GlobalLinkWorkflowException e) {
       LOG.warn("{}: " + e.getMessage() + "({})", getName(), e.getErrorCode(), e);
       issues.put(e.getErrorCode(), Collections.emptyList());
+    } catch (RuntimeException e) {
+      // automatically retry upon CMS connection errors
+      return getResultForCMSConnectionError(e, result);
     }
 
+    // set retry delay for continuation of non-completed GlobalLink task, e.g., download of translations that are
+    // still missing
+    result.retryDelaySeconds = gccRetryDelaySeconds;
     result.issues = issuesAsJsonBlob(issues);
     return result;
   }
@@ -314,6 +359,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     Process process = task.getContainingProcess();
     process.set(remainingAutomaticRetriesVariable, r.remainingAutomaticRetries);
+    // check for existence of variable to support backwards compatibility with old workflow definitions
+    if (retryDelayTimerVariable != null) {
+      process.set(retryDelayTimerVariable, new RelativeTimeLimit(r.retryDelaySeconds));
+    }
     process.set(issuesVariable, r.issues);
 
     Object resultValue = r.extendedResult
@@ -392,8 +441,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   // --- Helper methods for subclasses ----------------------------------------
 
   SitesService getSitesService() {
-    ApplicationContext springContext = getSpringContext();
-    return springContext.getBean(SitesService.class);
+    return getSpringContext().getBean(SitesService.class);
   }
 
   static long parseSubmissionId(String submissionId, String wfTaskId) {
@@ -404,7 +452,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       return Long.parseLong(submissionId);
     } catch (NumberFormatException e) {
       throw new GlobalLinkWorkflowException(GlobalLinkWorkflowErrorCodes.ILLEGAL_SUBMISSION_ID_ERROR, "GlobalLink submission id malformed. Long value expected",
-              (Object[]) new Object[]{wfTaskId, submissionId});
+              wfTaskId, submissionId);
     }
   }
 
@@ -443,43 +491,81 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   Map<String, Object> getGccSettings(Site site) {
-    Content siteIndicator = site.getSiteIndicator();
 
-    @SuppressWarnings("unchecked")
-    Map<String, Object> defaultSettings = new HashMap<String,Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
+    Map<String, Object> result = new HashMap<>();
 
-    Map<String, Object> siteIndicatorSettings = getGccSettings(siteIndicator);
-    if (!siteIndicatorSettings.isEmpty()) {
-      defaultSettings.putAll(siteIndicatorSettings);
-      return Collections.unmodifiableMap(defaultSettings);
+    Map<String, Object> defaultSettings = getGccSettingsFromProperties();
+    if (!defaultSettings.isEmpty()) {
+      LOG.debug("Applying default settings for GCC connection with keys \"{}\" from properties file.", defaultSettings.keySet());
+      result.putAll(defaultSettings);
     }
 
-    Content siteRootDocument = site.getSiteRootDocument();
-    Map<String, Object> rootDocumentSettings = getGccSettings(siteRootDocument);
-    if (!rootDocumentSettings.isEmpty()) {
-      defaultSettings.putAll(rootDocumentSettings);
-      return Collections.unmodifiableMap(defaultSettings);
+    // Global configuration
+    Map<String, Object> globalSettings = getGccConfigsFromLocation(site, GLOBAL_CONFIGURATION_PATH);
+    if (!globalSettings.isEmpty()) {
+      LOG.debug("Applying global settings for GCC connection with keys \"{}\".", globalSettings.keySet());
+      result.putAll(globalSettings);
     }
 
-    return defaultSettings;
+    // Site specific configuration overrides global configuration
+    Content siteRootFolder = site.getSiteRootFolder();
+    String sitePath = siteRootFolder.getPath() + SITE_CONFIGURATION_PATH;
+    Map<String, Object> siteSettings = getGccConfigsFromLocation(site, sitePath);
+    if (!siteSettings.isEmpty()) {
+      LOG.debug("Applying site settings for GCC Connection with keys \"{}\".", globalSettings.keySet());
+      result.putAll(siteSettings);
+    }
+
+    return Collections.unmodifiableMap(result);
   }
 
-  private static Map<String, Object> getGccSettings(Content content) {
-    Struct localSettings = getStruct(content, LOCAL_SETTINGS);
-    Struct struct = StructUtil.mergeStructList(
-            localSettings,
-            content.getLinks(LINKED_SETTINGS)
-                    .stream()
-                    .map(link -> getStruct(link, CMSETTINGS_SETTINGS))
-                    .collect(Collectors.toList())
-    );
+  @SuppressWarnings("unchecked")
+  Map<String, Object> getGccSettingsFromProperties() {
+    return new HashMap<String, Object>(getSpringContext().getBean("gccConfigurationProperties", Map.class));
+  }
+
+  private static Map<String, Object> getGccConfigsFromLocation(Site site, String location) {
+    Map<String, Object> result = new HashMap<>();
+    for (Content content : getSettingsInTranslationServicesFolder(site, location)) {
+      Map<String, Object> struct = getGccConfigFromSetting(content);
+      if (struct != null && !struct.isEmpty()) {
+        LOG.debug("Found GCC settings \"{}\" in \"{}\".", struct.keySet(), content.getPath());
+        result.putAll(struct);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Collect contents with configuration settings
+   * <p>
+   * Returns a CMSettings document itself or all direct CMSettings children
+   * of a folder or an empty list otherwise.
+   *
+   * @return a list of CMSettings contents
+   */
+  private static Collection<Content> getSettingsInTranslationServicesFolder(Site site, String location) {
+    Content root = site.getSiteIndicator().getRepository().getChild(location);
+    if (root == null) {
+      return Collections.emptyList();
+    } else if (root.isFolder()) {
+      return root.getChildrenWithType(CM_SETTINGS);
+    } else if (root.getType().isSubtypeOf(CM_SETTINGS)) {
+      return Collections.singletonList(root);
+    } else {
+      LOG.info("{} is of type {} and thus no suitable translation service connection configuration content", location, root.getType());
+      return Collections.emptyList();
+    }
+  }
+
+  private static Map<String, Object> getGccConfigFromSetting(Content content) {
+    Struct struct = getStruct(content, CMSETTINGS_SETTINGS);
     if (struct != null) {
       Object value = struct.get(GCConfigProperty.KEY_GLOBALLINK_ROOT);
       if (value instanceof Struct) {
         return ((Struct) value).toNestedMaps();
       }
     }
-
     return Collections.emptyMap();
   }
 
@@ -493,22 +579,90 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   GCExchangeFacade openSession(Site site) {
-    Map<String, Object> gccSettings = getGccSettings(site);
-    Map<String, Object> newSettings = new HashMap<>();
-    for (Map.Entry<String, Object> stringObjectEntry : gccSettings.entrySet()) {
-      if (stringObjectEntry.getKey().startsWith("bean:")
-              && (stringObjectEntry.getValue() instanceof String)
-              && getSpringContext().containsBean((String) stringObjectEntry.getValue())) {
-        newSettings.put(stringObjectEntry.getKey().substring("bean:".length()), getSpringContext().getBean((String) stringObjectEntry.getValue()));
-      } else {
-        newSettings.put(stringObjectEntry.getKey(), stringObjectEntry.getValue());
-      }
-    }
-    return defaultFactory().openSession(newSettings);
+    return defaultFactory().openSession(getGccSettings(site));
   }
 
+  /**
+   * Returns a {@link Result} object to trigger a retry in case of (temporary) CMS connection errors. Re-throws the
+   * given exception, if another error.
+   *
+   * @param exception the exception to handle.
+   * @param result    the execution result so far.
+   */
+  private Result<R> getResultForCMSConnectionError(@NonNull RuntimeException exception, Result<R> result) {
+    // if exception is not indicating a curable CMS connection error situation, re-throw it without configuring a retry
+    if (!isRepositoryUnavailableException(exception)) {
+      throw exception;
+    }
+    // get delay for retries on CMS connection error *just* from properties
+    Map<String, Object> properties = getGccSettingsFromProperties();
+    int cmsRetryDelaySeconds = ensureRetryDelayConfig(properties, CMS_RETRY_DELAY_SETTINGS_KEY);
+    LOG.info("{}: Failed to connect to CMS. Will retry after {} seconds.", getName(), cmsRetryDelaySeconds, exception);
+    result.remainingAutomaticRetries = Integer.MAX_VALUE;
+    result.retryDelaySeconds = cmsRetryDelaySeconds;
+    // issue type is irrelevant, it's just required to have *some* issue
+    Map<String, List<Content>> issues = new HashMap<>();
+    issues.put(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR, Collections.emptyList());
+    result.issues = issuesAsJsonBlob(issues);
+    return result;
+  }
+
+  @VisibleForTesting
+  static boolean isRepositoryUnavailableException(Exception exception) {
+    Throwable cause = exception;
+    while (cause != null) {
+      if (cause instanceof RepositoryNotAvailableException
+              || cause instanceof SystemException
+              || isCapExceptionWithMatchingErrorCode(cause)) {
+        return true;
+      }
+      cause = cause.getCause();
+    }
+    return false;
+  }
+
+  static boolean isCapExceptionWithMatchingErrorCode(Throwable throwable) {
+    return throwable instanceof CapException
+            && ((CapException) throwable).getErrorCode() != null
+            && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(((CapException) throwable).getErrorCode());
+  }
+
+  /**
+   * Returns a {@link Result} object to trigger a retry in case of GCC connection errors.
+   *
+   * @param exception            the GlobalLink exception to handle.
+   * @param result               the execution result so far.
+   * @param issues               issues in execution so far.
+   * @param parameters           action parameters.
+   * @param gccRetryDelaySeconds seconds to wait before retrying the GlobalLink action.
+   * @param maxAutomaticRetries  maximum number of retries for the current GlobalLink action.
+   */
+  private Result<R> getResultForGCCConnectionError(GCFacadeCommunicationException exception, Result<R> result,
+                                                   Map<String, List<Content>> issues, Parameters<P> parameters,
+                                                   int gccRetryDelaySeconds, int maxAutomaticRetries) {
+    if (issues.isEmpty()) {
+      boolean isInRetryLoop =
+              parameters.remainingAutomaticRetries > 0 && parameters.remainingAutomaticRetries != Integer.MAX_VALUE;
+      result.remainingAutomaticRetries = isInRetryLoop
+              ? parameters.remainingAutomaticRetries - 1
+              : maxAutomaticRetries;
+    }
+    if (result.remainingAutomaticRetries > 0) {
+      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} seconds delay.", getName(),
+              GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries,
+              gccRetryDelaySeconds, exception);
+    } else {
+      LOG.warn("{}: Failed to connect to GCC ({}).", getName(), GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, exception);
+    }
+    result.retryDelaySeconds = gccRetryDelaySeconds;
+    issues.put(GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, Collections.emptyList());
+    result.issues = issuesAsJsonBlob(issues);
+    return result;
+  }
+
+  @VisibleForTesting
   @Nullable
-  private Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+  Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
     if (issues.isEmpty()) {
       return null;
     }
@@ -536,7 +690,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
   }
 
-  private static class Parameters<P> {
+  @VisibleForTesting
+  static class Parameters<P> {
     final P extendedParameters;
     final Collection<ContentObject> masterContentObjects;
     final int remainingAutomaticRetries;
@@ -548,7 +703,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
   }
 
-  private static class Result<R> {
+  @VisibleForTesting
+  static class Result<R> {
     /**
      * holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
      */
@@ -562,5 +718,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
      * number of remaining automatic retries, if there are issues
      */
     int remainingAutomaticRetries;
+    /**
+     * seconds to delay before next retry
+     */
+    int retryDelaySeconds;
   }
 }
