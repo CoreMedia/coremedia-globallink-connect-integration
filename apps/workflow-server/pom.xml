@@ -17,6 +17,7 @@
     <module>gcc-workflow-server-facade/gcc-restclient-facade</module>
     <module>gcc-workflow-server-facade/gcc-restclient-facade-default</module>
     <module>gcc-workflow-server-facade/gcc-restclient-facade-disabled</module>
+    <module>gcc-workflow-server-facade/gcc-restclient-facade-internal</module>
     <module>gcc-workflow-server-facade/gcc-restclient-facade-mock</module>
     <module>gcc-workflow-server-util</module>
     <module>gcc-workflow-server</module>
