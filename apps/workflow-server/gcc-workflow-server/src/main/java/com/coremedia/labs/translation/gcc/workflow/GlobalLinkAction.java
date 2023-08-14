@@ -54,6 +54,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.coremedia.labs.translation.gcc.facade.DefaultGCExchangeFacadeSessionProvider.defaultFactory;
 import static java.util.Objects.requireNonNull;
@@ -579,7 +580,22 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   GCExchangeFacade openSession(Site site) {
-    return defaultFactory().openSession(getGccSettings(site));
+    // return defaultFactory().openSession(getGccSettings(site));
+    // SALESDEMO: Customize settings by adding required Spring beans
+    Map<String, Object> gccSettings = getGccSettings(site);
+    Map<String, Object> customizedSettings = gccSettings.entrySet().stream()
+            .map(entry -> {
+              Object entryValue = entry.getValue();
+              if (entryValue instanceof String && entry.getKey().startsWith("bean:")) {
+                String beanName = (String) entryValue;
+                if (getSpringContext().containsBean(beanName)) {
+                  return Map.entry(entry.getKey().substring("bean:".length()), getSpringContext().getBean(beanName));
+                }
+              }
+              return entry;
+            })
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return defaultFactory().openSession(customizedSettings);
   }
 
   /**
