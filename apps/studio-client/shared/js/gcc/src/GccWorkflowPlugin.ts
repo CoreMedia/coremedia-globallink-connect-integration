@@ -457,7 +457,7 @@ function getDefaultDueDate(): Calendar {
 
 function getDueDateFromSetting(setting:Content): Calendar {
   const gccConfig = setting.getProperties().get("settings") as StructRemoteBean;
-  if (RemoteBeanUtil.isAccessible(gccConfig)) {
+  if (RemoteBeanUtil.isAccessible(gccConfig) && gccConfig.get("globalLink")) {
     const dayOffsetForDueDate: number = as(gccConfig.get("globalLink"), Struct).get("dayOffsetForDueDate");
     if (dayOffsetForDueDate) {
       const dateInFutureInMillieSeconds: number = new Date().getTime() + (MILLISECONDS_FOR_ONE_DAY * dayOffsetForDueDate);
