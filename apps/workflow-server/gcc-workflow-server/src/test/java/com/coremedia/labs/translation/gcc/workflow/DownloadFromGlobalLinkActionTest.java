@@ -1,9 +1,7 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.cap.common.CapConnection;
-import com.coremedia.cap.common.CapSession;
 import com.coremedia.cap.common.IdHelper;
-import com.coremedia.cap.common.pool.CapSessionPool;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.content.Version;
@@ -45,7 +43,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static com.coremedia.cap.translate.xliff.XliffImportIssueSeverity.MAJOR;
