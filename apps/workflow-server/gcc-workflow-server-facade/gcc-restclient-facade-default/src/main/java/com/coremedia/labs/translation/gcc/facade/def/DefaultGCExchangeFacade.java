@@ -1,6 +1,17 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
-import com.coremedia.labs.translation.gcc.facade.*;
+import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
+import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
@@ -161,6 +172,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
     SubmissionSubmitRequest request = new SubmissionSubmitRequest(
             createSubmissionName(subject, sourceLocale, contentMap),
+            // REST API documents using UTC, Java REST Client API (v3.1.3)
+            // uses local time zone instead. This may cause an
+            // `IllegalArgumentException` if the due date is set to today with
+            // only some hours offset.
             GCUtil.toUnixDateUtc(dueDate),
             sourceLocale.toLanguageTag(),
             contentLocalesList

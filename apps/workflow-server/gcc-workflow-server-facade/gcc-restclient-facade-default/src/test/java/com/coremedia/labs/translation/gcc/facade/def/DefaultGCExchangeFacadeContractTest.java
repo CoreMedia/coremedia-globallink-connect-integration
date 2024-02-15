@@ -218,7 +218,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               testName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -268,6 +268,17 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
+  /**
+   * Get some due date for testing. Due to an issue within the GCC Java
+   * REST Client API (v3.1.3) ignoring UTC time-zone requirement, we should
+   * ensure, that the offset is not just some hours, but rather days.
+   *
+   * @return some due date for testing
+   */
+  private static ZonedDateTime getSomeDueDate() {
+    return ZonedDateTime.of(LocalDateTime.now().plusDays(2L), ZoneId.systemDefault());
+  }
+
   private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
     @Override
     public boolean test(InputStream inputStream, GCTaskModel task) {
@@ -288,7 +299,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               testName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -315,7 +326,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               submissionName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -334,7 +345,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               submissionName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -354,7 +365,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               submissionName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -408,7 +419,7 @@ class DefaultGCExchangeFacadeContractTest {
     long submissionId = facade.submitSubmission(
             testName,
             null,
-            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            getSomeDueDate(),
             null,
             "admin",
             masterLocale, contentMap);
