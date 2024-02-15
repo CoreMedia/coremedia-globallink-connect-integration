@@ -105,7 +105,7 @@ class SendToGlobalLinkActionTest {
 
     List<Content> derivedContents = singletonList(targetContent);
     String comment = "Test";
-    ZonedDateTime dueDate = ZonedDateTime.of(LocalDateTime.now().plusDays(30), ZoneId.systemDefault());
+    ZonedDateTime dueDate = ZonedDateTime.of(LocalDateTime.now().plusDays(30L), ZoneId.systemDefault());
     String workflow = "pseudo translation";
     SendToGlobalLinkAction.Parameters params = new SendToGlobalLinkAction.Parameters(displayName, comment, derivedContents, masterContents, dueDate, workflow, user);
     AtomicReference<String> resultHolder = new AtomicReference<>();

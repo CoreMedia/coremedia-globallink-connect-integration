@@ -155,7 +155,7 @@ class DefaultGCExchangeFacadeTest {
     when(gcExchange.uploadContent(any())).thenThrow(RuntimeException.class);
 
     GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-    assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{42}), null))
+    assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{(byte) 42}), null))
             .isInstanceOf(GCFacadeCommunicationException.class)
             .hasCauseInstanceOf(RuntimeException.class)
             .hasMessageContaining(expectedFileName);

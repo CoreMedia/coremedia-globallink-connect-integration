@@ -138,7 +138,7 @@ class DownloadFromGlobalLinkActionTest {
       consumer.test(inputStream, new GCTaskModel(1L, Locale.GERMANY));
       return true;
     }).when(gcExchangeFacade).downloadCompletedTasks(anyLong(), any());
-    Mockito.doReturn(new GCSubmissionModel(1, Collections.emptyList(), GCSubmissionState.DELIVERED)).when(gcExchangeFacade).getSubmission(anyLong());
+    Mockito.doReturn(new GCSubmissionModel(1L, Collections.emptyList(), GCSubmissionState.DELIVERED)).when(gcExchangeFacade).getSubmission(anyLong());
   }
 
   private static String readXliff(Version masterVersion, Content targetContent) throws IOException {

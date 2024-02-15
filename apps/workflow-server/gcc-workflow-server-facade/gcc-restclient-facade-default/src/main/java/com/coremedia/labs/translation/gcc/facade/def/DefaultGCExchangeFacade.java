@@ -552,7 +552,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       LOG.debug("Unable to find specified submission ID {}.", submissionId);
       return null;
     }
-    if (responseData.getTotalResultPagesCount() > 1) {
+    if (responseData.getTotalResultPagesCount() > 1L) {
       LOG.warn(
               "More than one submission ({}) returned for the same ID {}. Will choose the first one.",
               responseData.getTotalResultPagesCount(),

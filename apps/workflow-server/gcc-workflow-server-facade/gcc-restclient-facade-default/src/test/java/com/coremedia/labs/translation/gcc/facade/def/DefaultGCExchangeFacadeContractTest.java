@@ -90,8 +90,8 @@ class DefaultGCExchangeFacadeContractTest {
           "    </body>\n" +
           "  </file>\n" +
           "</xliff>\n";
-  private static final int TRANSLATION_TIMEOUT_MINUTES = 30;
-  private static final int SUBMISSION_VALID_TIMEOUT_MINUTES = 2;
+  private static final long TRANSLATION_TIMEOUT_MINUTES = 30L;
+  private static final long SUBMISSION_VALID_TIMEOUT_MINUTES = 2L;
 
   @Test
   @DisplayName("Validate that login works.")
@@ -229,8 +229,8 @@ class DefaultGCExchangeFacadeContractTest {
       // may be 'null' (which we internally map to "other").
       Awaitility.await("Wait for submission to be valid (has some well-known state).")
               .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
+              .pollDelay(1L, TimeUnit.SECONDS)
+              .pollInterval(10L, TimeUnit.SECONDS)
               .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
                       .isNotIn(
                               GCSubmissionState.OTHER,
@@ -245,15 +245,15 @@ class DefaultGCExchangeFacadeContractTest {
       delegate.cancelSubmission(submissionId);
 
       Awaitility.await("Wait until submission is marked as cancelled.")
-              .atMost(2, TimeUnit.MINUTES)
-              .pollDelay(5, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
+              .atMost(2L, TimeUnit.MINUTES)
+              .pollDelay(5L, TimeUnit.SECONDS)
+              .pollInterval(10L, TimeUnit.SECONDS)
               .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
 
       Awaitility.await("Wait until cancellation got confirmed for submission.")
-              .atMost(2, TimeUnit.MINUTES)
-              .pollDelay(10, TimeUnit.SECONDS)
-              .pollInterval(20, TimeUnit.SECONDS)
+              .atMost(2L, TimeUnit.MINUTES)
+              .pollDelay(10L, TimeUnit.SECONDS)
+              .pollInterval(20L, TimeUnit.SECONDS)
               .conditionEvaluationListener(condition -> {
                 try {
                   // Some tasks may have already reached completed state.
@@ -310,8 +310,8 @@ class DefaultGCExchangeFacadeContractTest {
       // may be 'null' (which we internally map to "other").
       Awaitility.await("Wait for submission to be valid (has some well-known state).")
               .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
+              .pollDelay(1L, TimeUnit.SECONDS)
+              .pollInterval(10L, TimeUnit.SECONDS)
               .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
     }
 
@@ -436,7 +436,7 @@ class DefaultGCExchangeFacadeContractTest {
             .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
 
     //After all tasks have been marked as delivered also the submission shall be marked as delivered.
-    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5);
+    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5L);
   }
 
   private static class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
@@ -497,11 +497,11 @@ class DefaultGCExchangeFacadeContractTest {
     return contentMapBuilder.build();
   }
 
-  private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState stateToReach, int timeout) {
+  private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState stateToReach, long timeout) {
     Awaitility.await("Wait for translation to complete.")
             .atMost(timeout, TimeUnit.MINUTES)
-            .pollDelay(1, TimeUnit.MINUTES)
-            .pollInterval(1, TimeUnit.MINUTES)
+            .pollDelay(1L, TimeUnit.MINUTES)
+            .pollInterval(1L, TimeUnit.MINUTES)
             .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
             .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(stateToReach));
   }
