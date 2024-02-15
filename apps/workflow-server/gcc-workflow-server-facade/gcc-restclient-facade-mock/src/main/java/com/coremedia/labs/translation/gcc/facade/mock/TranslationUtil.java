@@ -167,8 +167,7 @@ final class TranslationUtil {
     NodeList elementsByTagName = doc.getElementsByTagName("trans-unit");
     for (int i = 0; i < elementsByTagName.getLength(); i++) {
       Node transUnitNode = elementsByTagName.item(i);
-      if (transUnitNode instanceof Element) {
-        Element transUnitElement = (Element) transUnitNode;
+      if (transUnitNode instanceof Element transUnitElement) {
         Node targetNode = transUnitElement.getElementsByTagName("target").item(0);
         if (targetNode != null) {
           String targetContent = targetNode.getTextContent();
