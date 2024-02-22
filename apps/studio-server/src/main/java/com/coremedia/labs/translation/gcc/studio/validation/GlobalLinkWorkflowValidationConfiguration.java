@@ -8,8 +8,8 @@ import com.coremedia.rest.cap.workflow.validation.model.WorkflowStartValidators;
 import com.coremedia.rest.cap.workflow.validation.model.WorkflowTaskValidators;
 import com.coremedia.rest.cap.workflow.validation.model.WorkflowValidatorsModel;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import static com.coremedia.rest.cap.workflow.validation.configuration.Translati
 import static com.coremedia.rest.cap.workflow.validation.configuration.TranslationWorkflowValidationConfiguration.TRANSLATION_WFNOT_RUNNING;
 import static com.coremedia.rest.cap.workflow.validation.configuration.TranslationWorkflowValidationConfiguration.TRANSLATION_WFRUNNING;
 
-@Configuration
+@AutoConfiguration
 @Import(TranslationWorkflowValidationConfiguration.class)
 public class GlobalLinkWorkflowValidationConfiguration {
 

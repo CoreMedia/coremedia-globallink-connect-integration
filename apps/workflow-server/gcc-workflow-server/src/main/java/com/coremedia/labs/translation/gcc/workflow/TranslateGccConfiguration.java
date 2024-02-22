@@ -7,16 +7,16 @@ import com.coremedia.translate.workflow.DefaultTranslationWorkflowDerivedContent
 import com.coremedia.translate.workflow.TranslationWorkflowDerivedContentsStrategy;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Configuration
+@AutoConfiguration
 @Import({
         XliffImporterConfiguration.class,
         XliffExporterConfiguration.class,
