@@ -120,7 +120,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final MimeType MIME_TYPE_JSON = mimeType("application/json");
   private static final Gson contentObjectReturnsIdGson = new GsonBuilder()
           .enableComplexMapKeySerialization()
-          .registerTypeAdapter(Content.class, new ContentObjectSerializer())
+          .registerTypeHierarchyAdapter(Content.class, new ContentObjectSerializer())
           .create();
 
   /**
