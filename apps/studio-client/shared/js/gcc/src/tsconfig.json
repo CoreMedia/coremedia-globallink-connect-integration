@@ -5,7 +5,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "../dist/src",
-    "moduleResolution": "nodenext",
     "types": [
       "@coremedia/studio-client.client-core",
       "@jangaroo/ext-ts"
