@@ -4,9 +4,19 @@ Changelog
 CoreMedia v12.2401
 --------------------------------------------------------------------------------
 
+### General Notes
+
+In contrast to common practice, the Globallink Extension will not work with the
+first CoreMedia Content Cloud Release v12.2401.1. It requires v12.2401.3 that
+also comes, for example. with TypeScript 5 update for Studio Client.
+
 ### Main Changes
 
-* Updated dependencies to CoreMedia Content Cloud v12.2401.1.
+* Updated dependencies to CoreMedia Content Cloud v12.2401.3.
+
+### Bug Fixes
+
+* #61 Error handling in GlobalLink translation workflow breaks
 
 2310-1
 --------------------------------------------------------------------------------
