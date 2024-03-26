@@ -44,41 +44,45 @@ home folder
     1. _type_ is set to “default”
     2. _dayOffsetForDueDate_ is set to 20
     3. Credentials for gcc are entered (**automatic** workflow key)
-3. Choose an article and drag it into Control Room's “Localization Workflows”
+3. Create an article A and remove validation issues.
+4. Create an article B and remove validation issues.
+5. Link article B to article A.
+6. Drag article B into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
     2. There should be no warnings or errors
     3. Field _Due Date_ should be set to the current date/time plus 20 days
-4. Click “Start”
+    4. Article B should be added as dependent content.
+7. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
        Room's' “Localization Workflows”
-5. Double-Click the workflow
+8. Double-Click the workflow
     1. A sidebar with workflow information should open
-6. Click "Open workflow details"
+9. Click "Open workflow details"
     1. A new tab with the _Workflow App_'s detail view for the workflow should
        open
     2. After some time, _Status_, _Submission ID_, and _Due Date_ should be
        shown
     3. As long as the workflow is in "Running", field “Completed Locales”
        should display “0 Locales”
-7. Click "Go to overview" and wait for the workflow to be finished
-    1. The workflow should disappear from the "Running" workflows and appear on
-       the “Open” list.
-    2. The workflow should now also be shown in the "Open" workflows of Control
-       Room's “Localization Workflows”.
-8. Double-click the workflow in _Workflow App_'s “Open” list
-    1. The “Status” field should display “Delivered”
-    2. The “Completed Locales” field should display the target locales of
-       the workflow
-    3. When clicking on the translated content, it should open in language
-       comparison view
-       in _Studio_
-    4. The text should be pseudo-translated
-9. In the _Workflow App_, click “Accept Task”, "Next Step", “Finish Content
-   Localization”, and "Yes, continue"
-    1. The workflow should disappear from “Open”
-    2. The workflow should appear in “Closed”
+10. Click "Go to overview" and wait for the workflow to be finished
+     1. The workflow should disappear from the "Running" workflows and appear on
+        the “Open” list.
+     2. The workflow should now also be shown in the "Open" workflows of Control
+        Room's “Localization Workflows”.
+11. Double-click the workflow in _Workflow App_'s “Open” list
+     1. The “Status” field should display “Delivered”
+     2. The “Completed Locales” field should display the target locales of
+        the workflow
+     3. When clicking on the translated content, it should open in language
+        comparison view
+        in _Studio_
+     4. The text should be pseudo-translated
+12. In the _Workflow App_, click “Accept Task”, "Next Step", “Finish Content
+    Localization”, and "Yes, continue"
+     1. The workflow should disappear from “Open”
+     2. The workflow should appear in “Closed”
 
 ## Scenario: Cancelation Failure Handling
 
