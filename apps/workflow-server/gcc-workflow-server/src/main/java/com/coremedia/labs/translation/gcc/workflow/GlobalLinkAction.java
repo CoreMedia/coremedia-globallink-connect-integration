@@ -673,7 +673,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return getConnection().getBlobService().fromBytes(bytes, MIME_TYPE_JSON);
   }
 
-  private static String issuesAsJsonString(Map<Severity, Map<String, List<Content>>> issues) {
+  @NonNull
+  @VisibleForTesting
+  static String issuesAsJsonString(Map<Severity, Map<String, List<Content>>> issues) {
     Type typeToken = new TypeToken<Map<Severity, Map<XliffImportResultCode, List<Content>>>>() {
     }.getType();
     return contentObjectReturnsIdGson.toJson(issues, typeToken);
