@@ -495,7 +495,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
     return GCSubmissionModel.builder(submissionId)
             .pdSubmissionIds(submission.getPdSubmissionIds().keySet())
-            .state(state).build();
+            .state(state)
+            .submitter(submission.getSubmitter())
+            .build();
   }
 
   /**
