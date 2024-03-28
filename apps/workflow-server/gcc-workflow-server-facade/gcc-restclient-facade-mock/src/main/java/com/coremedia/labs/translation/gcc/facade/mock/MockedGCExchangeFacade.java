@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -157,7 +156,10 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public GCSubmissionModel getSubmission(long submissionId) {
-    return new GCSubmissionModel(submissionId, Collections.singletonList(Long.toString(submissionId)), submissionStore.getSubmissionState(submissionId));
+    return GCSubmissionModel.builder(submissionId)
+            .pdSubmissionIds(List.of(Long.toString(submissionId)))
+            .state(submissionStore.getSubmissionState(submissionId))
+            .build();
   }
 
 }

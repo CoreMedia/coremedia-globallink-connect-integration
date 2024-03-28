@@ -471,7 +471,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     GCSubmission submission = getSubmissionById(submissionId);
     if (submission == null) {
       LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
-      return new GCSubmissionModel(submissionId, Collections.emptyList());
+      return GCSubmissionModel.builder(submissionId).build();
     }
     GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
     // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation
@@ -493,7 +493,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         state = GCSubmissionState.CANCELLED;
       }
     }
-    return new GCSubmissionModel(submissionId, new ArrayList<>(submission.getPdSubmissionIds().keySet()), state);
+    return GCSubmissionModel.builder(submissionId)
+            .pdSubmissionIds(submission.getPdSubmissionIds().keySet())
+            .state(state).build();
   }
 
   /**
