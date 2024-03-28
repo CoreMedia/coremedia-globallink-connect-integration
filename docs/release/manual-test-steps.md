@@ -174,14 +174,11 @@ home folder
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
        Room's “Localization Workflows”
-5. Log in to the GlobalLink Management Dashboard
+5. Log in to the **GlobalLink Management Dashboard** (not Project Director,
+   as the PD, for example, does not display the "submitter" as set in request)
+
     1. The submitter and the instructions added to field _Notes_ are visible
        in the submission's detail view.
-
-       **About Instructions:** You will see them as checkmark in the "Submission
-       Instructions" column. Just click on the checkmark. Alternative to this:
-       Go to "submit/edit submission" and click on
-       "Edit Instructions/Background".
 6. Switch back to Studio or _Workflow App_ and cancel the workflow in the
    "Running" list.
 
