@@ -72,6 +72,8 @@ home folder
        the “Open” list.
     2. The workflow should now also be shown in the "Open" workflows of Control
        Room's “Localization Workflows”.
+    3. You should receive a notification, that the workflow is now available
+       in your inbox.
 11. Double-click the workflow in _Workflow App_'s “Open” list
     1. The “Status” field should display “Delivered”
     2. The “Completed Locales” field should display the target locales of
