@@ -176,7 +176,12 @@ home folder
        Room's “Localization Workflows”
 5. Log in to the GlobalLink Management Dashboard
     1. The submitter and the instructions added to field _Notes_ are visible
-       in the submission's detail view
+       in the submission's detail view.
+
+       **About Instructions:** You will see them as checkmark in the "Submission
+       Instructions" column. Just click on the checkmark. Alternative to this:
+       Go to "submit/edit submission" and click on
+       "Edit Instructions/Background".
 6. Switch back to Studio or _Workflow App_ and cancel the workflow in the
    "Running" list.
 
