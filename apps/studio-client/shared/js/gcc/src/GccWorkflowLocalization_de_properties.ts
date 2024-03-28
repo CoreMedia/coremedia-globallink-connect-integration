@@ -22,6 +22,7 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
   TranslationGlobalLink_state_rollbackTranslation_displayName: "Beeenden und Änderungen verwerfen",
   TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: "Änderungen verwerfen ohne Abbruch des GlobalLink-Auftrags",
   TranslationGlobalLink_state_finishTranslation_displayName: "Lokalisierung abschließen",
+  TranslationGlobalLink_state_CancelTranslation_displayName: "Warten auf Abbruch-Verarbeitung",
   TranslationGlobalLink_state_DownloadTranslation_displayName: "Warten auf Übersetzung",
   TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: "Übersetzung prüfen",
   TranslationGlobalLink_state_ReviewCancelledTranslation_displayName: "Abbruch prüfen",
