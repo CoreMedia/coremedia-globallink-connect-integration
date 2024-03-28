@@ -12,14 +12,14 @@ public class GCSubmissionModel {
   private final GCSubmissionState state;
 
   /**
-   * Create a submission that does not have a state yet. This state is reflected by {@link GCSubmissionState#OTHER}.
-   * @param submissionId the internal id used by the API
+   * Create a submission that does not have a state yet.
+   * This state is reflected by {@link GCSubmissionState#OTHER}.
+   *
+   * @param submissionId    the internal id used by the API
    * @param pdSubmissionIds the ids shown to editors
    */
   public GCSubmissionModel(long submissionId, List<String> pdSubmissionIds) {
-    this.submissionId = submissionId;
-    this.pdSubmissionIds = pdSubmissionIds;
-    this.state = GCSubmissionState.OTHER;
+    this(submissionId, pdSubmissionIds, GCSubmissionState.OTHER);
   }
 
   public GCSubmissionModel(long submissionId, List<String> pdSubmissionIds, GCSubmissionState state) {
@@ -49,13 +49,12 @@ public class GCSubmissionModel {
       return false;
     }
     GCSubmissionModel that = (GCSubmissionModel) o;
-    return submissionId == that.submissionId &&
-            Objects.equals(state, that.state);
+    return submissionId == that.submissionId && Objects.equals(pdSubmissionIds, that.pdSubmissionIds) && state == that.state;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(submissionId, state);
+    return Objects.hash(submissionId, pdSubmissionIds, state);
   }
 
   @Override
