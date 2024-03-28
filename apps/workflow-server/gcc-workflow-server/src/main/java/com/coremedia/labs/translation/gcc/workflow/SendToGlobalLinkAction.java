@@ -105,7 +105,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   /**
    * Sets the variable to read the performer of the translation workflow from.
-   * This will be used to add the name of the submitter to the translation submission (if enabled=.
+   * This will be used to add the name of the submitter to the translation submission (if enabled).
    *
    * @param performerVariable performer variable name
    */
