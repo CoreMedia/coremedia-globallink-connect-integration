@@ -84,7 +84,7 @@ home folder
      1. The workflow should disappear from “Open”
      2. The workflow should appear in “Closed”
 
-## Scenario: Cancelation Failure Handling
+## Scenario: Cancellation Failure Handling
 
 1. Log in as Rick C.
 2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
