@@ -10,9 +10,10 @@
 
 1. [Contract Test](#scenario-contract-test)
 2. [Happy Path](#scenario-happy-path)
-3. [Cancellation](#scenario-cancellation)
-4. [Error Handling](#scenario-error-handling)
-5. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
+3. [Submitter and Instructions](#scenario-submitter-and-instructions)
+4. [Cancellation](#scenario-cancelation)
+5. [Error Handling](#scenario-error-handling)
+6. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
 
 ## Prepare
 
@@ -87,7 +88,85 @@ home folder
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
 
-## Scenario: Cancelation Failure Handling
+## Scenario: Submitter and Instructions
+
+1. Log in as Rick C.
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+    1. _type_ is set to “default”
+    2. Credentials for gcc are entered (**manual** workflow key)
+    3. Boolean property _isSendSubmitter_ is activated
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
+    2. Add a text to field _Notes_
+4. Click “Start”
+    1. The dialog should close without any error
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's “Localization Workflows”
+5. Log in to the **GlobalLink Management Dashboard** (not Project Director,
+   as the PD, for example, does not display the "submitter" as set in request)
+
+    1. The submitter and the instructions added to field _Notes_ are visible
+       in the submission's detail view.
+6. Switch back to Studio or _Workflow App_ and cancel the workflow in the
+   "Running" list.
+
+## Scenario: Cancelation
+
+## Cancelation in Studio
+
+1. Log in as Rick C.
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+    1. _type_ is set to “default”
+    2. Credentials for gcc are entered (**manual** workflow key)
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
+    2. There should be no warnings or errors
+4. Click “Start”
+    1. The dialog should close without any error
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Select the workflow and click "X"
+    1. A dialog should pop
+6. Confirm the dialog
+    1. The dialog should close
+7. Go to the _Workflow App_'s overview
+    1. After a while, the workflow should appear in Rick's "Closed" workflows
+8. Double-click the canceled workflow
+    1. Field “Status” should display “Canceled”
+    2. The icon should mark the workflow as canceled (little “x” on the
+       bottom right)
+
+## Cancelation in GlobalLink
+
+1. Log in as Rick C.
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+    1. _type_ is set to “default”
+    2. Credentials for gcc are entered (**manual** workflow key)
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+    1. A window _Localization Workflow_ should pop up
+    2. There should be no warnings or errors
+4. Click “Start”
+    1. The dialog should close without any error
+    2. A new workflow process should pop up in the "Running" area of Control
+       Room's' “Localization Workflows”
+5. Log in to the _GlobalLink Management Dashboard_ and cancel the workflow
+6. Go back to the _Workflow App_
+    1. After a while, the workflow should appear in Rick's "Open" workflows
+    2. When accepting the task, Rick can only choose to abort and rollback the
+       previous changes and accept the cancelation
+    3. Choose "Abort and rollback changes"
+7. Open the "Closed" area and double-click the canceled workflow
+    1. Field “Status” should display “Canceled”
+    2. The icon should mark the workflow as canceled (little “x” on the
+       bottom right)
+
+### Cancelation Failure Handling
 
 1. Log in as **Rick C**. Required to use Rick C here, as Adam, for example, will
    not be able to do the multi-selection test, as local translations will appear
@@ -158,82 +237,6 @@ home folder
         3. The icon should mark the workflow as canceled (little “x” on the
            bottom right)
 
-## Scenario: Submitter and Instructions
-
-1. Log in as Rick C.
-2. Open the GlobalLink
-   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
-    1. _type_ is set to “default”
-    2. Credentials for gcc are entered (**manual** workflow key)
-    3. Boolean property _isSendSubmitter_ is activated
-3. Choose an article and drag it into Control Room's “Localization Workflows”
-   drop area
-    1. A window _Localization Workflow_ should pop up
-    2. Add a text to field _Notes_
-4. Click “Start”
-    1. The dialog should close without any error
-    2. A new workflow process should pop up in the "Running" area of Control
-       Room's “Localization Workflows”
-5. Log in to the **GlobalLink Management Dashboard** (not Project Director,
-   as the PD, for example, does not display the "submitter" as set in request)
-
-    1. The submitter and the instructions added to field _Notes_ are visible
-       in the submission's detail view.
-6. Switch back to Studio or _Workflow App_ and cancel the workflow in the
-   "Running" list.
-
-## Scenario: Cancelation in Studio
-
-1. Log in as Rick C.
-2. Open the GlobalLink
-   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
-    1. _type_ is set to “default”
-    2. Credentials for gcc are entered (**manual** workflow key)
-3. Choose an article and drag it into Control Room's “Localization Workflows”
-   drop area
-    1. A window _Localization Workflow_ should pop up
-    2. There should be no warnings or errors
-4. Click “Start”
-    1. The dialog should close without any error
-    2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
-5. Select the workflow and click "X"
-    1. A dialog should pop
-6. Confirm the dialog
-    1. The dialog should close
-7. Go to the _Workflow App_'s overview
-    1. After a while, the workflow should appear in Rick's "Closed" workflows
-8. Double-click the canceled workflow
-    1. Field “Status” should display “Canceled”
-    3. The icon should mark the workflow as canceled (little “x” on the
-       bottom right)
-
-## Scenario: Cancelation in GlobalLink
-
-1. Log in as Rick C.
-2. Open the GlobalLink
-   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
-    1. _type_ is set to “default”
-    2. Credentials for gcc are entered (**manual** workflow key)
-3. Choose an article and drag it into Control Room's “Localization Workflows”
-   drop area
-    1. A window _Localization Workflow_ should pop up
-    2. There should be no warnings or errors
-4. Click “Start”
-    1. The dialog should close without any error
-    2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
-5. Log in to the _GlobalLink Management Dashboard_ and cancel the workflow
-6. Go back to the _Workflow App_
-    1. After a while, the workflow should appear in Rick's "Open" workflows
-    2. When accepting the task, Rick can only choose to abort and rollback the
-       previous changes and accept the cancelation
-    3. Choose "Abort and rollback changes"
-7. Open the "Closed" area and double-click the canceled workflow
-    1. Field “Status” should display “Canceled”
-    2. The icon should mark the workflow as canceled (little “x” on the
-       bottom right)
-
 ## Scenario: Error Handling
 
 1. Log in as Rick C.
@@ -275,7 +278,7 @@ home folder
 12. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
     1. The icon should be a warning sign
     2. Column "Status" should show “Cancelation Error”
-13. Double-click the workfow and click "Accept Task" and "Next Step"
+13. Double-click the workflow and click "Accept Task" and "Next Step"
     1. You have the ability to “Abort and rollback without canceling at
        GlobalLink.”, "Retry cancelation", or “Continue Translation”
 14. Set _apiKey_ in GlobalLink settings to its valid value and click "Continue
