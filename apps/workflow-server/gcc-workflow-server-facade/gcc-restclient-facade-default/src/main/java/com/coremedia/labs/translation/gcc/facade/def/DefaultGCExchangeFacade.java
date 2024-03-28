@@ -1,6 +1,17 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
-import com.coremedia.labs.translation.gcc.facade.*;
+import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
+import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
@@ -161,6 +172,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
     SubmissionSubmitRequest request = new SubmissionSubmitRequest(
             createSubmissionName(subject, sourceLocale, contentMap),
+            // REST API documents using UTC, Java REST Client API (v3.1.3)
+            // uses local time zone instead. This may cause an
+            // `IllegalArgumentException` if the due date is set to today with
+            // only some hours offset.
             GCUtil.toUnixDateUtc(dueDate),
             sourceLocale.toLanguageTag(),
             contentLocalesList
@@ -456,7 +471,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     GCSubmission submission = getSubmissionById(submissionId);
     if (submission == null) {
       LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
-      return new GCSubmissionModel(submissionId, Collections.emptyList());
+      return GCSubmissionModel.builder(submissionId).build();
     }
     GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
     // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation
@@ -478,7 +493,11 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         state = GCSubmissionState.CANCELLED;
       }
     }
-    return new GCSubmissionModel(submissionId, new ArrayList<>(submission.getPdSubmissionIds().keySet()), state);
+    return GCSubmissionModel.builder(submissionId)
+            .pdSubmissionIds(submission.getPdSubmissionIds().keySet())
+            .state(state)
+            .submitter(submission.getSubmitter())
+            .build();
   }
 
   /**
@@ -537,7 +556,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       LOG.debug("Unable to find specified submission ID {}.", submissionId);
       return null;
     }
-    if (responseData.getTotalResultPagesCount() > 1) {
+    if (responseData.getTotalResultPagesCount() > 1L) {
       LOG.warn(
               "More than one submission ({}) returned for the same ID {}. Will choose the first one.",
               responseData.getTotalResultPagesCount(),

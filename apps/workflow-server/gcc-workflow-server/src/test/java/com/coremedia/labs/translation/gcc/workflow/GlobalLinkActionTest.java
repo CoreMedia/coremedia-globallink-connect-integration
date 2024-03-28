@@ -5,6 +5,7 @@ import com.coremedia.cap.common.Blob;
 import com.coremedia.cap.common.CapException;
 import com.coremedia.cap.common.RepositoryNotAvailableException;
 import com.coremedia.cap.content.Content;
+import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.errorcodes.CapErrorCodes;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
@@ -12,6 +13,7 @@ import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
+import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.AfterEach;
@@ -117,6 +119,34 @@ class GlobalLinkActionTest {
     assertThat(result.issues).isEqualTo(CMS_ISSUES_BLOB);
     assertThat(result.remainingAutomaticRetries).isEqualTo(Integer.MAX_VALUE);
     assertThat(result.retryDelaySeconds).isEqualTo(60);
+  }
+
+  @Test
+  void testCheckedOutByOtherIssueSerialization(@Autowired ContentRepository repository) {
+    Content someContent = repository.createContentBuilder()
+            .name("Some Content")
+            .type("SimpleEmpty")
+            .nameTemplate()
+            .create();
+    Map<Severity, Map<String, List<Content>>> issues = Map.of(
+            Severity.ERROR,
+            Map.of(
+                    CapErrorCodes.CHECKED_OUT_BY_OTHER,
+                    List.of(someContent)
+            )
+    );
+    // Failed with JsonIOException as described in CoreMedia/coremedia-globallink-connect-integration#61
+    // on inappropriate type adapter registration. Requires `registerTypeHierarchyAdapter` for content items rather
+    // than `registerTypeAdapter`.
+    String actual = GlobalLinkAction.issuesAsJsonString(issues);
+    assertThat(actual)
+            .isEqualTo(
+                    "{\"%s\":{\"%s\":[\"%s\"]}}".formatted(
+                            Severity.ERROR,
+                            CapErrorCodes.CHECKED_OUT_BY_OTHER,
+                            someContent.getId()
+                    )
+            );
   }
 
   @Test

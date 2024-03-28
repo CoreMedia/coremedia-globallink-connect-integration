@@ -26,6 +26,7 @@ $ git commit --all --message="Update CMCC 1910.1"
 $ git push origin develop 
 $ git checkout --track "origin/ci/develop"
 $ git rebase "origin/develop"
+# ... resolve possible conflicts ...
 $ git push origin "ci/develop" --force-with-lease
 
 ### It is recommended to leave "ci/develop" immediately, as no other commits

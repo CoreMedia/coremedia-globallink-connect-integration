@@ -13,7 +13,6 @@ import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -85,7 +84,7 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public GCSubmissionModel getSubmission(long submissionId) {
-    return new GCSubmissionModel(submissionId, Collections.emptyList());
+    return GCSubmissionModel.builder(submissionId).build();
   }
 
   private static GCFacadeException createDisabledException() {

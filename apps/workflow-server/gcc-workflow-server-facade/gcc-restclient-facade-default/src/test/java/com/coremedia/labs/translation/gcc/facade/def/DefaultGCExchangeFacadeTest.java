@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -108,7 +110,7 @@ class DefaultGCExchangeFacadeTest {
     void happyPath(TestInfo testInfo) {
       String expectedFileId = "1234-5678";
       String expectedFileName = testInfo.getDisplayName();
-      byte[] expectedContent = {42};
+      byte[] expectedContent = {(byte) 42};
       Locale expectedSourceLocale = Locale.US;
 
       ArgumentCaptor<UploadFileRequest> uploadFileRequestCaptor = ArgumentCaptor.forClass(UploadFileRequest.class);
@@ -153,7 +155,7 @@ class DefaultGCExchangeFacadeTest {
     when(gcExchange.uploadContent(any())).thenThrow(RuntimeException.class);
 
     GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-    assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{42}), null))
+    assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{(byte) 42}), null))
             .isInstanceOf(GCFacadeCommunicationException.class)
             .hasCauseInstanceOf(RuntimeException.class)
             .hasMessageContaining(expectedFileName);
@@ -165,12 +167,33 @@ class DefaultGCExchangeFacadeTest {
     @Mock
     private SubmissionSubmit.SubmissionSubmitResponseData response;
 
-    @Test
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+            zoneId
+            America/Chicago
+            CET
+            EET
+            Europe/Berlin
+            Europe/London
+            GMT
+            MET
+            Portugal
+            Universal
+            UTC
+            """)
     @DisplayName("Test for successful submission.")
-    void happyPath(TestInfo testInfo) {
+    void happyPath(ZoneId zoneId, TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
       String comment = "Test";
-      LocalDateTime dueDateLocal = LocalDateTime.now().plusHours(2);
+      // Due to an issue within the GCC REST Java Client API not respecting
+      // UTC Time Zone in argument checks, we require adding an offset that
+      // does not struggle with different time zones. Thus, just an offset
+      // of some hours may raise an `IllegalArgumentException` in REST
+      // Client API.
+      //
+      // The check fails in SubmissionSubmitRequest comparing with local
+      // time zone instead of required UTC: dueDate.compareTo(new Date())
+      LocalDateTime dueDateLocal = LocalDateTime.now(zoneId).plusDays(2L);
       ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3);
       ZonedDateTime dueDate = ZonedDateTime.of(dueDateLocal, zoneOffset);
       String workflow = "pseudo translation";
@@ -200,12 +223,29 @@ class DefaultGCExchangeFacadeTest {
       assertions.assertAll();
     }
 
-    @Test
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+            zoneId
+            America/Chicago
+            CET
+            EET
+            Europe/Berlin
+            Europe/London
+            GMT
+            MET
+            Portugal
+            Universal
+            UTC
+            """)
     @DisplayName("Correctly deal with communication errors.")
-    void dealWithCommunicationExceptions(TestInfo testInfo) {
+    void dealWithCommunicationExceptions(ZoneId zoneId, TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
       String comment = "Test";
-      LocalDateTime dueDateLocal = LocalDateTime.now().plusHours(2);
+      // Provide relevant offset (more than one day), so that we do not struggle
+      // with issue in SubmissionSubmitRequest having an issue in v3.1.3
+      // regarding upfront due date validation (ignores UTC requirement of
+      // server).
+      LocalDateTime dueDateLocal = LocalDateTime.now(zoneId).plusDays(2L);
       ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3);
       ZonedDateTime dueDate = ZonedDateTime.of(dueDateLocal, zoneOffset);
       String workflow = "pseudo translation";

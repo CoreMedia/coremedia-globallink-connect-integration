@@ -14,7 +14,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <meta name="keywords" content="edl, legal, license"/>
     <link rel="shortcut icon" href="/eclipse.org-common/themes/solstice/public/images/favicon.ico"/>
     <title>Eclipse Distribution License | The Eclipse Foundation</title>
-    <link rel="preconnect stylesheet" href="/eclipse.org-common/themes/solstice/public/stylesheets/astro.min.css?v0.0.211"/>
+    <link rel="preconnect stylesheet" href="/eclipse.org-common/themes/solstice/public/stylesheets/astro.min.css?v0.0.248"/>
 <meta name="description" content="The Eclipse Foundation - home to a global community, the Eclipse IDE, Jakarta EE and over 415 open source projects, including runtimes, tools and frameworks."/>
 <meta property="og:description" content="The Eclipse Foundation - home to a global community, the Eclipse IDE, Jakarta EE and over 415 open source projects, including runtimes, tools and frameworks."/>
 <meta property="og:image" content="https://www.eclipse.org/eclipse.org-common/themes/solstice/public/images/logo/eclipse-foundation-200x200.png"/>
@@ -31,14 +31,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="twitter:description" content="The Eclipse Foundation - home to a global community, the Eclipse IDE, Jakarta EE and over 415 open source projects, including runtimes, tools and frameworks."/>
 <meta name="twitter:image" content="https://www.eclipse.org/eclipse.org-common/themes/solstice/public/images/logo/eclipse-foundation-400x400.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="preconnect stylesheet" type="text/css"/>
-    <script> var eclipse_org_common = {"settings":{"cookies_class":{"name":"eclipse_settings","enabled":1}}}</script>    <style>
-      /* @todo: Remove this hotfix after community testing */
-      .featured-jumbotron.featured-jumbotron-astro h1.featured-jumbotron-headline {
-        font-size: 4rem;
-        letter-spacing: normal;
-      }
-    </style>
-  </head>
+    <script> var eclipse_org_common = {"settings":{"cookies_class":{"name":"eclipse_settings","enabled":1}}}</script>  </head>
   <body id="body_solstice">
     <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5WLCZXC"
@@ -138,8 +131,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>          </ul>
         </nav>
         <div class="header-navbar-end">
-          <a class="header-navbar-end-download-btn btn btn-primary" href="https://www.eclipse.org/downloads">Download</a>
-          <button class="mobile-menu-btn">
+          <div class="float-right hidden-xs" id="btn-call-for-action"><a href="/downloads/" class="btn btn-primary">Download</a></div>          <button class="mobile-menu-btn">
           <i class="fa fa-bars fa-xl"></i>
           </button>
         </div>
@@ -241,8 +233,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </li>
                     <li>
                       <a class="mobile-menu-item"
-                        href="https://membership.eclipse.org/application">Membership
+                      href="https://www.eclipse.org/membership/#tab-membership">Membership
                       Application</a>
+                    </li>
+                    <li>
+                      <a class="mobile-menu-item"
+                      href="https://www.eclipse.org/membership/#tab-resources">Member Resources</a>
                     </li>
                     <li>
                       <a class="mobile-menu-item"
@@ -391,9 +387,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                       <a class="mobile-menu-item" href="https://www.eclipse.org/forums/">Forum</a>
                     </li>
                     <li>
-                      <a class="mobile-menu-item" href="https://wiki.eclipse.org/">Wiki</a>
-                    </li>
-                    <li>
                       <a class="mobile-menu-item" href="https://accounts.eclipse.org/mailing-list">Mailing Lists</a>
                     </li>
                     <li>
@@ -459,7 +452,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                       <a class="mobile-menu-item" href="https://www.eclipse.org/legal/termsofuse.php">Terms of Use</a>
                     </li>
                     <li>
-                      <a class="mobile-menu-item" href="https://www.eclipse.org/legal/copyright.php">Copyright Agent</a>
+                      <a class="mobile-menu-item" href="https://www.eclipse.org/legal/compliance/">Compliance</a>
                     </li>
                     <li>
                       <a class="mobile-menu-item" href="https://www.eclipse.org/legal/epl-2.0/">Eclipse Public License</a>
@@ -580,8 +573,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                               Fees</a>
                       </li>
                       <li>
-                          <a href="https://membership.eclipse.org/application">Membership
-                              Application</a>
+                        <a href="https://www.eclipse.org/membership/#tab-membership">Membership Application</a>
+                      </li>
+                      <li>
+                        <a href="https://www.eclipse.org/membership/#tab-resources">Member Resources</a>
                       </li>
                       <li>
                           <a href="https://membership.eclipse.org/portal">Member Portal</a>
@@ -717,9 +712,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                           <a href="https://www.eclipse.org/forums/">Forum</a>
                       </li>
                       <li>
-                          <a href="https://wiki.eclipse.org/">Wiki</a>
-                      </li>
-                      <li>
                           <a href="https://accounts.eclipse.org/mailing-list">Mailing Lists</a>
                       </li>
                       <li>
@@ -782,7 +774,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                           <a href="https://www.eclipse.org/legal/termsofuse.php">Terms of Use</a>
                       </li>
                       <li>
-                          <a href="https://www.eclipse.org/legal/copyright.php">Copyright Agent</a>
+                          <a href="https://www.eclipse.org/legal/compliance/">Compliance</a>
                       </li>
                       <li>
                           <a href="https://www.eclipse.org/legal/epl-2.0/">Eclipse Public License</a>
@@ -1224,7 +1216,7 @@ POSSIBILITY OF SUCH DAMAGE.</p>
       <div id="footer-legal" class="footer-section col-md-5 col-sm-8">
               <div class="menu-heading">Legal</div>
       <ul class="nav">
-        <ul class="nav"><li><a href="https://www.eclipse.org/legal/privacy.php">Privacy Policy</a></li><li><a href="https://www.eclipse.org/legal/termsofuse.php">Terms of Use</a></li><li><a href="https://www.eclipse.org/legal/copyright.php">Copyright Agent</a></li><li><a href="https://www.eclipse.org/org/documents/Community_Code_of_Conduct.php">Code of Conduct</a></li><li><a href="https://www.eclipse.org/legal/">Legal Resources</a></li></ul>
+        <ul class="nav"><li><a href="https://www.eclipse.org/legal/privacy.php">Privacy Policy</a></li><li><a href="https://www.eclipse.org/legal/termsofuse.php">Terms of Use</a></li><li><a href="https://www.eclipse.org/legal/compliance/">Compliance</a></li><li><a href="https://www.eclipse.org/org/documents/Community_Code_of_Conduct.php">Code of Conduct</a></li><li><a href="https://www.eclipse.org/legal/">Legal Resources</a></li></ul>
         <li>
           <a href="#" class="toolbar-manage-cookies">Manage Cookies</a>
         </li>
@@ -1287,7 +1279,7 @@ POSSIBILITY OF SUCH DAMAGE.</p>
     <div class="col-sm-24">
       <div class="row">
         <div id="copyright" class="col-md-16">
-          <p id="copyright-text">Copyright &copy; Eclipse Foundation, Inc. All Rights Reserved.</p>
+        <p id="copyright-text">Copyright &copy; Eclipse Foundation AISBL. All Rights Reserved.</p>
         </div>
       </div>
     </div>
@@ -1295,7 +1287,7 @@ POSSIBILITY OF SUCH DAMAGE.</p>
   </div>
 </footer>
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="/eclipse.org-common/themes/solstice/public/javascript/astro.min.js?var=0.0.211"></script>
+<script src="/eclipse.org-common/themes/solstice/public/javascript/astro.min.js?var=0.0.248"></script>
 
 </body>
 </html>
