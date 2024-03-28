@@ -173,7 +173,7 @@ home folder
 4. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
+       Room's “Localization Workflows”
 5. Log in to the GlobalLink Management Dashboard
     1. The submitter and the instructions added to field _Notes_ are visible
        in the submission's detail view
