@@ -154,7 +154,7 @@ home folder
 4. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
+       Room's “Localization Workflows”
 5. Log in to the _GlobalLink Management Dashboard_ and cancel the workflow
 6. Go back to the _Workflow App_
     1. After a while, the workflow should appear in Rick's "Open" workflows
@@ -252,7 +252,7 @@ home folder
 4. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
+       Room's “Localization Workflows”
 5. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
     1. The icon should be a warning sign
     2. The "Current Task" in _Workflow App_'s detail view should be “Upload
@@ -302,7 +302,7 @@ home folder
 4. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
+       Room's “Localization Workflows”
 5. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
     1. The icon should be a warning sign
 6. Double-click the workflow
