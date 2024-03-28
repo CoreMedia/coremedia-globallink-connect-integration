@@ -40,7 +40,8 @@ home folder
 ## Scenario: Happy Path
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. _dayOffsetForDueDate_ is set to 20
     3. Credentials for gcc are entered (**automatic** workflow key)
@@ -67,27 +68,30 @@ home folder
     3. As long as the workflow is in "Running", field “Completed Locales”
        should display “0 Locales”
 10. Click "Go to overview" and wait for the workflow to be finished
-     1. The workflow should disappear from the "Running" workflows and appear on
-        the “Open” list.
-     2. The workflow should now also be shown in the "Open" workflows of Control
-        Room's “Localization Workflows”.
+    1. The workflow should disappear from the "Running" workflows and appear on
+       the “Open” list.
+    2. The workflow should now also be shown in the "Open" workflows of Control
+       Room's “Localization Workflows”.
 11. Double-click the workflow in _Workflow App_'s “Open” list
-     1. The “Status” field should display “Delivered”
-     2. The “Completed Locales” field should display the target locales of
-        the workflow
-     3. When clicking on the translated content, it should open in language
-        comparison view
-        in _Studio_
-     4. The text should be pseudo-translated
+    1. The “Status” field should display “Delivered”
+    2. The “Completed Locales” field should display the target locales of
+       the workflow
+    3. When clicking on the translated content, it should open in language
+       comparison view
+       in _Studio_
+    4. The text should be pseudo-translated
 12. In the _Workflow App_, click “Accept Task”, "Next Step", “Finish Content
     Localization”, and "Yes, continue"
-     1. The workflow should disappear from “Open”
-     2. The workflow should appear in “Closed”
+    1. The workflow should disappear from “Open”
+    2. The workflow should appear in “Closed”
 
-## Scenario: Cancellation Failure Handling
+## Scenario: Cancelation Failure Handling
 
-1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+1. Log in as **Rick C**. Required to use Rick C here, as Adam, for example, will
+   not be able to do the multi-selection test, as local translations will appear
+   in "Open" section for Adam.
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**manual** workflow key)
 3. Choose an article and drag it into Control Room's “Localization Workflows”
@@ -97,7 +101,7 @@ home folder
 4. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
+       Room's “Localization Workflows”
 5. Repeat workflow creation twice, once with a "Translation" workflow and once
    with a "Translation with GlobalLink" workflow
 6. Open the "Running" area of Control Room's “Localization Workflows”
@@ -110,9 +114,25 @@ home folder
     4. No “X” should be activated in the header bar, if a "Translation"
        workflow and a "Translation with GlobalLink" workflow are selected
        (multi-selection)
-7. Select both "Translation with GlobalLink" workflows and click the “X”
+7. Open the "Running" section in Workflow App.
+    1. “X Cancel” should be available in three-dot-menu, if a "Translation with
+       GlobalLink" workflow is selected
+    2. “X Cancel” should be available in three-dot-menu, if two "Translation
+       with GlobalLink" workflows are selected (multi-selection)
+    3. “X Cancel” should **not** be available in three-dot-menu, if a
+       "Translation" workflow is selected
+    4. “X Cancel” should **not** be available in three-dot-menu, if a
+       "Translation" workflow and a "Translation with GlobalLink" workflow are
+       selected (multi-selection)
+8. **Break it:** Change, for example `globalLink.key` to some invalid value
+   like adding a `-` (minus) as first character. This will cause subsequent
+   calls to GlobalLink to fail. Note, that "speed now matters", thus quickly
+   proceed with the next step, as otherwise the communication error may cause
+   other effects.
+9. Select both "Translation with GlobalLink" workflows and click the “X”
+   (either in Workflow App or Control Room, as you like)
     1. A dialog should pop
-8. Confirm the dialog
+10. Confirm the dialog
     1. The dialog should close
     2. The “X” should appear disabled in the header bar
     3. in the _Workflow App_, the workflows' icons should change (now they have
@@ -121,10 +141,8 @@ home folder
        (until then the status in _Workflow App_'s overview will be
        "CancelTranslation")
     5. Field "Current Task" in _Workflow App_'s detail view should
-       show "Cancelation Error". Depending on timing, it could also show
-       "Review Cancelation" or the workflow will be
-       directly canceled. The test cannot be continued in these cases.
-9. Click "Accept Task" and "Next Step"
+       show "Cancelation Error".
+11. Click "Accept Task" and "Next Step"
     1. Options "Abort and rollback without canceling at
        GlobalLink", "Retry cancelation", and "Continue translation" should be
        presented
@@ -141,7 +159,8 @@ home folder
 ## Scenario: Submitter and Instructions
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**manual** workflow key)
     3. Boolean property _isSendSubmitter_ is activated
@@ -162,7 +181,8 @@ home folder
 ## Scenario: Cancelation in Studio
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**manual** workflow key)
 3. Choose an article and drag it into Control Room's “Localization Workflows”
@@ -187,7 +207,8 @@ home folder
 ## Scenario: Cancelation in GlobalLink
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**manual** workflow key)
 3. Choose an article and drag it into Control Room's “Localization Workflows”
@@ -212,7 +233,8 @@ home folder
 ## Scenario: Error Handling
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**automatic** workflow key) **but**
        _apiKey_ key is set to something wrong
@@ -262,7 +284,8 @@ home folder
 ## Scenario: XLIFF Import Error Handling
 
 1. Log in as Rick C.
-2. Open the GlobalLink settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “mock”
     2. _mockError_ is set to “DOWNLOAD_XLIFF”
 3. Choose an article and drag it into Control Room's “Localization Workflows”
@@ -280,7 +303,7 @@ home folder
     2. In section "More", a download link for the broken XLIFF should be shown
        under "Issue Details"
 7. Click the XLIFF download link
-   1. Both the XLIFF and an issue details text file should be included
+    1. Both the XLIFF and an issue details text file should be included
 8. Click "Accept Task" and "Next Step"
     1. You should have the ability to “Abort and rollback changes” or
        “Continue and retry”
