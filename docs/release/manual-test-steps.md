@@ -77,7 +77,7 @@ home folder
 7. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
+       Room's “Localization Workflows”
 8. Double-Click the workflow
     1. A sidebar with workflow information should open
 9. Click "Open workflow details"
@@ -147,7 +147,7 @@ home folder
 4. Click “Start”
     1. The dialog should close without any error
     2. A new workflow process should pop up in the "Running" area of Control
-       Room's' “Localization Workflows”
+       Room's “Localization Workflows”
 5. Select the workflow and click "X"
     1. A dialog should pop
 6. Confirm the dialog
