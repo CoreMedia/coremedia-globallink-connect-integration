@@ -133,7 +133,7 @@ home folder
 
 ## Scenario: Cancelation
 
-## Cancelation in Studio
+### Cancelation in Studio
 
 1. Log in as Rick C.
 2. Open the GlobalLink
@@ -159,7 +159,7 @@ home folder
     2. The icon should mark the workflow as canceled (little “x” on the
        bottom right)
 
-## Cancelation in GlobalLink
+### Cancelation in GlobalLink
 
 1. Log in as Rick C.
 2. Open the GlobalLink
