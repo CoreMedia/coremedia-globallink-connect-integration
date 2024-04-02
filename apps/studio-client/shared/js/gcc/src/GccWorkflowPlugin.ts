@@ -36,6 +36,13 @@ const CANCEL_REQUESTED_VARIABLE_NAME: string = "cancelRequested";
 const CANCELLATION_ALLOWED_VARIABLE_NAME: string = "cancellationAllowed";
 const TRANSLATION_GLOBAL_LINK_PROCESS_NAME: string = "TranslationGlobalLink";
 const GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME: string = "globalLinkSubmissionStatus";
+/**
+ * Virtual state for a translation, where the state itself does not yet
+ * represent the canceled state, but it is only received via an extra
+ * property. Thus, the state could still be `TRANSLATE` while the property
+ * to cancel the translation already has been set.
+ */
+const CANCELLATION_REQUESTED_SUBMISSION_STATE = "CANCELLATION_REQUESTED";
 const CANCELLATION_CONFIRMED_SUBMISSION_STATE: string = "CANCELLATION_CONFIRMED";
 const CANCELLED_SUBMISSION_STATE: string = "CANCELLED";
 const HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME: string = "HandleSendTranslationRequestError";
@@ -56,6 +63,29 @@ interface GccViewModel {
   xliffResultDownloadNotAvailable?: boolean;
 }
 
+/**
+ * Retrieve the submission status from properties. Respects a virtual state
+ * `CANCEL` when the status itself does not yet represent any state that is
+ * part of the cancelation process. Thus, the state may still be _Translate_
+ * while an additional property already denotes, that we requested to cancel
+ * the translation.
+ *
+ * @param process - process to get state for
+ */
+const getSubmissionStatus = (process): string => {
+  const properties = process.getProperties();
+  const gccSubmissionsState = properties.get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as String;
+  if ([CANCELLATION_CONFIRMED_SUBMISSION_STATE, CANCELLED_SUBMISSION_STATE].includes(gccSubmissionsState)) {
+    // No need to override. These are well-known states of the cancelation process.
+    return gccSubmissionsState;
+  }
+  const cancelRequested = properties.get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean;
+  if (cancelRequested) {
+    // Override and use virtual state.
+    return CANCELLATION_REQUESTED_SUBMISSION_STATE;
+  }
+};
+
 workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   workflowType: "TRANSLATION",
 
@@ -74,9 +104,8 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
       return gccWarningIcon;
     }
 
-    const gccSubmissionsState: String = process.getProperties().get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as String;
-    const cancelRequested: Boolean = process.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean || gccSubmissionsState === CANCELLATION_CONFIRMED_SUBMISSION_STATE || gccSubmissionsState === CANCELLED_SUBMISSION_STATE;
-    if (cancelRequested) {
+    const status = getSubmissionStatus(process);
+    if ([CANCELLATION_REQUESTED_SUBMISSION_STATE, CANCELLATION_CONFIRMED_SUBMISSION_STATE, CANCELLED_SUBMISSION_STATE].includes(status)) {
       return gccCanceledIcon;
     }
 
@@ -185,25 +214,9 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   runningWorkflowFormExtension: {
     computeTaskFromProcess: ProcessUtil.getCurrentTask,
     computeViewModel(state: WorkflowState): GccViewModel {
-      const gccSubmissionsState = state.process.getProperties().get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME);
-      // Well-known state during cancelation, we do not need any different
-      // behavior.
-      const isCanceledState = gccSubmissionsState === CANCELLATION_CONFIRMED_SUBMISSION_STATE || gccSubmissionsState === CANCELLED_SUBMISSION_STATE;
-      // We need to see, if we need to override the state, as we already know
-      // about the cancelation (see icon calculation). In these states, the
-      // state may still be `Translate`, for example, while the UI should
-      // rather signal, that the cancelation is about to be processed.
-      let status = gccSubmissionsState;
-      if (!isCanceledState) {
-        const cancelRequested: Boolean = state.process.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean;
-        if (cancelRequested) {
-          status = "CancelTranslation";
-        }
-      }
-
       return {
         globalLinkPdSubmissionIds: transformSubmissionId(state.process.getProperties().get("globalLinkPdSubmissionIds")),
-        globalLinkSubmissionStatus: transformSubmissionStatus(status),
+        globalLinkSubmissionStatus: transformSubmissionStatus(getSubmissionStatus(state.process)),
         globalLinkDueDate: dateToDate(state.process.getProperties().get("globalLinkDueDate")),
         globalLinkDueDateText: dateToString(state.process.getProperties().get("globalLinkDueDate")),
         completedLocales: convertLocales(state.process.getProperties().get("completedLocales")),
@@ -306,7 +319,6 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
     rollbackTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_rollbackTranslation_displayName,
     rollbackTranslation_afterCancellationFailed: GccWorkflowLocalization_properties.TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName,
     finishTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_finishTranslation_displayName,
-    CancelTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_CancelTranslation_displayName,
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_DownloadTranslation_displayName,
     ReviewDeliveredTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName,
     ReviewCancelledTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewCancelledTranslation_displayName,

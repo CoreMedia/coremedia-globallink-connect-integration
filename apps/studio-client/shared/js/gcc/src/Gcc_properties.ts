@@ -13,6 +13,7 @@ interface Gcc_properties {
   TranslationGlobalLink_submission_status_IN_PROGRESS: string;
   TranslationGlobalLink_submission_status_CANCELLED: string;
   TranslationGlobalLink_submission_status_CANCELLATION_CONFIRMED: string;
+  TranslationGlobalLink_submission_status_CANCELLATION_REQUESTED: string;
   TranslationGlobalLink_submission_status_TRANSLATE: string;
   TranslationGlobalLink_submission_status_REVIEW: string;
   TranslationGlobalLink_submission_status_COMPLETED: string;
@@ -43,6 +44,7 @@ const Gcc_properties: Gcc_properties = {
   TranslationGlobalLink_submission_status_IN_PROGRESS: "In Progress",
   TranslationGlobalLink_submission_status_CANCELLED: "Canceled",
   TranslationGlobalLink_submission_status_CANCELLATION_CONFIRMED: "Canceled",
+  TranslationGlobalLink_submission_status_CANCELLATION_REQUESTED: "Canceled",
   TranslationGlobalLink_submission_status_TRANSLATE: "Translate",
   TranslationGlobalLink_submission_status_REVIEW: "Review",
   TranslationGlobalLink_submission_status_COMPLETED: "Completed",
