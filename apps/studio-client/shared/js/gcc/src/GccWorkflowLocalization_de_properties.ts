@@ -8,6 +8,7 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
   TranslationGlobalLink_task_Prepare_displayName: "Vorbereitung",
   TranslationGlobalLink_task_AutoMerge_displayName: "Aktualisierung nicht zu übersetzender Felder",
   TranslationGlobalLink_task_SendTranslationRequest_displayName: "Senden der Übersetzungsanfrage",
+  TranslationGlobalLink_task_CancelTranslation_displayName: "Warten auf Abbruch-Verarbeitung",
   TranslationGlobalLink_task_DownloadTranslation_displayName: "Warten auf Übersetzung",
   TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: "Übersetzung prüfen",
   TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: "Abbruch prüfen",
