@@ -74,12 +74,12 @@ interface GccViewModel {
  */
 const getSubmissionStatus = (process): string => {
   const properties = process.getProperties();
-  const gccSubmissionsState = properties.get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as String;
+  const gccSubmissionsState = properties.get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as string;
   if ([CANCELLATION_CONFIRMED_SUBMISSION_STATE, CANCELLED_SUBMISSION_STATE].includes(gccSubmissionsState)) {
     // No need to override. These are well-known states of the cancelation process.
     return gccSubmissionsState;
   }
-  const cancelRequested = properties.get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean;
+  const cancelRequested = properties.get(CANCEL_REQUESTED_VARIABLE_NAME) as boolean;
   if (cancelRequested) {
     // Override and use virtual state.
     return CANCELLATION_REQUESTED_SUBMISSION_STATE;
