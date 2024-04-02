@@ -258,7 +258,7 @@ home folder
         3. The icon should mark the workflow as canceled (little “x” on the
            bottom right)
 
-## Scenario: Error Handling
+## Scenario: General Error Handling
 
 1. Log in as Rick C.
 2. Open the GlobalLink
