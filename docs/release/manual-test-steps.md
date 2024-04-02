@@ -238,8 +238,10 @@ home folder
     3. in the _Workflow App_, the workflows' icons should change (now they have
        a little “x” on the bottom right)
     4. The workflows should disappear from the "Running" list after some time
-       (until then the status in _Workflow App_'s overview will be
-       "CancelTranslation")
+       (until then the status in _Workflow App_'s overview will signal that
+       we are awaiting the cancelation to be processed and the workflow detail
+       view should have a corresponding signal in fields "Status" and
+       "Current Task").
     5. Field "Current Task" in _Workflow App_'s detail view should
        show "Cancelation Error".
 11. Click "Accept Task" and "Next Step"
