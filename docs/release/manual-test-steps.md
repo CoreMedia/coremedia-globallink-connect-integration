@@ -17,13 +17,32 @@
 
 ## Prepare
 
-For quicker test feedback set the following integer parameters in the
-GlobalLink-Settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+Adjust GlobalLink-Settings within settings document at
+`/Settings/Options/Settings/Translation Services/GlobalLink` for quicker
+feedback during manual test-steps as well as to access the relevant sandbox
+via corresponding credentials:
 
-* sendTranslationRequestRetryDelay -> 60
-* downloadTranslationRetryDelay -> 60
-* cancelTranslationRetryDelay -> 60
-* retryCommunicationErrors -> 1
+```json5
+{
+    "globalLink": {
+        // ... other settings
+        "key": "...", // String; adjust either for automatic or manual GCC processing
+        // Suggestion to ease switching keys is to hold them in an extra
+        // Struct for easy copy & paste:
+        "keys": {
+            "automatic": "...", // String
+            "manual": "...", // String
+        },
+        "apiKey": "...", // String; private key, typically stored in Spring configuration
+        "type": "default", // String
+        "isSendSubmitter": false, // Boolean; changed within manual test steps
+        "sendTranslationRequestRetryDelay": 60, // Integer
+        "downloadTranslationRetryDelay": 60, // Integer
+        "cancelTranslationRetryDelay": 60, // Integer
+        "retryCommunicationErrors": 1, // Integer; change existing value
+    }
+}
+```
 
 ## Scenario: Contract Test
 
