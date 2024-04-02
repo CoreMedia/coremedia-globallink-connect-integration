@@ -185,9 +185,25 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   runningWorkflowFormExtension: {
     computeTaskFromProcess: ProcessUtil.getCurrentTask,
     computeViewModel(state: WorkflowState): GccViewModel {
+      const gccSubmissionsState = state.process.getProperties().get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME);
+      // Well-known state during cancelation, we do not need any different
+      // behavior.
+      const isCanceledState = gccSubmissionsState === CANCELLATION_CONFIRMED_SUBMISSION_STATE || gccSubmissionsState === CANCELLED_SUBMISSION_STATE;
+      // We need to see, if we need to override the state, as we already know
+      // about the cancelation (see icon calculation). In these states, the
+      // state may still be `Translate`, for example, while the UI should
+      // rather signal, that the cancelation is about to be processed.
+      let status = gccSubmissionsState;
+      if (!isCanceledState) {
+        const cancelRequested: Boolean = state.process.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean;
+        if (cancelRequested) {
+          status = "CancelTranslation";
+        }
+      }
+
       return {
         globalLinkPdSubmissionIds: transformSubmissionId(state.process.getProperties().get("globalLinkPdSubmissionIds")),
-        globalLinkSubmissionStatus: transformSubmissionStatus(state.process.getProperties().get("globalLinkSubmissionStatus")),
+        globalLinkSubmissionStatus: transformSubmissionStatus(status),
         globalLinkDueDate: dateToDate(state.process.getProperties().get("globalLinkDueDate")),
         globalLinkDueDateText: dateToString(state.process.getProperties().get("globalLinkDueDate")),
         completedLocales: convertLocales(state.process.getProperties().get("completedLocales")),
