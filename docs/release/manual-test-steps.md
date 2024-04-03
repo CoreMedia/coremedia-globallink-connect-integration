@@ -226,9 +226,12 @@ home folder
        selected (multi-selection)
 8. **Break it:** Change, for example `globalLink.key` to some invalid value
    like adding a `-` (minus) as first character. This will cause subsequent
-   calls to GlobalLink to fail. Note, that "speed now matters", thus quickly
-   proceed with the next step, as otherwise the communication error may cause
-   other effects.
+   calls to GlobalLink to fail.
+
+   Note, that "speed now matters", thus quickly proceed with the next step, as
+   otherwise the communication error may cause other effects. The actual time
+   depends on the configured retry-count as well as the configured timeouts.
+   Typically, you will have at least 60 seconds.
 9. Select both "Translation with GlobalLink" workflows and click the “X”
    (either in Workflow App or Control Room, as you like)
     1. A dialog should pop
@@ -265,7 +268,8 @@ home folder
    settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “default”
     2. Credentials for gcc are entered (**automatic** workflow key) **but**
-       _apiKey_ key is set to something wrong
+       _apiKey_ (aka _API Token_) is set to something wrong. Add a `-` (minus),
+       for example, to the beginning.
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -293,8 +297,7 @@ home folder
     1. The icon should be a Warning sign
     2. Column "Status" should show “Download Error”
     3. When accepting the task, you have the ability to “Abort and rollback
-       changes” or
-       “Continue and retry”
+       changes” or “Continue and retry”
 11. Click “Abort and rollback changes”
 12. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
     1. The icon should be a warning sign
