@@ -412,7 +412,7 @@ function dateToString(value): string {
 
 function downloadXliff(task: Task): void {
   const currentDate = new Date();
-  const uri = RemoteService.calculateRequestURI("downloadBlob/") +
+  const uri = RemoteService.calculateRequestURI("downloadBlob") +
           "?process=" + task.getContainingProcess().getId() +
           "&blobProcessVariable=" + BLOB_FILE_PROCESS_VARIABLE_NAME +
           "&" + currentDate.getTime();
