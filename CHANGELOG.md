@@ -1,7 +1,7 @@
 Changelog
 ================================================================================
 
-CoreMedia v12.2401
+v2401.3-1
 --------------------------------------------------------------------------------
 
 ### General Notes
@@ -14,11 +14,37 @@ also comes, for example. with TypeScript 5 update for Studio Client.
 
 * Updated dependencies to CoreMedia Content Cloud v12.2401.3.
 
+* Fixes required to align with Spring/Spring Boot Update that ships with
+  CMCC v12.2401.3:
+
+  * Replaced now unsupported `spring.factories` for `AutoConfiguration`
+    by corresponding import-pattern.
+
+  * Fixed REST Request URL `downloadBlob` not to contain a trailing slash,
+    which triggered 404 Not Found since Spring update.
+
+* `GCSubmissionModel` now also exposes the Submitter. This aligns with the
+  `isSendSubmitter` feature and allows to provide contract tests, to ensure
+  that this feature is well understood by the GCC API.
+
+* Required Java Version changed to 17 to align with CMCC v12.2401.3.
+
+* Required TypeScript Version changed to 5 to align with CMCC v12.2401.3.
+
 ### Bug Fixes
 
 * #61 Error handling in GlobalLink translation workflow breaks
 
-2310-1
+* #59 Test Failure Due to TimeZone Mismatch: applied a workaround for a
+      failure within the GCC API.
+
+* Fixed missing localization for `CancelTranslation` state.
+
+* Fixed irritating representation of state within the UI for a cancelation that
+  is about to be processed and aligned the behavior with the
+  icon-representation.
+
+v2310.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -26,7 +52,7 @@ also comes, for example. with TypeScript 5 update for Studio Client.
 * Updated dependencies to CoreMedia Content Cloud v11.2310.1.
 
 
-2307-1
+v2307.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -44,7 +70,7 @@ also comes, for example. with TypeScript 5 update for Studio Client.
       mistakenly reported the content to be in translation.
 
 
-2304-1
+v2304.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -52,7 +78,7 @@ also comes, for example. with TypeScript 5 update for Studio Client.
 * Updated dependencies to CoreMedia Content Cloud v11.2304.1.
 
 
-2301-1
+v2301.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -60,7 +86,7 @@ also comes, for example. with TypeScript 5 update for Studio Client.
 * Updated dependencies to CoreMedia Content Cloud v11.2301.1.
 * _Robustness to Content Management Server outages_: in case of outages of the Content Management Server, translation workflows may fail with an exception and escalate. This improvement lets the workflow retry failed connections to the Content Management Server in certain cases until it is available again. The workflow cannot proceed until the Content Management Server is available again.
 
-2210-2
+v2210.1-2
 --------------------------------------------------------------------------------
 
 ### General Notes
@@ -96,14 +122,14 @@ path and the folder match the convention mentioned below.
   them anymore by checking the system tab. In the future, you should not 
   publish them again.
 
-2210
+v2210.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
 
 * Updated dependencies to CoreMedia Content Cloud v11.2210.1.
 
-2207
+v2207.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -111,14 +137,14 @@ path and the folder match the convention mentioned below.
 * Updated dependencies to CoreMedia Content Cloud v11.2207.1.
 * Fixed [CoreMedia/coremedia-globallink-connect-integration#48](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/48)
 
-2204
+v2204.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
 
 * Updated dependencies to CoreMedia Content Cloud v11.2204.1.
 
-2201
+v2201.1-1
 --------------------------------------------------------------------------------
 
 ### General Notes
@@ -145,7 +171,7 @@ API Key from your contacts at Translations.com.
 
 * Updated dependencies to match the CMCC v11.2201.2 release.
 
-CoreMedia v11.2110
+v2110.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -198,7 +224,7 @@ CoreMedia v11.2110
     $ git branch -u origin/main
     ```
 
-2107
+v2107.3-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -233,7 +259,7 @@ CoreMedia v11.2110
     received another parameter `sourceLocale`. Custom implementations of the 
     interface have to be adapted.
 
-2104
+v2104.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -255,7 +281,7 @@ CoreMedia v11.2110
 * Fixed concurrency issue of `DefaultGCExchangeFacadeSessionProvider` which 
   could cause `java.util.NoSuchElementExceptions` [CoreMedia/coremedia-globallink-connect-integration#33](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/33)
 
-2101
+v2101.3-1
 --------------------------------------------------------------------------------
 ### General Notes
 
@@ -280,7 +306,7 @@ CoreMedia v11.2110
     the submission state through `GCExchangeFacade.getSubmissionState(submissionId)`, you have
     to migrate to `GCExchangeFacade.getSubmission(submissionId).getState()`.
 
-2010
+v2010.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -298,7 +324,7 @@ CoreMedia v11.2110
 
 * Fixed [CoreMedia/coremedia-globallink-connect-integration#21](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/21)
 
-2007
+v2007.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -334,7 +360,7 @@ CoreMedia v11.2110
     further `AdditionalWorkflowFields`, you need to make sure, that they are now
     added to the workflow window like the `GccWorkflowDateTimeField.as`.
 
-2004
+v2004.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -357,7 +383,7 @@ CoreMedia v11.2110
     own subclasses, you will have to update them and make sure to cast the value
     of the settings in your implementation accordingly.
 
-2001
+v2001.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
@@ -367,7 +393,7 @@ CoreMedia v11.2110
 * Updated the documentation with additional information on the setup of 
     GlobalLink Connect Cloud.
 
-1910
+v1910.1-1
 --------------------------------------------------------------------------------
 
 ### Main Changes
