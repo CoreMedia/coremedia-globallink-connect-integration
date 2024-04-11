@@ -13,14 +13,14 @@
     "@coremedia/studio-client.core-icons": "2404.1.0",
     "@coremedia/studio-client.workflow-models": "2404.1.0",
     "@coremedia/studio-client.workflow-plugin-models": "2404.1.0",
-    "@jangaroo/ext-ts": "2.0.0-alpha.8",
-    "@jangaroo/runtime": "3.0.0-alpha.5"
+    "@jangaroo/ext-ts": "2.0.0-alpha.9",
+    "@jangaroo/runtime": "3.0.0-alpha.6"
   },
   "devDependencies": {
-    "@jangaroo/build": "3.0.0-alpha.5",
-    "@jangaroo/core": "3.0.0-alpha.5",
+    "@jangaroo/build": "3.0.0-alpha.6",
+    "@jangaroo/core": "3.0.0-alpha.6",
     "@jangaroo/eslint-config": "3.0.0-alpha.2",
-    "@jangaroo/publish": "3.0.0-alpha.5",
+    "@jangaroo/publish": "3.0.0-alpha.6",
     "eslint": "^8.56.0",
     "rimraf": "^5.0.5"
   },
