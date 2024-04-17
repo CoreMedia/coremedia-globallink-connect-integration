@@ -84,6 +84,7 @@ const getSubmissionStatus = (process): string => {
     // Override and use virtual state.
     return CANCELLATION_REQUESTED_SUBMISSION_STATE;
   }
+  return gccSubmissionsState;
 };
 
 workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
