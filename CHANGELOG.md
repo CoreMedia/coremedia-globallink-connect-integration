@@ -8,7 +8,7 @@ v2401.3-1
 
 In contrast to common practice, the Globallink Extension will not work with the
 first CoreMedia Content Cloud Release v12.2401.1. It requires v12.2401.3 that
-also comes, for example. with TypeScript 5 update for Studio Client.
+also comes, for example, with TypeScript 5 update for Studio Client.
 
 ### Main Changes
 
