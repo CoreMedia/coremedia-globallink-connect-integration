@@ -162,7 +162,7 @@ in CoreMedia Studio and add a struct named
 * `retryCommunicationErrors` Number of retries in case of a communication error
     with GlobalLink. (_optional_, default: `5`, type:`Integer`)
 * `isSendSubmitter` Defines if the name of the editor that started the workflow 
-    is send to GlobalLink as part of the submission.
+    is sent to GlobalLink as part of the submission.
     (_optional_, default: `false`, type:`Boolean`)
 
 Be aware that the `dayOffsetForDueDate` can only be configured in the global

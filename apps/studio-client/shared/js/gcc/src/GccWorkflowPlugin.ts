@@ -36,6 +36,13 @@ const CANCEL_REQUESTED_VARIABLE_NAME: string = "cancelRequested";
 const CANCELLATION_ALLOWED_VARIABLE_NAME: string = "cancellationAllowed";
 const TRANSLATION_GLOBAL_LINK_PROCESS_NAME: string = "TranslationGlobalLink";
 const GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME: string = "globalLinkSubmissionStatus";
+/**
+ * Virtual state for a translation, where the state itself does not yet
+ * represent the canceled state, but it is only received via an extra
+ * property. Thus, the state could still be `TRANSLATE` while the property
+ * to cancel the translation already has been set.
+ */
+const CANCELLATION_REQUESTED_SUBMISSION_STATE = "CANCELLATION_REQUESTED";
 const CANCELLATION_CONFIRMED_SUBMISSION_STATE: string = "CANCELLATION_CONFIRMED";
 const CANCELLED_SUBMISSION_STATE: string = "CANCELLED";
 const HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME: string = "HandleSendTranslationRequestError";
@@ -56,6 +63,30 @@ interface GccViewModel {
   xliffResultDownloadNotAvailable?: boolean;
 }
 
+/**
+ * Retrieve the submission status from properties. Respects a virtual state
+ * `CANCEL` when the status itself does not yet represent any state that is
+ * part of the cancelation process. Thus, the state may still be _Translate_
+ * while an additional property already denotes, that we requested to cancel
+ * the translation.
+ *
+ * @param process - process to get state for
+ */
+const getSubmissionStatus = (process): string => {
+  const properties = process.getProperties();
+  const gccSubmissionsState = properties.get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as string;
+  if ([CANCELLATION_CONFIRMED_SUBMISSION_STATE, CANCELLED_SUBMISSION_STATE].includes(gccSubmissionsState)) {
+    // No need to override. These are well-known states of the cancelation process.
+    return gccSubmissionsState;
+  }
+  const cancelRequested = properties.get(CANCEL_REQUESTED_VARIABLE_NAME) as boolean;
+  if (cancelRequested) {
+    // Override and use virtual state.
+    return CANCELLATION_REQUESTED_SUBMISSION_STATE;
+  }
+  return gccSubmissionsState;
+};
+
 workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   workflowType: "TRANSLATION",
 
@@ -74,9 +105,8 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
       return gccWarningIcon;
     }
 
-    const gccSubmissionsState: String = process.getProperties().get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as String;
-    const cancelRequested: Boolean = process.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean || gccSubmissionsState === CANCELLATION_CONFIRMED_SUBMISSION_STATE || gccSubmissionsState === CANCELLED_SUBMISSION_STATE;
-    if (cancelRequested) {
+    const status = getSubmissionStatus(process);
+    if ([CANCELLATION_REQUESTED_SUBMISSION_STATE, CANCELLATION_CONFIRMED_SUBMISSION_STATE, CANCELLED_SUBMISSION_STATE].includes(status)) {
       return gccCanceledIcon;
     }
 
@@ -187,7 +217,7 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
     computeViewModel(state: WorkflowState): GccViewModel {
       return {
         globalLinkPdSubmissionIds: transformSubmissionId(state.process.getProperties().get("globalLinkPdSubmissionIds")),
-        globalLinkSubmissionStatus: transformSubmissionStatus(state.process.getProperties().get("globalLinkSubmissionStatus")),
+        globalLinkSubmissionStatus: transformSubmissionStatus(getSubmissionStatus(state.process)),
         globalLinkDueDate: dateToDate(state.process.getProperties().get("globalLinkDueDate")),
         globalLinkDueDateText: dateToString(state.process.getProperties().get("globalLinkDueDate")),
         completedLocales: convertLocales(state.process.getProperties().get("completedLocales")),
@@ -305,6 +335,7 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
     Prepare: GccWorkflowLocalization_properties.TranslationGlobalLink_task_Prepare_displayName,
     AutoMerge: GccWorkflowLocalization_properties.TranslationGlobalLink_task_AutoMerge_displayName,
     SendTranslationRequest: GccWorkflowLocalization_properties.TranslationGlobalLink_task_SendTranslationRequest_displayName,
+    CancelTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_CancelTranslation_displayName,
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_DownloadTranslation_displayName,
     ReviewDeliveredTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName,
     ReviewCancelledTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewCancelledTranslation_displayName,
@@ -382,7 +413,7 @@ function dateToString(value): string {
 
 function downloadXliff(task: Task): void {
   const currentDate = new Date();
-  const uri = RemoteService.calculateRequestURI("downloadBlob/") +
+  const uri = RemoteService.calculateRequestURI("downloadBlob") +
           "?process=" + task.getContainingProcess().getId() +
           "&blobProcessVariable=" + BLOB_FILE_PROCESS_VARIABLE_NAME +
           "&" + currentDate.getTime();

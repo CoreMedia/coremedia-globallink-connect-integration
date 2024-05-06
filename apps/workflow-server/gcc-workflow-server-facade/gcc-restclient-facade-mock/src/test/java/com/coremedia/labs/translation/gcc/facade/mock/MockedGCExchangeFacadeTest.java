@@ -32,7 +32,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 class MockedGCExchangeFacadeTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
-  private static final int TRANSLATION_TIMEOUT_MINUTES = 3;
+  private static final long TRANSLATION_TIMEOUT_MINUTES = 3L;
 
   private static final String XLIFF_FILE="LoremIpsum.xliff";
 
@@ -47,13 +47,13 @@ class MockedGCExchangeFacadeTest {
 
     MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
     // Let the tasks proceed faster.
-    facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
+    facade.setDelayBaseSeconds(2L).setDelayOffsetPercentage(20);
 
     String fileId = facade.uploadContent(testName, xliffResource, null);
     long submissionId = facade.submitSubmission(
             testName,
             null,
-            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            ZonedDateTime.of(LocalDateTime.now().plusHours(2L), ZoneId.systemDefault()),
             null,
             "admin",
             Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
@@ -106,13 +106,13 @@ class MockedGCExchangeFacadeTest {
 
     MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
     // Let the tasks proceed faster.
-    facade.setDelayBaseSeconds(2).setDelayOffsetPercentage(20);
+    facade.setDelayBaseSeconds(2L).setDelayOffsetPercentage(20);
 
     String fileId = facade.uploadContent(testName, xliffResource, Locale.US);
     long submissionId = facade.submitSubmission(
             "states:other,cancelled",
             null,
-            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            ZonedDateTime.of(LocalDateTime.now().plusHours(2L), ZoneId.systemDefault()),
             null,
             "admin",
             Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
@@ -129,8 +129,8 @@ class MockedGCExchangeFacadeTest {
   private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState desiredState) {
     Awaitility.await("Wait for translation to reach state: " + desiredState)
       .atMost(TRANSLATION_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-      .pollDelay(1, TimeUnit.SECONDS)
-      .pollInterval(1, TimeUnit.SECONDS)
+      .pollDelay(1L, TimeUnit.SECONDS)
+      .pollInterval(1L, TimeUnit.SECONDS)
       .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
       .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(desiredState));
   }

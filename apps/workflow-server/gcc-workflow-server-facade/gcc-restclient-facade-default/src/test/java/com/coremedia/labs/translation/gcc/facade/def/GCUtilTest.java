@@ -55,7 +55,7 @@ class GCUtilTest {
     @DisplayName("Results from all pages shall be retrieved.")
     void retrieveResultsFromAllPages() {
       AtomicInteger invocations = new AtomicInteger();
-      long numTotalPages = 2;
+      long numTotalPages = 2L;
       Mockito.when(responseData.getTotalResultPagesCount()).thenReturn(numTotalPages);
       GCUtil.processAllPages(() -> request, r -> {
         invocations.incrementAndGet();
@@ -71,7 +71,7 @@ class GCUtilTest {
     @DisplayName("On Request Failure exceptions shall be wrapped to GCFacadeCommunicationException.")
     void forwardExceptionOnRequestFailure() {
       AtomicInteger invocations = new AtomicInteger();
-      long numTotalPages = 2;
+      long numTotalPages = 2L;
       Mockito.when(responseData.getTotalResultPagesCount()).thenReturn(numTotalPages);
       assertThatThrownBy(() -> GCUtil.processAllPages(
               () -> request,

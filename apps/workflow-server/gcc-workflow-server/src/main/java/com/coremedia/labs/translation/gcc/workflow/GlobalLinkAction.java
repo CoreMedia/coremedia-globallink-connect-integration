@@ -26,7 +26,6 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -37,12 +36,12 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import jakarta.activation.MimeType;
+import jakarta.activation.MimeTypeParseException;
 import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -120,7 +119,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final MimeType MIME_TYPE_JSON = mimeType("application/json");
   private static final Gson contentObjectReturnsIdGson = new GsonBuilder()
           .enableComplexMapKeySerialization()
-          .registerTypeAdapter(Content.class, new ContentObjectSerializer())
+          .registerTypeHierarchyAdapter(Content.class, new ContentObjectSerializer())
           .create();
 
   /**
@@ -674,7 +673,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return getConnection().getBlobService().fromBytes(bytes, MIME_TYPE_JSON);
   }
 
-  private static String issuesAsJsonString(Map<Severity, Map<String, List<Content>>> issues) {
+  @NonNull
+  @VisibleForTesting
+  static String issuesAsJsonString(Map<Severity, Map<String, List<Content>>> issues) {
     Type typeToken = new TypeToken<Map<Severity, Map<XliffImportResultCode, List<Content>>>>() {
     }.getType();
     return contentObjectReturnsIdGson.toJson(issues, typeToken);

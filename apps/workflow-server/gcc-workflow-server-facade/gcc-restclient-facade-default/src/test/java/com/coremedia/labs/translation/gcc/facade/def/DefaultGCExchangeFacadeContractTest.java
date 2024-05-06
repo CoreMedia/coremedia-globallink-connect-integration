@@ -1,12 +1,13 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
+import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
-import org.awaitility.Awaitility;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.model.GCFile;
 import org.gs4tr.gcc.restclient.model.LocaleConfig;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -36,6 +38,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,6 +52,7 @@ import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -90,8 +94,8 @@ class DefaultGCExchangeFacadeContractTest {
           "    </body>\n" +
           "  </file>\n" +
           "</xliff>\n";
-  private static final int TRANSLATION_TIMEOUT_MINUTES = 30;
-  private static final int SUBMISSION_VALID_TIMEOUT_MINUTES = 2;
+  private static final long TRANSLATION_TIMEOUT_MINUTES = 30L;
+  private static final long SUBMISSION_VALID_TIMEOUT_MINUTES = 2L;
 
   @Test
   @DisplayName("Validate that login works.")
@@ -218,7 +222,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               testName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -227,10 +231,10 @@ class DefaultGCExchangeFacadeContractTest {
 
       // Yes, we need to wait here. Directly after being started, a submission state
       // may be 'null' (which we internally map to "other").
-      Awaitility.await("Wait for submission to be valid (has some well-known state).")
+      await("Wait for submission to be valid (has some well-known state).")
               .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
+              .pollDelay(1L, TimeUnit.SECONDS)
+              .pollInterval(10L, TimeUnit.SECONDS)
               .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
                       .isNotIn(
                               GCSubmissionState.OTHER,
@@ -244,16 +248,16 @@ class DefaultGCExchangeFacadeContractTest {
        */
       delegate.cancelSubmission(submissionId);
 
-      Awaitility.await("Wait until submission is marked as cancelled.")
-              .atMost(2, TimeUnit.MINUTES)
-              .pollDelay(5, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
+      await("Wait until submission is marked as cancelled.")
+              .atMost(2L, TimeUnit.MINUTES)
+              .pollDelay(5L, TimeUnit.SECONDS)
+              .pollInterval(10L, TimeUnit.SECONDS)
               .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
 
-      Awaitility.await("Wait until cancellation got confirmed for submission.")
-              .atMost(2, TimeUnit.MINUTES)
-              .pollDelay(10, TimeUnit.SECONDS)
-              .pollInterval(20, TimeUnit.SECONDS)
+      await("Wait until cancellation got confirmed for submission.")
+              .atMost(2L, TimeUnit.MINUTES)
+              .pollDelay(10L, TimeUnit.SECONDS)
+              .pollInterval(20L, TimeUnit.SECONDS)
               .conditionEvaluationListener(condition -> {
                 try {
                   // Some tasks may have already reached completed state.
@@ -266,6 +270,17 @@ class DefaultGCExchangeFacadeContractTest {
               })
               .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
     }
+  }
+
+  /**
+   * Get some due date for testing. Due to an issue within the GCC Java
+   * REST Client API (v3.1.3) ignoring UTC time-zone requirement, we should
+   * ensure, that the offset is not just some hours, but rather days.
+   *
+   * @return some due date for testing
+   */
+  private static ZonedDateTime getSomeDueDate() {
+    return ZonedDateTime.of(LocalDateTime.now().plusDays(2L), ZoneId.systemDefault());
   }
 
   private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
@@ -288,7 +303,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               testName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -297,11 +312,48 @@ class DefaultGCExchangeFacadeContractTest {
 
       // Yes, we need to wait here. Directly after being started, a submission state
       // may be 'null' (which we internally map to "other").
-      Awaitility.await("Wait for submission to be valid (has some well-known state).")
+      await("Wait for submission to be valid (has some well-known state).")
               .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1, TimeUnit.SECONDS)
-              .pollInterval(10, TimeUnit.SECONDS)
+              .pollDelay(1L, TimeUnit.SECONDS)
+              .pollInterval(10L, TimeUnit.SECONDS)
               .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
+    }
+
+    @ParameterizedTest(name = "[{index}] isSendSubmitter={0}")
+    @DisplayName("Should respect isSendSubmitter state.")
+    @NullSource
+    @ValueSource(booleans = {true, false})
+    void shouldRespectSendSubmitter(@Nullable Boolean isSendSubmitter, TestInfo testInfo, Map<String, Object> originalGccProperties) {
+      String testName = testInfo.getDisplayName();
+      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
+      gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, isSendSubmitter);
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long submissionId = facade.submitSubmission(
+              testName,
+              null,
+              getSomeDueDate(),
+              null,
+              "admin",
+              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+
+      assertThat(submissionId).isGreaterThan(0L);
+
+      if (Boolean.TRUE.equals(isSendSubmitter)) {
+        await("Submission should have submitter 'admin'.")
+                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+                .pollDelay(1L, TimeUnit.SECONDS)
+                .pollInterval(10L, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter()).hasValue("admin"));
+      } else {
+        await("Submission should not have submitter 'admin', but some system user (irrelevant, which)")
+                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+                .pollDelay(1L, TimeUnit.SECONDS)
+                .pollInterval(10L, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter())
+                        .hasValueSatisfying(name -> assertThat(name).isNotEqualTo("admin"))
+                );
+      }
     }
 
     @Test
@@ -315,7 +367,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               submissionName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -334,7 +386,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               submissionName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -354,7 +406,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = facade.submitSubmission(
               submissionName,
               null,
-              ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+              getSomeDueDate(),
               null,
               "admin",
               Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
@@ -408,7 +460,7 @@ class DefaultGCExchangeFacadeContractTest {
     long submissionId = facade.submitSubmission(
             testName,
             null,
-            ZonedDateTime.of(LocalDateTime.now().plusHours(2), ZoneId.systemDefault()),
+            getSomeDueDate(),
             null,
             "admin",
             masterLocale, contentMap);
@@ -425,7 +477,7 @@ class DefaultGCExchangeFacadeContractTest {
             .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
 
     //After all tasks have been marked as delivered also the submission shall be marked as delivered.
-    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5);
+    assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5L);
   }
 
   private static class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
@@ -486,11 +538,11 @@ class DefaultGCExchangeFacadeContractTest {
     return contentMapBuilder.build();
   }
 
-  private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState stateToReach, int timeout) {
-    Awaitility.await("Wait for translation to complete.")
+  private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState stateToReach, long timeout) {
+    await("Wait for translation to complete.")
             .atMost(timeout, TimeUnit.MINUTES)
-            .pollDelay(1, TimeUnit.MINUTES)
-            .pollInterval(1, TimeUnit.MINUTES)
+            .pollDelay(1L, TimeUnit.MINUTES)
+            .pollInterval(1L, TimeUnit.MINUTES)
             .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
             .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(stateToReach));
   }

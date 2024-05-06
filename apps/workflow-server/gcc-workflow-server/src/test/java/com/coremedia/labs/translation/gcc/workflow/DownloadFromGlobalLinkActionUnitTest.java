@@ -91,8 +91,8 @@ class DownloadFromGlobalLinkActionUnitTest {
           assertNotNull(files);
           assertEquals(2, files.length);
           // Check files by well known length, which is sufficiently unique in this test.
-          assertEquals(5, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
-          assertEquals(6, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
+          assertEquals(5L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
+          assertEquals(6L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
         } finally {
           deleteFile(extracted);
         }
@@ -115,17 +115,17 @@ class DownloadFromGlobalLinkActionUnitTest {
     try {
       File newXliffs = new File(workingDir, DownloadFromGlobalLinkAction.NEWXLIFFS);
       assumeTrue(newXliffs.mkdir());
-      copyResourceToDirectory("zipentry2.txt", newXliffs, 5);
-      copyResourceToDirectory("zipentry3.txt", newXliffs, 6);
+      copyResourceToDirectory("zipentry2.txt", newXliffs, 5L);
+      copyResourceToDirectory("zipentry3.txt", newXliffs, 6L);
     } catch (IOException e) {
       assumeTrue(false, "Cannot prepare working directory: " + e.getMessage());
     }
   }
 
-  private static void copyResourceToDirectory(String resourceName, File targetDir, int length) throws IOException {
+  private static void copyResourceToDirectory(String resourceName, File targetDir, long length) throws IOException {
     try (InputStream is = DownloadFromGlobalLinkActionUnitTest.class.getResourceAsStream("/com/coremedia/labs/translation/gcc/workflow/" + resourceName)) {
       long result = Files.copy(is, new File(targetDir, resourceName).toPath());
-      if (length >= 0) {
+      if (length >= 0L) {
         assumeTrue(result == length);
       }
     }

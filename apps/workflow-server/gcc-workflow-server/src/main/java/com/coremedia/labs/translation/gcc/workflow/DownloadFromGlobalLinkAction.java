@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.MimeType;
+import jakarta.activation.MimeType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

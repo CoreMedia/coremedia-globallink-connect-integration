@@ -14,6 +14,7 @@ ResourceBundleUtil.override(GccProcessDefinitions_properties, {
   TranslationGlobalLink_submission_status_IN_PROGRESS: "In Bearbeitung",
   TranslationGlobalLink_submission_status_CANCELLED: "Abgebrochen",
   TranslationGlobalLink_submission_status_CANCELLATION_CONFIRMED: "Abbruch bestätigt",
+  TranslationGlobalLink_submission_status_CANCELLATION_REQUESTED: "Abbruch beantragt",
   TranslationGlobalLink_submission_status_TRANSLATE: "Übersetzung",
   TranslationGlobalLink_submission_status_REVIEW: "Überprüfung",
   TranslationGlobalLink_submission_status_COMPLETED: "Abgeschlossen",

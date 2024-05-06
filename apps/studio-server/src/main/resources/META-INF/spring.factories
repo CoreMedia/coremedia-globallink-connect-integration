@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.coremedia.labs.translation.gcc.studio.validation.GlobalLinkWorkflowValidationConfiguration

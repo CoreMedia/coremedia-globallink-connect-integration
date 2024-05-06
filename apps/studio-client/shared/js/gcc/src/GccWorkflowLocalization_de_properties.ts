@@ -8,6 +8,7 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
   TranslationGlobalLink_task_Prepare_displayName: "Vorbereitung",
   TranslationGlobalLink_task_AutoMerge_displayName: "Aktualisierung nicht zu übersetzender Felder",
   TranslationGlobalLink_task_SendTranslationRequest_displayName: "Senden der Übersetzungsanfrage",
+  TranslationGlobalLink_task_CancelTranslation_displayName: "Warten auf Abbruch-Verarbeitung",
   TranslationGlobalLink_task_DownloadTranslation_displayName: "Warten auf Übersetzung",
   TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: "Übersetzung prüfen",
   TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: "Abbruch prüfen",
@@ -19,7 +20,7 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
   TranslationGlobalLink_task_HandleCancelTranslationError_displayName: "Fehler beim Abbrechen",
 
   TranslationGlobalLink_state_Translate_displayName: "Übersetzungs-Workflow annehmen",
-  TranslationGlobalLink_state_rollbackTranslation_displayName: "Beeenden und Änderungen verwerfen",
+  TranslationGlobalLink_state_rollbackTranslation_displayName: "Beenden und Änderungen verwerfen",
   TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: "Änderungen verwerfen ohne Abbruch des GlobalLink-Auftrags",
   TranslationGlobalLink_state_finishTranslation_displayName: "Lokalisierung abschließen",
   TranslationGlobalLink_state_DownloadTranslation_displayName: "Warten auf Übersetzung",
