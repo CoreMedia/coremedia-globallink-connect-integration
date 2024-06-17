@@ -10,17 +10,14 @@
   "devDependencies": {
     "@jangaroo/build": "^3.0.0",
     "@jangaroo/core": "^3.0.0",
-    "@coremedia/eslint-config-studio-client-ext": "2404.1.0",
     "@jangaroo/publish": "^3.0.0",
-    "eslint": "^8.56.0",
     "rimraf": "^5.0.5"
   },
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",
     "build": "jangaroo build",
     "watch": "jangaroo watch",
-    "publish": "jangaroo publish",
-    "lint": "eslint \"src/**/*.ts\""
+    "publish": "jangaroo publish"
   },
   "exports": {
     "./*": {
