@@ -20,7 +20,7 @@
     "build": "jangaroo build",
     "watch": "jangaroo watch",
     "publish": "jangaroo publish",
-    "lint": "eslint --fix \"src/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\""
   },
   "exports": {
     "./*": {
