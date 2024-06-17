@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ["@jangaroo/eslint-config"],
+  extends: ["@coremedia/eslint-config-studio-client-ext"],
 };
