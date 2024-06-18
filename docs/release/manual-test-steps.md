@@ -67,8 +67,8 @@ home folder
     3. Credentials for gcc are entered (**automatic** workflow key)
 3. Create an article A and remove validation issues.
 4. Create an article B and remove validation issues.
-5. Link article B to article A.
-6. Drag article B into Control Room's “Localization Workflows”
+5. Create link from article A to article B.
+6. Drag article A into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
     2. There should be no warnings or errors

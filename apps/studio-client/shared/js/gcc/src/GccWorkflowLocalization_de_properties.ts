@@ -21,7 +21,8 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
 
   TranslationGlobalLink_state_Translate_displayName: "Übersetzungs-Workflow annehmen",
   TranslationGlobalLink_state_rollbackTranslation_displayName: "Beenden und Änderungen verwerfen",
-  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: "Änderungen verwerfen ohne Abbruch des GlobalLink-Auftrags",
+  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName:
+    "Änderungen verwerfen ohne Abbruch des GlobalLink-Auftrags",
   TranslationGlobalLink_state_finishTranslation_displayName: "Lokalisierung abschließen",
   TranslationGlobalLink_state_DownloadTranslation_displayName: "Warten auf Übersetzung",
   TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: "Übersetzung prüfen",
@@ -38,8 +39,10 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
   "GCC-WF-20000_text": "Bei der Kommunikation mit GlobalLink ist ein Fehler aufgetreten.",
   "GCC-WF-30001_text": "Ein lokaler Ein-/Ausgabefehler ist aufgetreten.",
   "GCC-WF-40000_text": "Die Konfiguration der GlobalLink-Verbindung ist fehlerhaft.",
-  "GCC-WF-40001_text": "Die Konfiguration der GlobalLink-Verbindung ist fehlerhaft. Der Wert für 'fileType' wird nicht von GlobalLink unterstützt.",
-  "GCC-WF-40002_text": "Die Verbindung zu GlobalLink ist aufgrund eines abgelaufenen oder fehlerhaften 'apiKey' fehlgeschlagen.",
+  "GCC-WF-40001_text":
+    "Die Konfiguration der GlobalLink-Verbindung ist fehlerhaft. Der Wert für 'fileType' wird nicht von GlobalLink unterstützt.",
+  "GCC-WF-40002_text":
+    "Die Verbindung zu GlobalLink ist aufgrund eines abgelaufenen oder fehlerhaften 'apiKey' fehlgeschlagen.",
   "GCC-WF-40050_text": "Die GlobalLink-Auftragsnummer ist fehlerhaft.",
   "GCC-WF-50050_text": "Der XLIFF-Export ist fehlgeschlagen.",
   "GCC-WF-61001_text": "Das Abbrechen des GlobalLink-Auftrags ist fehlgeschlagen.",

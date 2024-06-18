@@ -1,5 +1,4 @@
 interface Gcc_properties {
-
   TranslationGlobalLink_submission_id_key: string;
   TranslationGlobalLink_submission_status_key: string;
   TranslationGlobalLink_submission_dueDate_key: string;

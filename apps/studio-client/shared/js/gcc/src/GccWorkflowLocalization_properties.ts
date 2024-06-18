@@ -1,49 +1,49 @@
 interface GccWorkflowLocalization_properties {
-  TranslationGlobalLink_displayName: string,
-  TranslationGlobalLink_description: string,
+  TranslationGlobalLink_displayName: string;
+  TranslationGlobalLink_description: string;
 
-  TranslationGlobalLink_task_Prepare_displayName: string,
-  TranslationGlobalLink_task_AutoMerge_displayName: string,
-  TranslationGlobalLink_task_SendTranslationRequest_displayName: string,
-  TranslationGlobalLink_task_CancelTranslation_displayName: string,
-  TranslationGlobalLink_task_DownloadTranslation_displayName: string,
-  TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: string,
-  TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: string,
-  TranslationGlobalLink_task_RollbackContent_displayName: string,
-  TranslationGlobalLink_task_Complete_displayName: string,
-  TranslationGlobalLink_task_Finish_displayName: string,
-  TranslationGlobalLink_task_HandleSendTranslationRequestError_displayName: string,
-  TranslationGlobalLink_task_HandleDownloadTranslationError_displayName: string,
-  TranslationGlobalLink_task_HandleCancelTranslationError_displayName: string,
+  TranslationGlobalLink_task_Prepare_displayName: string;
+  TranslationGlobalLink_task_AutoMerge_displayName: string;
+  TranslationGlobalLink_task_SendTranslationRequest_displayName: string;
+  TranslationGlobalLink_task_CancelTranslation_displayName: string;
+  TranslationGlobalLink_task_DownloadTranslation_displayName: string;
+  TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: string;
+  TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: string;
+  TranslationGlobalLink_task_RollbackContent_displayName: string;
+  TranslationGlobalLink_task_Complete_displayName: string;
+  TranslationGlobalLink_task_Finish_displayName: string;
+  TranslationGlobalLink_task_HandleSendTranslationRequestError_displayName: string;
+  TranslationGlobalLink_task_HandleDownloadTranslationError_displayName: string;
+  TranslationGlobalLink_task_HandleCancelTranslationError_displayName: string;
 
-  TranslationGlobalLink_state_Translate_displayName: string,
-  TranslationGlobalLink_state_rollbackTranslation_displayName: string,
-  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: string,
-  TranslationGlobalLink_state_finishTranslation_displayName: string,
-  TranslationGlobalLink_state_DownloadTranslation_displayName: string,
-  TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: string,
-  TranslationGlobalLink_state_ReviewCancelledTranslation_displayName: string,
-  TranslationGlobalLink_state_translationReviewed_displayName: string,
-  TranslationGlobalLink_state_continueRetry_displayName: string,
-  TranslationGlobalLink_state_retryCancellation_displayName: string,
-  TranslationGlobalLink_state_continueTranslation_displayName: string,
-  TranslationGlobalLink_state_HandleSendTranslationRequestError_displayName: string,
-  TranslationGlobalLink_state_HandleDownloadTranslationError_displayName: string,
-  TranslationGlobalLink_state_HandleCancelTranslationError_displayName: string,
+  TranslationGlobalLink_state_Translate_displayName: string;
+  TranslationGlobalLink_state_rollbackTranslation_displayName: string;
+  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: string;
+  TranslationGlobalLink_state_finishTranslation_displayName: string;
+  TranslationGlobalLink_state_DownloadTranslation_displayName: string;
+  TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: string;
+  TranslationGlobalLink_state_ReviewCancelledTranslation_displayName: string;
+  TranslationGlobalLink_state_translationReviewed_displayName: string;
+  TranslationGlobalLink_state_continueRetry_displayName: string;
+  TranslationGlobalLink_state_retryCancellation_displayName: string;
+  TranslationGlobalLink_state_continueTranslation_displayName: string;
+  TranslationGlobalLink_state_HandleSendTranslationRequestError_displayName: string;
+  TranslationGlobalLink_state_HandleDownloadTranslationError_displayName: string;
+  TranslationGlobalLink_state_HandleCancelTranslationError_displayName: string;
 
-  "GCC-WF-10000_text": string,
-  "GCC-WF-20000_text": string,
-  "GCC-WF-30001_text": string,
-  "GCC-WF-40000_text": string,
-  "GCC-WF-40001_text": string,
-  "GCC-WF-40002_text": string,
-  "GCC-WF-40050_text": string,
-  "GCC-WF-50050_text": string,
-  "GCC-WF-61001_text": string,
-  dateLiesInPast_globalLinkDueDate_text: string,
-  dateInvalid_globalLinkDueDate_text: string,
-  SUCCESS_singular_text: string,
-  SUCCESS_plural_text: string,
+  "GCC-WF-10000_text": string;
+  "GCC-WF-20000_text": string;
+  "GCC-WF-30001_text": string;
+  "GCC-WF-40000_text": string;
+  "GCC-WF-40001_text": string;
+  "GCC-WF-40002_text": string;
+  "GCC-WF-40050_text": string;
+  "GCC-WF-50050_text": string;
+  "GCC-WF-61001_text": string;
+  dateLiesInPast_globalLinkDueDate_text: string;
+  dateInvalid_globalLinkDueDate_text: string;
+  SUCCESS_singular_text: string;
+  SUCCESS_plural_text: string;
 }
 
 const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
@@ -66,7 +66,8 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
 
   TranslationGlobalLink_state_Translate_displayName: "Accept translation workflow",
   TranslationGlobalLink_state_rollbackTranslation_displayName: "Abort and rollback changes",
-  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName: "Abort and rollback without canceling at GlobalLink.",
+  TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName:
+    "Abort and rollback without canceling at GlobalLink.",
   TranslationGlobalLink_state_finishTranslation_displayName: "Finish content localization",
   TranslationGlobalLink_state_DownloadTranslation_displayName: "Awaiting translation results",
   TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: "Review translation",

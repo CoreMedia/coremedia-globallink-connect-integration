@@ -81,6 +81,10 @@ $ git tag "v1910.1-1"
 $ git push origin "v1910.1-1"
 ```
 
+Alternatively, for a more transparent review process, create a PR from `develop` to `main`. In this case, you can 
+skip the first three steps. The reviewer gets an overview of the recent changes on GitHub, and the PR can be directly 
+merged after approval.
+
 ## 6. Create GitHub Release
 
 * Create a GitHub release from the tag and the copy the changelog entries to the

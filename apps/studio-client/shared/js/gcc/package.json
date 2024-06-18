@@ -5,31 +5,31 @@
   "license": "CoreMedia Open Source License",
   "private": true,
   "dependencies": {
-    "@coremedia/studio-client.cap-base-models": "2401.3.0",
-    "@coremedia/studio-client.cap-rest-client": "2401.3.0",
-    "@coremedia/studio-client.cap-rest-client-impl": "2401.3.0",
-    "@coremedia/studio-client.client-core": "2401.3.0",
-    "@coremedia/studio-client.client-core-impl": "2401.3.0",
-    "@coremedia/studio-client.core-icons": "2401.3.0",
-    "@coremedia/studio-client.workflow-models": "2401.3.0",
-    "@coremedia/studio-client.workflow-plugin-models": "2401.3.0",
-    "@jangaroo/ext-ts": "^1.1.0",
-    "@jangaroo/runtime": "^2.0.0"
+    "@coremedia/studio-client.cap-base-models": "2404.1.0",
+    "@coremedia/studio-client.cap-rest-client": "2404.1.0",
+    "@coremedia/studio-client.cap-rest-client-impl": "2404.1.0",
+    "@coremedia/studio-client.client-core": "2404.1.0",
+    "@coremedia/studio-client.client-core-impl": "2404.1.0",
+    "@coremedia/studio-client.core-icons": "2404.1.0",
+    "@coremedia/studio-client.workflow-models": "2404.1.0",
+    "@coremedia/studio-client.workflow-plugin-models": "2404.1.0",
+    "@jangaroo/ext-ts": "^2.0.0",
+    "@jangaroo/runtime": "^3.0.0"
   },
   "devDependencies": {
-    "@jangaroo/build": "^2.0.0",
-    "@jangaroo/core": "^2.0.0",
-    "@jangaroo/eslint-config": "^2.0.0",
-    "@jangaroo/publish": "^2.0.0",
+    "@jangaroo/build": "^3.0.0",
+    "@jangaroo/core": "^3.0.0",
+    "@coremedia/eslint-config-studio-client-ext": "2404.1.0",
+    "@jangaroo/publish": "^3.0.0",
     "eslint": "^8.56.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^5.0.5"
   },
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",
     "build": "jangaroo build",
     "watch": "jangaroo watch",
     "publish": "jangaroo publish",
-    "lint": "eslint --fix \"src/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\""
   },
   "exports": {
     "./*": {
