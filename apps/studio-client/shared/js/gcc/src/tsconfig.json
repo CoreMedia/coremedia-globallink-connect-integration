@@ -6,7 +6,6 @@
     "rootDir": ".",
     "outDir": "../dist/src",
     "types": [
-      "@coremedia/studio-client.client-core",
       "@jangaroo/ext-ts"
     ]
   }
