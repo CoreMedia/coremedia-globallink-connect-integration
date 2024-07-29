@@ -22,7 +22,7 @@
     "@coremedia/eslint-config-studio-client-ext": "2406.0.1",
     "@jangaroo/publish": "^3.0.1",
     "eslint": "^8.56.0",
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.7"
   },
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",
