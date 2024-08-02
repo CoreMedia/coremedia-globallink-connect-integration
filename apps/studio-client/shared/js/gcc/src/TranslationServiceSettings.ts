@@ -30,6 +30,10 @@ export class TranslationServicesSettings {
   static readonly CMSETTINGS_TYPE = "CMSettings";
 
   /**
+   * The name of the document level property holding the settings struct.
+   */
+  static readonly P_SETTINGS = "settings";
+  /**
    * The name of the global link property in settings struct.
    */
   static readonly P_GLOBALLINK = "globalLink";
@@ -42,9 +46,10 @@ export class TranslationServicesSettings {
 
   /**
    * The default offset to use, if no (or no valid) offset is set in the
-   * settings.
+   * settings. Should be greater than 0 (zero), as the due date should be
+   * in the future.
    */
-  static readonly DEFAULT_DAY_OFFSET_FOR_DUE_DATE = 0;
+  static readonly DEFAULT_DAY_OFFSET_FOR_DUE_DATE = 30;
 
   #mainSettingsPath: Content | null | undefined = undefined;
 
@@ -134,19 +139,24 @@ export class TranslationServicesSettings {
    * Finds relevant settings documents for translation services in a
    * deterministic order.
    */
-  #findSettings(): Content[] | undefined {
+  #findSettingsDocuments(): Content[] | undefined {
     const settingsRoot = this.#resolveTranslationServicesSettingsRoot();
     if (settingsRoot === undefined) {
       return undefined;
     }
     if (settingsRoot === null || settingsRoot.isDestroyed()) {
+      Logger.debug(`No settings found for translation services: ${settingsRoot}`);
       return [];
     }
     const intermediateResult: Content[] = [];
     if (settingsRoot.isDocument()) {
+      Logger.debug(`Settings represented as single document. Adding: ${settingsRoot.getPath()} (${settingsRoot})`);
       intermediateResult.push(settingsRoot);
     } else {
       // Adds contents sorted by name, so that we have a deterministic order.
+      Logger.debug(
+        `Settings represented as folder. Adding child documents of: ${settingsRoot.getPath()} (${settingsRoot})`,
+      );
       intermediateResult.push(...settingsRoot.getChildDocuments());
     }
     // Return only those documents, that are of type CMSETTINGS_TYPE:
@@ -160,16 +170,23 @@ export class TranslationServicesSettings {
     return result;
   }
 
+  static #getSettingsStruct(settingsDocument: Content): Struct | null | undefined {
+    const properties: ContentProperties | undefined = settingsDocument.getProperties();
+    if (properties === undefined) {
+      return undefined;
+    }
+    return as(properties.get(TranslationServicesSettings.P_SETTINGS), Struct);
+  }
   /**
    * Retrieves the `globallink` struct from the given settings document, if
    * available.
    */
-  static #getGlobalLink(settings: Content): Struct | null | undefined {
-    const properties: ContentProperties | undefined = settings.getProperties();
-    if (properties === undefined) {
+  static #getGlobalLink(settingsDocument: Content): Struct | null | undefined {
+    const settings: Struct | undefined = TranslationServicesSettings.#getSettingsStruct(settingsDocument);
+    if (settings === undefined) {
       return undefined;
     }
-    return as(properties.get(TranslationServicesSettings.P_GLOBALLINK), Struct);
+    return as(settings.get(TranslationServicesSettings.P_GLOBALLINK), Struct);
   }
 
   /**
@@ -177,8 +194,8 @@ export class TranslationServicesSettings {
    * if available and if providing a suitable value (thus, a non-negative
    * number).
    */
-  static #getDayOffsetForDueDate(settings: Content): number | null | undefined {
-    const globallink: Struct | null | undefined = TranslationServicesSettings.#getGlobalLink(settings);
+  static #getDayOffsetForDueDate(settingsDocument: Content): number | null | undefined {
+    const globallink: Struct | null | undefined = TranslationServicesSettings.#getGlobalLink(settingsDocument);
     if (globallink === undefined) {
       return undefined;
     }
@@ -188,7 +205,7 @@ export class TranslationServicesSettings {
     const result = globallink.get(TranslationServicesSettings.P_DAY_OFFSET_FOR_DUE_DATE);
     if (typeof result !== "number" || result < 0) {
       Logger.debug(
-        `Invalid day offset for due date in settings at: ${settings.getPath()}: ${result} (${typeof result})`,
+        `Invalid day offset for due date in settings at: ${settingsDocument.getPath()}: ${result} (${typeof result})`,
       );
       return null;
     }
@@ -196,16 +213,16 @@ export class TranslationServicesSettings {
   }
 
   getDayOffsetForDueDate(): number | undefined {
-    const settings = this.#findSettings();
-    if (settings === undefined) {
+    const settingsDocuments = this.#findSettingsDocuments();
+    if (settingsDocuments === undefined) {
       return undefined;
     }
     // Find first setting, that provides a number.
-    for (const setting of settings) {
-      const dayOffset = TranslationServicesSettings.#getDayOffsetForDueDate(setting);
+    for (const settingsDocument of settingsDocuments) {
+      const dayOffset = TranslationServicesSettings.#getDayOffsetForDueDate(settingsDocument);
       if (typeof dayOffset === "number") {
         if (Logger.isDebugEnabled()) {
-          Logger.debug(`Using day offset ${dayOffset} for due date from settings at: ${setting.getPath()}`);
+          Logger.debug(`Using day offset ${dayOffset} for due date from settings at: ${settingsDocument.getPath()}`);
         }
         return dayOffset;
       }
