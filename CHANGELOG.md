@@ -5,6 +5,10 @@ v2406.0-1
 --------------------------------------------------------------------------------
 
 * Updated dependencies to CoreMedia Content Cloud v12.2406.0.1.
+* Fixed Due Date handling for invalid configured values of
+  `globallink.dayOffsetForDueDate`.
+* Refactored access to settings for Translation Service in studio-client to
+  an extra class.
 
 v2404.1-1
 --------------------------------------------------------------------------------
