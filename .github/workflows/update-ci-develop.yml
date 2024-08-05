@@ -1,9 +1,11 @@
 name: Update CI Develop
 
 on:
-  push:
-    branches:
-      - develop
+  workflow_dispatch: {}
+###  Next proposed step is to automate the update on push.
+#  push:
+#    branches:
+#      - develop
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
