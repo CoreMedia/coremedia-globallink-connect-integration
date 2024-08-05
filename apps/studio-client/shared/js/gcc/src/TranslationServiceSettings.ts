@@ -1,5 +1,5 @@
 import { as } from "@jangaroo/runtime";
-import { session, Content, ContentRepository, Struct } from "@coremedia/studio-client.cap-rest-client";
+import { session, Content, ContentRepository, Struct, ContentType } from "@coremedia/studio-client.cap-rest-client";
 import ContentProperties from "@coremedia/studio-client.cap-rest-client/content/ContentProperties";
 import Logger from "@coremedia/studio-client.client-core-impl/logging/Logger";
 import RemoteBeanUtil from "@coremedia/studio-client.client-core/data/RemoteBeanUtil";
@@ -51,8 +51,6 @@ export class TranslationServicesSettings {
    */
   static readonly DEFAULT_DAY_OFFSET_FOR_DUE_DATE = 30;
 
-  #mainSettingsPath: Content | null | undefined = undefined;
-
   /**
    * Get content repository from session.
    */
@@ -96,27 +94,10 @@ export class TranslationServicesSettings {
   }
 
   /**
-   * Initialize the main settings path, if not already done.
-   */
-  #initMainSettingsPath(): void {
-    if (!this.#mainSettingsPath) {
-      this.#mainSettingsPath = TranslationServicesSettings.#resolveAccessiblePath(
-        TranslationServicesSettings.MAIN_SETTINGS_PATH,
-      );
-      if (Logger.isDebugEnabled() && this.#mainSettingsPath) {
-        Logger.debug(
-          `Main settings path initialized to: ${this.#mainSettingsPath.getPath()} (${this.#mainSettingsPath})`,
-        );
-      }
-    }
-  }
-
-  /**
    * Provides the main settings path, if it is accessible.
    */
-  #resolveMainSettingsPath(): Content | null | undefined {
-    this.#initMainSettingsPath();
-    return this.#mainSettingsPath;
+  static #resolveMainSettingsPath(): Content | null | undefined {
+    return TranslationServicesSettings.#resolveAccessiblePath(TranslationServicesSettings.MAIN_SETTINGS_PATH);
   }
 
   /**
@@ -124,8 +105,8 @@ export class TranslationServicesSettings {
    * be a document of the given name, or a folder, which again contains
    * other settings documents.
    */
-  #resolveTranslationServicesSettingsRoot(): Content | null | undefined {
-    const mainSettingsPath = this.#resolveMainSettingsPath();
+  static #resolveTranslationServicesSettingsRoot(): Content | null | undefined {
+    const mainSettingsPath = TranslationServicesSettings.#resolveMainSettingsPath();
     if (!mainSettingsPath) {
       return mainSettingsPath;
     }
@@ -136,11 +117,11 @@ export class TranslationServicesSettings {
   }
 
   /**
-   * Finds relevant settings documents for translation services in a
-   * deterministic order.
+   * Finds all documents, that may be taken into account as settings documents.
+   * Not yet filtered by type, though.
    */
-  #findSettingsDocuments(): Content[] | undefined {
-    const settingsRoot = this.#resolveTranslationServicesSettingsRoot();
+  static #findSettingsDocumentsCandidates(): Content[] | undefined {
+    const settingsRoot = TranslationServicesSettings.#resolveTranslationServicesSettingsRoot();
     if (settingsRoot === undefined) {
       return undefined;
     }
@@ -159,10 +140,46 @@ export class TranslationServicesSettings {
       );
       intermediateResult.push(...settingsRoot.getChildDocuments());
     }
-    // Return only those documents, that are of type CMSETTINGS_TYPE:
-    const result = intermediateResult.filter((content) =>
-      content?.getType()?.isSubtypeOf(TranslationServicesSettings.CMSETTINGS_TYPE),
-    );
+    return intermediateResult;
+  }
+
+  static #isAccessibleSettingsDocument(content: Content): boolean | undefined {
+    const accessible: boolean | undefined = RemoteBeanUtil.isAccessible(content);
+    if (accessible === undefined) {
+      return undefined;
+    }
+    if (!accessible) {
+      Logger.debug(`Ignoring inaccessible settings document: ${content}`);
+      return false;
+    }
+    const contentType: ContentType | undefined = content.getType();
+    if (contentType === undefined) {
+      return undefined;
+    }
+    return contentType.isSubtypeOf(TranslationServicesSettings.CMSETTINGS_TYPE);
+  }
+
+  /**
+   * Finds relevant settings documents for translation services in a
+   * deterministic order.
+   */
+  static #findSettingsDocuments(): Content[] | undefined {
+    const intermediateResult: Content[] | undefined = TranslationServicesSettings.#findSettingsDocumentsCandidates();
+    if (intermediateResult === undefined) {
+      return undefined;
+    }
+
+    const result: Content[] = [];
+    // Triggers, if any of the results have not been resolved yet.
+    for (const content of intermediateResult) {
+      const matched: boolean | undefined = TranslationServicesSettings.#isAccessibleSettingsDocument(content);
+      if (matched === undefined) {
+        return undefined;
+      }
+      if (matched) {
+        result.push(content);
+      }
+    }
     if (Logger.isDebugEnabled()) {
       const resultCsv = result.map((content) => `${content.getPath()} (${content})`).join(", ");
       Logger.debug(`Found ${result.length} settings documents for translation services: ${resultCsv}`);
@@ -177,6 +194,7 @@ export class TranslationServicesSettings {
     }
     return as(properties.get(TranslationServicesSettings.P_SETTINGS), Struct);
   }
+
   /**
    * Retrieves the `globallink` struct from the given settings document, if
    * available.
@@ -213,14 +231,14 @@ export class TranslationServicesSettings {
   }
 
   getDayOffsetForDueDate(): number | undefined {
-    const settingsDocuments = this.#findSettingsDocuments();
+    const settingsDocuments = TranslationServicesSettings.#findSettingsDocuments();
     if (settingsDocuments === undefined) {
       return undefined;
     }
     // Find first setting, that provides a number.
     for (const settingsDocument of settingsDocuments) {
       const dayOffset = TranslationServicesSettings.#getDayOffsetForDueDate(settingsDocument);
-      if (typeof dayOffset === "number") {
+      if (typeof dayOffset === "number" && dayOffset > 0) {
         if (Logger.isDebugEnabled()) {
           Logger.debug(`Using day offset ${dayOffset} for due date from settings at: ${settingsDocument.getPath()}`);
         }
@@ -234,7 +252,6 @@ export class TranslationServicesSettings {
   static getInstance() {
     if (this.#instance === null) {
       this.#instance = new TranslationServicesSettings();
-      this.#instance.#initMainSettingsPath();
     }
     return this.#instance;
   }
