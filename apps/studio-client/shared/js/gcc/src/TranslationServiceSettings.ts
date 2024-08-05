@@ -161,7 +161,7 @@ export class TranslationServicesSettings {
     }
     // Return only those documents, that are of type CMSETTINGS_TYPE:
     const result = intermediateResult.filter((content) =>
-      content.getType().isSubtypeOf(TranslationServicesSettings.CMSETTINGS_TYPE),
+      content?.getType()?.isSubtypeOf(TranslationServicesSettings.CMSETTINGS_TYPE),
     );
     if (Logger.isDebugEnabled()) {
       const resultCsv = result.map((content) => `${content.getPath()} (${content})`).join(", ");
