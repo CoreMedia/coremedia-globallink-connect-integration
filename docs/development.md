@@ -46,18 +46,25 @@ To summarize the steps below, everything you need to do:
 * **develop:** After initial creation, all development by CoreMedia and
   merging pull request will happen here.
 
-* **ci/develop:** An artificial branch required for CoreMedia CI systems. It is
-  required, as for CoreMedia CI we need to change the parent POMs in that way,
-  that we set the version to `9999.9` and add a relative path, so that
-  it matches our workspace setup.
+* **ci/develop:** An artificial branch required for CoreMedia CI systems. It
+  is meant to be one commit ahead of `develop` and will contain adaptations
+  to enable running CI pipelines based on that branch.
 
-  As soon as changes from `develop` shall be published to CI, we rebase
-  the adaptions:
+  To update, you may proceed as follows:
 
   ```bash
   $ git checkout "ci/develop"
   $ git rebase "origin/develop"
   $ git push --force-with-lease
+  ```
+  
+  There is also a script available in the repository to do this for you:
+
+  ```bash
+  $ ./sh/update-ci-develop.sh
+  ```
+
+  Also, a GitHub Action is available to keep the `ci/develop` branch up-to-date.
 
 ### Tags
 
