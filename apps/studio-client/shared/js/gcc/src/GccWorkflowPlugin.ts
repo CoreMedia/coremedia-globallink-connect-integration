@@ -2,14 +2,9 @@ import ILocalesService from "@coremedia/studio-client.cap-base-models/locale/ILo
 import localesService from "@coremedia/studio-client.cap-base-models/locale/localesService";
 import ContentRepositoryImpl from "@coremedia/studio-client.cap-rest-client-impl/content/impl/ContentRepositoryImpl";
 import TaskDefinitionImpl from "@coremedia/studio-client.cap-rest-client-impl/workflow/impl/TaskDefinitionImpl";
-import session from "@coremedia/studio-client.cap-rest-client/common/session";
-import Process from "@coremedia/studio-client.cap-rest-client/workflow/Process";
-import Task from "@coremedia/studio-client.cap-rest-client/workflow/Task";
-import WorkflowObjectProperties from "@coremedia/studio-client.cap-rest-client/workflow/WorkflowObjectProperties";
+import { session, Process, Task, WorkflowObjectProperties } from "@coremedia/studio-client.cap-rest-client";
 import RemoteService from "@coremedia/studio-client.client-core-impl/data/impl/RemoteService";
-import Blob from "@coremedia/studio-client.client-core/data/Blob";
-import Calendar from "@coremedia/studio-client.client-core/data/Calendar";
-import RemoteBeanUtil from "@coremedia/studio-client.client-core/data/RemoteBeanUtil";
+import { Blob, Calendar, RemoteBeanUtil } from "@coremedia/studio-client.client-core";
 import ProcessUtil from "@coremedia/studio-client.workflow-models/util/ProcessUtil";
 import {
   Binding,
@@ -17,9 +12,9 @@ import {
   DateTimeField,
   TextField,
   WorkflowState,
-} from "@coremedia/studio-client.workflow-plugin-models/CustomWorkflowApi";
+  workflowPlugins,
+} from "@coremedia/studio-client.workflow-plugin-models";
 import { workflowLocalizationRegistry } from "@coremedia/studio-client.workflow-plugin-models/WorkflowLocalizationRegistry";
-import { workflowPlugins } from "@coremedia/studio-client.workflow-plugin-models/WorkflowPluginRegistry";
 import DateUtil from "@jangaroo/ext-ts/Date";
 import { as, is } from "@jangaroo/runtime";
 import resourceManager from "@jangaroo/runtime/l10n/resourceManager";
