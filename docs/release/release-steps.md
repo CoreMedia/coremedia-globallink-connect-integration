@@ -24,6 +24,11 @@ $ git commit --all --message="Update GCC REST Client to x.y.z"
 # ... perform required updates ...
 $ git commit --all --message="Update CMCC 1910.1"
 $ git push origin develop 
+
+### For the following steps, it is recommended to use the provided script
+### `./sh/update-ci-develop.sh` instead. Also, a GitHub Action is available
+### to automate this process.
+
 $ git checkout --track "origin/ci/develop"
 $ git rebase "origin/develop"
 # ... resolve possible conflicts ...

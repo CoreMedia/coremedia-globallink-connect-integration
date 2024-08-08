@@ -51,15 +51,16 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.5.0</version>
           <configuration>
             <rules>
               <requireMavenVersion>
                 <!--
-                  validate via `mvn versions:display-plugin-updates`
+                  Align with requirements from Blueprint workspace.
+                  Possibly validate via `mvn versions:display-plugin-updates`
                   regarding required minimum versions.
                 -->
-                <version>3.6.3</version>
+                <version>3.8.6</version>
               </requireMavenVersion>
               <requireJavaVersion>
                 <version>[17,)</version>

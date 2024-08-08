@@ -2,17 +2,9 @@ import ILocalesService from "@coremedia/studio-client.cap-base-models/locale/ILo
 import localesService from "@coremedia/studio-client.cap-base-models/locale/localesService";
 import ContentRepositoryImpl from "@coremedia/studio-client.cap-rest-client-impl/content/impl/ContentRepositoryImpl";
 import TaskDefinitionImpl from "@coremedia/studio-client.cap-rest-client-impl/workflow/impl/TaskDefinitionImpl";
-import session from "@coremedia/studio-client.cap-rest-client/common/session";
-import Content from "@coremedia/studio-client.cap-rest-client/content/Content";
-import Struct from "@coremedia/studio-client.cap-rest-client/struct/Struct";
-import StructRemoteBean from "@coremedia/studio-client.cap-rest-client/struct/StructRemoteBean";
-import Process from "@coremedia/studio-client.cap-rest-client/workflow/Process";
-import Task from "@coremedia/studio-client.cap-rest-client/workflow/Task";
-import WorkflowObjectProperties from "@coremedia/studio-client.cap-rest-client/workflow/WorkflowObjectProperties";
+import { session, Process, Task, WorkflowObjectProperties } from "@coremedia/studio-client.cap-rest-client";
 import RemoteService from "@coremedia/studio-client.client-core-impl/data/impl/RemoteService";
-import Blob from "@coremedia/studio-client.client-core/data/Blob";
-import Calendar from "@coremedia/studio-client.client-core/data/Calendar";
-import RemoteBeanUtil from "@coremedia/studio-client.client-core/data/RemoteBeanUtil";
+import { Blob, Calendar, RemoteBeanUtil } from "@coremedia/studio-client.client-core";
 import ProcessUtil from "@coremedia/studio-client.workflow-models/util/ProcessUtil";
 import {
   Binding,
@@ -20,19 +12,19 @@ import {
   DateTimeField,
   TextField,
   WorkflowState,
-} from "@coremedia/studio-client.workflow-plugin-models/CustomWorkflowApi";
+  workflowPlugins,
+} from "@coremedia/studio-client.workflow-plugin-models";
 import { workflowLocalizationRegistry } from "@coremedia/studio-client.workflow-plugin-models/WorkflowLocalizationRegistry";
-import { workflowPlugins } from "@coremedia/studio-client.workflow-plugin-models/WorkflowPluginRegistry";
 import DateUtil from "@jangaroo/ext-ts/Date";
 import { as, is } from "@jangaroo/runtime";
 import resourceManager from "@jangaroo/runtime/l10n/resourceManager";
-import Logger from "@coremedia/studio-client.client-core-impl/logging/Logger";
 import GccWorkflowLocalization_properties from "./GccWorkflowLocalization_properties";
 import Gcc_properties from "./Gcc_properties";
 import gccCanceledIcon from "./icons/global-link-workflow-canceled.svg";
 import gccIcon from "./icons/global-link-workflow.svg";
 import gccCancelActionIcon from "./icons/remove.svg";
 import gccWarningIcon from "./icons/warning.svg";
+import { translationServicesSettings } from "./TranslationServiceSettings";
 
 const UNAVAILABLE_SUBMISSION_STATE: string = "unavailable";
 const BLOB_FILE_PROCESS_VARIABLE_NAME: string = "translationResultXliff";
@@ -55,7 +47,6 @@ const HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME: string = "HandleSendTrans
 const HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME: string = "HandleDownloadTranslationError";
 const HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME: string = "HandleCancelTranslationError";
 const MILLISECONDS_FOR_ONE_DAY: number = 86400000;
-const CMSETTINGS_TYPE: string = "CMSettings";
 
 interface GccViewModel {
   globalLinkPdSubmissionIds?: string;
@@ -504,50 +495,20 @@ function createQuickTipText(locales: Array<any>, localesService: ILocalesService
   return localeQuickTipText;
 }
 
-function getDefaultDueDate(): Calendar {
-  const translationServices: Content = session._.getConnection()
-    .getContentRepository()
-    .getChild("/Settings/Options/Settings/Translation Services");
-  const settings: Array<Content> = [];
-  if (!RemoteBeanUtil.isAccessible(translationServices)) {
-    return undefined;
-  } else if (translationServices.isFolder()) {
-    settings.push(...translationServices.getChildDocuments());
-  } else if (translationServices.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
-    settings.push(translationServices);
-  } else {
+function getDefaultDueDate(): Calendar | undefined {
+  const dayOffsetForDueDate = translationServicesSettings.getDayOffsetForDueDate();
+  if (dayOffsetForDueDate === undefined) {
     return undefined;
   }
 
-  for (const content of settings) {
-    if (RemoteBeanUtil.isAccessible(content) && content.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
-      const calendar: Calendar = getDueDateFromSetting(content);
-      if (calendar) {
-        Logger.debug("Using due date from setting at " + content.getPath());
-        return calendar;
-      }
-    }
-  }
-
-  return undefined;
-}
-
-function getDueDateFromSetting(setting: Content): Calendar {
-  const gccConfig = setting.getProperties().get("settings") as StructRemoteBean;
-  if (RemoteBeanUtil.isAccessible(gccConfig) && gccConfig.get("globalLink")) {
-    const dayOffsetForDueDate: number = as(gccConfig.get("globalLink"), Struct).get("dayOffsetForDueDate");
-    if (dayOffsetForDueDate) {
-      const dateInFutureInMillieSeconds: number = new Date().getTime() + MILLISECONDS_FOR_ONE_DAY * dayOffsetForDueDate;
-      const dateInFuture = new Date(dateInFutureInMillieSeconds);
-      return new Calendar({
-        year: dateInFuture.getFullYear(),
-        month: dateInFuture.getMonth(),
-        day: dateInFuture.getDate(),
-        offset: -dateInFuture.getTimezoneOffset() * (60 * 1000),
-        timeZone: as(session._.getConnection().getContentRepository(), ContentRepositoryImpl).getDefaultTimeZone(),
-        normalized: true,
-      });
-    }
-  }
-  return undefined;
+  const dateInFutureInMillieSeconds = new Date().getTime() + MILLISECONDS_FOR_ONE_DAY * dayOffsetForDueDate;
+  const dateInFuture = new Date(dateInFutureInMillieSeconds);
+  return new Calendar({
+    year: dateInFuture.getFullYear(),
+    month: dateInFuture.getMonth(),
+    day: dateInFuture.getDate(),
+    offset: -dateInFuture.getTimezoneOffset() * (60 * 1000),
+    timeZone: as(session._.getConnection().getContentRepository(), ContentRepositoryImpl).getDefaultTimeZone(),
+    normalized: true,
+  });
 }
