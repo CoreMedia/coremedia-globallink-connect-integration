@@ -1,12 +1,14 @@
 Changelog
 ================================================================================
 
-v2406.0-1
+v2406.0.1-1
 --------------------------------------------------------------------------------
 
 * Updated dependencies to CoreMedia Content Cloud v12.2406.0.1.
+* Switched to recommended imports of `index.ts` in Studio Client where
+  applicable.
 * Fixed Due Date handling for invalid configured values of
-  `globallink.dayOffsetForDueDate`.
+  `globalLink.dayOffsetForDueDate`.
 * Refactored access to settings for Translation Service in studio-client to
   an extra class.
 
