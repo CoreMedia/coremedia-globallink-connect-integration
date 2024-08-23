@@ -14,7 +14,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>com.coremedia.labs.translation.gcc</groupId>
       <artifactId>gcc-restclient-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
