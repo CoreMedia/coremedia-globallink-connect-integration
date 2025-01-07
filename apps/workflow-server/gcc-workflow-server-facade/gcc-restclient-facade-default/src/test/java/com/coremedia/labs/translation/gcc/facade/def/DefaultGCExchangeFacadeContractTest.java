@@ -72,12 +72,12 @@ import static org.slf4j.LoggerFactory.getLogger;
  * In order to run the test, you need to add a file {@code .gcc.properties}
  * to your user home folder:
  * </p>
- * <pre>
+ * <pre>{@code
  * apiKey=ab12cd34
  * url=https://connect-dev.translations.com/api/v3/
  * key=0e...abc
  * fileType=xliff
- * </pre>
+ * }</pre>
  */
 @ExtendWith(GccCredentialsExtension.class)
 class DefaultGCExchangeFacadeContractTest {

@@ -31,8 +31,6 @@ public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeF
   }
 
   /**
-   * {@inheritDoc}
-   *
    * @implNote Uses property {@value GCConfigProperty#KEY_TYPE} to decide which
    * facade to instantiate.
    */

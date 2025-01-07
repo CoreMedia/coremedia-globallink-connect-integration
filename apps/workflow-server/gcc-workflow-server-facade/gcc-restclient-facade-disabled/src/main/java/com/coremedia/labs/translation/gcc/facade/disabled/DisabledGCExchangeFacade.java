@@ -42,8 +42,6 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
   }
 
   /**
-   * {@inheritDoc}
-   *
    * @throws UnsupportedOperationException if called
    * @implNote Will throw an {@link UnsupportedOperationException} as there is no delegate available.
    */
