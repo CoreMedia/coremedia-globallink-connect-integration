@@ -306,12 +306,8 @@ class DefaultGCExchangeFacadeTest {
         assertThat(actualContentRead[0]).isEqualTo(LOREM_IPSUM);
       }
 
-      private class HappyPathTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
-        private final String[] actualContentRead;
-
-        private HappyPathTaskDataConsumer(String[] actualContentRead) {
-          this.actualContentRead = actualContentRead;
-        }
+      private record HappyPathTaskDataConsumer(
+        String[] actualContentRead) implements BiPredicate<InputStream, GCTaskModel> {
 
         @Override
         public boolean test(InputStream is, GCTaskModel task) {

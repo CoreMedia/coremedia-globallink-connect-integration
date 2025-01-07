@@ -184,7 +184,7 @@ class GlobalLinkActionTest {
     assertFalse(GlobalLinkAction.isRepositoryUnavailableException(new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null)));
   }
 
-  private static class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
+  private static final class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
     @Serial
     private static final long serialVersionUID = -288745610618179168L;
     private final ApplicationContext applicationContext;
