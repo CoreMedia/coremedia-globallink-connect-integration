@@ -217,7 +217,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
   }
 
-  private String gcResponseToString(GCResponse response) {
+  private static String gcResponseToString(GCResponse response) {
     return com.google.common.base.MoreObjects.toStringHelper(response)
             .add("status", response.getStatus())
             .add("statusCode", response.getStatusCode())

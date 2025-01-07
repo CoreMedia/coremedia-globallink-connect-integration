@@ -127,7 +127,7 @@ class DefaultGCExchangeFacadeContractTest {
       assertFileTypeAvailable(type, gccProperties);
     }
 
-    private void assertFileTypeAvailable(String type, Map<String, Object> gccProperties) {
+    private static void assertFileTypeAvailable(String type, Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       GCExchange delegate = facade.getDelegate();
       ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
@@ -153,7 +153,7 @@ class DefaultGCExchangeFacadeContractTest {
       assertSupportedLocaleAvailable(expectedSupportedLocale, LocaleConfig::getIsSource, gccProperties);
     }
 
-    private void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, Object> gccProperties) {
+    private static void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
       List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
@@ -203,7 +203,7 @@ class DefaultGCExchangeFacadeContractTest {
       );
     }
 
-    long getTotalRecordsCount(GCExchange exchange) {
+    static long getTotalRecordsCount(GCExchange exchange) {
       Content.ContentResponseData contentList = exchange.getContentList();
       return contentList.getTotalRecordsCount();
     }
@@ -416,7 +416,7 @@ class DefaultGCExchangeFacadeContractTest {
       assertThat(submissionId).isGreaterThan(0L);
     }
 
-    private String padEnd(String str, int minLength, char startChar, char endChar) {
+    private static String padEnd(String str, int minLength, char startChar, char endChar) {
       StringBuilder builder = new StringBuilder(str);
       char currentChar = startChar;
       while (builder.length() < minLength) {

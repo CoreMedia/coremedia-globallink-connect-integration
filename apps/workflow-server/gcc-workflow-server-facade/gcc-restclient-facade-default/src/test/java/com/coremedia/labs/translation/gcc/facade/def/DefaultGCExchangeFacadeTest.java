@@ -283,8 +283,8 @@ class DefaultGCExchangeFacadeTest {
     class SingleTasks {
       @Mock
       private GCTask gcTask;
-      private final long expectedSubmissionId = 1234L;
-      private final long expectedTaskId = 5678L;
+      private static final long expectedSubmissionId = 1234L;
+      private static final long expectedTaskId = 5678L;
       private final byte[] expectedContent = LOREM_IPSUM.getBytes(StandardCharsets.UTF_8);
 
       @Test

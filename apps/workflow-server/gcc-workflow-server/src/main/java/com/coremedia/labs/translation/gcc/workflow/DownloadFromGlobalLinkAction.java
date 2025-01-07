@@ -445,7 +445,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     }
   }
 
-  private void disableCancelWhenCompletedLocalesExist(Result result) {
+  private static void disableCancelWhenCompletedLocalesExist(Result result) {
     if (!result.completedLocales.isEmpty()) {
       result.cancellationAllowed = false;
     }
