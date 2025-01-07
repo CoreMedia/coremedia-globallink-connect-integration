@@ -210,6 +210,7 @@ class GlobalLinkActionTest {
       return applicationContext;
     }
 
+    @SuppressWarnings("HttpUrlsUsage")
     @Override
     protected Map<String, Object> getGccSettings(Site site) {
       return ImmutableMap.of(

@@ -196,6 +196,7 @@ final class TranslationUtil {
     }
   }
 
+  @SuppressWarnings("HttpUrlsUsage")
   private static DocumentBuilderFactory newDocumentBuilderFactory() throws ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
