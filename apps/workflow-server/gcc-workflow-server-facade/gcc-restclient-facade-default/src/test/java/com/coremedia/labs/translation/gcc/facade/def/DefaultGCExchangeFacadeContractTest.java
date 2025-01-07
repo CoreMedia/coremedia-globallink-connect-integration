@@ -83,17 +83,19 @@ import static org.slf4j.LoggerFactory.getLogger;
 class DefaultGCExchangeFacadeContractTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final String XML_CONTENT = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><test>Lorem Ipsum</test>";
-  private static final String XLIFF_CONTENT_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
-          "<xliff xmlns=\"urn:oasis:names:tc:xliff:document:1.2\" version=\"1.2\">\n" +
-          "  <file original=\"someId\" source-language=\"%s\" datatype=\"xml\" target-language=\"%s\">\n" +
-          "    <body>\n" +
-          "      <trans-unit id=\"1\" datatype=\"plaintext\">\n" +
-          "        <source>Lorem Ipsum</source>\n" +
-          "        <target>Lorem Ipsum</target>\n" +
-          "      </trans-unit>\n" +
-          "    </body>\n" +
-          "  </file>\n" +
-          "</xliff>\n";
+  private static final String XLIFF_CONTENT_PATTERN = """
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+      <file original="someId" source-language="%s" datatype="xml" target-language="%s">
+        <body>
+          <trans-unit id="1" datatype="plaintext">
+            <source>Lorem Ipsum</source>
+            <target>Lorem Ipsum</target>
+          </trans-unit>
+        </body>
+      </file>
+    </xliff>
+    """;
   private static final long TRANSLATION_TIMEOUT_MINUTES = 30L;
   private static final long SUBMISSION_VALID_TIMEOUT_MINUTES = 2L;
 
