@@ -109,7 +109,7 @@ class DefaultGCExchangeFacadeContractTest {
   @DisplayName("Tests for available File Types")
   class FileTypes {
     @ParameterizedTest(name = "[{index}] Optional File Type {0} should be available.")
-    @ValueSource(strings = {"xml"})
+    @ValueSource(strings = "xml")
     @DisplayName("Ensure that optional file types are available.")
     void optionalFileTypesAvailable(String type, Map<String, Object> gccProperties) {
       // These file types are optional. They may be required for testing, but they are not
@@ -118,7 +118,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     @ParameterizedTest(name = "[{index}] Required File Type {0} should be available.")
-    @ValueSource(strings = {"xliff"})
+    @ValueSource(strings = "xliff")
     @DisplayName("Ensure that required file types are available.")
     void requiredFileTypesAvailable(String type, Map<String, Object> gccProperties) {
       // These file types are crucial for this GCC client.
@@ -145,7 +145,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     @ParameterizedTest(name = "[{index}] Required Source Locale {0} should be available.")
-    @ValueSource(strings = {"en-US"})
+    @ValueSource(strings = "en-US")
     @DisplayName("Ensure that source locales required by tests are available.")
     void requiredSourceLocalesAreAvailable(String expectedSupportedLocale, Map<String, Object> gccProperties) {
       assertSupportedLocaleAvailable(expectedSupportedLocale, LocaleConfig::getIsSource, gccProperties);

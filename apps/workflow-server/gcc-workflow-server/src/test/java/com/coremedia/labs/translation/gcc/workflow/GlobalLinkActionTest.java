@@ -84,7 +84,7 @@ class GlobalLinkActionTest {
   @Configuration
   @Import(XmlRepoConfiguration.class)
   @ImportResource(reader = ResourceAwareXmlBeanDefinitionReader.class)
-  @PropertySource(value = "classpath:META-INF/coremedia/gcc-workflow.properties")
+  @PropertySource("classpath:META-INF/coremedia/gcc-workflow.properties")
   static class LocalConfig {
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     @Bean
