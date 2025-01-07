@@ -3,7 +3,7 @@
 The mock facade will simulate a translation service in that way, that it replaces
 the target nodes (pre-filled with values from source nodes) in XLIFF with some
 other characters. As a result you will see that upon translation something
-happened to the target document, i. e. it received a content update.
+happened to the target document, i.e., it received a content update.
 
 It is recommended to remove this facade in production environments, as it is
 considered harmful to switch from the default facade to mock facade and vice
@@ -47,7 +47,7 @@ states at GCC backend.
 ## Mock Facade Configuration
 
 You can configure the behaviour of the Mock Facade via the GlobalLink settings (see: [Configuring GlobalLink connection settings](../../../../README.md)).
-Therefore you can set the following parameters: 
+Therefore, you can set the following parameters: 
 * `mockDelaySeconds` base (minimum) offset in seconds  (type:`Integer`)
 * `mockDelayOffsetPercentage` percentage offset to the base delay, which will either reduce or increase the delay (type:`Integer`)
 * `mockError` (type:`String`) If you want to test the Error Handling you can set this parameter to: 

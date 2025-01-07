@@ -40,7 +40,7 @@ $ git push origin "ci/develop" --force-with-lease
 $ git checkout develop
 ```
 
-See https://github.com/CoreMedia/coremedia-globallink-connect-integration for current and most recent version of GCC REST Client (labels on top of page). 
+See https://github.com/CoreMedia/coremedia-globallink-connect-integration for current, and most recent version of GCC REST Client (labels on top of page). 
 
 ## 2. Verify Release Versions of Core Packages
 
@@ -92,7 +92,7 @@ merged after approval.
 
 ## 6. Create GitHub Release
 
-* Create a GitHub release from the tag and the copy the changelog entries to the
+* Create a GitHub release from the tag, and the copy the changelog entries to the
   release description. Please use the same pattern for release title as the
   previous releases.
 * Review GitHub issues and possibly adjust state.

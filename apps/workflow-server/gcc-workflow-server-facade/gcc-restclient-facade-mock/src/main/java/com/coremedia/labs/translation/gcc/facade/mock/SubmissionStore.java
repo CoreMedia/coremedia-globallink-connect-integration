@@ -56,7 +56,7 @@ final class SubmissionStore {
    * Add a submission for the given target locales and the given contents.
    *
    * @param subject            subject may be used to control mocked task state switching; see {@link Submission#Submission(String, List, long, int)} for details.
-   * @param submissionContents data (i. e. the XLIFF for example) to be translated
+   * @param submissionContents data (i.e., the XLIFF for example) to be translated
    * @return unique id for the submission
    */
   long addSubmission(String subject, List<SubmissionContent> submissionContents) {

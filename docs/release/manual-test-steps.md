@@ -67,7 +67,7 @@ home folder
     3. Credentials for gcc are entered (**automatic** workflow key)
 3. Create an article A and remove validation issues.
 4. Create an article B and remove validation issues.
-5. Create link from article A to article B.
+5. Create a link from the article A to the article B.
 6. Drag article A into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
@@ -242,7 +242,7 @@ home folder
        a little “x” on the bottom right)
     4. The workflows should disappear from the "Running" list after some time
        (until then the status in _Workflow App_'s overview will signal that
-       we are awaiting the cancelation to be processed and the workflow detail
+       we are awaiting the cancelation to be processed, and the workflow detail
        view should have a corresponding signal in fields "Status" and
        "Current Task").
     5. Field "Current Task" in _Workflow App_'s detail view should
@@ -289,9 +289,8 @@ home folder
        content (if you perform that you need to redo steps from 1 to 4)
 7. Set _apiKey_ in GlobalLink settings to its valid value and click “Continue
    and retry”
-8. Double-click the workflow in "Running" and wait for field "Status" to change
-   to
-   “Translate” or for field "Submission ID" to be set
+8. Double-click the workflow in "Running" and wait for the field "Status" to
+   change to “Translate” or for the field "Submission ID" to be set
 9. Set _apiKey_ in GlobalLink settings to something wrong
 10. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
     1. The icon should be a Warning sign
@@ -331,8 +330,8 @@ home folder
     1. The icon should be a warning sign
 6. Double-click the workflow
     1. Field "Current Task" should be “Download error”
-    2. In section "More", a download link for the broken XLIFF should be shown
-       under "Issue Details"
+    2. In the section "More", a download link for the broken XLIFF should be
+       shown under "Issue Details"
 7. Click the XLIFF download link
     1. Both the XLIFF and an issue details text file should be included
 8. Click "Accept Task" and "Next Step"

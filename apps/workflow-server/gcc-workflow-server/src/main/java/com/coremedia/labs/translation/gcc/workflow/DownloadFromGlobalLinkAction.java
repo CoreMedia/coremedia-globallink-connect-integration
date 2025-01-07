@@ -217,7 +217,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
       resultConsumer.accept(result);
       doExecuteGlobalLinkAction(facade, submissionId, result, issues);
     } catch (GCFacadeException | GlobalLinkWorkflowException e) {
-      throw e; // do not delete working directory, it's needed and deleted in #doStoreResult
+      throw e; // do not delete the working directory, it's needed and deleted in #doStoreResult
     } catch (RuntimeException e) {
       forceDelete(result.workingDir); // #doStoreResult is not called for arbitrary exceptions, must clean up here
       throw e;
@@ -240,7 +240,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     } else {
       facade.downloadCompletedTasks(submissionId,
               (inputStream, task) -> importXliffFile(inputStream, task, result.completedLocales, issues, result));
-      LOG.info("Checked for update of submission {} (PD ID {}) in state {} with completed locales [{}].",
+      LOG.info("Checked for an update of submission {} (PD ID {}) in state {} with completed locales [{}].",
               submissionId, submission.getPdSubmissionIds(), submission.getState(),
               result.completedLocales.stream().map(Locale::toLanguageTag).collect(Collectors.toList()));
       //disable cancel if any tasks are completed
@@ -406,7 +406,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
               .add(errorResultItem.getContent());
     }
 
-    //store each errorList under its taskID so it can be referenced correctly later
+    //store each errorList under its taskID, so it can be referenced correctly later
     result.resultItems.put(task.getTaskId(), errorResultItems);
     return false;
   }
@@ -441,7 +441,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     try {
       FileUtils.forceDelete(file);
     } catch (IOException e) {
-      LOG.warn("Cannot delete {}, please cleanup manually!", file.getAbsolutePath(), e);
+      LOG.warn("Cannot delete {}, please clean up manually!", file.getAbsolutePath(), e);
     }
   }
 

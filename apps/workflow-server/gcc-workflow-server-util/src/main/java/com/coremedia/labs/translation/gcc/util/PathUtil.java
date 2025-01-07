@@ -10,7 +10,7 @@ import java.util.stream.StreamSupport;
  * Path utilities.
  * <p>
  * In this context, "path" means a '/'-separated standard path, like a
- * Unix file system path or the path part of a URL.  PathUtil does NOT
+ * Unix file system path, or the path part of a URL. PathUtil does NOT
  * cover special syntaxes like Windows file system paths.
  */
 final class PathUtil {
@@ -23,7 +23,7 @@ final class PathUtil {
   private PathUtil() {}
 
   /**
-   * Determine whether the given path, if normalized, starts with a .. segment.
+   * Determine whether the given path, if normalized, starts with a ".." segment.
    */
   static boolean isReferringToParent(String path) {
     List<String> segments = tokenizeAndNormalize(path);
@@ -42,7 +42,7 @@ final class PathUtil {
    * <ul>
    *   <li>Tokenize it</li>
    *   <li>Eliminate foo/.. occurrences</li>
-   *   <li>In case the directory is wanted and the path does not end with "/" omit the last segment.</li>
+   *   <li>In case the directory is wanted, and the path does not end with "/" omit the last segment.</li>
    * </ul>
    */
   private static List<String> tokenizeAndNormalize(String path) {

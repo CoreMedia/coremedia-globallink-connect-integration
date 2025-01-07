@@ -5,7 +5,7 @@ Java API as well as the REST backend.
 
 Having this, we can clearly define the contract between us (the consumer) and
 the GCC API (the producer). We can test the contract and/or we can mock the
-GCC API and replace translation with some mock results without having the
+GCC API and replace translation with some mock results without having
 a GCC sandbox at hand.
 
 ## Java ServiceLoader
@@ -72,7 +72,7 @@ these files:
 
 ## Delegate
 
-By default a real connection to GCC is established. In order to do so, the
+By default, a real connection to GCC is established. In order to do so, the
 facade internally uses `org.gs4tr.gcc.restclient.GCExchange`. If you need to
 access GCC API which is not available via the facade, you may consider
 using `GCExchangeFacade.getDelegate()` to use the raw API. For production use

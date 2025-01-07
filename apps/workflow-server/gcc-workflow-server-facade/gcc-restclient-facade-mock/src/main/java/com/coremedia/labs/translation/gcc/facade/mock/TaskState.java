@@ -26,7 +26,7 @@ enum TaskState {
    */
   COMPLETED,
   /**
-   * Deliverd task (reached manually).
+   * Delivered task (reached manually).
    */
   DELIVERED;
 

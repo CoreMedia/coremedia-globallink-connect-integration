@@ -208,7 +208,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       }
       // MessageResponse has a statusCode (do not confuse with status), but
       // https://connect.translations.com/docs/api/GlobalLink_Connect_Cloud_API_Documentation.htm#submissions_cancel
-      // does not document it.  Since we cannot on-the-fly plug response#message
+      // does not document it. Since we cannot on-the-fly plug response#message
       // into Studio's resource bundles, the http result is the only useful data
       // here.
       return response.getStatus();
@@ -329,7 +329,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
   private void confirmTaskCancellations(List<Long> taskIds) {
     if (taskIds.isEmpty()) {
-      // We must not sent a request with empty list of task IDs.
+      // We must not send a request with empty list of task IDs.
       return;
     }
 

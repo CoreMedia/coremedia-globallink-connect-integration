@@ -181,7 +181,7 @@ would have to wait until it is expired.
     between retries if the XLIFF could not be sent on first try. 
     (_optional_, default: `180`, type:`Integer`)
 * `downloadTranslationRetryDelay` Overrides the update interval (secs) of the 
-    submission's state and the translated XLIFF(s) are not immediately ready. 
+    submission's state, and the translated XLIFF(s) are not immediately ready. 
     (_optional_, default: `1800`, type:`Integer`)
 * `cancelTranslationRetryDelay` Overrides the interval (secs) for retrying the 
     cancellation of a submission. (_optional_, default: `180`, type: `Integer`)
@@ -214,12 +214,12 @@ should be equal to your derived site locale as IETF BCP 47 language tag.
 You will find the language tags in `/Settings/Options/Settings/LocaleSettings`
 in your CMS.
 
-### Why does my workflow show "Status: Completed" but the content is not translated, and it is still in the list of running workflows?
+### Why does my workflow show "Status: Completed", but the content is not translated, and it is still in the list of running workflows?
 
 **Short:** _Ask GlobalLink to check task states and to complete all tasks 
 of the submission._
 
-In GlobalLink the state can be handled separately for the submission 
+In GlobalLink the state can be handled separately for the submission,
 and the actual translation tasks. A submission can be accidentally marked as 
 completed by the translator while the actual tasks might not be completed yet.
 

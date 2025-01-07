@@ -61,11 +61,11 @@ import static org.slf4j.LoggerFactory.getLogger;
  * </p>
  * <p>
  * This is a test which should run on demand for example if you extended
- * the facade or if either the GCC Java API got updated or the corresponding
+ * the facade or if either the GCC Java API got updated, or the corresponding
  * GCC REST Backend.
  * </p>
  * <p>
- * It is a so called contract test and thus tests the contract between
+ * It is a so-called contract test and thus tests the contract between
  * the consumer (this facade) and the producer (the GCC Java API).
  * </p>
  * <p>
@@ -185,7 +185,7 @@ class DefaultGCExchangeFacadeContractTest {
       // Fail-early test: Ensure that we actually received any content.
       // Note, that we expect no latency here. If we experience that the
       // uploaded content is not immediately available, we have to introduce
-      // a wait statement here (e. g. using Awaitility).
+      // a wait statement here (e.g., using Awaitility).
       assertThat(contentCountAfter).isGreaterThan(contentCountBefore);
 
       Content.ContentResponseData contentList = delegate.getContentList(new PageableRequest(1L, contentCountAfter));

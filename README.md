@@ -33,7 +33,7 @@ This open-source extension adds the following functionality to the CoreMedia Stu
 * Editors in CoreMedia Studio are notified about completion, cancellation, and
     import and communication errors of a translation workflow with GlobalLink.
 
-**Detailed documentation available at
+**A detailed documentation available at
 [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
 or browse directly in [docs/ folder](./docs/README.md).**
 

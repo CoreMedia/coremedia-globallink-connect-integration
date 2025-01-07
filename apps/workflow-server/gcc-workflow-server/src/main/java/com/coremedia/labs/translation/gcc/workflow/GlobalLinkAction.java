@@ -146,9 +146,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final int MIN_RETRY_DELAY_SECS = 60; // one minute
 
   /**
-   * If the value is accidentally set to a very big delay and the workflow process picks this value, you will have
+   * If the value is accidentally set to a very big delay, and the workflow process picks this value, you will have
    * to wait very long until it checks again for an update.
-   * Changing this accidentally got also a lot more likely, since times can be change in the content repository directly.
+   * Changing this accidentally got also a lot more likely, since times can be changed in the content repository directly.
    */
   private static final int MAX_RETRY_DELAY_SECS = 86400; // one day
 
@@ -395,7 +395,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * changed as result of this action.
    *
    * <p>If this method throws a {@link GCFacadeException} or {@link GlobalLinkWorkflowException}, then method
-   * {@link #doStoreResult(Task, Object)} will still be called afterwards if a result has been set at the
+   * {@link #doStoreResult(Task, Object)} will still be called afterward if a result has been set at the
    * consumer. In case of other exceptions, no results are stored and exceptions are propagated and
    * may lead to task escalation, depending on the value of the {@code rethrowResultException} constructor
    * parameter.
@@ -701,20 +701,20 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @VisibleForTesting
   static class Result<R> {
     /**
-     * holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
+     * Holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // suppress warning for non-typical usage of Optional
             Optional<R> extendedResult = Optional.empty();
     /**
-     * json with map from studio severity to map of error codes to possibly empty list of affected contents
+     * JSON with a map from studio severity to a map of error codes to possibly empty list of affected contents
      */
     Blob issues;
     /**
-     * number of remaining automatic retries, if there are issues
+     * Number of remaining automatic retries, if there are issues
      */
     int remainingAutomaticRetries;
     /**
-     * seconds to delay before next retry
+     * Seconds to delay before next retry
      */
     int retryDelaySeconds;
   }

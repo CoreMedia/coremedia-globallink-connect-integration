@@ -180,7 +180,7 @@ public final class Zipper {
     try {
       FileUtils.forceDelete(file);
     } catch (IOException e) {
-      LOG.warn("Cannot delete {}, please cleanup manually.", file.getAbsolutePath(), e);
+      LOG.warn("Cannot delete {}, please clean up manually.", file.getAbsolutePath(), e);
     }
   }
 }

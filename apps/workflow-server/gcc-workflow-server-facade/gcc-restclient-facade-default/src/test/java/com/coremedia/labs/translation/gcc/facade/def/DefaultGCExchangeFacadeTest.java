@@ -106,7 +106,7 @@ class DefaultGCExchangeFacadeTest {
   @DisplayName("Tests for uploadContent")
   class UploadContent {
     @Test
-    @DisplayName("Test for successful upload.")
+    @DisplayName("Test for an successful upload.")
     void happyPath(TestInfo testInfo) {
       String expectedFileId = "1234-5678";
       String expectedFileName = testInfo.getDisplayName();
@@ -288,7 +288,7 @@ class DefaultGCExchangeFacadeTest {
       private final byte[] expectedContent = LOREM_IPSUM.getBytes(StandardCharsets.UTF_8);
 
       @Test
-      @DisplayName("Test for successful download.")
+      @DisplayName("Test for a successful download.")
       void happyPath() {
         when(tasksListResponse.getTasks()).thenReturn(singletonList(gcTask));
         when(gcTask.getTaskId()).thenReturn(expectedTaskId);

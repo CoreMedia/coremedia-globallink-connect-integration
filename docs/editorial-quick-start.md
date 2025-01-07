@@ -35,7 +35,7 @@ The notes are sent as instructions for the translators.
 ![GCC Select](img/gcc-select-type.png)
 
 After having started the workflow, it is shown in the pending workflow section. 
-Double click the workflow to open it in the detail view in the Workflow app.
+Double-click the workflow to open it in the detail view in the Workflow app.
 Here you will see the submission state, the id and other information once
 available.
 
@@ -56,7 +56,7 @@ Well done.
 
 ### Pitfalls
 
-**Publishing content of active submissions** - Once a language is completely 
+**Publishing content of active submissions**: Once a language is completely 
 translated at GlobalLink, it is downloaded and applied to the content for 
 editorial review in the Studio. While it is fine to review this content and even 
 publish it, especially publishing content can cause issues later on. When 
@@ -66,7 +66,7 @@ triggered with "Abort and rollback changes". So, you should make sure that
 a submission does not have to be aborted when publishing content of an active
 workflow.
 
-**Canceling submissions** - Additionally to _Abort and destroy workflows_ the 
+**Canceling submissions**: Additionally to _Abort and destroy workflows_ the 
 workflows of type _Translation with GlobalLink_ can be canceled so that also
 GlobalLink gets notified about the cancelation. In rare cases, when for example
 the submission was at the same time completed in GlobalLink, then you will see 

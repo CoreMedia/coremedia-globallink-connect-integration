@@ -36,7 +36,7 @@ class DownloadFromGlobalLinkActionUnitTest {
         IOUtils.copy(is, os);
       }
     } catch (IOException e) {
-      assumeTrue(false, "Cannot setup DownloadFromGlobalLinkActionUnitTest: " + e.getMessage());
+      assumeTrue(false, "Cannot set up DownloadFromGlobalLinkActionUnitTest: " + e.getMessage());
     }
   }
 
@@ -118,7 +118,7 @@ class DownloadFromGlobalLinkActionUnitTest {
       copyResourceToDirectory("zipentry2.txt", newXliffs, 5L);
       copyResourceToDirectory("zipentry3.txt", newXliffs, 6L);
     } catch (IOException e) {
-      assumeTrue(false, "Cannot prepare working directory: " + e.getMessage());
+      assumeTrue(false, "Cannot prepare the working directory: " + e.getMessage());
     }
   }
 
@@ -140,7 +140,7 @@ class DownloadFromGlobalLinkActionUnitTest {
         FileUtils.forceDelete(file);
       }
     } catch (IOException e) {
-      LOG.warn("Cannot delete {}, please cleanup manually.", file.getAbsolutePath(), e);
+      LOG.warn("Cannot delete {}, please clean up manually.", file.getAbsolutePath(), e);
     }
   }
 

@@ -38,9 +38,9 @@ To summarize the steps below, everything you need to do:
 
 ![Branch Model](img/branch-model.png)
 
-* **main:** Will be initially used to create `develop` branch. Afterwards,
+* **main:** Will be initially used to create `develop` branch. Afterward,
   it will just be used to merge changes from `develop` branch to `main`,
-  i.e., it will just be recipient afterwards. On _release_ the main merge
+  i.e., it will just be recipient afterward. On _release_ the main merge
   commit will be tagged. See below for details on tagging.
 
 * **develop:** After initial creation, all development by CoreMedia and
@@ -120,7 +120,7 @@ Feel free to choose the strategy that fits your needs best. For example:
     $ git commit -m "Initial integration of submodule based on <release-tag>"
     ```
   
-If you want to contribute to this project - which we hope for - you 
+If you want to contribute to this project — which we hope for — you 
 need to fork the project. For example, with the `git subtree` approach, pushing 
 to your fork could look as follows:
 
@@ -243,7 +243,7 @@ processing):
 
 ### Cancellation
 
-GCC offers cancellation at task and submission level. Note, that the
+GCC offers cancellation at the task and the submission level. Note, that the
 CoreMedia CMS translation workflow does not support cancellation at task
 level.
 
@@ -278,7 +278,7 @@ per locale. This means that one submission, holding only one job is created per 
 
 This can be achieved by setting the value _createWorkflowPerTargetSite_ in the GccStudioPlugin
 to _true_ (this is actually the default, therefore you can also completely remove this configuration).
-Furthermore you need to change the type of the workflow variable _targetSiteId_ in the workflow definition _translation-global-link.xml_
+Furthermore, you need to change the type of the workflow variable _targetSiteId_ in the workflow definition _translation-global-link.xml_
 to _String_.
 
 ### Not supported: Reopening
@@ -309,7 +309,7 @@ Manages the workflow-server extension and the gcc-restclient-facade
 
 #### gcc-restclient-facade*
 
-Facades to GCC Java REST Client API. Please see corresponding
+Facades to GCC Java REST Client API. Please see the corresponding
 _Facade Documentation_ in the workspace for details.
 
 #### gcc-workflow-server

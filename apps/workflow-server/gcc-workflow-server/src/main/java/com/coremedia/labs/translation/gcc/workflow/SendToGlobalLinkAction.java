@@ -256,7 +256,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    * @param dueDate                  date that will be sent as 'dueDate' parameter
    * @param workflow                 workflow to be used for the translation, if not the default
    * @param submitter                username of the submitter
-   * @return the result that contains the ID of the created submission or an error result
+   * @return the result that contains the ID of the created submission, or an error result
    * @throws GCFacadeCommunicationException if submitting the submission failed
    */
   protected String submitSubmission(GCExchangeFacade facade, String subject, String comment,
@@ -268,7 +268,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
     long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, xliffFileIds);
 
-    LOG.info("Submitted submission with internal id {} for {} files to GCC.", submissionId, xliffFileIds.size());
+    LOG.info("Submitted submission with the internal id {} for {} files to GCC.", submissionId, xliffFileIds.size());
     return String.valueOf(submissionId);
   }
 

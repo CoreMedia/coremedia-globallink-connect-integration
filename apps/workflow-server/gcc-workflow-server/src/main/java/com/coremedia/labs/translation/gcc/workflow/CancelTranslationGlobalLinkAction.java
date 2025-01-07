@@ -139,7 +139,7 @@ public class CancelTranslationGlobalLinkAction extends
     GCSubmissionState submissionState = submission.getState();
     boolean cancelled = params.cancelled;
 
-    // Also store the PD submission ids - potentially they were not available before
+    // Also store the PD submission ids — potentially they were not available before
     Result result = new Result(submissionState, cancelled, params.completedLocales, submission.getPdSubmissionIds());
     resultConsumer.accept(result);
 
