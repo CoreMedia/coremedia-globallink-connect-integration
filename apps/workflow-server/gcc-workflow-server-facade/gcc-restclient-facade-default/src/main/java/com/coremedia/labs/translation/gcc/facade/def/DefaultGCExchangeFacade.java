@@ -103,7 +103,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
-    this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
+    isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
     LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {
       GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
@@ -115,7 +115,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     } catch (IllegalAccessError e) {
       throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
-    this.fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
+    fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
             String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
     );
   }
@@ -123,8 +123,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   @VisibleForTesting
   DefaultGCExchangeFacade(GCExchange delegate, String fileType) {
     this.delegate = delegate;
-    this.fileTypeSupplier = () -> fileType;
-    this.isSendSubmitter = false;
+    fileTypeSupplier = () -> fileType;
+    isSendSubmitter = false;
   }
 
   private static String requireNonNullConfig(Map<String, Object> config, String key) {

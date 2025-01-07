@@ -139,18 +139,18 @@ final class Task {
   }
 
   void markAsDelivered() {
-    this.delivered = true;
+    delivered = true;
   }
 
   void markAsCancelled() {
     if (!delivered) {
-      this.cancelled = true;
+      cancelled = true;
     }
   }
 
   void markAsCancellationConfirmed() {
     if (!delivered) {
-      this.cancellationConfirmed = true;
+      cancellationConfirmed = true;
     }
   }
 

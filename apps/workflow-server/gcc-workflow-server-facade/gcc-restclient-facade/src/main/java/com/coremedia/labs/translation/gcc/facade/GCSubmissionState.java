@@ -72,11 +72,11 @@ public enum GCSubmissionState {
   private final String submissionStatusText;
 
   GCSubmissionState() {
-    this.submissionStatusText = null;
+    submissionStatusText = null;
   }
 
   GCSubmissionState(@NonNull SubmissionStatus submissionStatus) {
-    this.submissionStatusText = submissionStatus.text();
+    submissionStatusText = submissionStatus.text();
   }
 
   /**
