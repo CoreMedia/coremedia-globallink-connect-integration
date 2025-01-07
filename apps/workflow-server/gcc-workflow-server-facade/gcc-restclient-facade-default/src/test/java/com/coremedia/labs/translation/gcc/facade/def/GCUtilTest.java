@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Tests {@link GCUtil}.
  */
 class GCUtilTest {
+  @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @ParameterizedTest
   @DisplayName("toUnixDateUtc: Dates should be represented as UTC")
   @ArgumentsSource(InstantArgumentsProvider.class)

@@ -167,6 +167,7 @@ class DefaultGCExchangeFacadeTest {
     @Mock
     private SubmissionSubmit.SubmissionSubmitResponseData response;
 
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
             zoneId

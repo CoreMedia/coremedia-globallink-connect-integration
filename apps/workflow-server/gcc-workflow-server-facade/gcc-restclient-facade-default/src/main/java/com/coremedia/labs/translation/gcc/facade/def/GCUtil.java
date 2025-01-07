@@ -29,6 +29,7 @@ final class GCUtil {
    * @param dateTime date-time object to convert
    * @return date in UTC timezone
    */
+  @SuppressWarnings("UseOfObsoleteDateTimeApi")
   static Date toUnixDateUtc(ZonedDateTime dateTime) {
     ZonedDateTime utcDateTime = dateTime.withZoneSameInstant(UTC);
     return Date.from(utcDateTime.toInstant());

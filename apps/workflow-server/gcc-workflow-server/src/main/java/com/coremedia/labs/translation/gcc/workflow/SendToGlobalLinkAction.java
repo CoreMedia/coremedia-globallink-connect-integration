@@ -144,6 +144,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     return GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
+  @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @Override
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
