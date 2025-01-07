@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -146,7 +147,7 @@ final class TranslationUtil {
   }
 
   private static String convertToString(Document doc) throws TransformerException {
-    DOMSource source = new DOMSource(doc);
+    Source source = new DOMSource(doc);
     Writer writer = new StringWriter();
     Result result = new StreamResult(writer);
 

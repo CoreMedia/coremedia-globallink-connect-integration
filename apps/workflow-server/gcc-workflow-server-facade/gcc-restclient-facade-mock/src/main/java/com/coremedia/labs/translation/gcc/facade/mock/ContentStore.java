@@ -4,6 +4,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.google.common.io.ByteSource;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ final class ContentStore {
    * @return ID
    * @throws GCFacadeIOException if the resource could not be read
    */
-  String addContent(Resource resource) {
+  String addContent(InputStreamSource resource) {
     String id = UUID.randomUUID().toString();
     try (InputStream is = resource.getInputStream()) {
       ByteSource source = new ByteSource() {
