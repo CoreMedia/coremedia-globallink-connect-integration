@@ -22,7 +22,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * One-call zip and unzip convenience
  */
-public class Zipper {
+public final class Zipper {
   private static final Logger LOG = LoggerFactory.getLogger(Zipper.class);
   private static final String TMPFILE_PREFIX = "gcczipper";
 

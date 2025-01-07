@@ -13,7 +13,7 @@ import java.util.stream.StreamSupport;
  * Unix file system path or the path part of a URL.  PathUtil does NOT
  * cover special syntaxes like Windows file system paths.
  */
-class PathUtil {
+final class PathUtil {
   private static final char PATH_SEPARATOR = '/';
   private static final String PATH_SEPARATOR_STR = "/";
   private static final String PATH_PARENT = "..";

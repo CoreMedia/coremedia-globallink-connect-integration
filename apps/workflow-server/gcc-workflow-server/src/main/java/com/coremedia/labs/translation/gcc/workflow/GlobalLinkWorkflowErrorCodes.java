@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 @DefaultAnnotation(NonNull.class)
-class GlobalLinkWorkflowErrorCodes {
+final class GlobalLinkWorkflowErrorCodes {
 
   // ==== 10###: General/Unknown Problems
   static final String UNKNOWN_ERROR   = "GCC-WF-10000";
