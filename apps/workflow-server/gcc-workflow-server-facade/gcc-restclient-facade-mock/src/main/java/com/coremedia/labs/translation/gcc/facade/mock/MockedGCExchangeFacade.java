@@ -46,7 +46,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   private static final ContentStore contentStore = new ContentStore();
   private static final SubmissionStore submissionStore = new SubmissionStore();
   @Nullable
-  private MockGCExchangeFacadeProvider.MockError mockError = null;
+  private MockGCExchangeFacadeProvider.MockError mockError;
 
   MockedGCExchangeFacade() {
   }
