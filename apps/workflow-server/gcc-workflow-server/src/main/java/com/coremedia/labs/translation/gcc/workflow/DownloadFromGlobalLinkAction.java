@@ -308,7 +308,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   private static void addIssueDetails(File xliffResultDir, Map<Long, List<XliffImportResultItem>> resultItems, String issueDetailsFileName) throws IOException {
-    if (resultItems != null && resultItems.size() > 0) {
+    if (resultItems != null && !resultItems.isEmpty()) {
       for (Map.Entry<Long, List<XliffImportResultItem>> longListEntry : resultItems.entrySet()) {
         File itemsDir = new File(xliffResultDir, issueDetailsFileName);
         File itemsFile = new File(itemsDir, longListEntry.getKey() + "-issuedetails.txt");
