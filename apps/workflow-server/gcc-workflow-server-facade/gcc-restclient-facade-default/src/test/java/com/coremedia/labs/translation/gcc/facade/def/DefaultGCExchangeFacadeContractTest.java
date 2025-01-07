@@ -38,7 +38,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -199,7 +198,7 @@ class DefaultGCExchangeFacadeContractTest {
       assertThat(filesWithToString).anySatisfy(
               f -> {
                 assertThat(f).extracting(GCFile::getContentId).isEqualTo(fileId);
-                assertThat(f.getUpdatedAt()).matches((Predicate<Date>) date -> date.toInstant().isAfter(startTimeUtc));
+                assertThat(f.getUpdatedAt()).matches(date -> date.toInstant().isAfter(startTimeUtc));
               }
       );
     }
