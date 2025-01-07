@@ -341,7 +341,7 @@ class DefaultGCExchangeFacadeTest {
         verify(gcExchange, never()).confirmTask(any());
       }
 
-      private class ExceptionTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+      private static class ExceptionTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
         @Override
         public boolean test(InputStream inputStream, GCTaskModel task) {
           throw new RuntimeException("Provoked failure while reading input stream.");
@@ -362,7 +362,7 @@ class DefaultGCExchangeFacadeTest {
         verify(gcExchange, never()).confirmTask(any());
       }
 
-      private class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+      private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
         @Override
         public boolean test(InputStream inputStream, GCTaskModel task) {
           return true;
