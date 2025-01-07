@@ -451,9 +451,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
   @VisibleForTesting
   static final class Parameters {
-    private long submissionId;
-    private Set<Locale> completedLocales;
-    private boolean cancellationAllowed;
+    private final long submissionId;
+    private final Set<Locale> completedLocales;
+    private final boolean cancellationAllowed;
 
     Parameters(long submissionId, Set<Locale> completedLocales, boolean cancellationAllowed) {
       this.submissionId = submissionId;
