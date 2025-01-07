@@ -33,11 +33,11 @@ This extension adds the following functionality to the CoreMedia Studio:
 
     How to administrate GlobalLink extension (especially in CoreMedia Studio).
 
-2. [Development](development.md)
+3. [Development](development.md)
 
     How to integrate the extension to your Blueprint workspace.
 
-3. [Release Steps](release/README.md)
+4. [Release Steps](release/README.md)
 
     How to release this workspace.
 
