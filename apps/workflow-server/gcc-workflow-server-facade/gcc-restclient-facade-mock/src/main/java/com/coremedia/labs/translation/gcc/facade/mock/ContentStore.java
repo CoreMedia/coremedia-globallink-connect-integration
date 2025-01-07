@@ -5,7 +5,6 @@ import com.google.common.io.ByteSource;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.core.io.InputStreamSource;
-import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
