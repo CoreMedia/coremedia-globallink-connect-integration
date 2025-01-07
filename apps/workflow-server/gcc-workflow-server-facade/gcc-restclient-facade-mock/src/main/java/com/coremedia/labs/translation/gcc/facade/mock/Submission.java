@@ -59,8 +59,8 @@ final class Submission {
   Submission(String subject, List<SubmissionContent> submissionContents, long delayBaseSeconds, int delayOffsetPercentage) {
     ImmutableList.Builder<Task> builder = ImmutableList.builder();
     for (SubmissionContent c : submissionContents) {
-      for (int i = c.getTargetLocales().size(); i > 0; --i) {
-        builder.add(new Task(c.getFileContent(), delayBaseSeconds, delayOffsetPercentage, c.getTargetLocales().get(i - 1), parseTaskStates(subject)));
+      for (int i = c.targetLocales().size(); i > 0; --i) {
+        builder.add(new Task(c.fileContent(), delayBaseSeconds, delayOffsetPercentage, c.targetLocales().get(i - 1), parseTaskStates(subject)));
       }
     }
     tasks = builder.build();

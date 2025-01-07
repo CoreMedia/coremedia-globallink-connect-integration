@@ -692,16 +692,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  static class Parameters<P> {
-    final P extendedParameters;
-    final Collection<ContentObject> masterContentObjects;
-    final int remainingAutomaticRetries;
-
-    Parameters(P extendedParameters, Collection<ContentObject> masterContentObjects, int remainingAutomaticRetries) {
-      this.extendedParameters = extendedParameters;
-      this.masterContentObjects = masterContentObjects;
-      this.remainingAutomaticRetries = remainingAutomaticRetries;
-    }
+  record Parameters<P>(P extendedParameters, Collection<ContentObject> masterContentObjects,
+                       int remainingAutomaticRetries) {
   }
 
   @VisibleForTesting

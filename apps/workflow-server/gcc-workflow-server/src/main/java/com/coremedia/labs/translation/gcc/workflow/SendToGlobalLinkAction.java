@@ -306,30 +306,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     return site.getLocale();
   }
 
-  static final class Parameters {
-    final String subject;
-    final String comment;
-    final Collection<Content> derivedContents;
-    final Collection<ContentObject> masterContentObjects;
-    final ZonedDateTime dueDate;
-    final String workflow;
-    final User submitter;
-
-    Parameters(String subject,
-               String comment,
-               Collection<Content> derivedContents,
-               Collection<ContentObject> masterContentObjects,
-               ZonedDateTime dueDate,
-               String workflow,
-               User submitter) {
-      this.subject = subject;
-      this.comment = comment;
-      this.derivedContents = derivedContents;
-      this.masterContentObjects = masterContentObjects;
-      this.dueDate = dueDate;
-      this.workflow = workflow;
-      this.submitter = submitter;
-    }
+  record Parameters(String subject, String comment, Collection<Content> derivedContents,
+                    Collection<ContentObject> masterContentObjects, ZonedDateTime dueDate, String workflow,
+                    User submitter) {
   }
 
 }

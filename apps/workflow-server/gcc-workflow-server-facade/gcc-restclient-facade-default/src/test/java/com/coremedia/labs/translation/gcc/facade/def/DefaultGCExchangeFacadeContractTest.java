@@ -482,13 +482,7 @@ class DefaultGCExchangeFacadeContractTest {
     assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5L);
   }
 
-  private static class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
-    private final List<String> xliffResults;
-
-    private TaskDataConsumer(List<String> xliffResults) {
-      this.xliffResults = xliffResults;
-    }
-
+  private record TaskDataConsumer(List<String> xliffResults) implements BiPredicate<InputStream, GCTaskModel> {
     @Override
     public boolean test(InputStream is, GCTaskModel task) {
       ByteSource byteSource = new ByteSource() {

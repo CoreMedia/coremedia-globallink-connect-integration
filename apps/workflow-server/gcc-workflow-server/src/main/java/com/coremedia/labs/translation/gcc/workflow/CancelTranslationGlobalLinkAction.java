@@ -209,16 +209,7 @@ public class CancelTranslationGlobalLinkAction extends
     return false;
   }
 
-  static class Parameters {
-    final long submissionId;
-    final boolean cancelled;
-    final Set<Locale> completedLocales;
-
-    Parameters(long submissionId, boolean cancelled, Set<Locale> completedLocales) {
-      this.submissionId = submissionId;
-      this.cancelled = cancelled;
-      this.completedLocales = completedLocales;
-    }
+  record Parameters(long submissionId, boolean cancelled, Set<Locale> completedLocales) {
   }
 
   static class Result {
