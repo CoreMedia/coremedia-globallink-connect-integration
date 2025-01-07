@@ -348,6 +348,7 @@ class DefaultGCExchangeFacadeTest {
         }
       }
 
+      @SuppressWarnings("resource")
       @Test
       @DisplayName("Test for failure on getTasksList()")
       void unhappyPathFailureOnGetTaskList() {
