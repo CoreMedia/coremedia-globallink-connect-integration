@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import org.assertj.core.api.Assertions;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -21,10 +22,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -39,7 +42,7 @@ class GCUtilTest {
     Date actualDate = GCUtil.toUnixDateUtc(probe);
     ZonedDateTime expectedDateTime = probe.withZoneSameInstant(ZoneOffset.UTC);
     ZonedDateTime actualDateTime = ZonedDateTime.ofInstant(actualDate.toInstant(), ZoneOffset.UTC);
-    assertThat(actualDateTime).isEqualToIgnoringNanos(expectedDateTime);
+    assertThat(actualDateTime).isCloseTo(expectedDateTime, Assertions.within(1L, MILLIS));
   }
 
   @Nested
