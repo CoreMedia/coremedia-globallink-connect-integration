@@ -114,7 +114,7 @@ final class Submission {
   }
 
   private boolean allTasksAtLeastCompleted() {
-    return taskStates().allMatch(s -> TaskState.COMPLETED.equals(s) || TaskState.DELIVERED.equals(s));
+    return taskStates().allMatch(s -> TaskState.COMPLETED == s || TaskState.DELIVERED == s);
   }
 
   private Stream<TaskState> taskStates() {
@@ -131,7 +131,7 @@ final class Submission {
 
   private Collection<Task> getTasksInState(TaskState taskState) {
     return tasks.stream()
-            .filter(t -> taskState.equals(t.getTaskState()))
+            .filter(t -> taskState == t.getTaskState())
             .collect(Collectors.toList());
   }
 
