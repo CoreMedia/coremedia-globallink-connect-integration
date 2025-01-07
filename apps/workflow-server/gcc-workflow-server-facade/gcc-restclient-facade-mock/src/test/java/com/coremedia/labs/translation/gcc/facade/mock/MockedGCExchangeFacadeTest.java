@@ -75,13 +75,7 @@ class MockedGCExchangeFacadeTest {
 
   }
 
-  private class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
-    private final StringBuilder xliffResult;
-
-    TaskDataConsumer(StringBuilder xliffResult) {
-      this.xliffResult = xliffResult;
-    }
-
+  private record TaskDataConsumer(StringBuilder xliffResult) implements BiPredicate<InputStream, GCTaskModel> {
     @Override
     public boolean test(InputStream is, GCTaskModel task) {
       ByteSource byteSource = new ByteSource() {
