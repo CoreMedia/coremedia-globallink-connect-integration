@@ -27,7 +27,7 @@ public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeF
 
   private DefaultGCExchangeFacadeSessionProvider() {
     ServiceLoader<GCExchangeFacadeProvider> loader = ServiceLoader.load(GCExchangeFacadeProvider.class);
-    facadeProviders = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toUnmodifiableList());
+    facadeProviders = StreamSupport.stream(loader.spliterator(), false).toList();
   }
 
   /**
