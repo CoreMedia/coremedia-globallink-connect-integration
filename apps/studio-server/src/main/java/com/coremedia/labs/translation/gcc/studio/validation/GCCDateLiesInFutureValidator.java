@@ -31,7 +31,7 @@ public class GCCDateLiesInFutureValidator extends DateLiesInFutureValidator {
   }
 
   private static class LocalizationIssues extends IssuesImpl<Object> {
-    Issues delegate;
+     final Issues delegate;
 
     public LocalizationIssues(Issues delegate) {
       super(null, Collections.emptyList());
