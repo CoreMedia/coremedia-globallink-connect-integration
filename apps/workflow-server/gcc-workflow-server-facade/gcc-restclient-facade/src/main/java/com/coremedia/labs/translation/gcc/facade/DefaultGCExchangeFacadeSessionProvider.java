@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static java.lang.invoke.MethodHandles.lookup;
