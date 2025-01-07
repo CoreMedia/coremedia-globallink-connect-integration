@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import static com.coremedia.cap.translate.xliff.XliffImportResultCode.SUCCESS;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLATION_CONFIRMED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -314,7 +316,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
         File itemsFile = new File(itemsDir, longListEntry.getKey() + "-issuedetails.txt");
 
         ensureDir(itemsDir);
-        try (PrintWriter pw = new PrintWriter(itemsFile)) {
+        try (PrintWriter pw = new PrintWriter(itemsFile, UTF_8)) {
           for (XliffImportResultItem item : longListEntry.getValue()) {
             pw.println(item.toString());
           }
