@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
@@ -123,8 +124,8 @@ class DownloadFromGlobalLinkActionTest {
       assertThat(result.resultItems.values().stream().anyMatch(list -> {
         XliffImportResultItem resultItem = list.isEmpty() ? null : list.get(0);
         return resultItem != null && resultItem.getCode() == NO_SUCH_PROPERTY &&
-          resultItem.getSeverity() == MAJOR && resultItem.getContent().equals(targetContent) &&
-          resultItem.getProperty().equals("nosuchproperty");
+          resultItem.getSeverity() == MAJOR && Objects.equals(resultItem.getContent(), targetContent) &&
+          Objects.equals(resultItem.getProperty(), "nosuchproperty");
       })).isTrue();
       assertThat(result.resultItems).containsKey(1L);
       assertThat(targetContent.getString("string")).isEmpty();

@@ -124,6 +124,9 @@ class DownloadFromGlobalLinkActionUnitTest {
 
   private static void copyResourceToDirectory(String resourceName, File targetDir, long length) throws IOException {
     try (InputStream is = DownloadFromGlobalLinkActionUnitTest.class.getResourceAsStream("/com/coremedia/labs/translation/gcc/workflow/" + resourceName)) {
+      if (is == null) {
+        throw new IllegalStateException("Cannot find resource: " + resourceName);
+      }
       long result = Files.copy(is, new File(targetDir, resourceName).toPath());
       if (length >= 0L) {
         assumeTrue(result == length);
