@@ -37,6 +37,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -164,6 +165,7 @@ class DownloadFromGlobalLinkActionTest {
   }
 
   private static final class MockedDownloadFromGlobalLinkAction extends DownloadFromGlobalLinkAction {
+    @Serial
     private static final long serialVersionUID = -4082795575498550151L;
     private final ApplicationContext applicationContext;
 

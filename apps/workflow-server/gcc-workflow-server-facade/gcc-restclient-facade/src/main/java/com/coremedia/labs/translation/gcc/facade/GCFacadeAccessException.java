@@ -4,6 +4,8 @@ import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
+import java.io.Serial;
+
 /**
  * Signals an error with the GCC REST Backend via GCC Java RestClient because of an invalid or
  * expired API key.
@@ -11,6 +13,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 @SuppressWarnings("unused")
 @DefaultAnnotation(NonNull.class)
 public class GCFacadeAccessException extends GCFacadeException {
+  @Serial
   private static final long serialVersionUID = -4226793602127027111L;
 
   public GCFacadeAccessException() {

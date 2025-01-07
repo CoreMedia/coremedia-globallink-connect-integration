@@ -42,6 +42,7 @@ import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serial;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -90,6 +91,7 @@ import static java.util.Objects.requireNonNull;
 abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final Logger LOG = LoggerFactory.getLogger(GlobalLinkAction.class);
 
+  @Serial
   private static final long serialVersionUID = -7130959823193680910L;
 
   private static final String CMSETTINGS_SETTINGS = "settings";

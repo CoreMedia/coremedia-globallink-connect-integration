@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -60,7 +61,7 @@ import static java.util.Objects.requireNonNull;
  * Workflow action that downloads results from the translation service if the translation job is complete.
  */
 public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromGlobalLinkAction.Parameters, DownloadFromGlobalLinkAction.Result> {
-
+  @Serial
   private static final long serialVersionUID = 5160741359795894412L;
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

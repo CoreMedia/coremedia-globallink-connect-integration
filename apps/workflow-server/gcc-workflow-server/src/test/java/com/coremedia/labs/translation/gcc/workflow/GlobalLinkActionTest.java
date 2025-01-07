@@ -39,6 +39,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
@@ -184,6 +185,7 @@ class GlobalLinkActionTest {
   }
 
   private static class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
+    @Serial
     private static final long serialVersionUID = -288745610618179168L;
     private final ApplicationContext applicationContext;
 

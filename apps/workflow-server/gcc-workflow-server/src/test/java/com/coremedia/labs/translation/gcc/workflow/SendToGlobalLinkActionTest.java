@@ -34,6 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -168,6 +169,7 @@ class SendToGlobalLinkActionTest {
   }
 
   private static final class MockedSendToGlobalLinkAction extends SendToGlobalLinkAction {
+    @Serial
     private static final long serialVersionUID = -4082795575498550151L;
     private final ApplicationContext applicationContext;
 

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -50,6 +51,7 @@ import static java.util.stream.Collectors.groupingBy;
 public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAction.Parameters, String> {
   private static final Logger LOG = LoggerFactory.getLogger(lookup().lookupClass());
 
+  @Serial
   private static final long serialVersionUID = 7530762957907324426L;
 
   private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "sendTranslationRequestRetryDelay";
