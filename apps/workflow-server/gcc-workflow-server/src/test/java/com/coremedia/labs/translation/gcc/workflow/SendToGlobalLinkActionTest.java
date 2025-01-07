@@ -76,7 +76,7 @@ class SendToGlobalLinkActionTest {
 
     long expectedSubmissionId = 42L;
     Locale masterLocale = Locale.US;
-    final Locale derivedLocale = Locale.GERMANY;
+    Locale derivedLocale = Locale.GERMANY;
 
     String displayName = testInfo.getDisplayName();
     Content masterContent = contentType.createByTemplate("/", displayName, "{3} ({1})", ImmutableMap.<String,Object>builder()
@@ -95,7 +95,7 @@ class SendToGlobalLinkActionTest {
     targetContent.checkIn();
 
     String expectedFileId = targetContent.getId();
-    final String[] uploadedXliff = {null};
+    String[] uploadedXliff = {null};
 
     Mockito.doAnswer(invocation -> readXliff(invocation, expectedFileId, uploadedXliff))
             .when(gcExchangeFacade)
