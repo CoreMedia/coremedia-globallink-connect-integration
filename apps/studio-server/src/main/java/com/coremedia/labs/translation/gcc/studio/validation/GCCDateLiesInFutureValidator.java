@@ -40,7 +40,7 @@ public class GCCDateLiesInFutureValidator extends DateLiesInFutureValidator {
 
     @Override
     public void addIssue(Severity severity, @Nullable String property, String code, Object... arguments) {
-      delegate.addIssue(Issues.LOCALIZATION_ISSUE_CATEGORY, severity, property, code, arguments);
+      delegate.addIssue(LOCALIZATION_ISSUE_CATEGORY, severity, property, code, arguments);
     }
   }
 }
