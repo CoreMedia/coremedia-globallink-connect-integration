@@ -7,6 +7,7 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.model.GCFile;
@@ -487,6 +488,7 @@ class DefaultGCExchangeFacadeContractTest {
     public boolean test(InputStream is, GCTaskModel task) {
       ByteSource byteSource = new ByteSource() {
         @Override
+        @NonNull
         public InputStream openStream() {
           return is;
         }

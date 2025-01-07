@@ -6,6 +6,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.io.ByteSource;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -85,6 +86,7 @@ class MockedGCExchangeFacadeTest {
     public boolean test(InputStream is, GCTaskModel task) {
       ByteSource byteSource = new ByteSource() {
         @Override
+        @NonNull
         public InputStream openStream() {
           return is;
         }

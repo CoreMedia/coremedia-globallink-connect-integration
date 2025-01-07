@@ -14,6 +14,7 @@ import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -170,6 +171,7 @@ class DownloadFromGlobalLinkActionTest {
     }
 
     @Override
+    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }

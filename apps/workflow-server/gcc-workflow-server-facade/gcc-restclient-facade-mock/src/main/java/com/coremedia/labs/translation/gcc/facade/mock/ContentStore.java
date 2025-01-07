@@ -34,6 +34,7 @@ final class ContentStore {
     try (InputStream is = resource.getInputStream()) {
       ByteSource source = new ByteSource() {
         @Override
+        @NonNull
         public InputStream openStream() {
           return is;
         }

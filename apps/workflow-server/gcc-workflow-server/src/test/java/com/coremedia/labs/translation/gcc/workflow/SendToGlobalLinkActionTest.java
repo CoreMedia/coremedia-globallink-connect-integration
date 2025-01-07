@@ -12,6 +12,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.translate.item.TranslateItemConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -175,6 +176,7 @@ class SendToGlobalLinkActionTest {
     }
 
     @Override
+    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }

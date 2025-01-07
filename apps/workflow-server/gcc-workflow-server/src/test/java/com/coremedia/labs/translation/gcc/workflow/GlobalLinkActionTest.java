@@ -16,6 +16,7 @@ import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -202,6 +203,7 @@ class GlobalLinkActionTest {
     }
 
     @Override
+    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }
