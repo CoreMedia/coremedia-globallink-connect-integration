@@ -328,7 +328,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       LOG.warn("{}: Unknown error occurred ({})", getName(), GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, Collections.emptyList());
     } catch (GlobalLinkWorkflowException e) {
-      LOG.warn("{}: " + e.getMessage() + "({})", getName(), e.getErrorCode(), e);
+      LOG.warn("{}: {} ({})", getName(), e.getMessage(), e.getErrorCode(), e);
       issues.put(e.getErrorCode(), Collections.emptyList());
     } catch (RuntimeException e) {
       // automatically retry upon CMS connection errors

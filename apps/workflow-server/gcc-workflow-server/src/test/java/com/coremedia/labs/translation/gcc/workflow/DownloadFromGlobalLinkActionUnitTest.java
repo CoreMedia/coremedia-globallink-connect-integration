@@ -137,7 +137,7 @@ class DownloadFromGlobalLinkActionUnitTest {
         FileUtils.forceDelete(file);
       }
     } catch (IOException e) {
-      LOG.warn("Cannot delete " + file.getAbsolutePath() + ", please cleanup manually.", e);
+      LOG.warn("Cannot delete {}, please cleanup manually.", file.getAbsolutePath(), e);
     }
   }
 
