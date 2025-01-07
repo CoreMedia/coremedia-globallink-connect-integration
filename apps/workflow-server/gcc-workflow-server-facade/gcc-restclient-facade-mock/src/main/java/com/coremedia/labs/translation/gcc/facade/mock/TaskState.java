@@ -53,7 +53,6 @@ enum TaskState {
    * @param taskStatesCsv task states as comma-separated values; unmatched states will be mapped to task state {@link #OTHER}
    * @return array of task-states
    */
-  @SuppressWarnings("UnstableApiUsage")
   static TaskState[] parseTaskStatesToArray(String taskStatesCsv) {
     return Splitter.on(',')
             .trimResults()

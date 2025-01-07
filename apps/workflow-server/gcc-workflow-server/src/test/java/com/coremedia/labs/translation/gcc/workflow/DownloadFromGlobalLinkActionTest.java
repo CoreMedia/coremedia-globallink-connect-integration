@@ -63,7 +63,6 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 /**
  * Tests {@link DownloadFromGlobalLinkAction}.
  */
-@SuppressWarnings("UnstableApiUsage")
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = DownloadFromGlobalLinkActionTest.LocalConfig.class)
