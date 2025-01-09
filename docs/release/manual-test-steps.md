@@ -317,7 +317,7 @@ home folder
 2. Open the GlobalLink
    settings `/Settings/Options/Settings/Translation Services/GlobalLink`
     1. _type_ is set to “mock”
-    2. _mockError_ is set to “DOWNLOAD_XLIFF”
+    2. _mock.error_ is set to “DOWNLOAD_XLIFF”
 3. Choose an article and drag it into Control Room's “Localization Workflows”
    drop area
     1. A window _Localization Workflow_ should pop up
