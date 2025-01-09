@@ -18,6 +18,7 @@ ResourceBundleUtil.override(GccProcessDefinitions_properties, {
   TranslationGlobalLink_submission_status_TRANSLATE: "Übersetzung",
   TranslationGlobalLink_submission_status_REVIEW: "Überprüfung",
   TranslationGlobalLink_submission_status_COMPLETED: "Abgeschlossen",
+  TranslationGlobalLink_submission_status_REDELIVERED: "Erneut ausgeliefert",
   TranslationGlobalLink_submission_status_DELIVERED: "Ausgeliefert",
   TranslationGlobalLink_submission_status_OTHER: "Unbekannt",
   TranslationGlobalLink_submission_status_unavailable: "Nicht verfügbar",
