@@ -47,6 +47,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   private static final SubmissionStore submissionStore = new SubmissionStore();
   @Nullable
   private MockGCExchangeFacadeProvider.MockError mockError;
+  private MockError mockError;
 
   MockedGCExchangeFacade() {
   }
@@ -65,7 +66,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
     return this;
   }
 
-  void setMockError(@Nullable MockGCExchangeFacadeProvider.MockError mockError) {
+  void setMockError(@Nullable MockError mockError) {
     this.mockError = mockError;
   }
 
@@ -80,7 +81,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
-    if (mockError == MockGCExchangeFacadeProvider.MockError.UPLOAD_COMMUNICATION) {
+    if (mockError == MockError.UPLOAD_COMMUNICATION) {
       throw new GCFacadeCommunicationException("Exception to test upload communication errors with translation service.");
     }
     return contentStore.addContent(resource);
@@ -101,10 +102,10 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public int cancelSubmission(long submissionId) {
-    if (mockError == MockGCExchangeFacadeProvider.MockError.CANCEL_COMMUNICATION) {
+    if (mockError == MockError.CANCEL_COMMUNICATION) {
       throw new GCFacadeCommunicationException("Exception to test cancel communication errors with translation service.");
     }
-    if (mockError == MockGCExchangeFacadeProvider.MockError.CANCEL_RESULT) {
+    if (mockError == MockError.CANCEL_RESULT) {
       // Any one of the possible errors documented in
       // https://connect-dev.translations.com/docs/api/GlobalLink_Connect_Cloud_API_Documentation.htm#submissions_cancel
       // 400, 401, 404, 500
@@ -130,12 +131,12 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   private void downloadTask(Task task, BiPredicate<? super InputStream, ? super GCTaskModel> taskDataConsumer) {
-    if (mockError == MockGCExchangeFacadeProvider.MockError.DOWNLOAD_COMMUNICATION) {
+    if (mockError == MockError.DOWNLOAD_COMMUNICATION) {
       throw new GCFacadeCommunicationException("Exception to test download communication errors with translation service.");
     }
     boolean success = false;
     String untranslatedContent = task.getContent();
-    String translatedContent = TranslationUtil.translateXliff(untranslatedContent, mockError == MockGCExchangeFacadeProvider.MockError.DOWNLOAD_XLIFF);
+    String translatedContent = TranslationUtil.translateXliff(untranslatedContent, mockError == MockError.DOWNLOAD_XLIFF);
     try (InputStream is = new ByteArrayInputStream(translatedContent.getBytes(StandardCharsets.UTF_8))) {
       success = taskDataConsumer.test(is, new GCTaskModel(task.getId(), task.getTargetLocale()));
     } catch (IOException e) {
