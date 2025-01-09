@@ -8,6 +8,7 @@ interface GccWorkflowLocalization_properties {
   TranslationGlobalLink_task_CancelTranslation_displayName: string;
   TranslationGlobalLink_task_DownloadTranslation_displayName: string;
   TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: string;
+  TranslationGlobalLink_task_ReviewRedeliveredTranslation_displayName: string;
   TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: string;
   TranslationGlobalLink_task_RollbackContent_displayName: string;
   TranslationGlobalLink_task_Complete_displayName: string;
@@ -22,6 +23,7 @@ interface GccWorkflowLocalization_properties {
   TranslationGlobalLink_state_finishTranslation_displayName: string;
   TranslationGlobalLink_state_DownloadTranslation_displayName: string;
   TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: string;
+  TranslationGlobalLink_state_ReviewRedeliveredTranslation_displayName: string;
   TranslationGlobalLink_state_ReviewCancelledTranslation_displayName: string;
   TranslationGlobalLink_state_translationReviewed_displayName: string;
   TranslationGlobalLink_state_continueRetry_displayName: string;
@@ -56,6 +58,7 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
   TranslationGlobalLink_task_CancelTranslation_displayName: "Awaiting cancelation to finish",
   TranslationGlobalLink_task_DownloadTranslation_displayName: "Awaiting translation results",
   TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName: "Review translation",
+  TranslationGlobalLink_task_ReviewRedeliveredTranslation_displayName: "Review translation (redelivered)",
   TranslationGlobalLink_task_ReviewCancelledTranslation_displayName: "Review cancelation",
   TranslationGlobalLink_task_RollbackContent_displayName: "Performing rollback",
   TranslationGlobalLink_task_Complete_displayName: "Updating derived content states",
@@ -71,6 +74,7 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
   TranslationGlobalLink_state_finishTranslation_displayName: "Finish content localization",
   TranslationGlobalLink_state_DownloadTranslation_displayName: "Awaiting translation results",
   TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName: "Review translation",
+  TranslationGlobalLink_state_ReviewRedeliveredTranslation_displayName: "Review translation (redelivered)",
   TranslationGlobalLink_state_ReviewCancelledTranslation_displayName: "Review cancelation",
   TranslationGlobalLink_state_translationReviewed_displayName: "Finish content localization (Translation Reviewed)",
   TranslationGlobalLink_state_continueRetry_displayName: "Continue and retry",

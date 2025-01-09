@@ -136,6 +136,20 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
       ],
     },
     {
+      task: "ReviewRedeliveredTranslation",
+      defaultNextTask: "finishTranslation",
+      nextSteps: [
+        {
+          name: "rollbackTranslation",
+          allowAlways: true,
+        },
+        {
+          name: "finishTranslation",
+          allowAlways: true,
+        },
+      ],
+    },
+    {
       task: "ReviewCancelledTranslation",
       defaultNextTask: "rollbackTranslation",
       nextSteps: [
@@ -338,6 +352,8 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_DownloadTranslation_displayName,
     ReviewDeliveredTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName,
+    ReviewRedeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewRedeliveredTranslation_displayName,
     ReviewCancelledTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewCancelledTranslation_displayName,
     translationReviewed: GccWorkflowLocalization_properties.TranslationGlobalLink_state_translationReviewed_displayName,
@@ -360,6 +376,8 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_DownloadTranslation_displayName,
     ReviewDeliveredTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName,
+    ReviewRedeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewRedeliveredTranslation_displayName,
     ReviewCancelledTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewCancelledTranslation_displayName,
     RollbackContent: GccWorkflowLocalization_properties.TranslationGlobalLink_task_RollbackContent_displayName,
