@@ -4,6 +4,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -46,8 +48,34 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   private static final ContentStore contentStore = new ContentStore();
   private static final SubmissionStore submissionStore = new SubmissionStore();
   @Nullable
-  private MockGCExchangeFacadeProvider.MockError mockError;
   private MockError mockError;
+  @NonNull
+  private MockSubmissionState mockSubmissionState = MockSubmissionState.EMPTY;
+  /**
+   * The active replay scenario, if any.
+   * <p>
+   * The tri-state logic is important:
+   * <ul>
+   *   <li>
+   *     <strong>Unset</strong>:
+   *     signals, that we have not checked yet, if for a given state a replay
+   *     scenario is available.
+   *   </li>
+   *   <li>
+   *     <strong>Set, but empty</strong>:
+   *     signals, that we just replayed the states and there are no more states
+   *     to replay. If queried again, we will return to the <strong>Unset</strong>
+   *     state.
+   *   </li>
+   *   <li>
+   *     <strong>Set and not empty</strong>:
+   *     signals, that we have a replay scenario available, and we are in the
+   *     process of replaying the states.
+   *   </li>
+   * </ul>
+   */
+  @Nullable
+  private MockSubmissionState.ReplayScenario activeReplayScenario;
 
   MockedGCExchangeFacade() {
   }
@@ -107,7 +135,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
     }
     if (mockError == MockError.CANCEL_RESULT) {
       // Any one of the possible errors documented in
-      // https://connect-dev.translations.com/docs/api/GlobalLink_Connect_Cloud_API_Documentation.htm#submissions_cancel
+      // https://connect-dev.translations.com/docs/api/v2/index.html#submissions_cancel
       // 400, 401, 404, 500
       return 404;
     }
@@ -153,12 +181,44 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
     cancelledTasks.forEach(Task::markAsCancellationConfirmed);
   }
 
+  @NonNull
+  private Optional<GCSubmissionState> getSubmissionStateFromReplayScenario() {
+    MockSubmissionState.ReplayScenario scenario = activeReplayScenario;
+    if (scenario == null) {
+      return Optional.empty();
+    }
+    Optional<GCSubmissionState> nextState = activeReplayScenario.next();
+    if (nextState.isEmpty()) {
+      // Side-effect: Reset the active scenario.
+      activeReplayScenario = null;
+    }
+    return nextState;
+  }
+
+  @NonNull
+  private GCSubmissionState possiblyOverrideByMockSubmissionState(@NonNull GCSubmissionState originalSubmissionState) {
+    if (activeReplayScenario != null) {
+      // Prefer states from the replay scenario over the actual state.
+      return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
+    }
+    activeReplayScenario = mockSubmissionState.getReplayScenario(originalSubmissionState);
+    if (activeReplayScenario != null) {
+      return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
+    }
+    return originalSubmissionState;
+  }
+
   @Override
   public GCSubmissionModel getSubmission(long submissionId) {
+    GCSubmissionState originalSubmissionState = submissionStore.getSubmissionState(submissionId);
+    GCSubmissionState actualSubmissionState = possiblyOverrideByMockSubmissionState(originalSubmissionState);
     return GCSubmissionModel.builder(submissionId)
             .pdSubmissionIds(List.of(Long.toString(submissionId)))
-            .state(submissionStore.getSubmissionState(submissionId))
+            .state(actualSubmissionState)
             .build();
   }
 
+  public void setMockSubmissionState(@NonNull MockSubmissionState mockSubmissionState) {
+    this.mockSubmissionState = mockSubmissionState;
+  }
 }

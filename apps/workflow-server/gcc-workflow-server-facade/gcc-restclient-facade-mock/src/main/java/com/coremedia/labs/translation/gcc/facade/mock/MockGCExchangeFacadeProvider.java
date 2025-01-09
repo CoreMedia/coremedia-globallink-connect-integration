@@ -17,10 +17,7 @@ public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
   private static final String CONFIG_DELAY_SECONDS = "mockDelaySeconds";
   private static final String CONFIG_DELAY_OFFSET_PERCENTAGE = "mockDelayOffsetPercentage";
   private static final String CONFIG_MOCK_ERROR = "mockError";
-
-  enum MockError {
-    DOWNLOAD_XLIFF, DOWNLOAD_COMMUNICATION, UPLOAD_COMMUNICATION, CANCEL_COMMUNICATION, CANCEL_RESULT
-  }
+  private static final String CONFIG_MOCK_SUBMISSION_STATE = "mockSubmissionState";
 
   @Override
   public String getTypeToken() {
@@ -39,12 +36,15 @@ public class MockGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
     if (delayOffsetPercentage != null) {
       facade.setDelayOffsetPercentage(Integer.parseInt(String.valueOf(delayOffsetPercentage)));
     }
+
     String mockError = String.valueOf(settings.get(CONFIG_MOCK_ERROR));
     Arrays.stream(MockError.values())
             .filter(e -> e.toString().equalsIgnoreCase(mockError))
             .findAny()
             .ifPresent(facade::setMockError);
 
+    Object mockSubmissionState = settings.get(CONFIG_MOCK_SUBMISSION_STATE);
+    facade.setMockSubmissionState(MockSubmissionState.fromConfig(mockSubmissionState));
     return facade;
   }
 }

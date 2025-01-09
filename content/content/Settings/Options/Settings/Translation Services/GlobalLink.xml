@@ -13,7 +13,21 @@
           <IntProperty Name="retryCommunicationErrors">5</IntProperty>
           <IntProperty Name="mockDelaySeconds">10</IntProperty>
           <IntProperty Name="mockDelayOffsetPercentage">0</IntProperty>
-          <StringProperty Name="mockError">Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.</StringProperty>
+          <StringProperty Name="mockError">Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.
+          </StringProperty>
+          <StructProperty Name="example1:mockSubmissionState">
+            <Struct>
+              <StringProperty Name="_comment">
+                Example for replacing `Delivered` submission state with `Redelivered` state.
+              </StringProperty>
+              <StructProperty Name="Delivered">
+                <Struct>
+                  <StringProperty Name="override">Redelivered</StringProperty>
+                  <BooleanProperty Name="final">true</BooleanProperty>
+                </Struct>
+              </StructProperty>
+            </Struct>
+          </StructProperty>
         </Struct>
       </StructProperty>
     </Struct>
