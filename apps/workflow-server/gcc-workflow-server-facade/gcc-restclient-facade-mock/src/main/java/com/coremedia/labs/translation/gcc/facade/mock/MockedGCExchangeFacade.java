@@ -79,6 +79,8 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   MockedGCExchangeFacade(@NonNull MockSettings mockSettings) {
     this.mockSettings = mockSettings;
+    submissionStore.setDelayBaseSeconds(mockSettings.stateChangeDelaySeconds());
+    submissionStore.setDelayOffsetPercentage(mockSettings.stateChangeDelayOffsetPercentage());
   }
 
   /**
