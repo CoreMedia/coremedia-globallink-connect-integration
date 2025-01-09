@@ -30,8 +30,20 @@ import static org.slf4j.LoggerFactory.getLogger;
 @DefaultAnnotation(NonNull.class)
 public enum GCSubmissionState {
 
-  /**
-   * Note: If you add or delete values of this Enum, also adapt the localization for Studio in the appurtenant file: 'GccProcessDefinitions.properties' (also for other languages)
+  /*
+   * ===========================================================================
+   * Note: If you add or delete values of this Enum, also adapt the localization
+   * for Studio in the appurtenant files: 'Gcc_properties.ts' and
+   * 'GccWorkflowLocalization_properties.ts' (also for other languages)
+   * ===========================================================================
+   */
+
+  /*
+   * ===========================================================================
+   * Hint: If you observe the GCC Rest Client not to provide a given state
+   * observed in production scenarios, you may just add it here using the
+   * received state name as string argument.
+   * ===========================================================================
    */
 
   IN_PRE_PROCESS(SubmissionStatus.PreProcess),
@@ -49,6 +61,21 @@ public enum GCSubmissionState {
   TRANSLATE(SubmissionStatus.Translate),
   REVIEW(SubmissionStatus.Review),
   COMPLETED(SubmissionStatus.Completed),
+  /**
+   * State, observed to be reached in scenarios, where a submission
+   * got manually set to redelivered, while the XLIFF has been sent
+   * via other channels (like email).
+   * <p>
+   * The assumed behavior is, that a submission in state
+   * {@link #COMPLETED completed} is set directly to redelivered, without
+   * the XLIFF provided via the GCC backend.
+   * <p>
+   * The GCC API (v3.1.3) does not cover this state, so that we need to
+   * mock it.
+   *
+   * @since 2406.1
+   */
+  REDELIVERED("Redelivered"),
   DELIVERED(SubmissionStatus.Delivered),
   CANCELLED(SubmissionStatus.Cancelled),
   /**
