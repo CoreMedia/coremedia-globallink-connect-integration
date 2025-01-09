@@ -52,6 +52,7 @@ import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_LO
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.SUCCESS;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLATION_CONFIRMED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
+import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.REDELIVERED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
@@ -249,8 +250,12 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
     // retrieve potentially updated submission after confirming cancellation or download completed task
     submission = facade.getSubmission(submissionId);
-    if (submission.getState() != DELIVERED && submission.getState() != CANCELLATION_CONFIRMED) {
-      LOG.debug("Submission {} (PD ID {}) in state {} and thus not completed yet.", submissionId, submission.getPdSubmissionIds(), submission.getState());
+    if (LOG.isDebugEnabled()) {
+      String verboseSubmissionState = switch(submission.getState()) {
+        case REDELIVERED, DELIVERED, CANCELLATION_CONFIRMED -> "completed";
+        default -> "not completed yet";
+      };
+      LOG.debug("Submission {} (PD ID {}) in state {} regarded as: {}", submissionId, submission.getPdSubmissionIds(), submission.getState(), verboseSubmissionState);
     }
 
     result.globalLinkStatus = submission.getState();

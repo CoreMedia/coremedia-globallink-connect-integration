@@ -26,6 +26,7 @@ import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCEL
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.COMPLETED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
+import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.REDELIVERED;
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.SUBMISSION_CANCEL_FAILURE;
 import static java.util.Objects.requireNonNull;
 
@@ -144,7 +145,9 @@ public class CancelTranslationGlobalLinkAction extends
     resultConsumer.accept(result);
 
     // nothing to do, if submission is already cancelled and confirmed or delivered
-    if (submissionState == CANCELLATION_CONFIRMED || submissionState == DELIVERED) {
+    if (submissionState == CANCELLATION_CONFIRMED
+      || submissionState == DELIVERED
+      || submissionState == REDELIVERED) {
       return;
     }
 

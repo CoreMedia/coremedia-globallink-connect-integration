@@ -261,6 +261,9 @@
           <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
         </And>
       </Case>
+      <Case successor="ReviewRedeliveredTranslation">
+        <Equal><Get variable="globalLinkSubmissionStatus"/><String value="REDELIVERED"/></Equal>
+      </Case>
       <Case successor="ReviewDeliveredTranslation">
         <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
       </Case>
@@ -307,6 +310,41 @@
     </If>
 
     <UserTask name="ReviewDeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
+      <!--
+        Should be kept aligned with ReviewRedeliveredTranslation.
+      -->
+      <Rights>
+        <Grant group="translation-manager-role"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
+        <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
+      </Rights>
+      <!-- store task performer for executing CompleteTranslationAction in task "Complete" -->
+      <EntryAction class="com.coremedia.translate.workflow.ExtractPerformerAction"
+                   performerVariable="performer"/>
+      <Assignment>
+        <Reads variable="subject"/>
+        <Reads variable="targetSiteId"/>
+        <Reads variable="masterContentObjects"/>
+        <Writes variable="comment"/>
+        <Writes variable="derivedContents"/>
+        <Writes variable="createdContents"/>
+        <Writes variable="translationAction"/>
+      </Assignment>
+      <ExitAction class="RegisterPendingProcess"/>
+    </UserTask>
+
+    <UserTask name="ReviewRedeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
+      <!--
+        Should be kept aligned with ReviewDeliveredTranslation.
+
+        Other than for ReviewDeliveredTranslation, we expect the editors have to
+        apply extra steps, such as manually uploading the XLIFF, if it has not
+        been done by automatic means.
+
+        The observed use case is, that a "broken XLIFF" got repaired and
+        subsequently sent via email. Within the GCC backend, the submission
+        directly changed from `Completed` to `Redelivered`.
+      -->
       <Rights>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
@@ -392,6 +430,9 @@
       </Case>
       <Case successor="ReviewDeliveredTranslation">
         <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
+      </Case>
+      <Case successor="ReviewRedeliveredTranslation">
+        <Equal><Get variable="globalLinkSubmissionStatus"/><String value="REDELIVERED"/></Equal>
       </Case>
     </Switch>
 
