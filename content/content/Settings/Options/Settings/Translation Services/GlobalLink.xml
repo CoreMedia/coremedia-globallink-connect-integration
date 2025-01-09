@@ -6,24 +6,50 @@
         <Struct>
           <StringProperty Name="url">https://connect-dev.translations.com/api/v3</StringProperty>
           <StringProperty Name="key">Your Connector Key</StringProperty>
+          <StructProperty Name="keyStore">
+            <Struct>
+              <StringProperty Name="comment">Place to possibly store relevant `key` values for later use.
+              </StringProperty>
+            </Struct>
+          </StructProperty>
           <StringProperty Name="fileType">xliff</StringProperty>
           <IntProperty Name="dayOffsetForDueDate">20</IntProperty>
           <!-- Uses translation type "mock" by default. Additional options: "disabled" or "default" (which again is the default if unset. -->
           <StringProperty Name="type">mock</StringProperty>
           <IntProperty Name="retryCommunicationErrors">5</IntProperty>
-          <IntProperty Name="mockDelaySeconds">10</IntProperty>
-          <IntProperty Name="mockDelayOffsetPercentage">0</IntProperty>
-          <StringProperty Name="mockError">Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.
-          </StringProperty>
-          <StructProperty Name="example1:mockSubmissionState">
+          <StructProperty Name="additionalConfiguration">
             <Struct>
-              <StringProperty Name="_comment">
-                Example for replacing `Delivered` submission state with `Redelivered` state.
+              <StringProperty
+                Name="comment">Additional configuration options for the GlobalLink exchange facade for reference (add to `globalLink` struct to use and to override system-level configuration).
               </StringProperty>
-              <StructProperty Name="Delivered">
+              <StringProperty Name="apiKey">Your API Key; for security reasons should be set at system-level in production use.</StringProperty>
+              <BooleanProperty Name="isSendSubmitter">true</BooleanProperty>
+              <IntProperty Name="sendTranslationRequestRetryDelay">60</IntProperty>
+              <IntProperty Name="downloadTranslationRetryDelay">60</IntProperty>
+              <IntProperty Name="cancelTranslationRetryDelay">60</IntProperty>
+            </Struct>
+          </StructProperty>
+          <StructProperty Name="mock">
+            <Struct>
+              <StringProperty Name="comment">
+                Configuration for the mock implementation of the GlobalLink exchange facade.
+              </StringProperty>
+              <IntProperty Name="stateChangeDelaySeconds">10</IntProperty>
+              <IntProperty Name="stateChangeDelayOffsetPercentage">0</IntProperty>
+              <StringProperty Name="error">
+                Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.
+              </StringProperty>
+              <StructProperty Name="example1:mockSubmissionState">
                 <Struct>
-                  <StringProperty Name="override">Redelivered</StringProperty>
-                  <BooleanProperty Name="final">true</BooleanProperty>
+                  <StringProperty Name="comment">
+                    Example for replacing `Delivered` submission state with `Redelivered` state.
+                  </StringProperty>
+                  <StructProperty Name="Delivered">
+                    <Struct>
+                      <StringProperty Name="override">Redelivered</StringProperty>
+                      <BooleanProperty Name="final">true</BooleanProperty>
+                    </Struct>
+                  </StructProperty>
                 </Struct>
               </StructProperty>
             </Struct>

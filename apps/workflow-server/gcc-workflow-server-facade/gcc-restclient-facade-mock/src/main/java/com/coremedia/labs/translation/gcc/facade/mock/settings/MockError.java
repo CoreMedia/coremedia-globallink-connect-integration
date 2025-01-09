@@ -1,9 +1,14 @@
-package com.coremedia.labs.translation.gcc.facade.mock;
+package com.coremedia.labs.translation.gcc.facade.mock.settings;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Possible values for the {@code globalLink.mockError} setting.
  */
-enum MockError {
+public enum MockError {
   /**
    * Provokes an invalid XLIFF, that cannot be imported.
    */
@@ -23,5 +28,15 @@ enum MockError {
   /**
    * Provokes a server-side failure during the cancellation request.
    */
-  CANCEL_RESULT
+  CANCEL_RESULT;
+
+  @NonNull
+  public static Optional<MockError> tryParse(@NonNull String value) {
+    if (value.isEmpty()) {
+      return Optional.empty();
+    }
+    return Arrays.stream(values())
+      .filter(e -> e.toString().equalsIgnoreCase(value))
+      .findAny();
+  }
 }

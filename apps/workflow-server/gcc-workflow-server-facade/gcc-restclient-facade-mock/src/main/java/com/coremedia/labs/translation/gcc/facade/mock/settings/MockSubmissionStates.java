@@ -1,4 +1,4 @@
-package com.coremedia.labs.translation.gcc.facade.mock;
+package com.coremedia.labs.translation.gcc.facade.mock.settings;
 
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -35,20 +35,23 @@ import static org.slf4j.LoggerFactory.getLogger;
  * <pre>{@code
  * {
  *   "globalLink": {
- *     "mockSubmissionState": {
- *       "COMPLETED": {
- *         "after": "REDELIVERED",
- *         "final": true
- *       }.
- *       "DELIVERED": {
- *         "override": [
- *           "OTHER",
- *           "REDELIVERED"
- *         ]
- *       },
- *       "REVIEW": {
- *         "before": "OTHER"
+ *     "mock": {
+ *       "submissionStates": {
+ *         "COMPLETED": {
+ *           "after": "REDELIVERED",
+ *           "final": true
+ *         }.
+ *         "DELIVERED": {
+ *           "override": [
+ *             "OTHER",
+ *             "REDELIVERED"
+ *           ]
+ *         },
+ *         "REVIEW": {
+ *           "before": "OTHER"
+ *         }
  *       }
+ *     }
  *   }
  * }
  * }</pre>
@@ -57,21 +60,23 @@ import static org.slf4j.LoggerFactory.getLogger;
  * <pre>{@code
  * {
  *   "globalLink": {
- *     "mockSubmissionState": {
- *       "ACTUAL_SUBMISSION_STATE": {
- *         "before": [
- *           "FIRST_SUBMISSION_STATE",
- *           "SECOND_SUBMISSION_STATE",
- *         ],
- *         "after": [
- *           "FIRST_SUBMISSION_STATE",
- *           "SECOND_SUBMISSION_STATE",
- *         ],
- *         "override": [
- *           "FIRST_SUBMISSION_STATE",
- *           "SECOND_SUBMISSION_STATE",
- *         ],
- *         "final": boolean
+ *     "mock": {
+ *       "submissionStates": {
+ *         "ACTUAL_SUBMISSION_STATE": {
+ *           "before": [
+ *             "FIRST_SUBMISSION_STATE",
+ *             "SECOND_SUBMISSION_STATE",
+ *           ],
+ *           "after": [
+ *             "FIRST_SUBMISSION_STATE",
+ *             "SECOND_SUBMISSION_STATE",
+ *           ],
+ *           "override": [
+ *             "FIRST_SUBMISSION_STATE",
+ *             "SECOND_SUBMISSION_STATE",
+ *           ],
+ *           "final": boolean
+ *         }
  *       }
  *     }
  *   }
@@ -88,7 +93,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * as soon as no more manual transitions are available, the last state will be
  * reached and no further transitions will be possible.
  * <p>
- * As a special case, if only {@¢ode final} is set to {@code true}, the adapted
+ * As a special case, if only {@code final} is set to {@code true}, the adapted
  * state will never be left again.
  * <p>
  * Note, that once a mocked state replay is reached, this won't be intercepted
@@ -102,22 +107,24 @@ import static org.slf4j.LoggerFactory.getLogger;
  * <pre>{@code
  * {
  *   "globalLink": {
- *     "mockSubmissionState": {
- *       "COMPLETED": {
- *         "override": "OTHER"
- *       },
- *       "OTHER": {
- *         "override": "DELIVERED"
+ *     "mock": {
+ *       "submissionState": {
+ *         "COMPLETED": {
+ *           "override": "OTHER"
+ *         },
+ *         "OTHER": {
+ *           "override": "DELIVERED"
+ *         }
  *       }
  *     }
  *   }
  * }
  * }</pre>
  */
-public final class MockSubmissionState {
+public final class MockSubmissionStates {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   @NonNull
-  public static final MockSubmissionState EMPTY = new MockSubmissionState(Map.of());
+  public static final MockSubmissionStates EMPTY = new MockSubmissionStates(Map.of());
 
   @NonNull
   private final Map<GCSubmissionState, StatePointcutConfig> statePointcutConfigs;
@@ -127,25 +134,22 @@ public final class MockSubmissionState {
    *
    * @param statePointcutConfigs map of state pointcut configurations
    */
-  private MockSubmissionState(@NonNull Map<GCSubmissionState, StatePointcutConfig> statePointcutConfigs) {
+  private MockSubmissionStates(@NonNull Map<GCSubmissionState, StatePointcutConfig> statePointcutConfigs) {
     this.statePointcutConfigs = Map.copyOf(statePointcutConfigs);
   }
 
   /**
    * Parses a given configuration to mock submission state sequences.
    *
-   * @param object configuration to parse
+   * @param config configuration to parse
    * @return mock submission state behavior
    */
-  public static MockSubmissionState fromConfig(@Nullable Object object) {
-    if (!(object instanceof Map<?, ?> config)) {
-      return EMPTY;
-    }
+  public static MockSubmissionStates fromConfig(@NonNull Map<?, ?> config) {
     Map<GCSubmissionState, StatePointcutConfig> parsedConfig = parseConfig(config);
     if (parsedConfig.isEmpty()) {
       return EMPTY;
     }
-    return new MockSubmissionState(parsedConfig);
+    return new MockSubmissionStates(parsedConfig);
   }
 
   /**

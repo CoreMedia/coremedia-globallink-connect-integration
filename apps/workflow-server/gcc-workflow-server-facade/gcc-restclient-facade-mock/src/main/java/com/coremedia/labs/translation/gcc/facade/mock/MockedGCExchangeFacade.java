@@ -6,7 +6,9 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
-import com.google.common.annotations.VisibleForTesting;
+import com.coremedia.labs.translation.gcc.facade.mock.settings.MockError;
+import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
+import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSubmissionStates;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -47,10 +49,8 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   private static final ContentStore contentStore = new ContentStore();
   private static final SubmissionStore submissionStore = new SubmissionStore();
-  @Nullable
-  private MockError mockError;
   @NonNull
-  private MockSubmissionState mockSubmissionState = MockSubmissionState.EMPTY;
+  private final MockSettings mockSettings;
   /**
    * The active replay scenario, if any.
    * <p>
@@ -75,27 +75,10 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
    * </ul>
    */
   @Nullable
-  private MockSubmissionState.ReplayScenario activeReplayScenario;
+  private MockSubmissionStates.ReplayScenario activeReplayScenario;
 
-  MockedGCExchangeFacade() {
-  }
-
-  @SuppressWarnings("SameParameterValue")
-  @VisibleForTesting
-  MockedGCExchangeFacade setDelayBaseSeconds(long delayBaseSeconds) {
-    submissionStore.setDelayBaseSeconds(delayBaseSeconds);
-    return this;
-  }
-
-  @SuppressWarnings({"SameParameterValue", "UnusedReturnValue"})
-  @VisibleForTesting
-  MockedGCExchangeFacade setDelayOffsetPercentage(int delayOffsetPercentage) {
-    submissionStore.setDelayOffsetPercentage(delayOffsetPercentage);
-    return this;
-  }
-
-  void setMockError(@Nullable MockError mockError) {
-    this.mockError = mockError;
+  MockedGCExchangeFacade(@NonNull MockSettings mockSettings) {
+    this.mockSettings = mockSettings;
   }
 
   /**
@@ -109,7 +92,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
-    if (mockError == MockError.UPLOAD_COMMUNICATION) {
+    if (mockSettings.error() == MockError.UPLOAD_COMMUNICATION) {
       throw new GCFacadeCommunicationException("Exception to test upload communication errors with translation service.");
     }
     return contentStore.addContent(resource);
@@ -130,10 +113,10 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public int cancelSubmission(long submissionId) {
-    if (mockError == MockError.CANCEL_COMMUNICATION) {
+    if (mockSettings.error() == MockError.CANCEL_COMMUNICATION) {
       throw new GCFacadeCommunicationException("Exception to test cancel communication errors with translation service.");
     }
-    if (mockError == MockError.CANCEL_RESULT) {
+    if (mockSettings.error() == MockError.CANCEL_RESULT) {
       // Any one of the possible errors documented in
       // https://connect-dev.translations.com/docs/api/v2/index.html#submissions_cancel
       // 400, 401, 404, 500
@@ -159,12 +142,12 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   private void downloadTask(Task task, BiPredicate<? super InputStream, ? super GCTaskModel> taskDataConsumer) {
-    if (mockError == MockError.DOWNLOAD_COMMUNICATION) {
+    if (mockSettings.error() == MockError.DOWNLOAD_COMMUNICATION) {
       throw new GCFacadeCommunicationException("Exception to test download communication errors with translation service.");
     }
     boolean success = false;
     String untranslatedContent = task.getContent();
-    String translatedContent = TranslationUtil.translateXliff(untranslatedContent, mockError == MockError.DOWNLOAD_XLIFF);
+    String translatedContent = TranslationUtil.translateXliff(untranslatedContent, mockSettings.error() == MockError.DOWNLOAD_XLIFF);
     try (InputStream is = new ByteArrayInputStream(translatedContent.getBytes(StandardCharsets.UTF_8))) {
       success = taskDataConsumer.test(is, new GCTaskModel(task.getId(), task.getTargetLocale()));
     } catch (IOException e) {
@@ -183,7 +166,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @NonNull
   private Optional<GCSubmissionState> getSubmissionStateFromReplayScenario() {
-    MockSubmissionState.ReplayScenario scenario = activeReplayScenario;
+    MockSubmissionStates.ReplayScenario scenario = activeReplayScenario;
     if (scenario == null) {
       return Optional.empty();
     }
@@ -201,7 +184,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
       // Prefer states from the replay scenario over the actual state.
       return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
     }
-    activeReplayScenario = mockSubmissionState.getReplayScenario(originalSubmissionState);
+    activeReplayScenario = mockSettings.submissionStates().getReplayScenario(originalSubmissionState);
     if (activeReplayScenario != null) {
       return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
     }
@@ -216,9 +199,5 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
             .pdSubmissionIds(List.of(Long.toString(submissionId)))
             .state(actualSubmissionState)
             .build();
-  }
-
-  public void setMockSubmissionState(@NonNull MockSubmissionState mockSubmissionState) {
-    this.mockSubmissionState = mockSubmissionState;
   }
 }
