@@ -8,6 +8,7 @@ import org.gs4tr.gcc.restclient.model.SubmissionStatus;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Objects.nonNull;
@@ -135,24 +136,25 @@ public enum GCSubmissionState {
       LOG.warn("Submission state name unavailable for: {} (state-number: {}). Using OTHER as state.", submissionState, submissionState.getStatusNumber());
       return OTHER;
     }
-    return parseSubmissionStatusName(submissionStateName);
+    return findSubmissionStateByName(submissionStateName)
+      .orElseGet(() -> {
+        LOG.warn("Unknown submission state: {}. Using OTHER as state.", submissionStateName);
+        return OTHER;
+      });
   }
 
   /**
    * Parse the status name and return the matching enum value. Empty, if
    * no status with the given name could be found.
    *
-   * @param taskStatusName name to parse
+   * @param statusName name to parse
    * @return status; {@link #OTHER} for any yet unknown status
    */
-  private static GCSubmissionState parseSubmissionStatusName(String taskStatusName) {
+  @NonNull
+  public static Optional<GCSubmissionState> findSubmissionStateByName(@NonNull String statusName) {
     return Arrays.stream(values())
-            .filter(s -> nonNull(s.submissionStatusText))
-            .filter(s -> taskStatusName.equalsIgnoreCase(s.submissionStatusText))
-            .findAny()
-            .orElseGet(() -> {
-              LOG.warn("Unknown submission state: {}. Using OTHER as state.", taskStatusName);
-              return OTHER;
-            });
+      .filter(s -> nonNull(s.submissionStatusText))
+      .filter(s -> statusName.equalsIgnoreCase(s.submissionStatusText))
+      .findAny();
   }
 }
