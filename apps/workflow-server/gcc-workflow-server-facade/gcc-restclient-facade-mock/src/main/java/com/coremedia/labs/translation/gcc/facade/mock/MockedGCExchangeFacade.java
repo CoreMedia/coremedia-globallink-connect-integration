@@ -4,11 +4,9 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockError;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
-import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSubmissionStates;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -35,13 +32,10 @@ import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * <p>
  * This facade will mock the behavior of GCC. It is especially meant for
  * demo cases and for testing purpose.
- * </p>
  * <p>
  * To get an instance of this facade, use {@link GCExchangeFacadeSessionProvider}.
- * </p>
  */
 @DefaultAnnotation(NonNull.class)
 public final class MockedGCExchangeFacade implements GCExchangeFacade {
@@ -57,31 +51,6 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   private static final SubmissionStore submissionStore = SubmissionStore.getInstance();
   @NonNull
   private final MockSettings mockSettings;
-  /**
-   * The active replay scenario, if any.
-   * <p>
-   * The tri-state logic is important:
-   * <ul>
-   *   <li>
-   *     <strong>Unset</strong>:
-   *     signals, that we have not checked yet, if for a given state a replay
-   *     scenario is available.
-   *   </li>
-   *   <li>
-   *     <strong>Set, but empty</strong>:
-   *     signals, that we just replayed the states and there are no more states
-   *     to replay. If queried again, we will return to the <strong>Unset</strong>
-   *     state.
-   *   </li>
-   *   <li>
-   *     <strong>Set and not empty</strong>:
-   *     signals, that we have a replay scenario available, and we are in the
-   *     process of replaying the states.
-   *   </li>
-   * </ul>
-   */
-  @Nullable
-  private MockSubmissionStates.ReplayScenario activeReplayScenario;
 
   MockedGCExchangeFacade(@NonNull MockSettings mockSettings) {
     this.mockSettings = mockSettings;
@@ -175,40 +144,12 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
     cancelledTasks.forEach(Task::markAsCancellationConfirmed);
   }
 
-  @NonNull
-  private Optional<GCSubmissionState> getSubmissionStateFromReplayScenario() {
-    MockSubmissionStates.ReplayScenario scenario = activeReplayScenario;
-    if (scenario == null) {
-      return Optional.empty();
-    }
-    Optional<GCSubmissionState> nextState = activeReplayScenario.next();
-    if (nextState.isEmpty()) {
-      // Side-effect: Reset the active scenario.
-      activeReplayScenario = null;
-    }
-    return nextState;
-  }
-
-  @NonNull
-  private GCSubmissionState possiblyOverrideByMockSubmissionState(@NonNull GCSubmissionState originalSubmissionState) {
-    if (activeReplayScenario != null) {
-      // Prefer states from the replay scenario over the actual state.
-      return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
-    }
-    activeReplayScenario = mockSettings.submissionStates().getReplayScenario(originalSubmissionState);
-    if (activeReplayScenario != null) {
-      return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
-    }
-    return originalSubmissionState;
-  }
 
   @Override
   public GCSubmissionModel getSubmission(long submissionId) {
-    GCSubmissionState originalSubmissionState = submissionStore.getSubmissionState(submissionId);
-    GCSubmissionState actualSubmissionState = possiblyOverrideByMockSubmissionState(originalSubmissionState);
     return GCSubmissionModel.builder(submissionId)
       .pdSubmissionIds(List.of(Long.toString(submissionId)))
-      .state(actualSubmissionState)
+      .state(submissionStore.getSubmissionState(submissionId))
       .build();
   }
 }

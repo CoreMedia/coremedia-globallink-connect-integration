@@ -59,12 +59,12 @@ final class SubmissionStore {
   /**
    * Add a submission for the given target locales and the given contents.
    *
-   * @param subject            subject may be used to control mocked task state switching; see {@link Submission#Submission(String, List, long, int)} for details.
+   * @param subject            subject may be used to control mocked task state switching; see {@link #Submission(String, List, MockSettings, int)} for details.
    * @param submissionContents data (i.e., the XLIFF for example) to be translated
    * @return unique id for the submission
    */
   long addSubmission(String subject, List<SubmissionContent> submissionContents) {
-    Submission submission = new Submission(subject, submissionContents, mockSettings.stateChangeDelaySeconds(), mockSettings.stateChangeDelayOffsetPercentage());
+    Submission submission = new Submission(subject, submissionContents, mockSettings);
     long id = NEXT_SUBMISSION_ID.getAndIncrement();
     synchronized (submissions) {
       submissions.put(id, submission);

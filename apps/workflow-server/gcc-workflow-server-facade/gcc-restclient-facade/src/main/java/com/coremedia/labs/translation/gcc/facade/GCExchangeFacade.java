@@ -15,12 +15,12 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 
 /**
- * <p>
  * Facade for {@link org.gs4tr.gcc.restclient.GCExchange}.
- * </p>
  * <p>
  * Get instances of facades via a {@link GCExchangeFacadeSessionProvider}.
- * </p>
+ *
+ * @implSpec Implementations of this interface must be stateless, as they are
+ * recreated several times during the lifecycle of the translation workflow.
  */
 @DefaultAnnotation(NonNull.class)
 public interface GCExchangeFacade {

@@ -238,6 +238,15 @@ public final class MockSubmissionStates {
     }
 
     /**
+     * Number of states left.
+     *
+     * @return number of states left
+     */
+    public int size() {
+      return states.size();
+    }
+
+    /**
      * Returns the next state to replay.
      *
      * @return next state to replay; empty if no more states are available
