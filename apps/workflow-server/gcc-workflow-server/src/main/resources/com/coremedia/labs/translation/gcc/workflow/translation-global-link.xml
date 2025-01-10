@@ -254,13 +254,6 @@
     </AutomatedTask>
 
     <Switch name="CheckDownloadTranslation" defaultSuccessor="DownloadTranslation">
-      <Case successor="HandleDownloadTranslationError">
-        <!-- if there are errors that are not retried automatically, let the user handle them in the error user task -->
-        <And>
-          <NotEmpty variable="workflowActionIssues"/>
-          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
-        </And>
-      </Case>
       <Case successor="ReviewRedeliveredTranslation">
         <Equal><Get variable="globalLinkSubmissionStatus"/><String value="REDELIVERED"/></Equal>
       </Case>
@@ -272,6 +265,20 @@
       </Case>
       <Case successor="CancelTranslation">
         <Get variable="cancelRequested"/>
+      </Case>
+      <!--
+        Must be last option: As all states above signal a "done" state, where
+        we would not expect to retry a download, these must be checked first.
+      -->
+      <Case successor="HandleDownloadTranslationError">
+        <!--
+          If there are errors that are not retried automatically, let the user
+          handle them in the error user task.
+        -->
+        <And>
+          <NotEmpty variable="workflowActionIssues"/>
+          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
+        </And>
       </Case>
     </Switch>
 
