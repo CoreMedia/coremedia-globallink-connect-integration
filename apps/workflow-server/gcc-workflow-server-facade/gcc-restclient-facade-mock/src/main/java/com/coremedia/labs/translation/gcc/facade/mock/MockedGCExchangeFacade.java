@@ -48,7 +48,13 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   private static final ContentStore contentStore = new ContentStore();
-  private static final SubmissionStore submissionStore = new SubmissionStore();
+  /**
+   * The submission store to keep track of all submissions.
+   * <p>
+   * This must be a singleton instance, as it is used to keep track of all
+   * submissions across multiple facade instances.
+   */
+  private static final SubmissionStore submissionStore = SubmissionStore.getInstance();
   @NonNull
   private final MockSettings mockSettings;
   /**
@@ -79,8 +85,11 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   MockedGCExchangeFacade(@NonNull MockSettings mockSettings) {
     this.mockSettings = mockSettings;
-    submissionStore.setDelayBaseSeconds(mockSettings.stateChangeDelaySeconds());
-    submissionStore.setDelayOffsetPercentage(mockSettings.stateChangeDelayOffsetPercentage());
+    // By intention may adapt the settings also within the submission store
+    // on each new instance creation of the facade. While this is not meant
+    // to update the settings for existing/running submissions and tasks,
+    // any update will be applied to new submissions and tasks.
+    submissionStore.applySettings(mockSettings);
   }
 
   /**
@@ -104,12 +113,12 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   public long submitSubmission(@Nullable String subject, @Nullable String comment, ZonedDateTime dueDate, @Nullable String workflow, @Nullable String submitter, Locale sourceLocale, Map<String, List<Locale>> contentMap) {
     String trimmedSubject = Objects.toString(subject, "").trim();
     List<SubmissionContent> collect = contentMap.entrySet().stream()
-            .map(e -> new SubmissionContent(
-                    e.getKey(),
-                    // Reads and removes the content.
-                    contentStore.removeContent(e.getKey()),
-                    e.getValue()))
-            .collect(toList());
+      .map(e -> new SubmissionContent(
+        e.getKey(),
+        // Reads and removes the content.
+        contentStore.removeContent(e.getKey()),
+        e.getValue()))
+      .collect(toList());
     return submissionStore.addSubmission(trimmedSubject, collect);
   }
 
@@ -198,8 +207,8 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
     GCSubmissionState originalSubmissionState = submissionStore.getSubmissionState(submissionId);
     GCSubmissionState actualSubmissionState = possiblyOverrideByMockSubmissionState(originalSubmissionState);
     return GCSubmissionModel.builder(submissionId)
-            .pdSubmissionIds(List.of(Long.toString(submissionId)))
-            .state(actualSubmissionState)
-            .build();
+      .pdSubmissionIds(List.of(Long.toString(submissionId)))
+      .state(actualSubmissionState)
+      .build();
   }
 }

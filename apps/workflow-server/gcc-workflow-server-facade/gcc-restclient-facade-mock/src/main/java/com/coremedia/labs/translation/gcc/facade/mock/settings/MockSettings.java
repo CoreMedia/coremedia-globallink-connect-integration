@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Settings for the Mock Facade.
@@ -20,7 +21,7 @@ public record MockSettings(
    * Empty settings (with defaults applied).
    */
   @NonNull
-  private static final MockSettings EMPTY = new MockSettings(
+  public static final MockSettings EMPTY = new MockSettings(
     DEFAULT_STATE_CHANGE_DELAY_SECONDS,
     DEFAULT_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE,
     null,
@@ -82,6 +83,13 @@ public record MockSettings(
    * Augments artificial submission state changes.
    */
   public static final String CONFIG_SUBMISSION_STATES = "submissionStates";
+
+  public MockSettings {
+    Objects.requireNonNull(submissionStates, "submissionStates");
+    if (stateChangeDelayOffsetPercentage < 0 || stateChangeDelayOffsetPercentage > 100) {
+      throw new IllegalArgumentException("Offset Percentage must be between 0 and 100.");
+    }
+  }
 
   @NonNull
   public static MockSettings fromGlobalLinkConfig(@NonNull Map<String, ?> config) {

@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import com.google.common.annotations.VisibleForTesting;
+import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -17,39 +17,43 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @DefaultAnnotation(NonNull.class)
 final class SubmissionStore {
-  private static final long DEFAULT_DELAY_BASE_SECONDS = 120L;
-  private static final int DEFAULT_DELAY_OFFSET_PERCENTAGE = 50;
-
   private static final AtomicLong NEXT_SUBMISSION_ID = new AtomicLong();
   private final Map<Long, Submission> submissions = new HashMap<>();
 
-  private long delayBaseSeconds = DEFAULT_DELAY_BASE_SECONDS;
-  private int delayOffsetPercentage = DEFAULT_DELAY_OFFSET_PERCENTAGE;
+  @NonNull
+  private MockSettings mockSettings = MockSettings.EMPTY;
 
   /**
-   * Sets the state change delay for newly created tasks (base) in seconds.
-   * Note, that it will get adapted by some random offset as configured by
-   * {@link #setDelayOffsetPercentage(int)}.
-   *
-   * @param delayBaseSeconds delay in seconds
+   * Lazy initialization of the singleton instance (Bill Pugh Singleton Design
+   * Pattern).
    */
-  @VisibleForTesting
-  void setDelayBaseSeconds(long delayBaseSeconds) {
-    this.delayBaseSeconds = delayBaseSeconds;
+  private static class SingletonHelper {
+    // The singleton instance is created when the SingletonHelper class is loaded
+    private static final SubmissionStore INSTANCE = new SubmissionStore();
   }
 
   /**
-   * Random offset for state change delay for newly created tasks in percent.
+   * Returns the singleton instance of the {@link SubmissionStore}.
    *
-   * @param delayOffsetPercentage percentage (0 to 100) of the offset
-   * @see #setDelayBaseSeconds(long)
+   * @return the singleton instance
    */
-  @VisibleForTesting
-  void setDelayOffsetPercentage(int delayOffsetPercentage) {
-    if (delayOffsetPercentage < 0 || delayOffsetPercentage > 100) {
-      throw new IllegalArgumentException("Offset Percentage must be between 0 and 100.");
-    }
-    this.delayOffsetPercentage = delayOffsetPercentage;
+  public static SubmissionStore getInstance() {
+    return SingletonHelper.INSTANCE;
+  }
+
+  /**
+   * The private constructor to prevent instantiation.
+   */
+  private SubmissionStore() {
+  }
+
+  /**
+   * Applies the given settings to the submission store. Note, that new settings
+   * are to be expected to be applied to new submissions and tasks only.
+   * @param mockSettings the settings to apply
+   */
+  public void applySettings(@NonNull MockSettings mockSettings) {
+    this.mockSettings = mockSettings;
   }
 
   /**
@@ -60,7 +64,7 @@ final class SubmissionStore {
    * @return unique id for the submission
    */
   long addSubmission(String subject, List<SubmissionContent> submissionContents) {
-    Submission submission = new Submission(subject, submissionContents, delayBaseSeconds, delayOffsetPercentage);
+    Submission submission = new Submission(subject, submissionContents, mockSettings.stateChangeDelaySeconds(), mockSettings.stateChangeDelayOffsetPercentage());
     long id = NEXT_SUBMISSION_ID.getAndIncrement();
     synchronized (submissions) {
       submissions.put(id, submission);
