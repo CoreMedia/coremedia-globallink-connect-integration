@@ -2,9 +2,13 @@ package com.coremedia.labs.translation.gcc.facade.mock.settings;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.Objects;
+
+import static java.lang.invoke.MethodHandles.lookup;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Settings for the Mock Facade.
@@ -15,6 +19,8 @@ public record MockSettings(
   @Nullable MockError error,
   @NonNull MockSubmissionStates submissionStates
 ) {
+  private static final Logger LOG = getLogger(lookup().lookupClass());
+
   private static final long DEFAULT_STATE_CHANGE_DELAY_SECONDS = 120L;
   private static final int DEFAULT_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE = 50;
   /**
@@ -139,11 +145,13 @@ public record MockSettings(
       submissionStates = MockSubmissionStates.fromConfig(submissionStatesMap);
     }
 
-    return new MockSettings(
+    MockSettings mockSettings = new MockSettings(
       stateChangeDelaySeconds,
       stateChangeDelayOffsetPercentage,
       error,
       submissionStates
     );
+    LOG.debug("Parsed mock settings: {}", mockSettings);
+    return mockSettings;
   }
 }

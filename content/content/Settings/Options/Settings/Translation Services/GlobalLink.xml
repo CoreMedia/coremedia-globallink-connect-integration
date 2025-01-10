@@ -60,7 +60,7 @@
                     Name="cancel_result"><![CDATA[Submission-Cancellation: Trigger an error response from GCC backend.]]></StringProperty>
                 </Struct>
               </StructProperty>
-              <StructProperty Name="example1:mockSubmissionStates">
+              <StructProperty Name="example1:submissionStates">
                 <Struct>
                   <StringProperty
                     Name="comment"><![CDATA[Example for replacing `Delivered` submission state with `Redelivered` state.]]></StringProperty>
@@ -72,7 +72,7 @@
                   </StructProperty>
                 </Struct>
               </StructProperty>
-              <StructProperty Name="example2:mockSubmissionStates">
+              <StructProperty Name="example2:submissionStates">
                 <Struct>
                   <StringProperty
                     Name="comment"><![CDATA[Example to follow with submission state `Redelivered` after `Completed`. Suggestion to also set `download_xliff` as error to simulates real-world scenario.]]></StringProperty>
