@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_1vt8gyf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="8.9.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_1vt8gyf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.1.1">
   <bpmn:collaboration id="Collaboration_1205vur">
     <bpmn:participant id="Participant_1k5rahc" name="translation-manager-role" processRef="Process_1" />
+    <bpmn:textAnnotation id="TextAnnotation_0llxue2">
+      <bpmn:text>gccStatus == REDELIVERED</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_07mhjy3" associationDirection="None" sourceRef="Flow_1uaw1py" targetRef="TextAnnotation_0llxue2" />
+    <bpmn:textAnnotation id="TextAnnotation_0wsnf7k">
+      <bpmn:text>gccStatus == DELIVERED</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_133b7lh" associationDirection="None" sourceRef="SequenceFlow_1q3uje5" targetRef="TextAnnotation_0wsnf7k" />
   </bpmn:collaboration>
   <bpmn:process id="Process_1" isExecutable="true">
-    <bpmn:exclusiveGateway id="ExclusiveGateway_1jk32ai" default="SequenceFlow_1m1jfu9">
+    <bpmn:exclusiveGateway id="ExclusiveGateway_1jk32ai">
       <bpmn:incoming>SequenceFlow_1j3mjj8</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1yp9pal</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_1m1jfu9</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_1gkf4xz</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_1q3uje5</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_1ji4k7m</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1uaw1py</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:serviceTask id="Task_1lp89or" name="Send Translation Request">
       <bpmn:incoming>SequenceFlow_01omvwg</bpmn:incoming>
@@ -33,7 +42,7 @@
       <bpmn:outgoing>SequenceFlow_0yemoj6</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_059ifsh</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_1a98j80" name="Handle- Download-TranslationError">
+    <bpmn:userTask id="Task_1a98j80" name="Handle Download Translation Error">
       <bpmn:incoming>SequenceFlow_1yp9pal</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1vy6ovs</bpmn:outgoing>
     </bpmn:userTask>
@@ -63,7 +72,7 @@
       <bpmn:outgoing>SequenceFlow_19a8lpk</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_1jxmwc7</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_1w6p8nu" name="Handle Cancel Translation Error">
+    <bpmn:userTask id="Task_1w6p8nu" name="Handle&#10;Cancel Translation Error">
       <bpmn:incoming>SequenceFlow_0e03yp6</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0hzm53q</bpmn:outgoing>
     </bpmn:userTask>
@@ -102,6 +111,7 @@
     </bpmn:serviceTask>
     <bpmn:exclusiveGateway id="ExclusiveGateway_11vo6qu">
       <bpmn:incoming>SequenceFlow_17x3zcq</bpmn:incoming>
+      <bpmn:incoming>Flow_0pgv43u</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1dk2mfr</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_10ultzq</bpmn:outgoing>
     </bpmn:exclusiveGateway>
@@ -120,7 +130,7 @@
       <bpmn:outgoing>SequenceFlow_19fme40</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_0hmaj6m</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_11jmfu5" name="Handle-SendTranslation RequestError">
+    <bpmn:userTask id="Task_11jmfu5" name="Handle&#10;Send Translation Request Error">
       <bpmn:incoming>SequenceFlow_02bjvew</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_11rri17</bpmn:outgoing>
     </bpmn:userTask>
@@ -155,17 +165,99 @@
     <bpmn:sequenceFlow id="SequenceFlow_059ifsh" name="derivedContents not empty" sourceRef="ExclusiveGateway_0mdmewu" targetRef="Task_1nc40l9" />
     <bpmn:sequenceFlow id="SequenceFlow_0yemoj6" name="derivedContents empty" sourceRef="ExclusiveGateway_0mdmewu" targetRef="Task_1f5v9d6" />
     <bpmn:sequenceFlow id="SequenceFlow_07gq977" sourceRef="Task_0j091gc" targetRef="ExclusiveGateway_0mdmewu" />
-    <bpmn:sequenceFlow id="SequenceFlow_1q3uje5" name="gccStatus == DELIVERED" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0yyyjlr" />
+    <bpmn:sequenceFlow id="SequenceFlow_1q3uje5" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0yyyjlr" />
     <bpmn:sequenceFlow id="SequenceFlow_1r901z3" name="rollback" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0pe59bx" />
     <bpmn:sequenceFlow id="SequenceFlow_1dw75ff" sourceRef="Task_0hyvewn" targetRef="Task_0pe59bx" />
     <bpmn:sequenceFlow id="SequenceFlow_0ny071j" name="gccStatus == CANCELLATION CONFIRMED&#10;||&#10;gccStatus == CANCELLED&#10;||&#10;gccStatus == DELIVERED &#38;&#38; cancelled" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0pe59bx" />
     <bpmn:sequenceFlow id="SequenceFlow_1coxv9i" name="gccStatus == DELIVERED &#38;&#38; !cancelled" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0yyyjlr" />
     <bpmn:sequenceFlow id="Flow_0p28pll" name="continue translation" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0xtu95r" />
+    <bpmn:userTask id="Activity_0ny8itj" name="Review Delivered Translation (redelivered)">
+      <bpmn:incoming>Flow_1uaw1py</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pgv43u</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0pgv43u" sourceRef="Activity_0ny8itj" targetRef="ExclusiveGateway_11vo6qu" />
+    <bpmn:sequenceFlow id="Flow_1uaw1py" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Activity_0ny8itj" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1205vur">
       <bpmndi:BPMNShape id="Participant_1k5rahc_di" bpmnElement="Participant_1k5rahc" isHorizontal="true">
         <dc:Bounds x="152" y="84" width="1288" height="1836" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_1jk32ai_di" bpmnElement="ExclusiveGateway_1jk32ai" isMarkerVisible="true">
+        <dc:Bounds x="367" y="1040" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1buc8kz_di" bpmnElement="Task_1lp89or">
+        <dc:Bounds x="342" y="626" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_1m4f7qd_di" bpmnElement="ExclusiveGateway_1m4f7qd" isMarkerVisible="true">
+        <dc:Bounds x="367" y="744" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0ishkke_di" bpmnElement="Task_1nc40l9">
+        <dc:Bounds x="342" y="469" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_0mdmewu_di" bpmnElement="ExclusiveGateway_0mdmewu" isMarkerVisible="true">
+        <dc:Bounds x="367" y="320" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_112e41y_di" bpmnElement="Task_1a98j80">
+        <dc:Bounds x="523" y="1025" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_161c9qw_di" bpmnElement="Task_0615ttf">
+        <dc:Bounds x="796" y="907" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_147mgac_di" bpmnElement="ExclusiveGateway_147mgac" isMarkerVisible="true">
+        <dc:Bounds x="821" y="1040" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1lu37y1_di" bpmnElement="Task_0xtu95r">
+        <dc:Bounds x="342" y="907" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_05jbqrq_di" bpmnElement="ExclusiveGateway_05jbqrq" isMarkerVisible="true">
+        <dc:Bounds x="548" y="922" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_0bnnygp_di" bpmnElement="Task_1w6p8nu">
+        <dc:Bounds x="1001" y="1025" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_0skeib3_di" bpmnElement="ExclusiveGateway_0skeib3" isMarkerVisible="true">
+        <dc:Bounds x="1026" y="923" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0ob7qt4_di" bpmnElement="Task_0j091gc">
+        <dc:Bounds x="342" y="196" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_0fevck2_di" bpmnElement="Task_0hyvewn">
+        <dc:Bounds x="1001" y="1323" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1nt2adt_di" bpmnElement="Task_0pe59bx">
+        <dc:Bounds x="1200" y="1472" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_0wswftx_di" bpmnElement="Task_0yyyjlr">
+        <dc:Bounds x="342" y="1379" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0hx5nvd_di" bpmnElement="Task_1f5v9d6">
+        <dc:Bounds x="342" y="1702" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_11vo6qu_di" bpmnElement="ExclusiveGateway_11vo6qu" isMarkerVisible="true">
+        <dc:Bounds x="367" y="1487" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_05siibo_di" bpmnElement="Task_0ho5dl9">
+        <dc:Bounds x="342" y="1577" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0h4p68c_di" bpmnElement="EndEvent_0h4p68c">
+        <dc:Bounds x="374" y="1819" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_07p9bpd_di" bpmnElement="StartEvent_07p9bpd">
+        <dc:Bounds x="374" y="111" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_16kw1ye_di" bpmnElement="ExclusiveGateway_16kw1ye" isMarkerVisible="true">
+        <dc:Bounds x="548" y="641" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_119ip2n_di" bpmnElement="Task_11jmfu5">
+        <dc:Bounds x="523" y="729" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1os4ppk" bpmnElement="Activity_0ny8itj">
+        <dc:Bounds x="220" y="1379" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_11rri17_di" bpmnElement="SequenceFlow_11rri17">
         <di:waypoint x="573" y="729" />
@@ -363,7 +455,7 @@
         <di:waypoint x="392" y="1090" />
         <di:waypoint x="392" y="1379" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="318" y="1118" width="65" height="27" />
+          <dc:Bounds x="407" y="1216" width="65" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_1r901z3_di" bpmnElement="SequenceFlow_1r901z3">
@@ -405,74 +497,31 @@
           <dc:Bounds x="964" y="846" width="51" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="ExclusiveGateway_1jk32ai_di" bpmnElement="ExclusiveGateway_1jk32ai" isMarkerVisible="true">
-        <dc:Bounds x="367" y="1040" width="50" height="50" />
+      <bpmndi:BPMNEdge id="Flow_0pgv43u_di" bpmnElement="Flow_0pgv43u">
+        <di:waypoint x="270" y="1459" />
+        <di:waypoint x="270" y="1512" />
+        <di:waypoint x="367" y="1512" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uaw1py_di" bpmnElement="Flow_1uaw1py">
+        <di:waypoint x="380" y="1078" />
+        <di:waypoint x="270" y="1190" />
+        <di:waypoint x="270" y="1379" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_07mhjy3_di" bpmnElement="Association_07mhjy3">
+        <di:waypoint x="270" y="1206.0079621872383" />
+        <di:waypoint x="312" y="1240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_133b7lh_di" bpmnElement="Association_133b7lh">
+        <di:waypoint x="392" y="1234.5" />
+        <di:waypoint x="435" y="1260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_0llxue2_di" bpmnElement="TextAnnotation_0llxue2">
+        <dc:Bounds x="280" y="1240" width="99.99305040770942" height="40.7709414381023" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_1buc8kz_di" bpmnElement="Task_1lp89or">
-        <dc:Bounds x="342" y="626" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ExclusiveGateway_1m4f7qd_di" bpmnElement="ExclusiveGateway_1m4f7qd" isMarkerVisible="true">
-        <dc:Bounds x="367" y="744" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_0ishkke_di" bpmnElement="Task_1nc40l9">
-        <dc:Bounds x="342" y="469" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ExclusiveGateway_0mdmewu_di" bpmnElement="ExclusiveGateway_0mdmewu" isMarkerVisible="true">
-        <dc:Bounds x="367" y="320" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="UserTask_112e41y_di" bpmnElement="Task_1a98j80">
-        <dc:Bounds x="523" y="1025" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_161c9qw_di" bpmnElement="Task_0615ttf">
-        <dc:Bounds x="796" y="907" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ExclusiveGateway_147mgac_di" bpmnElement="ExclusiveGateway_147mgac" isMarkerVisible="true">
-        <dc:Bounds x="821" y="1040" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_1lu37y1_di" bpmnElement="Task_0xtu95r">
-        <dc:Bounds x="342" y="907" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ExclusiveGateway_05jbqrq_di" bpmnElement="ExclusiveGateway_05jbqrq" isMarkerVisible="true">
-        <dc:Bounds x="548" y="922" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="UserTask_0bnnygp_di" bpmnElement="Task_1w6p8nu">
-        <dc:Bounds x="1001" y="1025" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ExclusiveGateway_0skeib3_di" bpmnElement="ExclusiveGateway_0skeib3" isMarkerVisible="true">
-        <dc:Bounds x="1026" y="923" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_0ob7qt4_di" bpmnElement="Task_0j091gc">
-        <dc:Bounds x="342" y="196" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="UserTask_0fevck2_di" bpmnElement="Task_0hyvewn">
-        <dc:Bounds x="1001" y="1323" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_1nt2adt_di" bpmnElement="Task_0pe59bx">
-        <dc:Bounds x="1200" y="1472" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="UserTask_0wswftx_di" bpmnElement="Task_0yyyjlr">
-        <dc:Bounds x="342" y="1379" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_0hx5nvd_di" bpmnElement="Task_1f5v9d6">
-        <dc:Bounds x="342" y="1702" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ExclusiveGateway_11vo6qu_di" bpmnElement="ExclusiveGateway_11vo6qu" isMarkerVisible="true">
-        <dc:Bounds x="367" y="1487" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_05siibo_di" bpmnElement="Task_0ho5dl9">
-        <dc:Bounds x="342" y="1577" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_0h4p68c_di" bpmnElement="EndEvent_0h4p68c">
-        <dc:Bounds x="374" y="1819" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StartEvent_07p9bpd_di" bpmnElement="StartEvent_07p9bpd">
-        <dc:Bounds x="374" y="111" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ExclusiveGateway_16kw1ye_di" bpmnElement="ExclusiveGateway_16kw1ye" isMarkerVisible="true">
-        <dc:Bounds x="548" y="641" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="UserTask_119ip2n_di" bpmnElement="Task_11jmfu5">
-        <dc:Bounds x="523" y="729" width="100" height="80" />
+      <bpmndi:BPMNShape id="TextAnnotation_0wsnf7k_di" bpmnElement="TextAnnotation_0wsnf7k">
+        <dc:Bounds x="410" y="1260" width="99.99305040770942" height="40.7709414381023" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
