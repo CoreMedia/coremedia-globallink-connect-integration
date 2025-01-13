@@ -54,6 +54,20 @@ the content app and finish it.
 
 Well done.
 
+### Further Scenarios
+
+#### Manual XLIFF Override &amp; Redelivered Submission State
+
+![GCC Redelivered](img/gcc-redelivered.png)
+
+Translators at GlobalLink may decide to mark a submission as redelivered. It is
+expected, that in these cases, the XLIFF is sent via different means to the
+editorial team, like, for example, email. The editorial team can then manually
+upload the XLIFF to the submission in the Workflow app.
+
+This redelivered state is represented as an extra task "Review Translation
+(redelivered)" (with status: "Redelivered").
+
 ### Pitfalls
 
 **Publishing content of active submissions**: Once a language is completely 
