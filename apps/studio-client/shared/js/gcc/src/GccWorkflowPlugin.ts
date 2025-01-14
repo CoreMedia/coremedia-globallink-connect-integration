@@ -29,7 +29,12 @@ import { translationServicesSettings } from "./TranslationServiceSettings";
 const UNAVAILABLE_SUBMISSION_STATE: string = "unavailable";
 const BLOB_FILE_PROCESS_VARIABLE_NAME: string = "translationResultXliff";
 const TRANSLATION_RESULT_XLIFF_VARIABLE_NAME: string = "translationResultXliff";
-const ERROR_TASK_NAME: string = "HandleDownloadTranslationError";
+/**
+ * Task names where the XLIFF download should be shown. An additional check is
+ * applied, which is, that if the XLIFF download is not available, the button
+ * is hidden, too.
+ */
+const SHOW_XLIFF_DOWNLOAD_TASK_NAMES: string[] = ["HandleDownloadTranslationError", "ReviewRedeliveredTranslation"];
 const CANCEL_REQUESTED_VARIABLE_NAME: string = "cancelRequested";
 const CANCELLATION_ALLOWED_VARIABLE_NAME: string = "cancellationAllowed";
 const TRANSLATION_GLOBAL_LINK_PROCESS_NAME: string = "TranslationGlobalLink";
@@ -474,7 +479,7 @@ function downloadNotAvailable(task: Task): boolean {
     !RemoteBeanUtil.isAccessible(task) ||
     !RemoteBeanUtil.isAccessible(<TaskDefinitionImpl>task.getDefinition()) ||
     !RemoteBeanUtil.isAccessible(task.getContainingProcess()) ||
-    task.getDefinition().getName() !== ERROR_TASK_NAME
+    !SHOW_XLIFF_DOWNLOAD_TASK_NAMES.includes(task.getDefinition().getName())
   ) {
     return true;
   }
