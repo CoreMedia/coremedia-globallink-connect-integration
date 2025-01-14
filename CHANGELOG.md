@@ -6,7 +6,7 @@ v2406.1.0-1
 
 * Updated dependency versions to CoreMedia Content Cloud v12.2406.1.0.
 * Aligned dependency versions with CoreMedia Content Cloud v12.2406.1.0.
-* Utilize workspace protocol in studio-client.
+
 
 v2406.0.1-1
 --------------------------------------------------------------------------------

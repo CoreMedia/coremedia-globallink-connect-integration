@@ -48,10 +48,6 @@ or browse directly in [docs/ folder](./docs/README.md).**
 
     Will contain preparations for next supported major.
 
-* **ci/develop:**
-
-    An artificial branch required for CoreMedia internal CI systems.
-
 * **Version Tags:**
 
     For adaptions to CoreMedia CMS major versions you will find corresponding
