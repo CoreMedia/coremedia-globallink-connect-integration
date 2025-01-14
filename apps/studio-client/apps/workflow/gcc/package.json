@@ -5,13 +5,13 @@
   "license": "CoreMedia Open Source License",
   "private": true,
   "dependencies": {
-    "@coremedia-labs/studio-client.ext.gcc-studio-client": "1.0.0-SNAPSHOT"
+    "@coremedia-labs/studio-client.ext.gcc-studio-client": "workspace:*"
   },
   "devDependencies": {
-    "@jangaroo/build": "^3.0.1",
+    "@jangaroo/build": "^3.1.0",
 
-    "@jangaroo/core": "^3.0.1",
-    "@coremedia/eslint-config-studio-client-ext": "^2406.0.0",
+    "@jangaroo/core": "^3.1.0",
+    "@coremedia/eslint-config-studio-client-ext": "^2412.0.0",
     "@jangaroo/publish": "^3.0.1",
     "eslint": "^8.57.0",
 
