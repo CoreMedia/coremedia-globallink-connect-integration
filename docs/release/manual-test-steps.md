@@ -2,7 +2,7 @@
 
 --------------------------------------------------------------------------------
 
-\[[Up](README.md)\] \[[Top](#top)\]
+\[[Up](README.md)\] \[[Top](#manual-test-steps)\]
 
 --------------------------------------------------------------------------------
 
@@ -12,7 +12,7 @@
 2. [Happy Path](#scenario-happy-path)
 3. [Submitter and Instructions](#scenario-submitter-and-instructions)
 4. [Cancellation](#scenario-cancelation)
-5. [Error Handling](#scenario-error-handling)
+5. [General Error Handling](#scenario-general-error-handling)
 6. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
 
 ## Prepare
@@ -24,23 +24,38 @@ via corresponding credentials:
 
 ```json5
 {
-    "globalLink": {
-        // ... other settings
-        "key": "...", // String; adjust either for automatic or manual GCC processing
-        // Suggestion to ease switching keys is to hold them in an extra
-        // Struct for easy copy & paste:
-        "keys": {
-            "automatic": "...", // String
-            "manual": "...", // String
-        },
-        "apiKey": "...", // String; private key, typically stored in Spring configuration
-        "type": "default", // String
-        "isSendSubmitter": false, // Boolean; changed within manual test steps
-        "sendTranslationRequestRetryDelay": 60, // Integer
-        "downloadTranslationRetryDelay": 60, // Integer
-        "cancelTranslationRetryDelay": 60, // Integer
-        "retryCommunicationErrors": 1, // Integer; change existing value
+  "globalLink": {
+    // [... other settings]
+    // key (type: String)
+    // Adjust either for automatic or manual GCC processing. To ease
+    // switching keys, hold them in the prepared extra Struct
+    // at `additionalConfigurationOptions.exampleKeys` for an easy copy & paste:
+    "key": "...",
+    // apiKey (type: String)
+    // Only used for testing. Otherwise, expected to be set via Spring for
+    // security reasons.
+    "apiKey": "...",
+    // type (type: String)
+    // Adjust to "default" for processing at GCC backend or "mock" for manual
+    // processing. See also: `additionalConfigurationOptions.availableTypes`.
+    "type": "default",
+    // isSendSubmitter (type: Boolean)
+    // Adjust to `true` to send the submitter with the request.
+    "isSendSubmitter": false,
+    // Section: Timing Adjustments — Get Faster Feedback on Manual Test Steps
+    // Despite `retryCommunicationErrors`, which just needs to be adjusted,
+    // find copy & paste ready values for the other settings in the
+    // `additionalConfigurationOptions` Struct.  
+    "sendTranslationRequestRetryDelay": 60,
+    "downloadTranslationRetryDelay": 60,
+    "cancelTranslationRetryDelay": 60,
+    "retryCommunicationErrors": 1,
+    // Section: Mock Settings
+    // Referenced below, like to provoke errors are certain states.
+    "mock": {
+      // [...]
     }
+  }
 }
 ```
 
@@ -338,8 +353,62 @@ home folder
     1. You should have the ability to “Abort and rollback changes” or
        “Continue and retry”
 
+## Scenario: Redelivered State Handling
+
+It has been observed, that, if the XLIFF is broken, it is not necessarily fixed
+within the GCC backend. Instead, the workflow is marked as "Redelivered", and
+the XLIFF is provided by different means, such as sent via email.
+
+The following steps simulate this scenario:
+
+1. Log in as Rick C.
+2. Open the GlobalLink
+   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
+   1. _type_ is set to “mock”
+   2. _mock.error_ is set to “DOWNLOAD_XLIFF”
+   3. **Submission State Mocking:** Add (or activate) the following mock
+      settings:
+      ```json5
+      {
+        "mock": {
+          // [...]
+          "submissionStates": {
+            "Completed": {
+              // Directly after "Completed" state, the submission is marked as
+              // "Redelivered".
+              "after": "Redelivered",
+              // Mark the state as final, not to continue with the next
+              // (standard) state.
+              "final": true
+            }
+          }
+        }
+      }
+      ```
+3. Choose an article and drag it into Control Room's “Localization Workflows”
+   drop area
+   1. A window _Localization Workflow_ should pop up
+   2. There should be no warnings or errors
+4. Click “Start”
+   1. The dialog should close without any error
+   2. A new workflow process should pop up in the "Running" area of Control
+      Room's “Localization Workflows”
+5. Wait for the workflow to appear in _Workflow App_'s "Open" workflows
+6. Double-click the workflow
+   1. Field "Current Task" should be “Review Translation (redelivered)”
+   2. Status should be “Redelivered”
+   3. In the section "More", a download link for the broken XLIFF should be
+      shown under "Issue Details" (if you skipped setting `mock.error` the
+      field is not available).
+7. Click the XLIFF download link
+   1. Both the XLIFF and an issue details text file should be included
+8. In the _Workflow App_, click “Accept Task”, "Next Step", “Finish Content
+   Localization”, and "Yes, continue"
+   1. The workflow should disappear from “Open”
+   2. The workflow should appear in “Closed”
+
 --------------------------------------------------------------------------------
 
-\[[Up](README.md)\] \[[Top](#top)\]
+\[[Up](README.md)\] \[[Top](#manual-test-steps)\]
 
 --------------------------------------------------------------------------------
