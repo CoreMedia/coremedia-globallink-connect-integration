@@ -44,6 +44,10 @@ available.
 In case an error occurs, the workflow re-appears in your inbox, and you can 
 select to cancel the workflow, or you can try to fix the problem and retry.
 
+If there was an issue with the XLIFF retrieved from the GCC backend (such as
+being corrupted or invalid), you will have the option to download the XLIFF
+as well as details about the issues (in a ZIP file).
+
 ![GCC Error Handling](img/gcc-connect-error.png)
 
 After the translation is finished, you will receive a notification. The workflow
@@ -58,15 +62,17 @@ Well done.
 
 #### Manual XLIFF Override &amp; Redelivered Submission State
 
-![GCC Redelivered](img/gcc-redelivered.png)
-
 Translators at GlobalLink may decide to mark a submission as redelivered. It is
 expected, that in these cases, the XLIFF is sent via different means to the
 editorial team, like, for example, email. The editorial team can then manually
 upload the XLIFF to the submission in the Workflow app.
 
 This redelivered state is represented as an extra task "Review Translation
-(redelivered)" (with status: "Redelivered").
+(redelivered)" (with status: "Redelivered"). If, as expected, the original
+XLIFF provided by the GCC backend had issues, you can download the (corrupted)
+XLIFF along with its issue details just as for the error handling.
+
+![GCC Redelivered](img/gcc-redelivered.png)
 
 ### Pitfalls
 
