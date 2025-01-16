@@ -14,6 +14,7 @@
 4. [Cancellation](#scenario-cancelation)
 5. [General Error Handling](#scenario-general-error-handling)
 6. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
+7. [Redelivered State Handling](#scenario-redelivered-state-handling)
 
 ## Prepare
 
