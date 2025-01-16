@@ -50,10 +50,7 @@ import static com.coremedia.cap.translate.xliff.XliffImportResultCode.FAILED;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_INTERNAL_LINK;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_LOCALE;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.SUCCESS;
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLATION_CONFIRMED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.REDELIVERED;
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
