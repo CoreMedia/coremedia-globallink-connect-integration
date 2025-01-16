@@ -109,6 +109,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
       gcConfig.setUserAgent(USER_AGENT);
       gcConfig.setConnectorKey(connectorKey);
+      // Redirect logging to SLF4j.
+      gcConfig.setLogger(SLF4JHandler.getLogger(GCExchange.class));
+      gcConfig.getLogger().fine("JUL Logging redirection to SLF4J: OK");
+      LOG.debug("JUL Logging redirected to SLF4J.");
       delegate = new GCExchange(gcConfig);
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);

@@ -41,6 +41,11 @@
     </triggeringPolicy>
   </appender>
 
+  <logger name="org.gs4tr.gcc.restclient" additivity="false" level="${config.test.log.level}">
+    <appender-ref ref="stdout"/>
+    <appender-ref ref="file"/>
+  </logger>
+
   <logger name="com.coremedia.labs.translation.gcc.facade.def" additivity="false" level="${config.test.log.level}">
     <appender-ref ref="stdout"/>
     <appender-ref ref="file"/>
