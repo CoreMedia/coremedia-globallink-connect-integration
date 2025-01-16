@@ -470,6 +470,11 @@ class DefaultGCExchangeFacadeContractTest {
    * This test addresses the full process of submitting files and receiving them
    * from GCC sandbox. The locales to use will be derived from the supported locales
    * at GCC. The test requires at minimum 2 supported locales and will fail otherwise.
+   * <p>
+   * You may exclude this test during normal tests runs via:
+   * <pre>{@code
+   * mvn test -DexcludedGroups=slow
+   * }</pre>
    *
    * @param testInfo      test-info to generate names
    * @param gccProperties properties to log in

@@ -10,6 +10,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigExcep
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
@@ -497,8 +498,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public GCSubmissionModel getSubmission(long submissionId) {
     GCSubmission submission = getSubmissionById(submissionId);
     if (submission == null) {
-      LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
-      return GCSubmissionModel.builder(submissionId).build();
+      throw new GCFacadeSubmissionNotFoundException("Submission not found for ID %d", submissionId);
     }
     GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
     // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation

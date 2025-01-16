@@ -41,6 +41,8 @@ interface GccWorkflowLocalization_properties {
   "GCC-WF-40002_text": string;
   "GCC-WF-40050_text": string;
   "GCC-WF-50050_text": string;
+  "GCC-WF-60000_text": string;
+  "GCC-WF-60001_text": string;
   "GCC-WF-61001_text": string;
   dateLiesInPast_globalLinkDueDate_text: string;
   dateInvalid_globalLinkDueDate_text: string;
@@ -92,6 +94,8 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
   "GCC-WF-40002_text": "The connection to GlobalLink failed because of an expired or invalid 'apiKey'.",
   "GCC-WF-40050_text": "Encountered an illegal submission ID.",
   "GCC-WF-50050_text": "An XLIFF export failure occurred.",
+  "GCC-WF-60000_text": "General submission failure.",
+  "GCC-WF-60001_text": "Submission not found.",
   "GCC-WF-61001_text": "Failure while trying to cancel GlobalLink submission.",
   dateLiesInPast_globalLinkDueDate_text: "Please choose a future Due Date.",
   dateInvalid_globalLinkDueDate_text: "Please enter a valid Due Date.",

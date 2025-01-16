@@ -26,6 +26,8 @@ final class GlobalLinkWorkflowErrorCodes {
   static final String XLIFF_EXPORT_FAILURE = "GCC-WF-50050";
 
   // ==== 60###: GCC State Problems
+  static final String SUBMISSION_ERROR = "GCC-WF-60000";
+  static final String SUBMISSION_NOT_FOUND_ERROR = "GCC-WF-60001";
   static final String SUBMISSION_CANCEL_FAILURE = "GCC-WF-61001";
 
   // ==== 70###: CMS Communication Problems
@@ -33,5 +35,4 @@ final class GlobalLinkWorkflowErrorCodes {
 
   private GlobalLinkWorkflowErrorCodes() {
   }
-
 }

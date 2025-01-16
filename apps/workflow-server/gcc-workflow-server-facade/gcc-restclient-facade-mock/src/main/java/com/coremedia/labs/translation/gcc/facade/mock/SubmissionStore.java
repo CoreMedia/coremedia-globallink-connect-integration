@@ -1,5 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
@@ -59,7 +60,7 @@ final class SubmissionStore {
   /**
    * Add a submission for the given target locales and the given contents.
    *
-   * @param subject            subject may be used to control mocked task state switching; see {@link #Submission(String, List, MockSettings, int)} for details.
+   * @param subject            subject may be used to control mocked task state switching
    * @param submissionContents data (i.e., the XLIFF for example) to be translated
    * @return unique id for the submission
    */
@@ -79,7 +80,7 @@ final class SubmissionStore {
         return;
       }
     }
-    throw new IllegalArgumentException("Unknown submission ID: " + submissionId);
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
   }
 
   GCSubmissionState getSubmissionState(long submissionId) {
@@ -88,7 +89,7 @@ final class SubmissionStore {
         return submissions.get(submissionId).getState();
       }
     }
-    throw new IllegalArgumentException("Unknown submission ID: " + submissionId);
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
   }
 
   Collection<Task> getCompletedTasks(long submissionId) {
@@ -97,7 +98,7 @@ final class SubmissionStore {
         return submissions.get(submissionId).getCompletedTasks();
       }
     }
-    throw new IllegalArgumentException("Unknown submission ID: " + submissionId);
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
   }
 
   Collection<Task> getCancelledTasks(long submissionId) {
@@ -106,6 +107,6 @@ final class SubmissionStore {
         return submissions.get(submissionId).getCancelledTasks();
       }
     }
-    throw new IllegalArgumentException("Unknown submission ID: " + submissionId);
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
   }
 }

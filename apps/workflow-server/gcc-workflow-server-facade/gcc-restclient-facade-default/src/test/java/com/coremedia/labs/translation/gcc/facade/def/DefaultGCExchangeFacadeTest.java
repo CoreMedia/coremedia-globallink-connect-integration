@@ -4,6 +4,7 @@ import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.io.ByteStreams;
@@ -106,7 +107,7 @@ class DefaultGCExchangeFacadeTest {
   @DisplayName("Tests for uploadContent")
   class UploadContent {
     @Test
-    @DisplayName("Test for an successful upload.")
+    @DisplayName("Test for a successful upload.")
     void happyPath(TestInfo testInfo) {
       String expectedFileId = "1234-5678";
       String expectedFileName = testInfo.getDisplayName();
@@ -508,13 +509,13 @@ class DefaultGCExchangeFacadeTest {
     }
 
     @Test
-    @DisplayName("Submission Unavailable, State: OTHER")
+    @DisplayName("Fail on Submission Unavailable")
     void dealWithUnavailableSubmission() {
       when(submissionsResponseData.getSubmissions()).thenReturn(emptyList());
 
       GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-      GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
-      assertThat(state).isEqualTo(GCSubmissionState.OTHER);
+      assertThatCode(() -> facade.getSubmission(SUBMISSION_ID))
+        .isInstanceOf(GCFacadeSubmissionNotFoundException.class);
     }
 
     @Test

@@ -24,6 +24,8 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigExcep
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
@@ -315,6 +317,12 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
       return getResultForGCCConnectionError(e, result, issues, parameters, gccRetryDelaySeconds, maxAutomaticRetries);
+    } catch (GCFacadeSubmissionNotFoundException e) {
+      LOG.warn("{}: Failed to find submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, e);
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, Collections.emptyList());
+    } catch (GCFacadeSubmissionException e) {
+      LOG.warn("{}: Failed to handle submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, e);
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, Collections.emptyList());
     } catch (GCFacadeIOException e) {
       LOG.warn("{}: Local I/O error ({}).", getName(), GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, Collections.emptyList());
