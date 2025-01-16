@@ -202,6 +202,16 @@ public class CancelTranslationGlobalLinkAction extends
 
   // --- Internal ----------------------------------------------------------------------
 
+  /**
+   * Sends a cancel request to the GlobalLink service.
+   *
+   * @param facade       facade to use for communication
+   * @param submissionId submission to cancel
+   * @param issues       map to store issues during the cancel operation
+   *                     (write-only)
+   * @return {@code true} if the submission was successfully cancelled,
+   * {@code false} otherwise
+   */
   private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<Content>> issues) {
     int httpStatus = facade.cancelSubmission(submissionId);
     if (httpStatus == HTTP_OK) {

@@ -10,9 +10,22 @@
       <bpmn:text>gccStatus == DELIVERED</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_133b7lh" associationDirection="None" sourceRef="SequenceFlow_1q3uje5" targetRef="TextAnnotation_0wsnf7k" />
+    <bpmn:textAnnotation id="TextAnnotation_1dfme25">
+      <bpmn:text>gccStatus in
+[CANCELLATION_CONFIRMED, CANCELLED]
+||
+(cancelled &amp;&amp;
+gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_13eo36u" associationDirection="None" sourceRef="SequenceFlow_0ny071j" targetRef="TextAnnotation_1dfme25" />
+    <bpmn:textAnnotation id="TextAnnotation_0kpev70">
+      <bpmn:text>gccStatus in
+[CANCELLATION_CONFIRMED, CANCELLED]</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0dth55e" associationDirection="None" sourceRef="SequenceFlow_1gkf4xz" targetRef="TextAnnotation_0kpev70" />
   </bpmn:collaboration>
   <bpmn:process id="Process_1" isExecutable="true">
-    <bpmn:exclusiveGateway id="ExclusiveGateway_1jk32ai">
+    <bpmn:exclusiveGateway id="ExclusiveGateway_1jk32ai" default="SequenceFlow_1m1jfu9">
       <bpmn:incoming>SequenceFlow_1j3mjj8</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1yp9pal</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_1m1jfu9</bpmn:outgoing>
@@ -147,7 +160,7 @@
     <bpmn:sequenceFlow id="SequenceFlow_0t37cde" name="retry cancel" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0615ttf" />
     <bpmn:sequenceFlow id="SequenceFlow_0hzm53q" sourceRef="Task_1w6p8nu" targetRef="ExclusiveGateway_0skeib3" />
     <bpmn:sequenceFlow id="SequenceFlow_1ji4k7m" name="cancel requested" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0615ttf" />
-    <bpmn:sequenceFlow id="SequenceFlow_1gkf4xz" name="gccStatus == CANCELLATION CONFIRMED&#10;||&#10;gccStatus == CANCELLED" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0hyvewn" />
+    <bpmn:sequenceFlow id="SequenceFlow_1gkf4xz" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0hyvewn" />
     <bpmn:sequenceFlow id="SequenceFlow_1vy6ovs" sourceRef="Task_1a98j80" targetRef="ExclusiveGateway_05jbqrq" />
     <bpmn:sequenceFlow id="SequenceFlow_1yp9pal" name="errors exist &#38;&#38; retries == 0" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_1a98j80" />
     <bpmn:sequenceFlow id="SequenceFlow_1j3mjj8" sourceRef="Task_0xtu95r" targetRef="ExclusiveGateway_1jk32ai" />
@@ -168,8 +181,8 @@
     <bpmn:sequenceFlow id="SequenceFlow_1q3uje5" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0yyyjlr" />
     <bpmn:sequenceFlow id="SequenceFlow_1r901z3" name="rollback" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0pe59bx" />
     <bpmn:sequenceFlow id="SequenceFlow_1dw75ff" sourceRef="Task_0hyvewn" targetRef="Task_0pe59bx" />
-    <bpmn:sequenceFlow id="SequenceFlow_0ny071j" name="gccStatus == CANCELLATION CONFIRMED&#10;||&#10;gccStatus == CANCELLED&#10;||&#10;gccStatus == DELIVERED &#38;&#38; cancelled" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0pe59bx" />
-    <bpmn:sequenceFlow id="SequenceFlow_1coxv9i" name="gccStatus == DELIVERED &#38;&#38; !cancelled" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0yyyjlr" />
+    <bpmn:sequenceFlow id="SequenceFlow_0ny071j" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0pe59bx" />
+    <bpmn:sequenceFlow id="SequenceFlow_1coxv9i" name="!cancelled &#38;&#38;&#10;gccStatus in [DELIVERED, REDELIVERED]" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0yyyjlr" />
     <bpmn:sequenceFlow id="Flow_0p28pll" name="continue translation" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0xtu95r" />
     <bpmn:userTask id="Activity_0ny8itj" name="Review Delivered Translation (redelivered)">
       <bpmn:incoming>Flow_1uaw1py</bpmn:incoming>
@@ -477,7 +490,7 @@
         <di:waypoint x="1250" y="1157" />
         <di:waypoint x="1250" y="1469" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1138" y="1014" width="84" height="132" />
+          <dc:Bounds x="1137" y="1014" width="87" height="119" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_1coxv9i_di" bpmnElement="SequenceFlow_1coxv9i">
@@ -485,7 +498,7 @@
         <di:waypoint x="847" y="1419" />
         <di:waypoint x="442" y="1419" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="755" y="1106" width="81" height="40" />
+          <dc:Bounds x="755" y="1106" width="81" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0p28pll_di" bpmnElement="Flow_0p28pll">
@@ -507,6 +520,22 @@
         <di:waypoint x="270" y="1190" />
         <di:waypoint x="270" y="1379" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_13eo36u_di" bpmnElement="Association_13eo36u">
+        <di:waypoint x="1201.5285760948182" y="1157" />
+        <di:waypoint x="1173" y="1170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0dth55e_di" bpmnElement="Association_0dth55e">
+        <di:waypoint x="629.3707620070252" y="1363" />
+        <di:waypoint x="666" y="1317" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_0llxue2_di" bpmnElement="TextAnnotation_0llxue2">
+        <dc:Bounds x="280" y="1240" width="99.99305040770942" height="40.7709414381023" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0wsnf7k_di" bpmnElement="TextAnnotation_0wsnf7k">
+        <dc:Bounds x="410" y="1260" width="99.99305040770942" height="40.7709414381023" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_07mhjy3_di" bpmnElement="Association_07mhjy3">
         <di:waypoint x="270" y="1206.0079621872383" />
         <di:waypoint x="312" y="1240" />
@@ -515,12 +544,12 @@
         <di:waypoint x="392" y="1234.5" />
         <di:waypoint x="435" y="1260" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="TextAnnotation_0llxue2_di" bpmnElement="TextAnnotation_0llxue2">
-        <dc:Bounds x="280" y="1240" width="99.99305040770942" height="40.7709414381023" />
+      <bpmndi:BPMNShape id="TextAnnotation_1dfme25_di" bpmnElement="TextAnnotation_1dfme25">
+        <dc:Bounds x="950" y="1170" width="275" height="90" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="TextAnnotation_0wsnf7k_di" bpmnElement="TextAnnotation_0wsnf7k">
-        <dc:Bounds x="410" y="1260" width="99.99305040770942" height="40.7709414381023" />
+      <bpmndi:BPMNShape id="TextAnnotation_0kpev70_di" bpmnElement="TextAnnotation_0kpev70">
+        <dc:Bounds x="650" y="1260" width="194.44001276324187" height="57.434588385449906" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
