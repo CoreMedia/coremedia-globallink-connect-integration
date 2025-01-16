@@ -2,7 +2,9 @@ package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.collect.ImmutableMap;
@@ -52,6 +54,7 @@ import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.awaitility.Awaitility.await;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -99,12 +102,43 @@ class DefaultGCExchangeFacadeContractTest {
   private static final long TRANSLATION_TIMEOUT_MINUTES = 30L;
   private static final long SUBMISSION_VALID_TIMEOUT_MINUTES = 2L;
 
-  @Test
-  @DisplayName("Validate that login works.")
-  void login(Map<String, Object> gccProperties) {
-    LOG.info("Properties: {}", gccProperties);
-    GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-    assertThat(facade.getDelegate()).isNotNull();
+  @Nested
+  @DisplayName("Tests for login")
+  class Login {
+    @Test
+    @DisplayName("Validate that login works.")
+    void shouldLoginSuccessfully(@NonNull Map<String, Object> gccProperties) {
+      LOG.info("Properties: {}", gccProperties);
+      assertThatCode(() -> new DefaultGCExchangeFacade(gccProperties))
+        .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("Validate that invalid login is denied.")
+    void shouldFailToLoginWithInvalidApiKey(@NonNull Map<String, Object> gccProperties) {
+      Map<String, Object> patchedProperties = new HashMap<>(gccProperties);
+      patchedProperties.put("apiKey", "invalid");
+      LOG.info("Properties: {} patched to {}", gccProperties, patchedProperties);
+      assertThatCode(() -> new DefaultGCExchangeFacade(patchedProperties))
+        .isInstanceOf(GCFacadeAccessException.class)
+        .hasCauseInstanceOf(IllegalAccessError.class);
+    }
+
+    /**
+     * We cannot trust GCC to validate the connector key in every situation.
+     * To prevent unexpected, hard to handle results, that do not expose an
+     * issue with the connector key (such as when trying to retrieve a
+     * submission by ID), we validate the connector key initially instead.
+     */
+    @Test
+    void shouldValidateConnectorKeyInitially(@NonNull Map<String, Object> gccProperties) {
+      Map<String, Object> patchedProperties = new HashMap<>(gccProperties);
+      patchedProperties.put("key", "invalid");
+      LOG.info("Properties: {} patched to {}", gccProperties, patchedProperties);
+      assertThatCode(() -> new DefaultGCExchangeFacade(patchedProperties))
+        .isInstanceOf(GCFacadeConnectorKeyConfigException.class)
+        .hasNoCause();
+    }
   }
 
   @Nested

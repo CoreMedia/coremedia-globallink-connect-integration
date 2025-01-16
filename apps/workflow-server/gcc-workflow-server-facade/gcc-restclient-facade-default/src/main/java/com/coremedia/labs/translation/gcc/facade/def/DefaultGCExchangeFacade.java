@@ -6,6 +6,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider
 import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
@@ -24,6 +25,7 @@ import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.dto.GCResponse;
 import org.gs4tr.gcc.restclient.dto.MessageResponse;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
+import org.gs4tr.gcc.restclient.model.Connector;
 import org.gs4tr.gcc.restclient.model.ContentLocales;
 import org.gs4tr.gcc.restclient.model.GCSubmission;
 import org.gs4tr.gcc.restclient.model.GCTask;
@@ -111,17 +113,38 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       gcConfig.setConnectorKey(connectorKey);
       // Redirect logging to SLF4j.
       gcConfig.setLogger(SLF4JHandler.getLogger(GCExchange.class));
-      gcConfig.getLogger().fine("JUL Logging redirection to SLF4J: OK");
-      LOG.debug("JUL Logging redirected to SLF4J.");
+      gcConfig.getLogger().finest("JUL Logging redirection to SLF4J: OK");
+      LOG.trace("JUL Logging redirected to SLF4J.");
       delegate = new GCExchange(gcConfig);
+      validateConnectorKey(delegate);
+    } catch (GCFacadeException e) {
+      throw e;
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);
     } catch (IllegalAccessError e) {
       throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
     fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
-            String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
+      String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
     );
+  }
+
+  /**
+   * GCC backend does not validate the connector key during connection setup.
+   * Not validating it upfront may lead to unexpected states, such as that we
+   * get just no submission for a given ID instead of any failure signal.
+   * <p>
+   * This validation is meant to fail-fast and to prevent unexpected, hard to
+   * debug states.
+   *
+   * @param gcExchange GCC exchange instance to validate
+   */
+  private static void validateConnectorKey(@NonNull GCExchange gcExchange) {
+    String configuredKey = gcExchange.getConfig().getConnectorKey();
+    List<String> availableConnectorKeys = gcExchange.getConnectors().stream().map(Connector::getConnectorKey).toList();
+    if (!availableConnectorKeys.contains(configuredKey)) {
+      throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).".formatted(gcExchange.getConfig().getApiUrl()));
+    }
   }
 
   @VisibleForTesting
@@ -135,7 +158,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     Object value = config.get(key);
     if (value == null) {
       throw new GCFacadeConfigException("Configuration for %s is missing. Configuration (values hidden): %s", key, config.entrySet().stream()
-              .collect(toMap(Map.Entry::getKey, e -> GCConfigProperty.KEY_URL.equals(e.getKey()) ? e.getValue() : "*****"))
+        .collect(toMap(Map.Entry::getKey, e -> GCConfigProperty.KEY_URL.equals(e.getKey()) ? e.getValue() : "*****"))
       );
     }
     return String.valueOf(value);
@@ -168,21 +191,21 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
                                Map<String, List<Locale>> contentMap) {
 
     List<ContentLocales> contentLocalesList = contentMap.entrySet().stream()
-            .map(e ->
-                    new ContentLocales(
-                            e.getKey(),
-                            e.getValue().stream().map(Locale::toLanguageTag).collect(toList())))
-            .collect(toList());
+      .map(e ->
+        new ContentLocales(
+          e.getKey(),
+          e.getValue().stream().map(Locale::toLanguageTag).collect(toList())))
+      .collect(toList());
 
     SubmissionSubmitRequest request = new SubmissionSubmitRequest(
-            createSubmissionName(subject, sourceLocale, contentMap),
-            // REST API documents using UTC, Java REST Client API (v3.1.3)
-            // uses local time zone instead. This may cause an
-            // `IllegalArgumentException` if the due date is set to today with
-            // only some hours offset.
-            GCUtil.toUnixDateUtc(dueDate),
-            sourceLocale.toLanguageTag(),
-            contentLocalesList
+      createSubmissionName(subject, sourceLocale, contentMap),
+      // REST API documents using UTC, Java REST Client API (v3.1.3)
+      // uses local time zone instead. This may cause an
+      // `IllegalArgumentException` if the due date is set to today with
+      // only some hours offset.
+      GCUtil.toUnixDateUtc(dueDate),
+      sourceLocale.toLanguageTag(),
+      contentLocalesList
     );
     if (comment != null) {
       request.setInstructions(comment);
@@ -199,7 +222,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       return response.getSubmissionId();
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to create submission: subject=%s, source-locale=%s",
-              subject, sourceLocale.toLanguageTag());
+        subject, sourceLocale.toLanguageTag());
     }
   }
 
@@ -223,11 +246,11 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
   private static String gcResponseToString(GCResponse response) {
     return com.google.common.base.MoreObjects.toStringHelper(response)
-            .add("status", response.getStatus())
-            .add("statusCode", response.getStatusCode())
-            .add("error", response.getError())
-            .add("message", response.getMessage())
-            .toString();
+      .add("status", response.getStatus())
+      .add("statusCode", response.getStatusCode())
+      .add("error", response.getError())
+      .add("message", response.getMessage())
+      .toString();
   }
 
   /**
@@ -250,19 +273,19 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       } else {
         String truncatedSubject = trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
         LOG.warn("Given subject exceeds maximum length of {}. Will truncate subject and skip adding further information: {} → {}",
-                SUBMISSION_NAME_MAX_LENGTH,
-                trimmedSubject,
-                truncatedSubject);
+          SUBMISSION_NAME_MAX_LENGTH,
+          trimmedSubject,
+          truncatedSubject);
         trimmedSubject = truncatedSubject;
       }
       return trimmedSubject;
     }
 
     String allTargetLocales = contentMap.entrySet().stream()
-            .flatMap(e -> e.getValue().stream())
-            .distinct()
-            .map(Locale::toLanguageTag)
-            .collect(joining(", "));
+      .flatMap(e -> e.getValue().stream())
+      .distinct()
+      .map(Locale::toLanguageTag)
+      .collect(joining(", "));
 
     if (trimmedSubject.isEmpty()) {
       trimmedSubject = Instant.now().toString();
@@ -316,16 +339,16 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   @Override
   public void confirmCancelledTasks(long submissionId) {
     Map<TaskStatus, Set<GCTaskModel>> tasksByState =
-            getTasksByState(submissionId,
-                    // Ignore tasks which got already confirmed as being cancelled.
-                    r -> r.setIsCancelConfirmed(0),
-                    Cancelled
-            );
+      getTasksByState(submissionId,
+        // Ignore tasks which got already confirmed as being cancelled.
+        r -> r.setIsCancelConfirmed(0),
+        Cancelled
+      );
     List<GCTaskModel> tasks = new ArrayList<>(tasksByState.getOrDefault(Cancelled, emptySet()));
 
     List<Long> taskIds = tasks.stream()
-            .map(GCTaskModel::getTaskId)
-            .collect(toList());
+      .map(GCTaskModel::getTaskId)
+      .collect(toList());
 
     LOG.debug("Canceling Task IDs of submission {}: {}", submissionId, taskIds);
     confirmTaskCancellations(taskIds);
@@ -380,8 +403,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     Map<TaskStatus, Set<GCTaskModel>> tasksByState = new EnumMap<>(TaskStatus.class);
 
     GCUtil.processAllPages(
-            () -> createTaskListRequestBase(submissionId, requestPreProcessor, taskStates),
-            r -> executeRequest(r, tasksByState)
+      () -> createTaskListRequestBase(submissionId, requestPreProcessor, taskStates),
+      r -> executeRequest(r, tasksByState)
     );
 
     return tasksByState;
@@ -435,10 +458,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         Locale localeFromGCCTask = new Locale.Builder().setLanguageTag(t.getTargetLocale().getLocale()).build();
         GCTaskModel gcTaskModel = new GCTaskModel(t.getTaskId(), localeFromGCCTask);
         tasksByState.merge(TaskStatus.valueOf(t.getState()), Sets.newHashSet(gcTaskModel),
-                (oldValue, newValue) -> {
-                  oldValue.addAll(newValue);
-                  return oldValue;
-                }
+          (oldValue, newValue) -> {
+            oldValue.addAll(newValue);
+            return oldValue;
+          }
         );
       } catch (IllformedLocaleException exception) {
         LOG.error("Failed to convert LanguageTag tag from GCCTask with ID {}", t.getTaskId());
@@ -498,10 +521,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       }
     }
     return GCSubmissionModel.builder(submissionId)
-            .pdSubmissionIds(submission.getPdSubmissionIds().keySet())
-            .state(state)
-            .submitter(submission.getSubmitter())
-            .build();
+      .pdSubmissionIds(submission.getPdSubmissionIds().keySet())
+      .state(state)
+      .submitter(submission.getSubmitter())
+      .build();
   }
 
   /**
@@ -515,23 +538,23 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private boolean areAllSubmissionTasksDone(long submissionId) {
     AtomicBoolean allDone = new AtomicBoolean(true);
     GCUtil.processAllPages(
-            () -> createTaskListRequestBase(submissionId),
-            r -> executeRequest(r, t -> {
-              TaskStatus status = TaskStatus.valueOf(t.getState());
-              LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
-              switch (status) {
-                case Delivered:
-                  break;
-                case Cancelled:
-                  LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
-                  // Logical AND: Only use confirmed state, if value
-                  // is still true. Otherwise, keep false state.
-                  allDone.compareAndSet(true, t.getIsCancelConfirmed());
-                  break;
-                default:
-                  allDone.set(false);
-              }
-            })
+      () -> createTaskListRequestBase(submissionId),
+      r -> executeRequest(r, t -> {
+        TaskStatus status = TaskStatus.valueOf(t.getState());
+        LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
+        switch (status) {
+          case Delivered:
+            break;
+          case Cancelled:
+            LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
+            // Logical AND: Only use confirmed state, if value
+            // is still true. Otherwise, keep false state.
+            allDone.compareAndSet(true, t.getIsCancelConfirmed());
+            break;
+          default:
+            allDone.set(false);
+        }
+      })
     );
 
     return allDone.get();
@@ -562,9 +585,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
     if (responseData.getTotalResultPagesCount() > 1L) {
       LOG.warn(
-              "More than one submission ({}) returned for the same ID {}. Will choose the first one.",
-              responseData.getTotalResultPagesCount(),
-              submissionId
+        "More than one submission ({}) returned for the same ID {}. Will choose the first one.",
+        responseData.getTotalResultPagesCount(),
+        submissionId
       );
     }
     return submissions.get(0);
@@ -593,7 +616,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       result = configuredFileType;
     } else {
       throw new GCFacadeFileTypeConfigException("Configured file type '%s' not in supported ones %s for GlobalLink " +
-              "connection at %s", configuredFileType, supportedFileTypes, apiUrl);
+        "connection at %s", configuredFileType, supportedFileTypes, apiUrl);
     }
 
     LOG.info("Using file type '{}' for uploading data to GlobalLink at {}", result, apiUrl);

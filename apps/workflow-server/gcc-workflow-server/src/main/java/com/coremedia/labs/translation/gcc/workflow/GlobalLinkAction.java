@@ -20,6 +20,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
@@ -320,6 +321,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     } catch (GCFacadeFileTypeConfigException e) {
       LOG.warn("{}: Communication failed because of unsupported configured file type ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_FILE_TYPE_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_FILE_TYPE_ERROR, Collections.emptyList());
+    } catch (GCFacadeConnectorKeyConfigException e) {
+      LOG.warn("{}: Connector key is unavailable ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_CONNECTOR_KEY_ERROR, e);
+      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_CONNECTOR_KEY_ERROR, Collections.emptyList());
     } catch (GCFacadeConfigException e) {
       LOG.warn("{}: Communication failed because of invalid/missing settings ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, Collections.emptyList());
