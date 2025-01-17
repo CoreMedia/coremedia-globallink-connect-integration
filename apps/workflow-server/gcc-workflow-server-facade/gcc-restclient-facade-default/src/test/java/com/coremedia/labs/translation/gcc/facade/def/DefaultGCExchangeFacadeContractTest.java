@@ -32,6 +32,7 @@ import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -392,6 +393,54 @@ class DefaultGCExchangeFacadeContractTest {
       }
     }
 
+    @ParameterizedTest(name = "[{index}] instructions={0}")
+    @DisplayName("Should respect instructions.")
+    @ValueSource(strings = {
+      "ASCII",
+      "Umlauts (etc.): äöüÄÖÜß€µ",
+      // Skipped for now, as we had to learn, that instructions are meant
+      // to be given as HTML (and thus, require proper escaping) and that
+      // Unicode characters from Supplementary Multilingual Plane are not
+      // supported (they trigger an escalation in the GCC Backend).
+      // "Formatting Characters: Newline\nTab\tTab\nNon-Breaking Space: \u00A0",
+      // "HTML <strong>Probe</strong>: &lt;br&gt;<br>",
+      // "Unicode: Basic Multilingual Plane, Arrows: \u2190\u2191\u2192\u2193\u2194\u2195\u2196\u2197\u2198\u2199",
+      // "Unicode: Supplementary Multilingual Plane, Block: Linear B Syllabary, Linear B Syllable B008 A: \uD800\uDC00 (&#x10000;)",
+      // "Unicode: Supplementary Multilingual Plane, Block: Ancient Greek Musical Notation, Greek Musical Notation Symbol-1:  \uD834\uDD00 (&#x1D200;)",
+      // "Unicode: Supplementary Multilingual Plane, Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (&#x1F54A;)",
+    })
+    void shouldRespectInstructions(@NonNull String comment,
+                                   @NonNull TestInfo testInfo,
+                                   @NonNull Map<String, Object> gccProperties) {
+      // Not using as we do not want to add the test fixture also to the
+      // submission's name.
+      String testName = testInfo.getTestMethod().map(Method::getName).orElseThrow();
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      long submissionId = facade.submitSubmission(
+              testName,
+              comment,
+              getSomeDueDate(),
+              null,
+              "admin",
+              Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+
+      assertThat(submissionId).isGreaterThan(0L);
+
+      // Just test, that the submission does not escalate.
+      assertSubmissionReachesAnyStateOf(
+        facade,
+        submissionId,
+        List.of(
+          GCSubmissionState.STARTED,
+          GCSubmissionState.ANALYZED,
+          GCSubmissionState.TRANSLATE,
+          GCSubmissionState.COMPLETED
+        ),
+        SUBMISSION_VALID_TIMEOUT_MINUTES
+      );
+    }
+
     @Test
     @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, skip additional information")
     void submissionNameTruncationAsciiSkipAdditionalInfo(TestInfo testInfo, Map<String, Object> gccProperties) {
@@ -575,11 +624,15 @@ class DefaultGCExchangeFacadeContractTest {
   }
 
   private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState stateToReach, long timeout) {
-    await("Wait for translation to complete.")
+    assertSubmissionReachesAnyStateOf(facade, submissionId, List.of(stateToReach), timeout);
+  }
+
+  private static void assertSubmissionReachesAnyStateOf(GCExchangeFacade facade, long submissionId, List<GCSubmissionState> expectedStates, long timeout) {
+    await("Wait for translation to reach any of the state(s): %s".formatted(expectedStates))
             .atMost(timeout, TimeUnit.MINUTES)
             .pollDelay(1L, TimeUnit.MINUTES)
             .pollInterval(1L, TimeUnit.MINUTES)
             .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
-            .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(stateToReach));
+            .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isIn(expectedStates));
   }
 }
