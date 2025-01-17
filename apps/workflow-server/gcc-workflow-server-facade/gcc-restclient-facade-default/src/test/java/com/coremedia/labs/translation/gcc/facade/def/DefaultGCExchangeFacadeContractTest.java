@@ -18,6 +18,7 @@ import org.gs4tr.gcc.restclient.model.LocaleConfig;
 import org.gs4tr.gcc.restclient.operation.ConnectorsConfig;
 import org.gs4tr.gcc.restclient.operation.Content;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
@@ -40,6 +42,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +52,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -103,6 +107,22 @@ class DefaultGCExchangeFacadeContractTest {
     """;
   private static final long TRANSLATION_TIMEOUT_MINUTES = 30L;
   private static final long SUBMISSION_VALID_TIMEOUT_MINUTES = 2L;
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+  /**
+   * An ID to make the submissions easier to identify within the GCC backend.
+   * The included timestamp is meant to ease the identification of a given
+   * test run.
+   */
+  private static final String TEST_ID = "CT#%s".formatted(LocalDateTime.now().format(DATE_TIME_FORMATTER));
+  private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\\\n");
+  private static final Pattern CARRIAGE_RETURN_PATTERN = Pattern.compile("\\\\r");
+  private String submissionName;
+
+  @BeforeEach
+  void setUp(@NonNull TestInfo testInfo) {
+    String testName = testInfo.getTestMethod().map(Method::getName).orElse("noname");
+    submissionName = "%s: %s".formatted(TEST_ID, testName);
+  }
 
   @Nested
   @DisplayName("Tests for login")
@@ -258,7 +278,7 @@ class DefaultGCExchangeFacadeContractTest {
 
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-        testName,
+        submissionName,
         null,
         getSomeDueDate(),
         null,
@@ -339,7 +359,7 @@ class DefaultGCExchangeFacadeContractTest {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-        testName,
+        submissionName,
         null,
         getSomeDueDate(),
         null,
@@ -369,7 +389,7 @@ class DefaultGCExchangeFacadeContractTest {
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
         testName,
-        null,
+        submissionName,
         getSomeDueDate(),
         null,
         "admin",
@@ -418,7 +438,7 @@ class DefaultGCExchangeFacadeContractTest {
       String comment = "Instruction to break GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(unicodeDove);
 
       long submissionId = facade.submitSubmission(
-        testName,
+        submissionName,
         comment,
         getSomeDueDate(),
         null,
@@ -436,26 +456,34 @@ class DefaultGCExchangeFacadeContractTest {
         );
     }
 
-    @ParameterizedTest(name = "[{index}] instructions={0}")
+    @ParameterizedTest(name = "[{index}] {arguments}")
     @DisplayName("Should respect instructions.")
-    @ValueSource(strings = {
-      "ASCII + Umlauts: äöüÄÖÜß€µ",
-      "Formatting Characters: Newline\nTab\tTab\nNon-Breaking Space: \u00A0",
-      "HTML <strong>Probe</strong>: &lt;br&gt;<br>",
-      "Unicode: Basic Multilingual Plane, Arrows: \u2190\u2191\u2192\u2193\u2194\u2195\u2196\u2197\u2198\u2199",
-      "Unicode: Supplementary Multilingual Plane, Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (&#x1F54A;)",
-    })
-    void shouldRespectInstructions(@NonNull String comment,
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+        id       | comment
+        ASCII    | 'ASCII + Umlauts: äöüÄÖÜß€µ'
+        Format   | 'Formatting Characters: Linux Newline\\nWindows Newline\\r\\nMac Newline\\rEOM'
+        HTML     | 'HTML <strong>Probe</strong>: &lt;br&gt;<br>'
+        Unicode1 | 'Unicode: Basic Multilingual Plane, Arrows: \u2190\u2191\u2192\u2193\u2194\u2195\u2196\u2197\u2198\u2199'
+        Unicode2 | 'Unicode: Supplementary Multilingual Plane, Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (&#x1F54A;)'
+      """)
+    void shouldRespectInstructions(@NonNull String id,
+                                   @NonNull String comment,
                                    @NonNull TestInfo testInfo,
                                    @NonNull Map<String, Object> gccProperties) {
-      // Not using as we do not want to add the test fixture also to the
-      // submission's name.
-      String testName = testInfo.getTestMethod().map(Method::getName).orElseThrow();
+      // Replace "escaped" characters with actual characters.
+      String commentFixture = CARRIAGE_RETURN_PATTERN
+        .matcher(
+          NEWLINE_PATTERN
+            .matcher(comment)
+            .replaceAll("\n")
+        )
+        .replaceAll("\r");
+      String testName = testInfo.getDisplayName();
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-        testName,
-        comment,
+        "%s; %s".formatted(submissionName, id),
+        commentFixture,
         getSomeDueDate(),
         null,
         "admin",
