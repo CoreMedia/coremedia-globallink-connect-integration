@@ -393,6 +393,44 @@ class DefaultGCExchangeFacadeContractTest {
       }
     }
 
+    /**
+     * This test requires a known way how to make the GCC REST Backend fail
+     * internally. For now, it is passing instructions that contain
+     * Unicode characters from Supplementary Multilingual Plane without
+     * escaping them.
+     * <p>
+     * This test relies on this ability to fail. If the behavior is changed,
+     * and there is no other way to provoke an error, this test should be
+     * removed.
+     */
+    @Test
+    void shouldExposeErrorStateToClient(@NonNull TestInfo testInfo,
+                                        @NonNull Map<String, Object> gccProperties) {
+      String testName = testInfo.getDisplayName();
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String unicodeDove = "\uD83D\uDD4A";
+      String comment = "Instruction to break GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(unicodeDove);
+
+      long submissionId = facade.submitSubmission(
+        testName,
+        comment,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+
+      assertThat(submissionId).isGreaterThan(0L);
+
+      await("Submission is expected to fail with error state.")
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).isError())
+          .isTrue()
+        );
+    }
+
     @ParameterizedTest(name = "[{index}] instructions={0}")
     @DisplayName("Should respect instructions.")
     @ValueSource(strings = {

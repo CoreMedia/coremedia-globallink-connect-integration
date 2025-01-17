@@ -20,6 +20,7 @@ public class GCSubmissionModel {
   private final GCSubmissionState state;
   @Nullable
   private final String submitter;
+  private final boolean error;
 
   /**
    * Create a submission that does not have a state yet.
@@ -44,7 +45,7 @@ public class GCSubmissionModel {
    */
   @Deprecated(since = "2401.3")
   public GCSubmissionModel(long submissionId, @NonNull Collection<String> pdSubmissionIds, @NonNull GCSubmissionState state) {
-    this(submissionId, pdSubmissionIds, state, null);
+    this(submissionId, pdSubmissionIds, state, null, false);
   }
 
   /**
@@ -54,15 +55,18 @@ public class GCSubmissionModel {
    * @param pdSubmissionIds the ids shown to editors
    * @param state           the state to represent
    * @param submitter       submitter; possibly unset, if not available
+   * @param error           if the submission is in an error state
    */
   private GCSubmissionModel(long submissionId,
                             @NonNull Collection<String> pdSubmissionIds,
                             @NonNull GCSubmissionState state,
-                            @Nullable String submitter) {
+                            @Nullable String submitter,
+                            boolean error) {
     this.submissionId = submissionId;
     this.pdSubmissionIds = List.copyOf(pdSubmissionIds);
     this.state = Objects.requireNonNull(state);
     this.submitter = submitter;
+    this.error = error;
   }
 
   public long getSubmissionId() {
@@ -84,21 +88,25 @@ public class GCSubmissionModel {
     return Optional.ofNullable(submitter);
   }
 
+  /**
+   * If the submission reached an error state.
+   */
+  public boolean isError() {
+    return error;
+  }
+
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
+  public boolean equals(Object object) {
+    if (object == null || getClass() != object.getClass()) {
       return false;
     }
-    GCSubmissionModel that = (GCSubmissionModel) o;
-    return submissionId == that.submissionId && Objects.equals(pdSubmissionIds, that.pdSubmissionIds) && state == that.state && Objects.equals(submitter, that.submitter);
+    GCSubmissionModel that = (GCSubmissionModel) object;
+    return submissionId == that.submissionId && error == that.error && Objects.equals(pdSubmissionIds, that.pdSubmissionIds) && state == that.state && Objects.equals(submitter, that.submitter);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(submissionId, pdSubmissionIds, state, submitter);
+    return Objects.hash(submissionId, pdSubmissionIds, state, submitter, error);
   }
 
   @Override
@@ -127,6 +135,7 @@ public class GCSubmissionModel {
     private GCSubmissionState state = GCSubmissionState.OTHER;
     @Nullable
     private String submitter;
+    private boolean error;
 
     private Builder(long submissionId) {
       this.submissionId = submissionId;
@@ -169,18 +178,30 @@ public class GCSubmissionModel {
     }
 
     /**
+     * Error state of the submission.
+     *
+     * @param error state
+     * @return self-reference
+     */
+    @NonNull
+    public Builder error(boolean error) {
+      this.error = error;
+      return this;
+    }
+
+    /**
      * Creates an immutable instance of the model.
      *
      * @return model
      */
     @NonNull
     public GCSubmissionModel build() {
-      return new GCSubmissionModel(submissionId, pdSubmissionIds, state, submitter);
+      return new GCSubmissionModel(submissionId, pdSubmissionIds, state, submitter, error);
     }
 
     @Override
     public String toString() {
-      return "%s[submissionId=%s, pdSubmissionIds=%s, state=%s, submitter=%s]".formatted(MethodHandles.lookup().lookupClass().getSimpleName(), submissionId, pdSubmissionIds, state, submitter);
+      return "%s[error=%s, pdSubmissionIds=%s, state=%s, submissionId=%s, submitter=%s]".formatted(MethodHandles.lookup().lookupClass().getSimpleName(), error, pdSubmissionIds, state, submissionId, submitter);
     }
   }
 }
