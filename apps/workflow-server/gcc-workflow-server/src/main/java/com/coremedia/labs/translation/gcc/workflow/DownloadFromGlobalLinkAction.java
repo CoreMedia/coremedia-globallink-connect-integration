@@ -235,6 +235,8 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     if (submission.getState() == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
       LOG.info("Confirmed cancellation of submission {} (PD ID {}) initiated by GlobalLink.", submissionId, submission.getPdSubmissionIds());
+    } else if (submission.isError()) {
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, List.of());
     } else {
       facade.downloadCompletedTasks(submissionId,
               (inputStream, task) -> importXliffFile(inputStream, task, result.completedLocales, issues, result));

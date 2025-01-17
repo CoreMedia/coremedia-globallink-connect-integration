@@ -136,6 +136,9 @@ public class CancelTranslationGlobalLinkAction extends
   void doExecuteGlobalLinkAction(Parameters params, Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
     long submissionId = params.submissionId;
+    // Ignore Submission Error State: As we are trying to cancel the submission,
+    // we don't care about the error state. At least for observed scenarios,
+    // canceling an errored submission is the only way to get out of the error state.
     GCSubmissionModel submission = facade.getSubmission(submissionId);
     GCSubmissionState submissionState = submission.getState();
     boolean cancelled = params.cancelled;

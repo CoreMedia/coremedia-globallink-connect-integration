@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +41,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
@@ -60,6 +61,10 @@ import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
@@ -106,6 +111,26 @@ class DownloadFromGlobalLinkActionTest {
   }
 
   @Nested
+  class SubmissionErrorHandling {
+    @Test
+    void shouldForwardSubmissionErrorAsIssue(@Autowired DownloadFromGlobalLinkAction action,
+                                             @Autowired GCExchangeFacade gcExchangeFacade) {
+      doReturn(
+          GCSubmissionModel.builder(1L)
+            .state(GCSubmissionState.IN_PRE_PROCESS)
+            .error(true)
+            .build())
+        .when(gcExchangeFacade).getSubmission(anyLong());
+
+      AtomicReference<DownloadFromGlobalLinkAction.Result> resultHolder = new AtomicReference<>();
+      Map<String, List<Content>> issues = new HashMap<>();
+      action.doExecuteGlobalLinkAction(new DownloadFromGlobalLinkAction.Parameters(1L, new HashSet<>(), false), resultHolder::set, gcExchangeFacade, issues);
+
+      assertThat(issues).containsKey(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR);
+    }
+  }
+
+  @Nested
   @DisplayName("Tests error handling on XLIFF import.")
   @ContextConfiguration(classes = DownloadFromGlobalLinkActionTest.LocalConfig.class)
   @DirtiesContext(classMode = AFTER_CLASS)
@@ -134,13 +159,13 @@ class DownloadFromGlobalLinkActionTest {
   }
 
   private static void mockXliffDownload(@Autowired GCExchangeFacade gcExchangeFacade, String xliff) {
-    Mockito.doAnswer((Answer<Boolean>) invocationOnMock -> {
+    doAnswer((Answer<Boolean>) invocationOnMock -> {
       BiPredicate<InputStream, GCTaskModel> consumer = invocationOnMock.getArgument(1);
       ByteArrayInputStream inputStream = new ByteArrayInputStream(xliff.getBytes(StandardCharsets.UTF_8));
       consumer.test(inputStream, new GCTaskModel(1L, Locale.GERMANY));
       return true;
     }).when(gcExchangeFacade).downloadCompletedTasks(anyLong(), any());
-    Mockito.doReturn(GCSubmissionModel.builder(1L).state(GCSubmissionState.DELIVERED).build()).when(gcExchangeFacade).getSubmission(anyLong());
+    doReturn(GCSubmissionModel.builder(1L).state(GCSubmissionState.DELIVERED).build()).when(gcExchangeFacade).getSubmission(anyLong());
   }
 
   private static String readXliff(Version masterVersion, Content targetContent) throws IOException {
@@ -181,8 +206,8 @@ class DownloadFromGlobalLinkActionTest {
 
     @Override
     AsRobotUser getAsRobotUser() {
-      AsRobotUser asRobotUser = Mockito.mock(AsRobotUser.class);
-      Mockito.doCallRealMethod().when(asRobotUser).call(any());
+      AsRobotUser asRobotUser = mock(AsRobotUser.class);
+      doCallRealMethod().when(asRobotUser).call(any());
       return asRobotUser;
     }
   }
