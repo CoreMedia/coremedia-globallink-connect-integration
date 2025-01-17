@@ -11,6 +11,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionInstructionType;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
@@ -94,6 +95,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private final Boolean isSendSubmitter;
   private final GCExchange delegate;
   private final Supplier<String> fileTypeSupplier;
+  private final GCSubmissionInstructionType submissionInstructionType;
 
   /**
    * Constructor.
@@ -107,6 +109,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
     isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
+    submissionInstructionType = GCSubmissionInstructionType.fromString(String.valueOf(config.getOrDefault(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION_TYPE, "")));
     LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {
       GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
@@ -153,6 +156,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     this.delegate = delegate;
     fileTypeSupplier = () -> fileType;
     isSendSubmitter = false;
+    submissionInstructionType = GCSubmissionInstructionType.TEXT;
   }
 
   private static String requireNonNullConfig(Map<String, Object> config, String key) {
@@ -209,7 +213,13 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       contentLocalesList
     );
     if (comment != null) {
-      request.setInstructions(comment);
+      String instructionsText = switch (submissionInstructionType) {
+        case TEXT -> GCUtil.textToHtml(comment);
+        case HTML -> comment;
+        case TEXT_BMP -> GCUtil.textToHtml(GCUtil.textToBmp(comment));
+        case HTML_BMP -> GCUtil.textToBmp(comment);
+      };
+      request.setInstructions(instructionsText);
     }
     if (isSendSubmitter && submitter != null) {
       request.setSubmitter(submitter);

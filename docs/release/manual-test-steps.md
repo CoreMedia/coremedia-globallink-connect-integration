@@ -42,6 +42,9 @@ via corresponding credentials:
     // isSendSubmitter (type: Boolean)
     // Adjust to `true` to send the submitter with the request.
     "isSendSubmitter": false,
+    // submissionInstructionType (type: String)
+    // Adjust to "text", for some error behavior tests.
+    "submissionInstructionType": "text-bmp",
     // Section: Timing Adjustments — Get Faster Feedback on Manual Test Steps
     // Despite `retryCommunicationErrors`, which just needs to be adjusted,
     // find copy & paste ready values for the other settings in the

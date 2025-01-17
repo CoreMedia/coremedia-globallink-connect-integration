@@ -5,6 +5,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionInstructionType;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.collect.ImmutableMap;
@@ -231,10 +232,10 @@ class DefaultGCExchangeFacadeContractTest {
         return spy;
       }).collect(Collectors.toList());
       assertThat(filesWithToString).anySatisfy(
-              f -> {
-                assertThat(f).extracting(GCFile::getContentId).isEqualTo(fileId);
-                assertThat(f.getUpdatedAt()).matches(date -> date.toInstant().isAfter(startTimeUtc));
-              }
+        f -> {
+          assertThat(f).extracting(GCFile::getContentId).isEqualTo(fileId);
+          assertThat(f.getUpdatedAt()).matches(date -> date.toInstant().isAfter(startTimeUtc));
+        }
       );
     }
 
@@ -257,27 +258,27 @@ class DefaultGCExchangeFacadeContractTest {
 
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-              testName,
-              null,
-              getSomeDueDate(),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        testName,
+        null,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
       // Yes, we need to wait here. Directly after being started, a submission state
       // may be 'null' (which we internally map to "other").
       await("Wait for submission to be valid (has some well-known state).")
-              .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1L, TimeUnit.SECONDS)
-              .pollInterval(10L, TimeUnit.SECONDS)
-              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
-                      .isNotIn(
-                              GCSubmissionState.OTHER,
-                              GCSubmissionState.IN_PRE_PROCESS
-                      )
-              );
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
+          .isNotIn(
+            GCSubmissionState.OTHER,
+            GCSubmissionState.IN_PRE_PROCESS
+          )
+        );
 
       /*
        * If cancellation fails because of invalid state: Extend the forbidden
@@ -286,26 +287,26 @@ class DefaultGCExchangeFacadeContractTest {
       delegate.cancelSubmission(submissionId);
 
       await("Wait until submission is marked as cancelled.")
-              .atMost(2L, TimeUnit.MINUTES)
-              .pollDelay(5L, TimeUnit.SECONDS)
-              .pollInterval(10L, TimeUnit.SECONDS)
-              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
+        .atMost(2L, TimeUnit.MINUTES)
+        .pollDelay(5L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
 
       await("Wait until cancellation got confirmed for submission.")
-              .atMost(2L, TimeUnit.MINUTES)
-              .pollDelay(10L, TimeUnit.SECONDS)
-              .pollInterval(20L, TimeUnit.SECONDS)
-              .conditionEvaluationListener(condition -> {
-                try {
-                  // Some tasks may have already reached completed state.
-                  // Thus simulate a successful download for them.
-                  facade.downloadCompletedTasks(submissionId, new TrueTaskDataConsumer());
-                  facade.confirmCancelledTasks(submissionId);
-                } catch (GCFacadeCommunicationException e) {
-                  LOG.info("Ignoring communication exception. Rather trying again later.", e);
-                }
-              })
-              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
+        .atMost(2L, TimeUnit.MINUTES)
+        .pollDelay(10L, TimeUnit.SECONDS)
+        .pollInterval(20L, TimeUnit.SECONDS)
+        .conditionEvaluationListener(condition -> {
+          try {
+            // Some tasks may have already reached completed state.
+            // Thus simulate a successful download for them.
+            facade.downloadCompletedTasks(submissionId, new TrueTaskDataConsumer());
+            facade.confirmCancelledTasks(submissionId);
+          } catch (GCFacadeCommunicationException e) {
+            LOG.info("Ignoring communication exception. Rather trying again later.", e);
+          }
+        })
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
     }
   }
 
@@ -338,22 +339,22 @@ class DefaultGCExchangeFacadeContractTest {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-              testName,
-              null,
-              getSomeDueDate(),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        testName,
+        null,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
       // Yes, we need to wait here. Directly after being started, a submission state
       // may be 'null' (which we internally map to "other").
       await("Wait for submission to be valid (has some well-known state).")
-              .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-              .pollDelay(1L, TimeUnit.SECONDS)
-              .pollInterval(10L, TimeUnit.SECONDS)
-              .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
     }
 
     @ParameterizedTest(name = "[{index}] isSendSubmitter={0}")
@@ -367,29 +368,29 @@ class DefaultGCExchangeFacadeContractTest {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-              testName,
-              null,
-              getSomeDueDate(),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        testName,
+        null,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
       if (Boolean.TRUE.equals(isSendSubmitter)) {
         await("Submission should have submitter 'admin'.")
-                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-                .pollDelay(1L, TimeUnit.SECONDS)
-                .pollInterval(10L, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter()).hasValue("admin"));
+          .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+          .pollDelay(1L, TimeUnit.SECONDS)
+          .pollInterval(10L, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter()).hasValue("admin"));
       } else {
         await("Submission should not have submitter 'admin', but some system user (irrelevant, which)")
-                .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-                .pollDelay(1L, TimeUnit.SECONDS)
-                .pollInterval(10L, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter())
-                        .hasValueSatisfying(name -> assertThat(name).isNotEqualTo("admin"))
-                );
+          .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+          .pollDelay(1L, TimeUnit.SECONDS)
+          .pollInterval(10L, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter())
+            .hasValueSatisfying(name -> assertThat(name).isNotEqualTo("admin"))
+          );
       }
     }
 
@@ -405,8 +406,12 @@ class DefaultGCExchangeFacadeContractTest {
      */
     @Test
     void shouldExposeErrorStateToClient(@NonNull TestInfo testInfo,
-                                        @NonNull Map<String, Object> gccProperties) {
+                                        @NonNull Map<String, Object> originalGccProperties) {
       String testName = testInfo.getDisplayName();
+      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
+      // The only known way to provoke a failure for now is using a
+      // high Unicode character and set it unmodified as instruction text.
+      gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION_TYPE, GCSubmissionInstructionType.TEXT.name());
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       String unicodeDove = "\uD83D\uDD4A";
@@ -434,18 +439,11 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest(name = "[{index}] instructions={0}")
     @DisplayName("Should respect instructions.")
     @ValueSource(strings = {
-      "ASCII",
-      "Umlauts (etc.): äöüÄÖÜß€µ",
-      // Skipped for now, as we had to learn, that instructions are meant
-      // to be given as HTML (and thus, require proper escaping) and that
-      // Unicode characters from Supplementary Multilingual Plane are not
-      // supported (they trigger an escalation in the GCC Backend).
-      // "Formatting Characters: Newline\nTab\tTab\nNon-Breaking Space: \u00A0",
-      // "HTML <strong>Probe</strong>: &lt;br&gt;<br>",
-      // "Unicode: Basic Multilingual Plane, Arrows: \u2190\u2191\u2192\u2193\u2194\u2195\u2196\u2197\u2198\u2199",
-      // "Unicode: Supplementary Multilingual Plane, Block: Linear B Syllabary, Linear B Syllable B008 A: \uD800\uDC00 (&#x10000;)",
-      // "Unicode: Supplementary Multilingual Plane, Block: Ancient Greek Musical Notation, Greek Musical Notation Symbol-1:  \uD834\uDD00 (&#x1D200;)",
-      // "Unicode: Supplementary Multilingual Plane, Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (&#x1F54A;)",
+      "ASCII + Umlauts: äöüÄÖÜß€µ",
+      "Formatting Characters: Newline\nTab\tTab\nNon-Breaking Space: \u00A0",
+      "HTML <strong>Probe</strong>: &lt;br&gt;<br>",
+      "Unicode: Basic Multilingual Plane, Arrows: \u2190\u2191\u2192\u2193\u2194\u2195\u2196\u2197\u2198\u2199",
+      "Unicode: Supplementary Multilingual Plane, Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (&#x1F54A;)",
     })
     void shouldRespectInstructions(@NonNull String comment,
                                    @NonNull TestInfo testInfo,
@@ -456,16 +454,18 @@ class DefaultGCExchangeFacadeContractTest {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-              testName,
-              comment,
-              getSomeDueDate(),
-              null,
-              "admin",
-              Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        testName,
+        comment,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
       // Just test, that the submission does not escalate.
+      // We cannot validate the content of the submission instructions
+      // as they are not returned by the GCC REST API.
       assertSubmissionReachesAnyStateOf(
         facade,
         submissionId,
@@ -488,12 +488,12 @@ class DefaultGCExchangeFacadeContractTest {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-              submissionName,
-              null,
-              getSomeDueDate(),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        submissionName,
+        null,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
     }
@@ -507,12 +507,12 @@ class DefaultGCExchangeFacadeContractTest {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-              submissionName,
-              null,
-              getSomeDueDate(),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        submissionName,
+        null,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
     }
@@ -527,12 +527,12 @@ class DefaultGCExchangeFacadeContractTest {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-              submissionName,
-              null,
-              getSomeDueDate(),
-              null,
-              "admin",
-              Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        submissionName,
+        null,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
     }
@@ -577,8 +577,8 @@ class DefaultGCExchangeFacadeContractTest {
     ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
     List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).collect(Collectors.toList());
     Locale masterLocale = getSupportedLocaleStream(connectorsConfig, LocaleConfig::getIsSource)
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("At least one source locale required."));
+      .findFirst()
+      .orElseThrow(() -> new IllegalStateException("At least one source locale required."));
 
     if (targetLocales.isEmpty()) {
       throw new IllegalStateException("At least one target locale (non-source) required.");
@@ -586,12 +586,12 @@ class DefaultGCExchangeFacadeContractTest {
 
     Map<String, List<Locale>> contentMap = uploadContents(facade, testName, masterLocale, targetLocales);
     long submissionId = facade.submitSubmission(
-            testName,
-            null,
-            getSomeDueDate(),
-            null,
-            "admin",
-            masterLocale, contentMap);
+      testName,
+      null,
+      getSomeDueDate(),
+      null,
+      "admin",
+      masterLocale, contentMap);
 
     assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
 
@@ -600,9 +600,9 @@ class DefaultGCExchangeFacadeContractTest {
     facade.downloadCompletedTasks(submissionId, new TaskDataConsumer(xliffResults));
 
     assertThat(xliffResults)
-            .describedAs("All XLIFFs shall have been pseudo-translated.")
-            .hasSize(targetLocales.size())
-            .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
+      .describedAs("All XLIFFs shall have been pseudo-translated.")
+      .hasSize(targetLocales.size())
+      .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
 
     //After all tasks have been marked as delivered also the submission shall be marked as delivered.
     assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5L);
@@ -641,11 +641,11 @@ class DefaultGCExchangeFacadeContractTest {
    */
   private static Stream<Locale> getSupportedLocaleStream(ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig, Predicate<LocaleConfig> localeConfigPredicate) {
     return connectorsConfig.getSupportedLocales().stream()
-            .filter(localeConfigPredicate)
-            .map(LocaleConfig::getLocaleLabel)
-            // GCC REST Backend Bug Workaround: Locale contains/may contain trailing space.
-            .map(String::trim)
-            .map(Locale::forLanguageTag);
+      .filter(localeConfigPredicate)
+      .map(LocaleConfig::getLocaleLabel)
+      // GCC REST Backend Bug Workaround: Locale contains/may contain trailing space.
+      .map(String::trim)
+      .map(Locale::forLanguageTag);
   }
 
   private static Map<String, List<Locale>> uploadContents(GCExchangeFacade facade, String testName, Locale masterLocale, List<Locale> targetLocales) {
@@ -667,10 +667,14 @@ class DefaultGCExchangeFacadeContractTest {
 
   private static void assertSubmissionReachesAnyStateOf(GCExchangeFacade facade, long submissionId, List<GCSubmissionState> expectedStates, long timeout) {
     await("Wait for translation to reach any of the state(s): %s".formatted(expectedStates))
-            .atMost(timeout, TimeUnit.MINUTES)
-            .pollDelay(1L, TimeUnit.MINUTES)
-            .pollInterval(1L, TimeUnit.MINUTES)
-            .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
-            .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isIn(expectedStates));
+      .atMost(timeout, TimeUnit.MINUTES)
+      .pollDelay(1L, TimeUnit.MINUTES)
+      .pollInterval(1L, TimeUnit.MINUTES)
+      .failFast(
+        "The submission should not reach an error state.",
+        () -> assertThat(facade.getSubmission(submissionId).isError()).isFalse()
+      )
+      .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
+      .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isIn(expectedStates));
   }
 }

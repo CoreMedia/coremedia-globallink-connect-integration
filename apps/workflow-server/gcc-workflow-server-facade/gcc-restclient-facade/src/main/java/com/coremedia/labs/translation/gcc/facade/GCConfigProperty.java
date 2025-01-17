@@ -47,6 +47,13 @@ public final class GCConfigProperty {
   public static final String KEY_IS_SEND_SUBMITTER = "isSendSubmitter";
 
   /**
+   * String value to control the expected incoming type of submission
+   * instructions (also known as: comment). For details and possible values see
+   * {@link GCSubmissionInstructionType}.
+   */
+  public static final String KEY_SUBMISSION_INSTRUCTION_TYPE = "submissionInstructionType";
+
+  /**
    * Default type for facades. Will be used also if unset or if the type
    * cannot be parsed/is unknown.
    */

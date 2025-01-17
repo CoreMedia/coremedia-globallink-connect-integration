@@ -164,6 +164,11 @@ in CoreMedia Studio and add a struct named
 * `isSendSubmitter` Defines if the name of the editor that started the workflow 
     is sent to GlobalLink as part of the submission.
     (_optional_, default: `false`, type:`Boolean`)
+* `submissionInstructionType` Defines the type of the submission instruction. 
+    (_optional_, default: `text-bmp`, type:`String`). It controls the optionally
+    applied pre-processing of the instructions prior to sending it to
+    GlobalLink. For details of possible values see
+    `GCSubmissionInstructionType`.
 
 Be aware that the `dayOffsetForDueDate` can only be configured in the global
 Settings location.
