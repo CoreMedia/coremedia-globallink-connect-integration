@@ -10,11 +10,10 @@
 
 1. [Contract Test](#scenario-contract-test)
 2. [Happy Path](#scenario-happy-path)
-3. [Submitter and Instructions](#scenario-submitter-and-instructions)
-4. [Cancellation](#scenario-cancelation)
-5. [General Error Handling](#scenario-general-error-handling)
-6. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
-7. [Redelivered State Handling](#scenario-redelivered-state-handling)
+3. [Cancellation](#scenario-cancelation)
+4. [General Error Handling](#scenario-general-error-handling)
+5. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
+6. [Redelivered State Handling](#scenario-redelivered-state-handling)
 
 ## Prepare
 
@@ -60,6 +59,43 @@ via corresponding credentials:
 }
 ```
 
+## General Advice for Manual Test Steps Within CoreMedia Studio
+
+* It is recommended to add the settings document
+  `/Settings/Options/Settings/Translation Services/GlobalLink` to the
+  "Favorites" in Studio. It is required to be adapted multiple times during
+  the manual test steps.
+
+* **Start Workflow**: There are various ways to start localization workflows.
+  Choose one of them during your test-steps and possibly switch to others for
+  further steps. Some available options are:
+    * Drag an article into the "Localization Workflows" drop area in Control
+      Room.
+    * Choose "Start Translation Workflow" within the Locale Switcher of an
+      opened document.
+
+* **Workflow Interaction**: Just as for when starting the workflow, you
+  have multiple ways to interact with the workflow. Choose one of them during
+  your test-steps and possibly switch to others for further steps. Some
+  available options are:
+    
+    * **In Localization Nagbar**: To directly switch from a document to its
+      assigned localization workflow, click on one of the available options in
+      the nagbar, which is either clicking the link, to jump to the
+      _Workflow App_ or click on the button, to open the workflow within a
+      sidebar.
+
+    * **Control Room**: Provides an overview of running workflows and allows
+      you to interact with them.
+
+    * **Workflow App**: Provides a more detailed view of the workflow.
+
+    * **Workflow Sidebar**: Opened within the Content App, providing an
+      overview of the workflow.
+
+* **Studio Localization**: It is good practice, to switch the language of the
+  Studio UI from time to time, to ensure also German labels are available.
+
 ## Scenario: Contract Test
 
 Especially on updates of `gcc-restclient` you should run the half-automatic
@@ -75,77 +111,55 @@ home folder
 
 ## Scenario: Happy Path
 
-1. Log in as Rick C.
-2. Open the GlobalLink
-   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
-    1. _type_ is set to “default”
-    2. _dayOffsetForDueDate_ is set to 20
-    3. Credentials for gcc are entered (**automatic** workflow key)
-3. Create an article A and remove validation issues.
-4. Create an article B and remove validation issues.
-5. Create a link from the article A to the article B.
-6. Drag article A into Control Room's “Localization Workflows”
-   drop area
-    1. A window _Localization Workflow_ should pop up
-    2. There should be no warnings or errors
-    3. Field _Due Date_ should be set to the current date/time plus 20 days
-    4. Article B should be added as dependent content.
-7. Click “Start”
+1. **User Rick**: Log in as Rick C.
+2. **Adjust Settings**: Settings to adjust/verify in
+   `/Settings/Options/Settings/Translation Services/GlobalLink`:
+
+   ```json5
+    {
+      "globalLink": {
+        "key": "<automatic workflow connector key>",
+        "apiKey": "...",
+        "type": "default",
+        "dayOffsetForDueDate": 20,
+        "isSendSubmitter": true,
+        // Adjusted retry settings, see above for details.
+        // [...]
+      }
+    }
+    ```
+3. **Article A**: Create an article A and remove validation issues.
+4. **Article B**:Create an article B and remove validation issues.
+5. **A → B**: Create a link from the article A to the article B.
+6. **Start Workflow Window**: Trigger starting the workflow and validate the
+   default values:
+    1. **No Issues**: There should be no warnings or errors
+    2. **Due Date**: Field _Due Date_ should be set to the current date/time plus 20 days
+    3. **Dependent Content**: Article B should be added as dependent content.
+    4. **Notes**: Add some text to the field _Notes_.
+7. **Start Workflow**: Click “Start”
     1. The dialog should close without any error
-    2. A new workflow process should pop up in the "Running" area of Control
-       Room's “Localization Workflows”
-8. Double-Click the workflow
-    1. A sidebar with workflow information should open
-9. Click "Open workflow details"
-    1. A new tab with the _Workflow App_'s detail view for the workflow should
-       open
-    2. After some time, _Status_, _Submission ID_, and _Due Date_ should be
+    2. A nagbar should appear in the document form, stating that the documents
+       are being translated.
+8. **Workflow App**: Navigate to the workflow details within the _Workflow App_.
+9. **Workflow Details (In Progress)**: In the workflow's detail view, validate:
+    1. After some time, _Status_, _Submission ID_, and _Due Date_ should be
        shown
-    3. As long as the workflow is in "Running", field “Completed Locales”
+    2. As long as the workflow is in "Running", field “Completed Locales”
        should display “0 Locales”
-10. Click "Go to overview" and wait for the workflow to be finished
-    1. The workflow should disappear from the "Running" workflows and appear on
-       the “Open” list.
-    2. The workflow should now also be shown in the "Open" workflows of Control
-       Room's “Localization Workflows”.
-    3. You should receive a notification, that the workflow is now available
-       in your inbox.
-11. Double-click the workflow in _Workflow App_'s “Open” list
+10. **Workflow Details (Done, Review)**: Later in the workflow's detail view,
+    validate:
     1. The “Status” field should display “Delivered”
     2. The “Completed Locales” field should display the target locales of
        the workflow
     3. When clicking on the translated content, it should open in language
-       comparison view
-       in _Studio_
-    4. The text should be pseudo-translated
-12. In the _Workflow App_, click “Accept Task”, "Next Step", “Finish Content
-    Localization”, and "Yes, continue"
+       comparison view in CoreMedia Studio.
+    4. The text is expected to be pseudo-translated (behavior provided by the
+       GCC backend).
+11. **Finish Workflow**: In the _Workflow App_, click “Accept Task”,
+    "Next Step", “Finish Content Localization”, and "Yes, continue"
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
-
-## Scenario: Submitter and Instructions
-
-1. Log in as Rick C.
-2. Open the GlobalLink
-   settings `/Settings/Options/Settings/Translation Services/GlobalLink`
-    1. _type_ is set to “default”
-    2. Credentials for gcc are entered (**manual** workflow key)
-    3. Boolean property _isSendSubmitter_ is activated
-3. Choose an article and drag it into Control Room's “Localization Workflows”
-   drop area
-    1. A window _Localization Workflow_ should pop up
-    2. Add a text to field _Notes_
-4. Click “Start”
-    1. The dialog should close without any error
-    2. A new workflow process should pop up in the "Running" area of Control
-       Room's “Localization Workflows”
-5. Log in to the **GlobalLink Management Dashboard** (not Project Director,
-   as the PD, for example, does not display the "submitter" as set in request)
-
-    1. The submitter and the instructions added to field _Notes_ are visible
-       in the submission's detail view.
-6. Switch back to Studio or _Workflow App_ and cancel the workflow in the
-   "Running" list.
 
 ## Scenario: Cancelation
 
