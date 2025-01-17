@@ -58,15 +58,29 @@ class GCUtilTest {
           NL           | <br>
           CR           | <br>
           CRNL         | <br>
-          \uD800\uDC00 | &#x10000;
-          \uD83D\uDD4A | &#x1F54A;
-          \uDBFF\uDFFF | &#x10FFFF;
     """)
   void shouldTransformTextToHtml(@NonNull String text, @NonNull String expected) {
     String textFixture = text
       .replace("NL", "\n")
       .replace("CR", "\r");
     assertThat(GCUtil.textToHtml(textFixture)).isEqualTo(expected);
+  }
+
+  @ParameterizedTest
+  @DisplayName("textToHtml: Text should be transformed to HTML")
+  @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+          text         | expected
+          "\u0000"     | "\u0000"
+          "\t"         | "\t"
+          a            | a
+          ö            | ö
+          \uFFFF       | \uFFFF
+          \uD800\uDC00 | (x10000)
+          \uD83D\uDD4A | (x1F54A)
+          \uDBFF\uDFFF | (x10FFFF)
+    """)
+  void shouldTransformTextContainOnlyBmpCharacters(@NonNull String text, @NonNull String expected) {
+    assertThat(GCUtil.textToBmp(text)).isEqualTo(expected);
   }
 
   @Nested
