@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -114,8 +113,6 @@ class DefaultGCExchangeFacadeContractTest {
    * test run.
    */
   private static final String TEST_ID = "CT#%s".formatted(LocalDateTime.now().format(DATE_TIME_FORMATTER));
-  private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\\\n");
-  private static final Pattern CARRIAGE_RETURN_PATTERN = Pattern.compile("\\\\r");
   private String submissionName;
 
   @BeforeEach
@@ -456,34 +453,26 @@ class DefaultGCExchangeFacadeContractTest {
         );
     }
 
-    @ParameterizedTest(name = "[{index}] {arguments}")
-    @DisplayName("Should respect instructions.")
-    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
-        id       | comment
-        ASCII    | 'ASCII + Umlauts: äöüÄÖÜß€µ'
-        Format   | 'Formatting Characters: Linux Newline\\nWindows Newline\\r\\nMac Newline\\rEOM'
-        HTML     | 'HTML <strong>Probe</strong>: &lt;br&gt;<br>'
-        Unicode1 | 'Unicode: Basic Multilingual Plane, Arrows: \u2190\u2191\u2192\u2193\u2194\u2195\u2196\u2197\u2198\u2199'
-        Unicode2 | 'Unicode: Supplementary Multilingual Plane, Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (&#x1F54A;)'
-      """)
-    void shouldRespectInstructions(@NonNull String id,
-                                   @NonNull String comment,
+    /**
+     * Tests instructions (forwarded from Workflow Comments) to be handed over
+     * to the GCC backend. The instructions are expected to be in plain text.
+     * <p>
+     * <strong>Manual Test Reference</strong>: Note, that the test data created
+     * by this test are also referenced in manual test steps. If you adjust
+     * them, please also adjust the manual test steps.
+     */
+    @ParameterizedTest
+    @DisplayName("Should respect and nicely handle instructions aka comments.")
+    @EnumSource(CommentFixture.class)
+    void shouldRespectInstructions(@NonNull CommentFixture fixture,
                                    @NonNull TestInfo testInfo,
                                    @NonNull Map<String, Object> gccProperties) {
-      // Replace "escaped" characters with actual characters.
-      String commentFixture = CARRIAGE_RETURN_PATTERN
-        .matcher(
-          NEWLINE_PATTERN
-            .matcher(comment)
-            .replaceAll("\n")
-        )
-        .replaceAll("\r");
       String testName = testInfo.getDisplayName();
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
       long submissionId = facade.submitSubmission(
-        "%s; %s".formatted(submissionName, id),
-        commentFixture,
+        "%s; %s".formatted(submissionName, fixture.name()),
+        fixture.getComment(),
         getSomeDueDate(),
         null,
         "admin",
@@ -545,6 +534,7 @@ class DefaultGCExchangeFacadeContractTest {
       assertThat(submissionId).isGreaterThan(0L);
     }
 
+    @SuppressWarnings("UnnecessaryUnicodeEscape")
     @Test
     @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: Unicode, skip additional information")
     void submissionNameTruncationUnicode(TestInfo testInfo, Map<String, Object> gccProperties) {
@@ -704,5 +694,53 @@ class DefaultGCExchangeFacadeContractTest {
       )
       .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
       .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isIn(expectedStates));
+  }
+
+  /**
+   * Fixtures for the comment/instructions feature.
+   */
+  @SuppressWarnings("UnnecessaryUnicodeEscape")
+  enum CommentFixture {
+    BMP("""
+        Basic Multilingual Plane (BMP) Characters expected to be supported:
+        \t* Umlauts: äöüÄÖÜß€µ
+        \t* Special Characters: !@#$%^&*()_+
+        \t* Arrows: ←↑→↓↔↕↖↗↘↙
+        \t* BMP (Plane 0):
+        \t\t* Fullwidth Exclamation Mark: \uFF01
+        \t\t* Fullwidth Question Mark: \uFF1F
+        \t\t* Fullwidth Left/Right Parenthesis: Before\uFF08Between\uFF09After
+        EOM"""),
+    FORMAT("""
+        Formatting Characters should be transformed: Linux Newline
+        Windows Newline\r
+        Mac Newline\r\
+        Tab Indent:
+        \t* Item 1
+        \t* Item 2
+        EOM"""),
+    HTML_AS_TEXT("""
+        HTML/XML Special Characters should be escaped (expecting plain text only):
+        \t* Known Tags to be represented as plain-text: <strong>Probe</strong><br>
+        \t* Known HTML Entities to be represented as plain-text: &lt;br&gt;&amp;quot;
+        EOM"""),
+    UNICODE_SMP("""
+        Unicode: As of know Supplementary Multilingual Planes are unsupported at GCC.
+        To make them work but also still kind of distinguishable, we transform them
+        to plain ASCII, just representing their Unicode code points:
+        \t* Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (U+1F54A)
+        EOM""");
+
+    @NonNull
+    private final String comment;
+
+    CommentFixture(@NonNull String comment) {
+      this.comment = comment;
+    }
+
+    @NonNull
+    public String getComment() {
+      return comment;
+    }
   }
 }

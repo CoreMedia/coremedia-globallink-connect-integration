@@ -51,7 +51,7 @@ final class GCUtil {
    */
   @NonNull
   private static String unicodeToText(@NonNull MatchResult matchResult) {
-    return String.format("(x%04X)", matchResult.group().codePointAt(0));
+    return String.format("U+%04X", matchResult.group().codePointAt(0));
   }
 
   /**
@@ -63,6 +63,7 @@ final class GCUtil {
    *   <li>Transform {@code >} to {@code &gt;}</li>
    *   <li>Transform {@code &} to {@code &amp;}</li>
    *   <li>Transform {@code "} to {@code &quot;}</li>
+   *   <li>Transform tabs to non-breaking space (indent: 2)</li>
    *   <li>Transform newlines to {@code <br>}</li>
    * </li>
    *
@@ -74,7 +75,8 @@ final class GCUtil {
       .replace("&", "&amp;")
       .replace("<", "&lt;")
       .replace(">", "&gt;")
-      .replace("\"", "&quot;");
+      .replace("\"", "&quot;")
+      .replace("\t", "&nbsp;&nbsp;");
     return NEWLINE_PATTERN.matcher(result).replaceAll("<br>");
   }
 

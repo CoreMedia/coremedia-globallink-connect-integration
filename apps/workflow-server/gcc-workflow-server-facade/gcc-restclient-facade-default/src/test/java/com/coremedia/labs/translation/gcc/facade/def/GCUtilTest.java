@@ -75,9 +75,9 @@ class GCUtilTest {
           a            | a
           ö            | ö
           \uFFFF       | \uFFFF
-          \uD800\uDC00 | (x10000)
-          \uD83D\uDD4A | (x1F54A)
-          \uDBFF\uDFFF | (x10FFFF)
+          \uD800\uDC00 | U+10000
+          \uD83D\uDD4A | U+1F54A
+          \uDBFF\uDFFF | U+10FFFF
     """)
   void shouldTransformTextContainOnlyBmpCharacters(@NonNull String text, @NonNull String expected) {
     assertThat(GCUtil.textToBmp(text)).isEqualTo(expected);
