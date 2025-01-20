@@ -35,7 +35,6 @@ import org.springframework.core.io.ByteArrayResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -43,7 +42,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -51,12 +49,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.coremedia.labs.translation.gcc.facade.def.DefaultGCExchangeFacade.SUBMISSION_NAME_MAX_LENGTH;
 import static java.lang.invoke.MethodHandles.lookup;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.awaitility.Awaitility.await;
@@ -89,7 +86,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 @ExtendWith(GccCredentialsExtension.class)
 class DefaultGCExchangeFacadeContractTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
-  private static final String XML_CONTENT = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><test>Lorem Ipsum</test>";
+  private static final String XML_CONTENT = """
+    <?xml version="1.0" encoding="utf-8" standalone="yes"?><test>Lorem Ipsum</test>""";
   private static final String XLIFF_CONTENT_PATTERN = """
     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
@@ -209,9 +207,9 @@ class DefaultGCExchangeFacadeContractTest {
     private static void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
-      List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).collect(Collectors.toList());
+      List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).toList();
       Locale expected = Locale.forLanguageTag(expectedSupportedLocale);
-      LOG.info("Available locales: {}", supportedLocales.stream().map(Locale::toLanguageTag).collect(Collectors.toList()));
+      LOG.info("Available locales: {}", supportedLocales.stream().map(Locale::toLanguageTag).toList());
       assertThat(supportedLocales).anySatisfy(tl -> assertThat(tl).isEqualTo(expected));
     }
   }
@@ -221,15 +219,14 @@ class DefaultGCExchangeFacadeContractTest {
   class ContentUpload {
     @Test
     @DisplayName("Upload File.")
-    void upload(TestInfo testInfo, Map<String, Object> gccProperties) {
+    void upload(@NonNull Map<String, Object> gccProperties) {
       Instant startTimeUtc = Instant.now().atZone(ZoneOffset.UTC).toInstant();
-      String fileName = testInfo.getDisplayName();
 
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       GCExchange delegate = facade.getDelegate();
 
       long contentCountBefore = getTotalRecordsCount(delegate);
-      String fileId = facade.uploadContent(fileName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
 
       assertThat(fileId).isNotEmpty();
 
@@ -247,7 +244,7 @@ class DefaultGCExchangeFacadeContractTest {
         GCFile spy = Mockito.spy(f);
         Mockito.when(spy.toString()).thenReturn(String.format("%s [id=%s, contentId=%s, type=%s, updated=%s]", f.getName(), f.getId(), f.getContentId(), f.getFileType(), f.getUpdatedAt()));
         return spy;
-      }).collect(Collectors.toList());
+      }).toList();
       assertThat(filesWithToString).anySatisfy(
         f -> {
           assertThat(f).extracting(GCFile::getContentId).isEqualTo(fileId);
@@ -267,20 +264,18 @@ class DefaultGCExchangeFacadeContractTest {
   class Cancellation {
     @Test
     @DisplayName("Be aware of submission/task cancellation.")
-    void shouldBeCancellationAware(TestInfo testInfo, Map<String, Object> gccProperties) {
-      String testName = testInfo.getDisplayName();
-
+    void shouldBeCancellationAware(@NonNull Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       GCExchange delegate = facade.getDelegate();
 
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       long submissionId = facade.submitSubmission(
         submissionName,
-        null,
+        "Submission is meant to be cancelled via API and later confirmed.",
         getSomeDueDate(),
         null,
-        "admin",
-        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        testName,
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -350,18 +345,16 @@ class DefaultGCExchangeFacadeContractTest {
   class ContentSubmission {
     @Test
     @DisplayName("Test simple submission")
-    void submitXml(TestInfo testInfo, Map<String, Object> gccProperties) {
-      String testName = testInfo.getDisplayName();
-
+    void submitXml(@NonNull Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       long submissionId = facade.submitSubmission(
         submissionName,
         null,
         getSomeDueDate(),
         null,
         "admin",
-        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -386,7 +379,7 @@ class DefaultGCExchangeFacadeContractTest {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, sendSubmitter.getSendSubmitter());
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       String comment = switch (sendSubmitter) {
         case YES -> "Respect send submitter-name explicitly (%s)".formatted(testName);
         case NO -> "Ignore submitter-name (use credentials user instead)";
@@ -398,7 +391,7 @@ class DefaultGCExchangeFacadeContractTest {
         getSomeDueDate(),
         null,
         testName,
-        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -430,15 +423,13 @@ class DefaultGCExchangeFacadeContractTest {
      * removed.
      */
     @Test
-    void shouldExposeErrorStateToClient(@NonNull TestInfo testInfo,
-                                        @NonNull Map<String, Object> originalGccProperties) {
-      String testName = testInfo.getDisplayName();
+    void shouldExposeErrorStateToClient(@NonNull Map<String, Object> originalGccProperties) {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       // The only known way to provoke a failure for now is using a
       // high Unicode character and set it unmodified as instruction text.
       gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION_TYPE, GCSubmissionInstructionType.TEXT.name());
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       String unicodeDove = "\uD83D\uDD4A";
       String comment = "Instruction to break GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(unicodeDove);
 
@@ -447,7 +438,7 @@ class DefaultGCExchangeFacadeContractTest {
         comment,
         getSomeDueDate(),
         null,
-        "admin",
+        testName,
         Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
@@ -473,17 +464,15 @@ class DefaultGCExchangeFacadeContractTest {
     @DisplayName("Should respect and nicely handle instructions aka comments.")
     @EnumSource(CommentFixture.class)
     void shouldRespectInstructions(@NonNull CommentFixture fixture,
-                                   @NonNull TestInfo testInfo,
                                    @NonNull Map<String, Object> gccProperties) {
-      String testName = testInfo.getDisplayName();
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       long submissionId = facade.submitSubmission(
         "%s; %s".formatted(submissionName, fixture.name()),
         fixture.getComment(),
         getSomeDueDate(),
         null,
-        "admin",
+        testName,
         Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
@@ -504,78 +493,40 @@ class DefaultGCExchangeFacadeContractTest {
       );
     }
 
-    @Test
-    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, skip additional information")
-    void submissionNameTruncationAsciiSkipAdditionalInfo(TestInfo testInfo, Map<String, Object> gccProperties) {
-      String testName = testInfo.getDisplayName();
-      String submissionName = padEnd(testName, 150, 'a', 'z');
-
+    @ParameterizedTest
+    @EnumSource(SubmissionNameLengthFixture.class)
+    void shouldPreemptivelyTruncateLongSubmissionNames(@NonNull SubmissionNameLengthFixture fixture,
+                                                       @NonNull Map<String, Object> gccProperties) {
+      String paddedSubmissionName = fixture.pad(submissionName);
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      // Unmet Failure Scenario: If the length of the submission name eventually
+      // passed to the GCC REST Backend is longer than the available maximum
+      // length, a 400-error is raised along with a message that states the
+      // maximum length.
       long submissionId = facade.submitSubmission(
-        submissionName,
-        null,
+        paddedSubmissionName,
+        "%s (%s)\nOriginal Submission Name (%d chars, expected to be shortened to %d characters if required):\n\t%s".formatted(
+          testName,
+          fixture,
+          paddedSubmissionName.length(),
+          SUBMISSION_NAME_MAX_LENGTH,
+          paddedSubmissionName
+        ),
         getSomeDueDate(),
         null,
-        "admin",
-        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
+        testName,
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
-    }
 
-    @Test
-    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: ASCII, subject truncation")
-    void submissionNameTruncationAscii(TestInfo testInfo, Map<String, Object> gccProperties) {
-      String testName = testInfo.getDisplayName();
-      String submissionName = padEnd(testName, 200, 'a', 'z');
-
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
-      long submissionId = facade.submitSubmission(
-        submissionName,
-        null,
-        getSomeDueDate(),
-        null,
-        "admin",
-        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
-
-      assertThat(submissionId).isGreaterThan(0L);
-    }
-
-    @SuppressWarnings("UnnecessaryUnicodeEscape")
-    @Test
-    @DisplayName("Tests dealing with submission name length restrictions (currently 150 chars): Mode: Unicode, skip additional information")
-    void submissionNameTruncationUnicode(TestInfo testInfo, Map<String, Object> gccProperties) {
-      String testName = testInfo.getDisplayName();
-      // 2190..21FF Arrows
-      String submissionName = padEnd(testName, 150, '\u2190', '\u21FF');
-
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
-      long submissionId = facade.submitSubmission(
-        submissionName,
-        null,
-        getSomeDueDate(),
-        null,
-        "admin",
-        Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
-
-      assertThat(submissionId).isGreaterThan(0L);
-    }
-
-    private static String padEnd(String str, int minLength, char startChar, char endChar) {
-      StringBuilder builder = new StringBuilder(str);
-      char currentChar = startChar;
-      while (builder.length() < minLength) {
-        builder.append(currentChar);
-        if (currentChar == endChar) {
-          // Loop from beginning.
-          currentChar = startChar;
-        } else {
-          currentChar++;
-        }
-      }
-      return builder.toString();
+      await("Submission is expected to fail with error state.")
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getName())
+          .startsWith(paddedSubmissionName.substring(0, Math.min(SUBMISSION_NAME_MAX_LENGTH, paddedSubmissionName.length())))
+        );
     }
   }
 
@@ -601,7 +552,7 @@ class DefaultGCExchangeFacadeContractTest {
 
     GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
     ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
-    List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).collect(Collectors.toList());
+    List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).toList();
     Locale masterLocale = getSupportedLocaleStream(connectorsConfig, LocaleConfig::getIsSource)
       .findFirst()
       .orElseThrow(() -> new IllegalStateException("At least one source locale required."));
@@ -646,7 +597,7 @@ class DefaultGCExchangeFacadeContractTest {
       };
       try {
         StringBuilder xliffResult = new StringBuilder();
-        byteSource.asCharSource(StandardCharsets.UTF_8).copyTo(xliffResult);
+        byteSource.asCharSource(UTF_8).copyTo(xliffResult);
         xliffResults.add(xliffResult.toString());
       } catch (IOException e) {
         return false;
@@ -680,8 +631,8 @@ class DefaultGCExchangeFacadeContractTest {
     for (Locale targetLocale : targetLocales) {
       String xliffContent = String.format(XLIFF_CONTENT_PATTERN, masterLocale.toLanguageTag(), targetLocale.toLanguageTag());
       String fileName = String.format("%s_%s2%s.xliff", testName, masterLocale.toLanguageTag(), targetLocale.toLanguageTag());
-      String fileId = facade.uploadContent(fileName, new ByteArrayResource(xliffContent.getBytes(StandardCharsets.UTF_8)), masterLocale);
-      contentMapBuilder.put(fileId, Collections.singletonList(targetLocale));
+      String fileId = facade.uploadContent(fileName, new ByteArrayResource(xliffContent.getBytes(UTF_8)), masterLocale);
+      contentMapBuilder.put(fileId, List.of(targetLocale));
     }
 
     return contentMapBuilder.build();
@@ -704,6 +655,22 @@ class DefaultGCExchangeFacadeContractTest {
       .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isIn(expectedStates));
   }
 
+  @NonNull
+  private static String padEnd(@NonNull String str, int minLength, char startChar, char endChar) {
+    StringBuilder builder = new StringBuilder(str);
+    char currentChar = startChar;
+    while (builder.length() < minLength) {
+      builder.append(currentChar);
+      if (currentChar == endChar) {
+        // Loop from beginning.
+        currentChar = startChar;
+      } else {
+        currentChar++;
+      }
+    }
+    return builder.toString();
+  }
+
   enum SendSubmitter {
     YES(true),
     NO(false),
@@ -719,6 +686,53 @@ class DefaultGCExchangeFacadeContractTest {
     @Nullable
     public Boolean getSendSubmitter() {
       return isSendSubmitter;
+    }
+  }
+
+  @SuppressWarnings("UnnecessaryUnicodeEscape")
+  enum SubmissionNameLengthFixture {
+    /**
+     * Expectation is, that the additional information (from/to languages) will
+     * be partially visible in the submission name. Truncated though, as the
+     * actually set submission name takes precedence.
+     */
+    ASCII_CLOSE_TO_LIMIT(SUBMISSION_NAME_MAX_LENGTH - 10, 'a', 'z'),
+    /**
+     * Same as {@link #ASCII_CLOSE_TO_LIMIT}, but the submission name is expected
+     * to miss even more information.
+     */
+    ASCII_VERY_CLOSE_TO_LIMIT(SUBMISSION_NAME_MAX_LENGTH - 3, 'a', 'z'),
+    /**
+     * No additional information is expected to be visible in the submission
+     * name.
+     */
+    ASCII_HIT_LIMIT(SUBMISSION_NAME_MAX_LENGTH, 'a', 'z'),
+    /**
+     * Even the passed submission name is expected to be truncated.
+     */
+    ASCII_EXCEED_LIMIT(SUBMISSION_NAME_MAX_LENGTH * 2, 'a', 'z'),
+    /**
+     * Same as {@link #ASCII_HIT_LIMIT}, but with a different character set.
+     */
+    BMP_HIT_LIMIT(SUBMISSION_NAME_MAX_LENGTH, '\u2190', '\u21FF'),
+    /**
+     * Same as {@link #ASCII_EXCEED_LIMIT}, but with a different character set.
+     */
+    BMP_EXCEED_LIMIT(SUBMISSION_NAME_MAX_LENGTH * 2, '\u2190', '\u21FF'),
+    ;
+
+    private final int minLength;
+    private final char startChar;
+    private final char endChar;
+
+    SubmissionNameLengthFixture(int minLength, char startChar, char endChar) {
+      this.minLength = minLength;
+      this.startChar = startChar;
+      this.endChar = endChar;
+    }
+
+    public String pad(@NonNull String original) {
+      return padEnd(original, minLength, startChar, endChar);
     }
   }
 
