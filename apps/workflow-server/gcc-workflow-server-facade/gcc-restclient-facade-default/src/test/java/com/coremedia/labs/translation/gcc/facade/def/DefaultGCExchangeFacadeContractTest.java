@@ -540,16 +540,13 @@ class DefaultGCExchangeFacadeContractTest {
    * mvn test -DexcludedGroups=slow
    * }</pre>
    *
-   * @param testInfo      test-info to generate names
    * @param gccProperties properties to log in
    */
   @Test
   @Tag("slow")
   @Tag("full")
   @DisplayName("Translate XLIFF and receive results (takes about 10 Minutes)")
-  void translateXliff(TestInfo testInfo, Map<String, Object> gccProperties) {
-    String testName = testInfo.getDisplayName();
-
+  void translateXliff(@NonNull Map<String, Object> gccProperties) {
     GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
     ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
     List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).toList();
@@ -563,11 +560,11 @@ class DefaultGCExchangeFacadeContractTest {
 
     Map<String, List<Locale>> contentMap = uploadContents(facade, testName, masterLocale, targetLocales);
     long submissionId = facade.submitSubmission(
-      testName,
-      null,
+      submissionName,
+      "Full translation workflow test from submission to retrieving results.",
       getSomeDueDate(),
       null,
-      "admin",
+      testName,
       masterLocale, contentMap);
 
     assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
