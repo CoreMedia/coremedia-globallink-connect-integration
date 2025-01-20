@@ -39,6 +39,7 @@ interface GccWorkflowLocalization_properties {
   "GCC-WF-40000_text": string;
   "GCC-WF-40001_text": string;
   "GCC-WF-40002_text": string;
+  "GCC-WF-40003_text": string;
   "GCC-WF-40050_text": string;
   "GCC-WF-50050_text": string;
   "GCC-WF-60000_text": string;
@@ -92,6 +93,7 @@ const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
   "GCC-WF-40000_text": "The GlobalLink configuration settings are inconsistent.",
   "GCC-WF-40001_text": "The GlobalLink configuration settings contain an unsupported value for 'fileType'.",
   "GCC-WF-40002_text": "The connection to GlobalLink failed because of an expired or invalid 'apiKey'.",
+  "GCC-WF-40003_text": "The given connector key is invalid (property: 'key').",
   "GCC-WF-40050_text": "Encountered an illegal submission ID.",
   "GCC-WF-50050_text": "An XLIFF export failure occurred.",
   "GCC-WF-60000_text": "General submission failure.",
