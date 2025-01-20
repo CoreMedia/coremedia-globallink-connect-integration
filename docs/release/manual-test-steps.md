@@ -210,6 +210,12 @@ manually (all submissions created by this test should have a name starting with
     1. The workflow should disappear from “Open”
     2. The workflow should appear in “Closed”
 
+In addition to the above steps and in addition to the results from the
+contract test, you may want to review in GCC Management Dashboard:
+
+* That `Rick C` is set as the submitter for the submission.
+* That the notes are visible in the submission (as instructions).
+
 ## Scenario: Cancelation
 
 ### Cancelation in Studio
