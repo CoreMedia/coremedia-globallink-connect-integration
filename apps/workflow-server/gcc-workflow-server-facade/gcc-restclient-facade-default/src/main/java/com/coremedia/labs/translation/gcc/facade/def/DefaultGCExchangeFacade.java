@@ -85,7 +85,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * Maximum length of submission name. May require adjustment on
    * GCC update.
    */
-  private static final int SUBMISSION_NAME_MAX_LENGTH = 150;
+  @VisibleForTesting
+  static final int SUBMISSION_NAME_MAX_LENGTH = 255;
   private static final Integer HTTP_OK = 200;
   /**
    * Some string, so GCC can identify the source of requests.
