@@ -27,7 +27,6 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -114,10 +113,11 @@ class DefaultGCExchangeFacadeContractTest {
    */
   private static final String TEST_ID = "CT#%s".formatted(LocalDateTime.now().format(DATE_TIME_FORMATTER));
   private String submissionName;
+  private String testName;
 
   @BeforeEach
   void setUp(@NonNull TestInfo testInfo) {
-    String testName = testInfo.getTestMethod().map(Method::getName).orElse("noname");
+    testName = testInfo.getTestMethod().map(Method::getName).orElse("noname");
     submissionName = "%s: %s".formatted(TEST_ID, testName);
   }
 
@@ -374,39 +374,47 @@ class DefaultGCExchangeFacadeContractTest {
         .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isNotEqualTo(GCSubmissionState.OTHER));
     }
 
-    @ParameterizedTest(name = "[{index}] isSendSubmitter={0}")
+    /**
+     * Results of this test are meant to be reviewed as part of the manual
+     * test-steps. Keep them aligned.
+     */
+    @ParameterizedTest
     @DisplayName("Should respect isSendSubmitter state.")
-    @NullSource
-    @ValueSource(booleans = {true, false})
-    void shouldRespectSendSubmitter(@Nullable Boolean isSendSubmitter, TestInfo testInfo, Map<String, Object> originalGccProperties) {
-      String testName = testInfo.getDisplayName();
+    @EnumSource(SendSubmitter.class)
+    void shouldRespectSubmitter(@NonNull SendSubmitter sendSubmitter,
+                                @NonNull Map<String, Object> originalGccProperties) {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
-      gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, isSendSubmitter);
+      gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, sendSubmitter.getSendSubmitter());
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(StandardCharsets.UTF_8)), null);
+      String comment = switch (sendSubmitter) {
+        case YES -> "Respect send submitter-name explicitly (%s)".formatted(testName);
+        case NO -> "Ignore submitter-name (use credentials user instead)";
+        case DEFAULT -> "Default: Ignore submitter-name (use credentials user instead)";
+      };
       long submissionId = facade.submitSubmission(
-        testName,
-        submissionName,
+        "%s; %s".formatted(submissionName, sendSubmitter),
+        comment,
         getSomeDueDate(),
         null,
-        "admin",
+        testName,
         Locale.US, singletonMap(fileId, singletonList(Locale.GERMANY)));
 
       assertThat(submissionId).isGreaterThan(0L);
 
-      if (Boolean.TRUE.equals(isSendSubmitter)) {
+      if (Boolean.TRUE.equals(sendSubmitter.getSendSubmitter())) {
         await("Submission should have submitter 'admin'.")
           .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
           .pollDelay(1L, TimeUnit.SECONDS)
           .pollInterval(10L, TimeUnit.SECONDS)
-          .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter()).hasValue("admin"));
+          .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter()).hasValue(testName));
       } else {
         await("Submission should not have submitter 'admin', but some system user (irrelevant, which)")
           .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
           .pollDelay(1L, TimeUnit.SECONDS)
           .pollInterval(10L, TimeUnit.SECONDS)
           .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter())
-            .hasValueSatisfying(name -> assertThat(name).isNotEqualTo("admin"))
+            .hasValueSatisfying(name -> assertThat(name).isNotEqualTo(testName))
           );
       }
     }
@@ -696,40 +704,58 @@ class DefaultGCExchangeFacadeContractTest {
       .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isIn(expectedStates));
   }
 
+  enum SendSubmitter {
+    YES(true),
+    NO(false),
+    DEFAULT(null);
+
+    @Nullable
+    private final Boolean isSendSubmitter;
+
+    SendSubmitter(@Nullable Boolean isSendSubmitter) {
+      this.isSendSubmitter = isSendSubmitter;
+    }
+
+    @Nullable
+    public Boolean getSendSubmitter() {
+      return isSendSubmitter;
+    }
+  }
+
   /**
    * Fixtures for the comment/instructions feature.
    */
   @SuppressWarnings("UnnecessaryUnicodeEscape")
   enum CommentFixture {
     BMP("""
-        Basic Multilingual Plane (BMP) Characters expected to be supported:
-        \t* Umlauts: äöüÄÖÜß€µ
-        \t* Special Characters: !@#$%^&*()_+
-        \t* Arrows: ←↑→↓↔↕↖↗↘↙
-        \t* BMP (Plane 0):
-        \t\t* Fullwidth Exclamation Mark: \uFF01
-        \t\t* Fullwidth Question Mark: \uFF1F
-        \t\t* Fullwidth Left/Right Parenthesis: Before\uFF08Between\uFF09After
-        EOM"""),
+      Basic Multilingual Plane (BMP) Characters expected to be supported:
+      \t* Umlauts: äöüÄÖÜß€µ
+      \t* Special Characters: !@#$%^&*()_+
+      \t* Arrows: ←↑→↓↔↕↖↗↘↙
+      \t* BMP (Plane 0):
+      \t\t* Fullwidth Exclamation Mark: \uFF01
+      \t\t* Fullwidth Question Mark: \uFF1F
+      \t\t* Fullwidth Left/Right Parenthesis: Before\uFF08Between\uFF09After
+      EOM"""),
     FORMAT("""
-        Formatting Characters should be transformed: Linux Newline
-        Windows Newline\r
-        Mac Newline\r\
-        Tab Indent:
-        \t* Item 1
-        \t* Item 2
-        EOM"""),
+      Formatting Characters should be transformed: Linux Newline
+      Windows Newline\r
+      Mac Newline\r\
+      Tab Indent:
+      \t* Item 1
+      \t* Item 2
+      EOM"""),
     HTML_AS_TEXT("""
-        HTML/XML Special Characters should be escaped (expecting plain text only):
-        \t* Known Tags to be represented as plain-text: <strong>Probe</strong><br>
-        \t* Known HTML Entities to be represented as plain-text: &lt;br&gt;&amp;quot;
-        EOM"""),
+      HTML/XML Special Characters should be escaped (expecting plain text only):
+      \t* Known Tags to be represented as plain-text: <strong>Probe</strong><br>
+      \t* Known HTML Entities to be represented as plain-text: &lt;br&gt;&amp;quot;
+      EOM"""),
     UNICODE_SMP("""
-        Unicode: As of know Supplementary Multilingual Planes are unsupported at GCC.
-        To make them work but also still kind of distinguishable, we transform them
-        to plain ASCII, just representing their Unicode code points:
-        \t* Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (U+1F54A)
-        EOM""");
+      Unicode: As of know Supplementary Multilingual Planes are unsupported at GCC.
+      To make them work but also still kind of distinguishable, we transform them
+      to plain ASCII, just representing their Unicode code points:
+      \t* Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (U+1F54A)
+      EOM""");
 
     @NonNull
     private final String comment;
