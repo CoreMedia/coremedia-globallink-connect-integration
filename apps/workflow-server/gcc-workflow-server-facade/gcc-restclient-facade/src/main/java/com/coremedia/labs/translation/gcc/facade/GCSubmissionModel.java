@@ -17,6 +17,8 @@ public class GCSubmissionModel {
   @NonNull
   private final List<String> pdSubmissionIds;
   @NonNull
+  private final String name;
+  @NonNull
   private final GCSubmissionState state;
   @Nullable
   private final String submitter;
@@ -45,7 +47,7 @@ public class GCSubmissionModel {
    */
   @Deprecated(since = "2401.3")
   public GCSubmissionModel(long submissionId, @NonNull Collection<String> pdSubmissionIds, @NonNull GCSubmissionState state) {
-    this(submissionId, pdSubmissionIds, state, null, false);
+    this(submissionId, pdSubmissionIds, "", state, null, false);
   }
 
   /**
@@ -53,17 +55,20 @@ public class GCSubmissionModel {
    *
    * @param submissionId    the internal id used by the API
    * @param pdSubmissionIds the ids shown to editors
+   * @param name            the name of the submission
    * @param state           the state to represent
    * @param submitter       submitter; possibly unset, if not available
    * @param error           if the submission is in an error state
    */
   private GCSubmissionModel(long submissionId,
                             @NonNull Collection<String> pdSubmissionIds,
+                            @NonNull String name,
                             @NonNull GCSubmissionState state,
                             @Nullable String submitter,
                             boolean error) {
     this.submissionId = submissionId;
     this.pdSubmissionIds = List.copyOf(pdSubmissionIds);
+    this.name = name;
     this.state = Objects.requireNonNull(state);
     this.submitter = submitter;
     this.error = error;
@@ -76,6 +81,11 @@ public class GCSubmissionModel {
   @NonNull
   public List<String> getPdSubmissionIds() {
     return pdSubmissionIds;
+  }
+
+  @NonNull
+  public String getName() {
+    return name;
   }
 
   @NonNull
@@ -101,12 +111,12 @@ public class GCSubmissionModel {
       return false;
     }
     GCSubmissionModel that = (GCSubmissionModel) object;
-    return submissionId == that.submissionId && error == that.error && Objects.equals(pdSubmissionIds, that.pdSubmissionIds) && state == that.state && Objects.equals(submitter, that.submitter);
+    return submissionId == that.submissionId && error == that.error && Objects.equals(pdSubmissionIds, that.pdSubmissionIds) && Objects.equals(name, that.name) && state == that.state && Objects.equals(submitter, that.submitter);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(submissionId, pdSubmissionIds, state, submitter, error);
+    return Objects.hash(submissionId, pdSubmissionIds, name, state, submitter, error);
   }
 
   @Override
@@ -136,6 +146,8 @@ public class GCSubmissionModel {
     @Nullable
     private String submitter;
     private boolean error;
+    @NonNull
+    private String name = "";
 
     private Builder(long submissionId) {
       this.submissionId = submissionId;
@@ -178,6 +190,18 @@ public class GCSubmissionModel {
     }
 
     /**
+     * The submission name.
+     *
+     * @param name name
+     * @return self-reference
+     */
+    @NonNull
+    public Builder name(String name) {
+      this.name = name;
+      return this;
+    }
+
+    /**
      * Error state of the submission.
      *
      * @param error state
@@ -196,12 +220,12 @@ public class GCSubmissionModel {
      */
     @NonNull
     public GCSubmissionModel build() {
-      return new GCSubmissionModel(submissionId, pdSubmissionIds, state, submitter, error);
+      return new GCSubmissionModel(submissionId, pdSubmissionIds, name, state, submitter, error);
     }
 
     @Override
     public String toString() {
-      return "%s[error=%s, pdSubmissionIds=%s, state=%s, submissionId=%s, submitter=%s]".formatted(MethodHandles.lookup().lookupClass().getSimpleName(), error, pdSubmissionIds, state, submissionId, submitter);
+      return "%s[error=%s, name=%s, pdSubmissionIds=%s, state=%s, submissionId=%s, submitter=%s]".formatted(MethodHandles.lookup().lookupClass().getSimpleName(), error, name, pdSubmissionIds, state, submissionId, submitter);
     }
   }
 }
