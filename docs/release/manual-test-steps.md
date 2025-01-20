@@ -150,6 +150,14 @@ manually (all submissions created by this test should have a name starting with
     distinguishable, that the placeholder is the Unicode code point in hex, such
     as `U+1F54A`.
 
+* **Submitter**: The test `shouldRespectSubmitter` should have created
+  submissions with overridden submitter names (thus, must be different to the
+  account username). Three submissions should be visible:
+
+  * `YES`: The submitter name should be the test's name.
+  * `NO`: The submitter name should be the account username.
+  * `DEFAULT`: The submitter name should be the account username.
+
 ## Scenario: Happy Path
 
 1. **User Rick**: Log in as Rick C.
