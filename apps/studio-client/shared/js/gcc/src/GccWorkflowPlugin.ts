@@ -407,6 +407,8 @@ workflowLocalizationRegistry._.addIssuesLocalization({
   "GCC-WF-40003": GccWorkflowLocalization_properties["GCC-WF-40003_text"],
   "GCC-WF-40050": GccWorkflowLocalization_properties["GCC-WF-40050_text"],
   "GCC-WF-50050": GccWorkflowLocalization_properties["GCC-WF-50050_text"],
+  "GCC-WF-60000": GccWorkflowLocalization_properties["GCC-WF-60000_text"],
+  "GCC-WF-60001": GccWorkflowLocalization_properties["GCC-WF-60001_text"],
   "GCC-WF-61001": GccWorkflowLocalization_properties["GCC-WF-61001_text"],
   dateLiesInPast_globalLinkDueDate: GccWorkflowLocalization_properties.dateLiesInPast_globalLinkDueDate_text,
   dateInvalid_globalLinkDueDate: GccWorkflowLocalization_properties.dateInvalid_globalLinkDueDate_text,
