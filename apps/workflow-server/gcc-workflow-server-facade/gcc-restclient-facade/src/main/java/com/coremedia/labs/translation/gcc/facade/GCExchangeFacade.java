@@ -144,7 +144,7 @@ public interface GCExchangeFacade {
    *
    * @param submissionId ID of the submission
    * @return the submission model
-   * @throws GCFacadeCommunicationException if the submission could not be retrieved
+   * @throws GCFacadeSubmissionNotFoundException if the submission could not be retrieved
    */
   GCSubmissionModel getSubmission(long submissionId);
 }
