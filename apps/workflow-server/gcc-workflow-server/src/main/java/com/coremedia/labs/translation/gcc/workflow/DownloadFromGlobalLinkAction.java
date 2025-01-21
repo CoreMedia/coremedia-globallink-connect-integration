@@ -17,6 +17,7 @@ import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jakarta.activation.MimeType;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -265,10 +266,15 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     try {
       Process process = task.getContainingProcess();
       if (result.globalLinkStatus != null) {
-        process.set(globalLinkSubmissionStatusVariable, result.globalLinkStatus.toString());
+        process.set(globalLinkSubmissionStatusVariable, result.globalLinkStatus.name());
       }
 
-      process.set(globalLinkPdSubmissionIdsVariable, result.pdSubmissionIds);
+      // Due to an error retrieving the submission by its ID, we may not have
+      // the PD submission IDs. In this case, we do not want to overwrite the
+      // existing value in the process variable.
+      if (result.pdSubmissionIds != null) {
+        process.set(globalLinkPdSubmissionIdsVariable, result.pdSubmissionIds);
+      }
 
       process.set(xliffResultVariable, updateXliffsZip(result));
 
@@ -477,7 +483,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     // Set during xliff import callback
     final Map<Long, List<XliffImportResultItem>> resultItems = new HashMap<>();
 
+    @Nullable
     private GCSubmissionState globalLinkStatus;
+    @Nullable
     private List<String> pdSubmissionIds;
     private Set<Locale> completedLocales;
     private boolean cancellationAllowed;
