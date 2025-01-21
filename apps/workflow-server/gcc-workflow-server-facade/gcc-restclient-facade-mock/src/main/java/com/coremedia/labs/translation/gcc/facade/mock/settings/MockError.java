@@ -26,6 +26,11 @@ public enum MockError {
    */
   DOWNLOAD_XLIFF,
   /**
+   * Provoke an error-state of the submission at the (mocked) GCC
+   * backend.
+   */
+  SUBMISSION_ERROR,
+  /**
    * Provokes a communication failure during the upload.
    */
   UPLOAD_COMMUNICATION,

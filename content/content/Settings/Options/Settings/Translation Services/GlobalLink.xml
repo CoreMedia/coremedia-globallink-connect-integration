@@ -50,15 +50,17 @@
               <StructProperty Name="errorExamples">
                 <Struct>
                   <StringProperty
-                    Name="download_xliff"><![CDATA[Broken XLIFF file on downloading translation results.]]></StringProperty>
-                  <StringProperty
-                    Name="download_communication"><![CDATA[XLIFF-Download: Trigger a general communication error.]]></StringProperty>
-                  <StringProperty
-                    Name="upload_communication"><![CDATA[XLIFF-Upload: Trigger a general communication error.]]></StringProperty>
-                  <StringProperty
                     Name="cancel_communication"><![CDATA[Submission-Cancellation: Trigger a communication error.]]></StringProperty>
                   <StringProperty
                     Name="cancel_result"><![CDATA[Submission-Cancellation: Trigger an error response from GCC backend.]]></StringProperty>
+                  <StringProperty
+                    Name="download_communication"><![CDATA[XLIFF-Download: Trigger a general communication error.]]></StringProperty>
+                  <StringProperty
+                    Name="download_xliff"><![CDATA[Broken XLIFF file on downloading translation results.]]></StringProperty>
+                  <StringProperty
+                    Name="submission_error"><![CDATA[Trigger an internal error state of the submission.]]></StringProperty>
+                  <StringProperty
+                    Name="upload_communication"><![CDATA[XLIFF-Upload: Trigger a general communication error.]]></StringProperty>
                 </Struct>
               </StructProperty>
               <StructProperty Name="example1:submissionStates">

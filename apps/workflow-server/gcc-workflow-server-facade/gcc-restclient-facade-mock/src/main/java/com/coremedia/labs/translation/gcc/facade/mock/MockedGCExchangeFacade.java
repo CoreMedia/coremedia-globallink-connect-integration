@@ -4,6 +4,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockError;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
@@ -147,9 +148,12 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public GCSubmissionModel getSubmission(long submissionId) {
+    // State: Will query an exception if not found.
+    GCSubmissionState submissionState = submissionStore.getSubmissionState(submissionId);
     return GCSubmissionModel.builder(submissionId)
       .pdSubmissionIds(List.of(Long.toString(submissionId)))
-      .state(submissionStore.getSubmissionState(submissionId))
+      .state(submissionState)
+      .error(mockSettings.error() == MockError.SUBMISSION_ERROR)
       .build();
   }
 }
