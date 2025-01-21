@@ -45,11 +45,13 @@ ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
     "Die Konfiguration der GlobalLink-Verbindung ist fehlerhaft. Der Wert für 'fileType' wird nicht von GlobalLink unterstützt.",
   "GCC-WF-40002_text":
     "Die Verbindung zu GlobalLink ist aufgrund eines abgelaufenen oder fehlerhaften 'apiKey' fehlgeschlagen.",
-  "GCC-WF-40003_text": "Der angegebene Connector Key ist ungültig (Eigenschaft 'key').",
+  "GCC-WF-40003_text":
+    "Der angegebene Connector Key in der Konfiguration der GlobalLink-Verbindung ist ungültig (Eigenschaft 'key').",
   "GCC-WF-40050_text": "Die GlobalLink-Auftragsnummer ist fehlerhaft.",
   "GCC-WF-50050_text": "Der XLIFF-Export ist fehlgeschlagen.",
   "GCC-WF-60000_text": "Allgemeiner GlobalLink-Auftragsfehler.",
-  "GCC-WF-60001_text": "GlobalLink-Auftrag nicht gefunden.",
+  "GCC-WF-60001_text":
+    "GlobalLink-Auftrag nicht gefunden. Die Konfiguration der GlobalLink-Verbindung könnte fehlerhaft sein.",
   "GCC-WF-61001_text": "Das Abbrechen des GlobalLink-Auftrags ist fehlgeschlagen.",
   dateLiesInPast_globalLinkDueDate_text: "Bitte Fälligkeitsdatum in der Zukunft auswählen.",
   dateInvalid_globalLinkDueDate_text: "Bitte gültiges Fälligkeitsdatum eingeben.",
