@@ -412,6 +412,96 @@ class DefaultGCExchangeFacadeContractTest {
       }
     }
 
+    @ParameterizedTest
+    @DisplayName("Should accept various characters in submitter's name.")
+    @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
+    void shouldAcceptSubmitterNameChallenge(@NonNull SupplementaryMultilingualPlaneChallenge challenge,
+                                            @NonNull Map<String, Object> originalGccProperties) {
+      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
+      gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, true);
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      String submitterName = "%s(%s)".formatted(testName, challenge.getChallenge());
+      long submissionId = facade.submitSubmission(
+        "%s; %s".formatted(submissionName, challenge),
+        null,
+        getSomeDueDate(),
+        null,
+        submitterName,
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+
+      assertThat(submissionId).isGreaterThan(0L);
+
+      // Just test, that the submission does not escalate.
+      // We cannot validate the content of the submission instructions
+      // as they are not returned by the GCC REST API.
+      assertSubmissionReachesAnyStateOf(
+        facade,
+        submissionId,
+        List.of(
+          GCSubmissionState.STARTED,
+          GCSubmissionState.ANALYZED,
+          GCSubmissionState.TRANSLATE,
+          GCSubmissionState.COMPLETED
+        ),
+        SUBMISSION_VALID_TIMEOUT_MINUTES
+      );
+
+      await("Submission should have submitter '%s'.".formatted(submitterName))
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .failFast(
+          "The submission should not reach an error state.",
+          () -> assertThat(facade.getSubmission(submissionId).isError()).isFalse()
+        )
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter()).hasValue(submitterName));
+    }
+
+    @ParameterizedTest
+    @DisplayName("Should accept various characters in submission name.")
+    @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
+    void shouldAcceptSubmissionNameChallenge(@NonNull SupplementaryMultilingualPlaneChallenge challenge,
+                                             @NonNull Map<String, Object> gccProperties) {
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      String enrichedSubmissionName = "%s (%s, %s)".formatted(submissionName, challenge.name(), challenge.getChallenge());
+      long submissionId = facade.submitSubmission(
+        enrichedSubmissionName,
+        null,
+        getSomeDueDate(),
+        null,
+        "admin",
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+
+      assertThat(submissionId).isGreaterThan(0L);
+
+      // Just test, that the submission does not escalate.
+      // We cannot validate the content of the submission instructions
+      // as they are not returned by the GCC REST API.
+      assertSubmissionReachesAnyStateOf(
+        facade,
+        submissionId,
+        List.of(
+          GCSubmissionState.STARTED,
+          GCSubmissionState.ANALYZED,
+          GCSubmissionState.TRANSLATE,
+          GCSubmissionState.COMPLETED
+        ),
+        SUBMISSION_VALID_TIMEOUT_MINUTES
+      );
+
+      await("Submission should have submission name '%s'.".formatted(enrichedSubmissionName))
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .failFast(
+          "The submission should not reach an error state.",
+          () -> assertThat(facade.getSubmission(submissionId).isError()).isFalse()
+        )
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getName()).startsWith(enrichedSubmissionName));
+    }
+
     /**
      * This test requires a known way how to make the GCC REST Backend fail
      * internally. For now, it is passing instructions that contain
@@ -778,6 +868,25 @@ class DefaultGCExchangeFacadeContractTest {
     @NonNull
     public String getComment() {
       return comment;
+    }
+  }
+
+  @SuppressWarnings("UnnecessaryUnicodeEscape")
+  enum SupplementaryMultilingualPlaneChallenge {
+    ASCII("<em>!&;,:_"),
+    BMP("ä&→\uFF01"),
+    SMP("Dove: \uD83D\uDD4A");
+
+    @NonNull
+    private final String challenge;
+
+    SupplementaryMultilingualPlaneChallenge(@NonNull String challenge) {
+      this.challenge = challenge;
+    }
+
+    @NonNull
+    public String getChallenge() {
+      return challenge;
     }
   }
 }
