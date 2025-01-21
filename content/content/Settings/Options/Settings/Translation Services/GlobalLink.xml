@@ -67,6 +67,8 @@
                 <Struct>
                   <StringProperty
                     Name="comment"><![CDATA[Example for replacing `Delivered` submission state with `Redelivered` state.]]></StringProperty>
+                  <StringProperty
+                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
                   <StructProperty Name="Delivered">
                     <Struct>
                       <StringProperty Name="override">Redelivered</StringProperty>
@@ -78,10 +80,26 @@
               <StructProperty Name="example2:submissionStates">
                 <Struct>
                   <StringProperty
-                    Name="comment"><![CDATA[Example to follow with submission state `Redelivered` after `Completed`. Suggestion to also set `download_xliff` as error to simulates real-world scenario.]]></StringProperty>
+                    Name="comment"><![CDATA[Example to follow with submission state `Redelivered` after `Completed`. Suggestion to also set `download_xliff` as error to simulate real-world scenario.]]></StringProperty>
+                  <StringProperty
+                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
                   <StructProperty Name="Completed">
                     <Struct>
                       <StringProperty Name="after">Redelivered</StringProperty>
+                      <BooleanProperty Name="final">true</BooleanProperty>
+                    </Struct>
+                  </StructProperty>
+                </Struct>
+              </StructProperty>
+              <StructProperty Name="example3:submissionStates">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Example for mocking submission-error behavior. Suggestion to also set `submission_error` as error to simulate real-world scenario.]]></StringProperty>
+                  <StringProperty
+                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
+                  <StructProperty Name="Started">
+                    <Struct>
+                      <StringProperty Name="override">Pre-Process</StringProperty>
                       <BooleanProperty Name="final">true</BooleanProperty>
                     </Struct>
                   </StructProperty>
