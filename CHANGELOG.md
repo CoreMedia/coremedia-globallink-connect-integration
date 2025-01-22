@@ -3,8 +3,9 @@ Changelog
 
 v2406.1.0-1
 --------------------------------------------------------------------------------
-Despite adapting the connector to a new version of CoreMedia Content Cloud
-v12.2406.1.0, we hardened the connector in several aspects:
+
+Despite adapting the connector to CoreMedia Content Cloud v12.2406.1.0, we
+hardened the connector in these aspects:
 
 * Introduced a defined behavior for the undocumented submission status
   `REDELIVERED`.
@@ -13,7 +14,7 @@ v12.2406.1.0, we hardened the connector in several aspects:
 * Fixed submission name handling to deal with its limitations (character types).
 * Hardened the connector in case of submission errors (an extra state reachable
   in the GCC backend).
-* Hardened the connector for "submission not found" scenarios, that may occur
+* Hardened the connector for "submission not found" scenarios that may occur
   due to wrong or connector key settings.
 
 Find more detailed release notes in the newly introduced documentation
