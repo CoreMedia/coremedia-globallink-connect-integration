@@ -3,37 +3,21 @@ Changelog
 
 v2406.1.0-1
 --------------------------------------------------------------------------------
+Despite adapting the connector to a new version of CoreMedia Content Cloud
+v12.2406.1.0, we hardened the connector in several aspects:
 
-### General Notes
+* Introduced a defined behavior for the undocumented submission status
+  `REDELIVERED`.
+* Fixed submission instruction handling to deal with its features (HTML content)
+  and limitations (character types).
+* Fixed submission name handling to deal with its limitations (character types).
+* Hardened the connector in case of submission errors (an extra state reachable
+  in the GCC backend).
+* Hardened the connector for "submission not found" scenarios, that may occur
+  due to wrong or connector key settings.
 
-To benefit from new features like the handling of submission state
-"Redelivered", the workflow definition must be uploaded again via `cm upload`.
-
-### Main Changes
-
-* Updated dependency versions to CoreMedia Content Cloud v12.2406.1.0.
-* Aligned dependency versions with CoreMedia Content Cloud v12.2406.1.0.
-* Introduced handling of submission state "Redelivered" in the workflow.
-
-### Bug Fixes
-
-* Fixed an issue handling cancelation of submissions in the workflow with
-  broken XLIFF. Handling cancelation takes precedence now over the XLIFF
-  error handling.
-* Fixed typos on German resource-bundle.
-
-### Other Changes
-
-* `GlobalLink.xml` (settings document) got enriched to provide adhoc
-  documentation for different configuration options. The settings for the
-  `mock` facade have been replaced by an extra section, to provide a better
-  overview.
-* **Static Code Analysis Fixes**: Especially to adapt to modern Java language
-  concepts, static code analysis fixes have been applied. This includes
-  using text-blocks, `toList()` in streams, and using `@Serial` annotation
-  where applicable.
-* **Dropped ci/develop**: The branch that was only required for internal
-  CoreMedia processes has been removed, as it is not required anymore.
+Find more detailed release notes in the newly introduced documentation
+section [Changelog](./docs/changelog/README.md).
 
 v2406.0.1-1
 --------------------------------------------------------------------------------

@@ -41,6 +41,10 @@ This extension adds the following functionality to the CoreMedia Studio:
 
     How to release this workspace.
 
+5. [Changelog](changelog/README.md)
+
+   Release information (since v12.2406.1.0-1).
+
 ## See Also
 
 * [Used Third-Party Libraries](THIRD-PARTY.txt)
