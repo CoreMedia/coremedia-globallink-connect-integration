@@ -31,56 +31,50 @@ Adjust GlobalLink-Settings within settings document at
 feedback during manual test-steps as well as to access the relevant sandbox
 via corresponding credentials:
 
-```json5
-{
-  "globalLink": {
-    // [... other settings]
-    // key (type: String)
-    // Adjust either for automatic or manual GCC processing. To ease
-    // switching keys, hold them in the prepared extra Struct
-    // at `additionalConfigurationOptions.exampleKeys` for an easy copy & paste:
-    "key": "...",
-    // apiKey (type: String)
-    // Only used for testing. Otherwise, expected to be set via Spring for
-    // security reasons.
-    "apiKey": "...",
-    // type (type: String)
-    // Adjust to "default" for processing at GCC backend or "mock" for manual
-    // processing. See also: `additionalConfigurationOptions.availableTypes`.
-    "type": "default",
-    // isSendSubmitter (type: Boolean)
-    // Adjust to `true` to send the submitter with the request.
-    "isSendSubmitter": false,
-    // Section: Timing Adjustments — Get Faster Feedback on Manual Test Steps
-    // Despite `retryCommunicationErrors`, which just needs to be adjusted,
-    // find copy & paste ready values for the other settings in the
-    // `additionalConfigurationOptions` Struct.  
-    "sendTranslationRequestRetryDelay": 60,
-    "downloadTranslationRetryDelay": 60,
-    "cancelTranslationRetryDelay": 60,
-    "retryCommunicationErrors": 1,
-    // Section: Submission Instruction Type Settings
-    "submissionInstruction": {
-      // [...]
-      // characterType (type: String)
-      // Adjust to "unicode" to provoke errors in the GCC backend, as it does
-      // not support SMP characters.
-      "characterType": "unicode"
-    },
-    "submissionName": {
-      // [...]
-      // characterType (type: String)
-      // Adjust to "unicode" to provoke errors in the GCC backend, as it does
-      // not support SMP characters.
-      "characterType": "unicode"
-    },
-    // Section: Mock Settings
-    // Referenced below, like to provoke errors are certain states.
-    "mock": {
-      // [...]
-    }
-  }
-}
+```yaml
+globalLink:
+  # [... other settings]
+  # key (type: String)
+  # Adjust either for automatic or manual GCC processing. To ease
+  # switching keys, hold them in the prepared extra Struct
+  # at `additionalConfigurationOptions.exampleKeys` for an easy copy & paste:
+  key: "..."
+  # apiKey (type: String)
+  # Only used for testing. Otherwise, expected to be set via Spring for
+  # security reasons.
+  apiKey: "..."
+  # type (type: String)
+  # Adjust to "default" for processing at GCC backend or "mock" for manual
+  # processing. See also: `additionalConfigurationOptions.availableTypes`.
+  type: "default"
+  # isSendSubmitter (type: Boolean)
+  # Adjust to `true` to send the submitter with the request.
+  isSendSubmitter: false
+  # Section: Timing Adjustments — Get Faster Feedback on Manual Test Steps
+  # Despite `retryCommunicationErrors`, which just needs to be adjusted,
+  # find copy & paste ready values for the other settings in the
+  # `additionalConfigurationOptions` Struct.
+  sendTranslationRequestRetryDelay: 60
+  downloadTranslationRetryDelay: 60
+  cancelTranslationRetryDelay: 60
+  retryCommunicationErrors: 1
+  # Section: Submission Instruction Type Settings
+  submissionInstruction:
+    # [...]
+    # characterType (type: String)
+    # Adjust to "unicode" to provoke errors in the GCC backend, as it does
+    # not support SMP characters.
+    characterType: "unicode"
+  submissionName:
+    # [...]
+    # characterType (type: String)
+    # Adjust to "unicode" to provoke errors in the GCC backend, as it does
+    # not support SMP characters.
+    characterType: "unicode"
+  # Section: Mock Settings
+  # Referenced below, like to provoke errors are certain states.
+  mock:
+    # [...]
 ```
 
 ## General Advice for Manual Test Steps Within CoreMedia Studio
@@ -240,19 +234,17 @@ Three submissions should be visible:
 2. **Adjust Settings**: Settings to adjust/verify in
    `/Settings/Options/Settings/Translation Services/GlobalLink`:
 
-   ```json5
-    {
-      "globalLink": {
-        "key": "<automatic workflow connector key>",
-        "apiKey": "...",
-        "type": "default",
-        "dayOffsetForDueDate": 20,
-        "isSendSubmitter": true,
-        // Adjusted retry settings, see above for details.
-        // [...]
-      }
-    }
-    ```
+   ```yaml
+   globalLink:
+     key: "<automatic workflow connector key>"
+     apiKey: "..."
+     type: "default"
+     dayOffsetForDueDate: 20
+     isSendSubmitter: true
+     # Adjusted retry settings, see above for details.
+     # [...]
+   ```
+
 3. **Article A**: Create an article A and remove validation issues.
 
 4. **Article B**:Create an article B and remove validation issues.
@@ -648,21 +640,16 @@ test, that a submission in an error state may still be canceled.
    3. **Submission State Mocking**: Add (or activate) the following mock
       settings (optional step, but recommended to test closer to the real-world
       scenario):
-      ```json5
-      {
-        "mock": {
-          // [...]
-          "submissionStates": {
-            "Started": {
-              "override": "Pre-Process",
-              // Mark as final to ease mocking here. Prevents further states,
-              // though, which is, that you also cannot cancel the submission
-              // in this mocked scenario.
-              "final": true
-            }
-          }
-        }
-      }
+      ```yaml
+      mock:
+        # [...]
+        submissionStates:
+          Started:
+            override: Pre-Process
+            # Mark as final to ease mocking here. Prevents further states,
+            # though, which is, that you also cannot cancel the submission
+            # in this mocked scenario.
+            final: true
       ```
 
 3. Start a translation for an article.
@@ -733,22 +720,18 @@ The following steps simulate this scenario:
    2. `mock.error` is set to `DOWNLOAD_XLIFF`
    3. **Submission State Mocking:** Add (or activate) the following mock
       settings:
-      ```json5
-      {
-        "mock": {
-          // [...]
-          "submissionStates": {
-            "Completed": {
-              // Directly after "Completed" state, the submission is marked as
-              // "Redelivered".
-              "after": "Redelivered",
-              // Mark the state as final, not to continue with the next
-              // (standard) state.
-              "final": true
-            }
-          }
-        }
-      }
+
+      ```yaml
+      mock:
+        # [...]
+        submissionStates:
+          Completed:
+            # Directly after "Completed" state, the submission is marked as
+            # "Redelivered".
+            after: Redelivered
+            # Mark the state as final, not to continue with the next
+            # (standard) state.
+            final: true
       ```
 
 3. Start a translation for an article.

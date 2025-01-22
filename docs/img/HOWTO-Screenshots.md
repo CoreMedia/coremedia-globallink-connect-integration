@@ -49,27 +49,23 @@ the GlobalLink backend, or are hard to reach.
 Also, you should align the delays and retry counts to the following values
 (excerpt of the Struct property):
 
-```json5
-{
-  "globalLink": {
-    // String
-    "type": "mock",
-    // Boolean; changed within manual test steps
-    "isSendSubmitter": false,
-    // Integer
-    "sendTranslationRequestRetryDelay": 60,
-    // Integer
-    "downloadTranslationRetryDelay": 60,
-    // Integer
-    "cancelTranslationRetryDelay": 60,
-    // Integer; change existing value
-    "retryCommunicationErrors": 1,
-    // Mock settings to possibly adapt.
-    "mock": {
-      // ...
-    }
-  }
-}
+```yaml
+globalLink:
+  # String
+  type: mock
+  # Boolean; changed within manual test steps
+  isSendSubmitter: false
+  # Integer
+  sendTranslationRequestRetryDelay: 60
+  # Integer
+  downloadTranslationRetryDelay: 60
+  # Integer
+  cancelTranslationRetryDelay: 60
+  # Integer; change existing value
+  retryCommunicationErrors: 1
+  # Mock settings to possibly adapt.
+  mock:
+    # ...
 ```
 
 ### User
