@@ -37,6 +37,9 @@ public interface GCExchangeFacade {
   /**
    * Uploads the given content, like for example an XLIFF file. Returns
    * the file ID which is later required in {@link #submitSubmission(String, String, ZonedDateTime, String, String, Locale, Map)}.
+   * <p>
+   * Note, that {@code fileName} is only allowed to contain characters from
+   * the Unicode Basic Multilingual Plane (BMP).
    *
    * @param fileName the filename of the resource
    * @param resource the resource to send
