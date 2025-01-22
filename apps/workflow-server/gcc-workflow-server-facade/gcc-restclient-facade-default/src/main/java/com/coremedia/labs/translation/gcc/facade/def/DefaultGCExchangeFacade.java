@@ -11,10 +11,11 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionInstructionType;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
@@ -81,12 +82,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 @DefaultAnnotation(NonNull.class)
 public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
-  /**
-   * Maximum length of submission name. May require adjustment on
-   * GCC update.
-   */
-  @VisibleForTesting
-  static final int SUBMISSION_NAME_MAX_LENGTH = 255;
   private static final Integer HTTP_OK = 200;
   /**
    * Some string, so GCC can identify the source of requests.
@@ -96,7 +91,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private final Boolean isSendSubmitter;
   private final GCExchange delegate;
   private final Supplier<String> fileTypeSupplier;
-  private final GCSubmissionInstructionType submissionInstructionType;
+  @NonNull
+  private final GCSubmissionName submissionName;
+  @NonNull
+  private final GCSubmissionInstruction submissionInstruction;
 
   /**
    * Constructor.
@@ -110,7 +108,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
     isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
-    submissionInstructionType = GCSubmissionInstructionType.fromString(String.valueOf(config.getOrDefault(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION_TYPE, "")));
+    submissionName = GCSubmissionName.fromGlobalLinkConfig(config);
+    submissionInstruction = GCSubmissionInstruction.fromGlobalLinkConfig(config);
     LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {
       GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
@@ -157,10 +156,11 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     this.delegate = delegate;
     fileTypeSupplier = () -> fileType;
     isSendSubmitter = false;
-    submissionInstructionType = GCSubmissionInstructionType.TEXT;
+    submissionName = GCSubmissionName.DEFAULT;
+    submissionInstruction = GCSubmissionInstruction.DEFAULT;
   }
 
-  private static String requireNonNullConfig(Map<String, Object> config, String key) {
+  private static String requireNonNullConfig(@NonNull Map<String, Object> config, String key) {
     Object value = config.get(key);
     if (value == null) {
       throw new GCFacadeConfigException("Configuration for %s is missing. Configuration (values hidden): %s", key, config.entrySet().stream()
@@ -214,12 +214,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       contentLocalesList
     );
     if (comment != null) {
-      String instructionsText = switch (submissionInstructionType) {
-        case TEXT -> GCUtil.textToHtml(comment);
-        case HTML -> comment;
-        case TEXT_BMP -> GCUtil.textToHtml(GCUtil.textToBmp(comment));
-        case HTML_BMP -> GCUtil.textToBmp(comment);
-      };
+      // Expects incoming comments/notes are plain-text.
+      String instructionsText = submissionInstruction.transformText(comment);
       request.setInstructions(instructionsText);
     }
     if (isSendSubmitter && submitter != null) {
@@ -266,47 +262,27 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   }
 
   /**
-   * Generates a submission name which shall be suitable for easily detecting the
-   * submission in project director. Submission name will be truncated
-   * to the maximum submission name length available at GCC if required.
+   * Generates a submission name which shall be suitable for easily detecting
+   * the submission in project director.
    *
    * @param subject      workflow subject
    * @param sourceLocale source locale
    * @param contentMap   content map, the target languages will be extracted from it
    * @return a descriptive string.
    */
-  private static String createSubmissionName(@Nullable String subject,
-                                             Locale sourceLocale,
-                                             Map<String, List<Locale>> contentMap) {
+  private String createSubmissionName(@Nullable String subject,
+                                      @NonNull Locale sourceLocale,
+                                      @NonNull Map<String, List<Locale>> contentMap) {
     String trimmedSubject = Objects.toString(subject, "").trim();
-    if (trimmedSubject.length() >= SUBMISSION_NAME_MAX_LENGTH) {
-      if (trimmedSubject.length() == SUBMISSION_NAME_MAX_LENGTH) {
-        LOG.debug("Given subject at maximum length {}. Skipping applying further information to subject.", SUBMISSION_NAME_MAX_LENGTH);
-      } else {
-        String truncatedSubject = trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
-        LOG.warn("Given subject exceeds maximum length of {}. Will truncate subject and skip adding further information: {} → {}",
-          SUBMISSION_NAME_MAX_LENGTH,
-          trimmedSubject,
-          truncatedSubject);
-        trimmedSubject = truncatedSubject;
-      }
-      return trimmedSubject;
-    }
-
+    String subjectWithDefault = trimmedSubject.isEmpty() ? Instant.now().toString() : trimmedSubject;
     String allTargetLocales = contentMap.entrySet().stream()
       .flatMap(e -> e.getValue().stream())
       .distinct()
       .map(Locale::toLanguageTag)
+      .sorted()
       .collect(joining(", "));
-
-    if (trimmedSubject.isEmpty()) {
-      trimmedSubject = Instant.now().toString();
-    }
-    trimmedSubject = trimmedSubject + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
-    if (trimmedSubject.length() > SUBMISSION_NAME_MAX_LENGTH) {
-      return trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
-    }
-    return trimmedSubject;
+    String withLocaleInfo = subjectWithDefault + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
+    return submissionName.transform(withLocaleInfo);
   }
 
   @Override

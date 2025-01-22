@@ -33,10 +33,26 @@
               <StringProperty
                 Name="apiKey"><![CDATA[Your API Key; for security reasons should be set at system-level in production use.]]></StringProperty>
               <BooleanProperty Name="isSendSubmitter">true</BooleanProperty>
-              <StringProperty Name="submissionInstructionType">text-bmp</StringProperty>
               <IntProperty Name="sendTranslationRequestRetryDelay">60</IntProperty>
               <IntProperty Name="downloadTranslationRetryDelay">60</IntProperty>
               <IntProperty Name="cancelTranslationRetryDelay">60</IntProperty>
+              <StructProperty Name="submissionInstruction">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Submission instruction behavior for GlobalLink.]]></StringProperty>
+                  <StringProperty Name="characterType">bmp</StringProperty>
+                  <StringProperty Name="characterReplacementStrategy">unicode-code-point</StringProperty>
+                  <StringProperty Name="textType">html</StringProperty>
+                </Struct>
+              </StructProperty>
+              <StructProperty Name="submissionName">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Submission name behavior for GlobalLink.]]></StringProperty>
+                  <StringProperty Name="characterType">bmp</StringProperty>
+                  <StringProperty Name="characterReplacementStrategy">underscore</StringProperty>
+                </Struct>
+              </StructProperty>
             </Struct>
           </StructProperty>
           <StructProperty Name="mock">

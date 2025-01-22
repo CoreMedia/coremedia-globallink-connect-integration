@@ -146,29 +146,30 @@ in CoreMedia Studio and add a struct named
 
 * `url` for GCC REST Base URL  (type:`String`)
 * `key` The GCC connector key. If there is only one key, then setting it as 
-    part of the _Server-side configuration_ is recommended. Otherwise, you can 
-    create separate site-specific GlobalLink settings that only contain 
-    this parameter. (type:`String`)
+  part of the _Server-side configuration_ is recommended. Otherwise, you can 
+  create separate site-specific GlobalLink settings that only contain 
+  this parameter. (type:`String`)
 * `fileType` If there is more than one file format in your
-    GlobalLink setup, then this has to be set to the XLIFF file type identifier
-    to be used by your connector. (_optional_, default: `xliff`, type:`String`)
+  GlobalLink setup, then this has to be set to the XLIFF file type identifier
+  to be used by your connector. (_optional_, default: `xliff`, type:`String`)
 * `type` Determines which facade implementation will be used (see
-    [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)
-    ). (_optional_, type:`String`)
+  [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)).
+  (_optional_, type:`String`)
 * `dayOffsetForDueDate` Defines the offset for the
-    `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
-    Window to lie within the future in days.
-    (_optional_, default: `0`, type:`Integer`, scope:**global**)
+  `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow 
+  Window to lie within the future in days.
+  (_optional_, default: `0`, type:`Integer`, scope:**global**)
 * `retryCommunicationErrors` Number of retries in case of a communication error
-    with GlobalLink. (_optional_, default: `5`, type:`Integer`)
+  with GlobalLink. (_optional_, default: `5`, type:`Integer`)
 * `isSendSubmitter` Defines if the name of the editor that started the workflow 
-    is sent to GlobalLink as part of the submission.
-    (_optional_, default: `false`, type:`Boolean`)
-* `submissionInstructionType` Defines the type of the submission instruction. 
-    (_optional_, default: `text-bmp`, type:`String`). It controls the optionally
-    applied pre-processing of the instructions prior to sending it to
-    GlobalLink. For details of possible values see
-    `GCSubmissionInstructionType`.
+  is sent to GlobalLink as part of the submission.
+  (_optional_, default: `false`, type:`Boolean`)
+* `submissionInstruction` Defines the behavior of submission instructions.
+  For details, see `GCSubmissionInstruction`.
+  (_optional_, default: see `GCSubmissionInstruction`, type:`Struct`)
+* `submissionName` Defines the behavior of submission names.
+  For details, see `GCSubmissionName`.
+  (_optional_, default: see `GCSubmissionName`, type:`Struct`)
 
 Be aware that the `dayOffsetForDueDate` can only be configured in the global
 Settings location.

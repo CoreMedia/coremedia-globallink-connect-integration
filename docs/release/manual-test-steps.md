@@ -51,9 +51,6 @@ via corresponding credentials:
     // isSendSubmitter (type: Boolean)
     // Adjust to `true` to send the submitter with the request.
     "isSendSubmitter": false,
-    // submissionInstructionType (type: String)
-    // Adjust to "text", for some error behavior tests.
-    "submissionInstructionType": "text-bmp",
     // Section: Timing Adjustments — Get Faster Feedback on Manual Test Steps
     // Despite `retryCommunicationErrors`, which just needs to be adjusted,
     // find copy & paste ready values for the other settings in the
@@ -62,6 +59,21 @@ via corresponding credentials:
     "downloadTranslationRetryDelay": 60,
     "cancelTranslationRetryDelay": 60,
     "retryCommunicationErrors": 1,
+    // Section: Submission Instruction Type Settings
+    "submissionInstruction": {
+      // [...]
+      // characterType (type: String)
+      // Adjust to "unicode" to provoke errors in the GCC backend, as it does
+      // not support SMP characters.
+      "characterType": "unicode"
+    },
+    "submissionName": {
+      // [...]
+      // characterType (type: String)
+      // Adjust to "unicode" to provoke errors in the GCC backend, as it does
+      // not support SMP characters.
+      "characterType": "unicode"
+    },
     // Section: Mock Settings
     // Referenced below, like to provoke errors are certain states.
     "mock": {
@@ -602,9 +614,9 @@ Plane (SMP).
 The given manual test steps "mock" this state, as we cannot ensure that an
 error persists over time. If you want to test the real-life behavior, you
 may choose using the "default" rather than the "mock" type and instead of
-using `mock.error`, you may use the `submissionInstructionType` setting.
-Set it to `text` and add some SMP characters to the instructions (thus,
-workflow notes), like for example, the dove emoji: 🕊.
+using `mock.error`, you may use the `submissionInstruction.characterType`
+setting. Set it to `unicode` and add some SMP characters to the instructions
+(thus, workflow notes), like for example, the dove emoji: 🕊.
 
 **Advantage**: The advantage of the real-world scenario is, that you may also
 test, that a submission in an error state may still be canceled.

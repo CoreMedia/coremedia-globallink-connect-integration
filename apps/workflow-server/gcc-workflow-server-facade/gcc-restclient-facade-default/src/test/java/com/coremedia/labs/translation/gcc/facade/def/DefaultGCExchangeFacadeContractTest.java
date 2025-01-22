@@ -5,9 +5,11 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
-import com.coremedia.labs.translation.gcc.facade.GCSubmissionInstructionType;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
+import com.coremedia.labs.translation.gcc.facade.config.CharacterType;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -51,7 +53,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static com.coremedia.labs.translation.gcc.facade.def.DefaultGCExchangeFacade.SUBMISSION_NAME_MAX_LENGTH;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -413,7 +414,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Should accept various characters in submitter's name.")
+    @DisplayName("Should accept various characters in the submitter name.")
     @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
     void shouldAcceptSubmitterNameChallenge(@NonNull SupplementaryMultilingualPlaneChallenge challenge,
                                             @NonNull Map<String, Object> originalGccProperties) {
@@ -458,50 +459,6 @@ class DefaultGCExchangeFacadeContractTest {
         .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).findSubmitter()).hasValue(submitterName));
     }
 
-    @ParameterizedTest
-    @DisplayName("Should accept various characters in submission name.")
-    @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
-    void shouldAcceptSubmissionNameChallenge(@NonNull SupplementaryMultilingualPlaneChallenge challenge,
-                                             @NonNull Map<String, Object> gccProperties) {
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
-      String enrichedSubmissionName = "%s (%s, %s)".formatted(submissionName, challenge.name(), challenge.getChallenge());
-      long submissionId = facade.submitSubmission(
-        enrichedSubmissionName,
-        null,
-        getSomeDueDate(),
-        null,
-        "admin",
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
-
-      assertThat(submissionId).isGreaterThan(0L);
-
-      // Just test, that the submission does not escalate.
-      // We cannot validate the content of the submission instructions
-      // as they are not returned by the GCC REST API.
-      assertSubmissionReachesAnyStateOf(
-        facade,
-        submissionId,
-        List.of(
-          GCSubmissionState.STARTED,
-          GCSubmissionState.ANALYZED,
-          GCSubmissionState.TRANSLATE,
-          GCSubmissionState.COMPLETED
-        ),
-        SUBMISSION_VALID_TIMEOUT_MINUTES
-      );
-
-      await("Submission should have submission name '%s'.".formatted(enrichedSubmissionName))
-        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        .pollDelay(1L, TimeUnit.SECONDS)
-        .pollInterval(10L, TimeUnit.SECONDS)
-        .failFast(
-          "The submission should not reach an error state.",
-          () -> assertThat(facade.getSubmission(submissionId).isError()).isFalse()
-        )
-        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getName()).startsWith(enrichedSubmissionName));
-    }
-
     /**
      * This test requires a known way how to make the GCC REST Backend fail
      * internally. For now, it is passing instructions that contain
@@ -517,7 +474,7 @@ class DefaultGCExchangeFacadeContractTest {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       // The only known way to provoke a failure for now is using a
       // high Unicode character and set it unmodified as instruction text.
-      gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION_TYPE, GCSubmissionInstructionType.TEXT.name());
+      gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       String unicodeDove = "\uD83D\uDD4A";
@@ -584,6 +541,49 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     @ParameterizedTest
+    @DisplayName("Should prevent failures in GCC backend for problematic characters in the submission name.")
+    @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
+    void shouldPreemptivelyReplaceProblematicCharactersInSubmissionNames(@NonNull SupplementaryMultilingualPlaneChallenge challenge,
+                                                                         @NonNull Map<String, Object> gccProperties) {
+      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      String submissionNameChallenge = "%s(%s)".formatted(submissionName, challenge.getChallenge());
+      long submissionId = facade.submitSubmission(
+        submissionNameChallenge,
+        "Submission name with possible problematic characters: challenge ID '%s'".formatted(challenge),
+        getSomeDueDate(),
+        null,
+        testName,
+        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+
+      assertThat(submissionId).isGreaterThan(0L);
+
+      // Main focus of this test is to ensure that the submission name
+      // does not contain any problematic characters that make the GCC backend
+      // struggle.
+      assertSubmissionReachesAnyStateOf(
+        facade,
+        submissionId,
+        List.of(
+          GCSubmissionState.STARTED,
+          GCSubmissionState.ANALYZED,
+          GCSubmissionState.TRANSLATE,
+          GCSubmissionState.COMPLETED
+        ),
+        SUBMISSION_VALID_TIMEOUT_MINUTES
+      );
+
+      // Just validating, that some name is set.
+      await("Submission is expected to have a submission name.")
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getName())
+          .startsWith(submissionName)
+        );
+    }
+
+    @ParameterizedTest
     @EnumSource(SubmissionNameLengthFixture.class)
     void shouldPreemptivelyTruncateLongSubmissionNames(@NonNull SubmissionNameLengthFixture fixture,
                                                        @NonNull Map<String, Object> gccProperties) {
@@ -596,11 +596,11 @@ class DefaultGCExchangeFacadeContractTest {
       // maximum length.
       long submissionId = facade.submitSubmission(
         paddedSubmissionName,
-        "%s (%s)\nOriginal Submission Name (%d chars, expected to be shortened to %d characters if required):\n\t%s".formatted(
+        "%s (%s)\nOriginal Submission Name (%d chars, expected to be shortened if required to at maximum %d characters):\n\t%s".formatted(
           testName,
           fixture,
           paddedSubmissionName.length(),
-          SUBMISSION_NAME_MAX_LENGTH,
+          GCSubmissionName.DEFAULT_MAX_LENGTH,
           paddedSubmissionName
         ),
         getSomeDueDate(),
@@ -610,12 +610,12 @@ class DefaultGCExchangeFacadeContractTest {
 
       assertThat(submissionId).isGreaterThan(0L);
 
-      await("Submission is expected to fail with error state.")
+      await("Submission is expected to have a truncated submission name.")
         .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         .pollDelay(1L, TimeUnit.SECONDS)
         .pollInterval(10L, TimeUnit.SECONDS)
         .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getName())
-          .startsWith(paddedSubmissionName.substring(0, Math.min(SUBMISSION_NAME_MAX_LENGTH, paddedSubmissionName.length())))
+          .startsWith(paddedSubmissionName.substring(0, Math.min(GCSubmissionName.DEFAULT_MAX_LENGTH, paddedSubmissionName.length())))
         );
     }
   }
@@ -783,29 +783,29 @@ class DefaultGCExchangeFacadeContractTest {
      * be partially visible in the submission name. Truncated though, as the
      * actually set submission name takes precedence.
      */
-    ASCII_CLOSE_TO_LIMIT(SUBMISSION_NAME_MAX_LENGTH - 10, 'a', 'z'),
+    ASCII_CLOSE_TO_LIMIT(GCSubmissionName.DEFAULT_MAX_LENGTH - 10, 'a', 'z'),
     /**
      * Same as {@link #ASCII_CLOSE_TO_LIMIT}, but the submission name is expected
      * to miss even more information.
      */
-    ASCII_VERY_CLOSE_TO_LIMIT(SUBMISSION_NAME_MAX_LENGTH - 3, 'a', 'z'),
+    ASCII_VERY_CLOSE_TO_LIMIT(GCSubmissionName.DEFAULT_MAX_LENGTH - 3, 'a', 'z'),
     /**
      * No additional information is expected to be visible in the submission
      * name.
      */
-    ASCII_HIT_LIMIT(SUBMISSION_NAME_MAX_LENGTH, 'a', 'z'),
+    ASCII_HIT_LIMIT(GCSubmissionName.DEFAULT_MAX_LENGTH, 'a', 'z'),
     /**
      * Even the passed submission name is expected to be truncated.
      */
-    ASCII_EXCEED_LIMIT(SUBMISSION_NAME_MAX_LENGTH * 2, 'a', 'z'),
+    ASCII_EXCEED_LIMIT(GCSubmissionName.DEFAULT_MAX_LENGTH * 2, 'a', 'z'),
     /**
      * Same as {@link #ASCII_HIT_LIMIT}, but with a different character set.
      */
-    BMP_HIT_LIMIT(SUBMISSION_NAME_MAX_LENGTH, '\u2190', '\u21FF'),
+    BMP_HIT_LIMIT(GCSubmissionName.DEFAULT_MAX_LENGTH, '\u2190', '\u21FF'),
     /**
      * Same as {@link #ASCII_EXCEED_LIMIT}, but with a different character set.
      */
-    BMP_EXCEED_LIMIT(SUBMISSION_NAME_MAX_LENGTH * 2, '\u2190', '\u21FF'),
+    BMP_EXCEED_LIMIT(GCSubmissionName.DEFAULT_MAX_LENGTH * 2, '\u2190', '\u21FF'),
     ;
 
     private final int minLength;
