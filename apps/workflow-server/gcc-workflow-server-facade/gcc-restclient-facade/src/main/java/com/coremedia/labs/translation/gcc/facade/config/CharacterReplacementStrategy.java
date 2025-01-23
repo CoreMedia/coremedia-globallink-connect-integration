@@ -28,16 +28,20 @@ public enum CharacterReplacementStrategy {
   /**
    * Replace with an underscore.
    */
-  UNDERSCORE(mr -> "_"),
+  UNDERSCORE(mr -> replaceIfNotEmpty(mr, "_")),
   /**
    * Replace with a question mark.
    */
-  QUESTION_MARK(mr -> "?"),
+  QUESTION_MARK(mr -> replaceIfNotEmpty(mr, "?")),
   /**
    * Replace with a Unicode code point.
    */
   UNICODE_CODE_POINT(mr -> {
-    int codePoint = mr.group().codePointAt(0);
+    String group = mr.group();
+    if (mr.group().isEmpty()) {
+      return "";
+    }
+    int codePoint = group.codePointAt(0);
     return String.format("U+%04X", codePoint);
   }),
   ;
@@ -101,6 +105,11 @@ public enum CharacterReplacementStrategy {
     }
     LOG.debug("Unknown replacement-strategy '{}'. Returning empty.", strategy);
     return Optional.empty();
+  }
+
+  @NonNull
+  private static String replaceIfNotEmpty(@NonNull MatchResult mr, @NonNull String replacement) {
+    return mr.group().isEmpty() ? "" : replacement;
   }
 
   /**
