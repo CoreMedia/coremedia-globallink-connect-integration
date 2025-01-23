@@ -18,6 +18,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public enum CharacterReplacementStrategy {
   /**
+   * Do not apply any replacement.
+   */
+  NONE(MatchResult::group),
+  /**
    * Replace with an empty string.
    */
   EMPTY(mr -> ""),
