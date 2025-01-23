@@ -121,22 +121,16 @@ connector.
    * Mock redelivered state by adjusting the subsequent state after the
      "Completed" state:
 
-     ```json5
-     {
-       "globalLink": {
-         // String
-         "type": "mock",
-         "mock": {
-           "error": "download_xliff",
-           "submissionStates": {
-             "Completed": {
-               "after": "Redelivered",
-               "final": true
-             },
-           }
-         }
-       }
-     }
+     ```yaml
+     globalLink:
+       # String
+       type: mock
+       mock:
+         error: download_xliff
+         submissionStates:
+           Completed:
+             after: Redelivered
+             final: true
      ```
 
 2. **Content:** Create a new article (name irrelevant) and make it valid.

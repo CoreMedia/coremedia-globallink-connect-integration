@@ -33,54 +33,36 @@ import static org.slf4j.LoggerFactory.getLogger;
  * The configuration can be done in GlobalLink translation settings, with the
  * following structure (by example):
  * <pre>{@code
- * {
- *   "globalLink": {
- *     "mock": {
- *       "submissionStates": {
- *         "COMPLETED": {
- *           "after": "REDELIVERED",
- *           "final": true
- *         }.
- *         "DELIVERED": {
- *           "override": [
- *             "OTHER",
- *             "REDELIVERED"
- *           ]
- *         },
- *         "REVIEW": {
- *           "before": "OTHER"
- *         }
- *       }
- *     }
- *   }
- * }
+ * globalLink:
+ *   mock:
+ *     submissionStates:
+ *       COMPLETED:
+ *         after: REDELIVERED
+ *         final: true
+ *       DELIVERED:
+ *         override:
+ *           - OTHER
+ *           - REDELIVERED
+ *       REVIEW:
+ *         before: OTHER
  * }</pre>
  * <p>
  * The generic structure is:
  * <pre>{@code
- * {
- *   "globalLink": {
- *     "mock": {
- *       "submissionStates": {
- *         "ACTUAL_SUBMISSION_STATE": {
- *           "before": [
- *             "FIRST_SUBMISSION_STATE",
- *             "SECOND_SUBMISSION_STATE",
- *           ],
- *           "after": [
- *             "FIRST_SUBMISSION_STATE",
- *             "SECOND_SUBMISSION_STATE",
- *           ],
- *           "override": [
- *             "FIRST_SUBMISSION_STATE",
- *             "SECOND_SUBMISSION_STATE",
- *           ],
- *           "final": boolean
- *         }
- *       }
- *     }
- *   }
- * }
+ * globalLink:
+ *   mock:
+ *     submissionStates:
+ *       ACTUAL_SUBMISSION_STATE:
+ *         before:
+ *           - FIRST_SUBMISSION_STATE
+ *           - SECOND_SUBMISSION_STATE
+ *         after:
+ *           - FIRST_SUBMISSION_STATE
+ *           - SECOND_SUBMISSION_STATE
+ *         override:
+ *           - FIRST_SUBMISSION_STATE
+ *           - SECOND_SUBMISSION_STATE
+ *         final: boolean
  * }</pre>
  * <p>
  * All alternative states can be given as atomic string value or as array of
@@ -105,20 +87,13 @@ import static org.slf4j.LoggerFactory.getLogger;
  * {@link com.coremedia.labs.translation.gcc.facade.GCSubmissionState#OTHER OTHER}
  * and won't respect the mapping configuration for {@code OTHER}:
  * <pre>{@code
- * {
- *   "globalLink": {
- *     "mock": {
- *       "submissionState": {
- *         "COMPLETED": {
- *           "override": "OTHER"
- *         },
- *         "OTHER": {
- *           "override": "DELIVERED"
- *         }
- *       }
- *     }
- *   }
- * }
+ * globalLink:
+ *   mock:
+ *     submissionState:
+ *       COMPLETED:
+ *         override: OTHER
+ *       OTHER:
+ *         override: DELIVERED
  * }</pre>
  */
 public final class MockSubmissionStates {

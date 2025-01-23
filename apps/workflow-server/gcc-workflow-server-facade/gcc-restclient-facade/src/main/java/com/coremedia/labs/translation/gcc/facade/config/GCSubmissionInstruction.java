@@ -15,14 +15,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  * <p>
  * <strong>Example Configuration</strong>: (represents defaults)
  * <pre>{@code
- * {
- *   "globalLink": {
- *     "submissionInstruction": {
- *       "characterType": "bmp",
- *       "characterReplacementStrategy": "unicode-code-point"
- *     }
- *   }
- * }
+ * globalLink:
+ *   submissionInstruction:
+ *     characterType: bmp
+ *     characterReplacementStrategy: unicode-code-point
  * }</pre>
  *
  * @see CharacterType
