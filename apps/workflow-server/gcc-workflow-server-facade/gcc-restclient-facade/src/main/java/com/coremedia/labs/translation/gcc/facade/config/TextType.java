@@ -20,8 +20,10 @@ public enum TextType {
    * Signals HTML content.
    */
   HTML {
+    private static final String SPACE_INDENT = "&nbsp;";
     private static final String TAB_INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
     private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\R");
+    private static final Pattern LEADING_SPACES = Pattern.compile("(?m)^\\s+");
 
     /**
      * Transforms the given plain-text to the expected HTML.
@@ -41,6 +43,9 @@ public enum TextType {
         .replace(">", "&gt;")
         .replace("\"", "&quot;")
         .replace("\t", TAB_INDENT);
+      // For all leading spaces in each line, replace with non-breaking spaces.
+      // This is meant to keep the indentation.
+      result = LEADING_SPACES.matcher(result).replaceAll(SPACE_INDENT);
       return NEWLINE_PATTERN.matcher(result).replaceAll("<br>");
     }
   },
