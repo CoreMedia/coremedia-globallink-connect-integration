@@ -11,15 +11,23 @@ import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * The expected type of text within the GCC backend.
+ * A text transformation to apply from CoreMedia CMS to, for example,
+ * submission data in GCC backend.
+ * <p>
+ * Meant to be used, for example, for plain-text workflow notes (CMS) send over
+ * as submission instructions (GCC), which expects the text to be in HTML.
  *
  * @since 2406.1
  */
-public enum TextType {
+public enum TextTransform {
+  /**
+   * No transformation. Take as is.
+   */
+  NONE,
   /**
    * Signals HTML content.
    */
-  HTML {
+  TEXT_TO_HTML {
     private static final String SPACE_INDENT = "&nbsp;";
     private static final String TAB_INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
     private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\R");
@@ -36,7 +44,7 @@ public enum TextType {
      */
     @Override
     @NonNull
-    public String transformText(@NonNull String text) {
+    public String transform(@NonNull String text) {
       String result = text
         .replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -49,22 +57,24 @@ public enum TextType {
       return NEWLINE_PATTERN.matcher(result).replaceAll("<br>");
     }
   },
-  /**
-   * Signals plain text content.
-   */
-  TEXT,
   ;
 
   private static final Logger LOG = getLogger(lookup().lookupClass());
+  @NonNull
+  private final String id;
+
+  TextTransform() {
+    id = stripUnderscoresAndDashes(name());
+  }
 
   /**
-   * Transforms the given plain-text to the expected type.
+   * Transforms the given text to the target type.
    *
    * @param text the text to transform
    * @return the transformed text
    */
   @NonNull
-  public String transformText(@NonNull String text) {
+  public String transform(@NonNull String text) {
     return text;
   }
 
@@ -75,13 +85,13 @@ public enum TextType {
    * @return the parsed type, or empty if the type is unknown, not set, or of
    * an unsupported type
    */
-  public static Optional<TextType> fromConfig(@Nullable Object type) {
+  public static Optional<TextTransform> fromConfig(@Nullable Object type) {
     if (type == null) {
       LOG.trace("No text-type given. Returning empty.");
       return Optional.empty();
     }
-    if (type instanceof TextType textType) {
-      return Optional.of(textType);
+    if (type instanceof TextTransform textTransform) {
+      return Optional.of(textTransform);
     }
     if (type instanceof String stringType) {
       return fromString(stringType);
@@ -98,18 +108,29 @@ public enum TextType {
    * set
    */
   @NonNull
-  public static Optional<TextType> fromString(@Nullable String type) {
+  public static Optional<TextTransform> fromString(@Nullable String type) {
     if (type == null || type.isBlank()) {
-      LOG.debug("Empty text-type. Returning empty.");
+      LOG.debug("Empty transformation type. Returning empty.");
       return Optional.empty();
     }
-    String trimmedType = type.trim();
-    for (TextType value : values()) {
-      if (value.name().equalsIgnoreCase(trimmedType)) {
+    String trimmedType = stripUnderscoresAndDashes(type.trim());
+    for (TextTransform value : values()) {
+      if (value.id.equalsIgnoreCase(trimmedType)) {
         return Optional.of(value);
       }
     }
-    LOG.debug("Unknown text-type '{}'. Returning empty.", type);
+    LOG.debug("Unknown transformation type '{}'. Returning empty.", type);
     return Optional.empty();
+  }
+
+  /**
+   * Used to eventually support camel-case, snake-case, and kebab-case.
+   *
+   * @param str string to strip underscores and dashes from
+   * @return string without underscores and dashes
+   */
+  @NonNull
+  private static String stripUnderscoresAndDashes(@NonNull String str) {
+    return str.replace("_", "").replace("-", "");
   }
 }

@@ -42,7 +42,7 @@
                     Name="comment"><![CDATA[Submission instruction behavior for GlobalLink.]]></StringProperty>
                   <StringProperty Name="characterType">bmp</StringProperty>
                   <StringProperty Name="characterReplacementStrategy">unicode-code-point</StringProperty>
-                  <StringProperty Name="textType">html</StringProperty>
+                  <StringProperty Name="textTransform">text-to-html</StringProperty>
                 </Struct>
               </StructProperty>
               <StructProperty Name="submissionName">
@@ -101,7 +101,10 @@
                     Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
                   <StructProperty Name="Completed">
                     <Struct>
-                      <StringProperty Name="after">Redelivered</StringProperty>
+                      <StringListProperty Name="after">
+                        <String>Completed</String>
+                        <String>Redelivered</String>
+                      </StringListProperty>
                       <BooleanProperty Name="final">true</BooleanProperty>
                     </Struct>
                   </StructProperty>

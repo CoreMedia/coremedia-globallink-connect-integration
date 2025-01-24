@@ -60,11 +60,6 @@ public enum CharacterReplacementStrategy {
   }
 
   @NonNull
-  public String id() {
-    return id;
-  }
-
-  @NonNull
   public Function<MatchResult, String> replacer() {
     return replacer;
   }
@@ -99,7 +94,7 @@ public enum CharacterReplacementStrategy {
     }
     String alignedStrategy = stripUnderscoresAndDashes(strategy.trim());
     for (CharacterReplacementStrategy value : values()) {
-      if (value.id().equalsIgnoreCase(alignedStrategy)) {
+      if (value.id.equalsIgnoreCase(alignedStrategy)) {
         return Optional.of(value);
       }
     }

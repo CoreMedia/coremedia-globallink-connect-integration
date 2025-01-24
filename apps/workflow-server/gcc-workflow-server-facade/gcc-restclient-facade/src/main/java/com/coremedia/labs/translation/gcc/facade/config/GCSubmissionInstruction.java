@@ -49,12 +49,12 @@ public final class GCSubmissionInstruction {
    * <p>
    * <strong>Type</strong>: {@code String}
    *
-   * @see TextType
+   * @see TextTransform
    */
-  public static final String TEXT_TYPE_KEY = "textType";
+  public static final String TEXT_TYPE_KEY = "textTransform";
   private static final CharacterType DEFAULT_SUPPORTED_CHARACTER_TYPE = CharacterType.BMP;
   private static final CharacterReplacementStrategy DEFAULT_CHARACTER_REPLACEMENT_STRATEGY = CharacterReplacementStrategy.UNICODE_CODE_POINT;
-  private static final TextType DEFAULT_TEXT_TYPE = TextType.HTML;
+  private static final TextTransform DEFAULT_TEXT_TYPE = TextTransform.TEXT_TO_HTML;
 
   /**
    * The default behavior for submission instructions.
@@ -63,7 +63,7 @@ public final class GCSubmissionInstruction {
    * <ul>
    *   <li>{@code characterType}: {@link CharacterType#BMP}</li>
    *   <li>{@code characterReplacementStrategy}: {@link CharacterReplacementStrategy#UNICODE_CODE_POINT}</li>
-   *   <li>{@code textType}: {@link TextType#HTML}</li>
+   *   <li>{@code textTransform}: {@link TextTransform#TEXT_TO_HTML}</li>
    * </ul>
    */
   @NonNull
@@ -77,21 +77,21 @@ public final class GCSubmissionInstruction {
   @NonNull
   private final CharacterReplacementStrategy characterReplacementStrategy;
   @NonNull
-  private final TextType textType;
+  private final TextTransform textTransform;
 
   /**
    * Constructor.
    *
    * @param characterType                type of supported characters
    * @param characterReplacementStrategy strategy for replacing invalid characters
-   * @param textType                     the default text type
+   * @param textTransform                     the default text type
    */
   private GCSubmissionInstruction(@NonNull CharacterType characterType,
                                   @NonNull CharacterReplacementStrategy characterReplacementStrategy,
-                                  @NonNull TextType textType) {
+                                  @NonNull TextTransform textTransform) {
     this.characterType = characterType;
     this.characterReplacementStrategy = characterReplacementStrategy;
-    this.textType = textType;
+    this.textTransform = textTransform;
   }
 
   /**
@@ -103,7 +103,7 @@ public final class GCSubmissionInstruction {
   @NonNull
   public String transformText(@NonNull String value) {
     String transformedCharacters = characterType.replaceAllInvalid(value, characterReplacementStrategy.replacer());
-    String transformedText = textType.transformText(transformedCharacters);
+    String transformedText = textTransform.transform(transformedCharacters);
     if (LOG.isDebugEnabled() && !value.equals(transformedText)) {
       LOG.debug("Transformed submission instruction from '{}' to '{}'.", value, transformedText);
     }
@@ -143,7 +143,7 @@ public final class GCSubmissionInstruction {
     return new GCSubmissionInstruction(
       CharacterType.fromConfig(configMap.get(CHARACTER_TYPE_KEY)).orElse(DEFAULT_SUPPORTED_CHARACTER_TYPE),
       CharacterReplacementStrategy.fromConfig(configMap.get(CHARACTER_REPLACEMENT_STRATEGY_KEY)).orElse(DEFAULT_CHARACTER_REPLACEMENT_STRATEGY),
-      TextType.fromConfig(configMap.get(TEXT_TYPE_KEY)).orElse(DEFAULT_TEXT_TYPE)
+      TextTransform.fromConfig(configMap.get(TEXT_TYPE_KEY)).orElse(DEFAULT_TEXT_TYPE)
     );
   }
 
@@ -153,16 +153,16 @@ public final class GCSubmissionInstruction {
       return false;
     }
     GCSubmissionInstruction that = (GCSubmissionInstruction) object;
-    return characterType == that.characterType && characterReplacementStrategy == that.characterReplacementStrategy && textType == that.textType;
+    return characterType == that.characterType && characterReplacementStrategy == that.characterReplacementStrategy && textTransform == that.textTransform;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(characterType, characterReplacementStrategy, textType);
+    return Objects.hash(characterType, characterReplacementStrategy, textTransform);
   }
 
   @Override
   public String toString() {
-    return "%s[characterReplacementStrategy=%s, characterType=%s, textType=%s]".formatted(lookup().lookupClass().getSimpleName(), characterReplacementStrategy, characterType, textType);
+    return "%s[characterReplacementStrategy=%s, characterType=%s, textTransform=%s]".formatted(lookup().lookupClass().getSimpleName(), characterReplacementStrategy, characterType, textTransform);
   }
 }
