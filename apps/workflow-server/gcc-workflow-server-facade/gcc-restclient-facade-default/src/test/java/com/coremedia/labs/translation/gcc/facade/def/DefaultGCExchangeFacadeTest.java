@@ -803,8 +803,8 @@ class DefaultGCExchangeFacadeTest {
   }
 
   @Nested
-  @DisplayName("Tests for getSubmissionError")
-  class GetSubmissionError {
+  @DisplayName("Tests for getSubmission")
+  class GetSubmission {
     @Test
     void shouldPropagateSubmissionErrorState() {
       MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
@@ -817,6 +817,13 @@ class DefaultGCExchangeFacadeTest {
       MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
       GCSubmissionModel submissionModel = facade.getSuccessfulSubmission();
       assertThat(submissionModel.isError()).isFalse();
+    }
+
+    @Test
+    void shouldFailWithExceptionIfSubmissionNotFound() {
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      assertThatThrownBy(facade::getNotExistingSubmission)
+        .isInstanceOf(GCFacadeSubmissionNotFoundException.class);
     }
   }
 
@@ -1061,6 +1068,16 @@ class DefaultGCExchangeFacadeTest {
       when(response.getSubmissions()).thenReturn(List.of(submission));
       when(submission.getStatus()).thenReturn(submissionStatus);
       return submission;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    @NonNull
+    public GCSubmissionModel getNotExistingSubmission() {
+      Submissions.SubmissionsResponseData response = Mockito.mock(Submissions.SubmissionsResponseData.class);
+
+      when(getDelegate().getSubmissionsList(any())).thenReturn(response);
+      when(response.getSubmissions()).thenReturn(List.of());
+      return getSubmission(42L);
     }
 
     @NonNull
