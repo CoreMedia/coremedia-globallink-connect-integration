@@ -57,7 +57,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiPredicate;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -81,26 +80,30 @@ class DefaultGCExchangeFacadeTest {
   @Mock
   private GCExchange gcExchange;
 
-  @ParameterizedTest(name = "[{index}] Missing required parameter: ''{0}''")
-  @DisplayName("Constructor should signal missing required keys in configuration.")
-  @ValueSource(strings = {
-          GCConfigProperty.KEY_URL,
-          GCConfigProperty.KEY_API_KEY,
-          GCConfigProperty.KEY_KEY
-  })
-  void failOnMissingRequiredConfiguration(String excludedKey) {
-    Map<String, Object> config = new HashMap<>();
-    List<String> requiredKeys = new ArrayList<>(asList(
-            GCConfigProperty.KEY_URL,
-            GCConfigProperty.KEY_API_KEY,
-            GCConfigProperty.KEY_KEY
-    ));
-    requiredKeys.remove(excludedKey);
+  @Nested
+  @DisplayName("DefaultGCExchangeFacade(Map<String, Object>)")
+  class ConstructorTests {
+    @ParameterizedTest(name = "[{index}] Missing required parameter: ''{0}''")
+    @DisplayName("Constructor should signal missing required keys in configuration.")
+    @ValueSource(strings = {
+      GCConfigProperty.KEY_URL,
+      GCConfigProperty.KEY_API_KEY,
+      GCConfigProperty.KEY_KEY
+    })
+    void failOnMissingRequiredConfiguration(String excludedKey) {
+      Map<String, Object> config = new HashMap<>();
+      List<String> requiredKeys = new ArrayList<>(List.of(
+        GCConfigProperty.KEY_URL,
+        GCConfigProperty.KEY_API_KEY,
+        GCConfigProperty.KEY_KEY
+      ));
+      requiredKeys.remove(excludedKey);
 
-    for (String requiredKey : requiredKeys) {
-      config.put(requiredKey, "non-null");
+      for (String requiredKey : requiredKeys) {
+        config.put(requiredKey, "non-null");
+      }
+      assertThatCode(() -> new DefaultGCExchangeFacade(config)).hasMessageContaining(excludedKey);
     }
-    assertThatCode(() -> new DefaultGCExchangeFacade(config)).hasMessageContaining(excludedKey);
   }
 
   @Nested
@@ -524,7 +527,7 @@ class DefaultGCExchangeFacadeTest {
       lenient().when(additionalSubmission.getStatus()).thenReturn(additionalSubmissionState);
       lenient().when(additionalSubmissionState.getStatusName()).thenReturn(SubmissionStatus.Translate.text());
 
-      when(submissionsResponseData.getSubmissions()).thenReturn(asList(submission, additionalSubmission));
+      when(submissionsResponseData.getSubmissions()).thenReturn(List.of(submission, additionalSubmission));
 
       GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
       GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
@@ -580,7 +583,7 @@ class DefaultGCExchangeFacadeTest {
         @Test
         @DisplayName("'cancelled', if not all tasks have their cancellation confirmed")
         void someTasksUnconfirmedCancellation() {
-          when(tasksListResponse.getTasks()).thenReturn(asList(task, additionalTask1, additionalTask2));
+          when(tasksListResponse.getTasks()).thenReturn(List.of(task, additionalTask1, additionalTask2));
           when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
           when(additionalTask1.getState()).thenReturn(TaskStatus.Cancelled.text());
@@ -619,7 +622,7 @@ class DefaultGCExchangeFacadeTest {
         @Test
         @DisplayName("'cancellation confirmed', if all tasks are either confirmed or delivered")
         void tasksAreCancellationConfirmedOrDelivered() {
-          when(tasksListResponse.getTasks()).thenReturn(asList(task, additionalTask1, additionalTask2));
+          when(tasksListResponse.getTasks()).thenReturn(List.of(task, additionalTask1, additionalTask2));
           when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
           when(additionalTask1.getState()).thenReturn(TaskStatus.Delivered.text());
