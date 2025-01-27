@@ -28,8 +28,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 public final class GCSubmissionName {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final String CONFIG_KEY = GCConfigProperty.KEY_SUBMISSION_NAME;
-  private static final String CHARACTER_TYPE_KEY = "characterType";
-  private static final String CHARACTER_REPLACEMENT_STRATEGY_KEY = "characterReplacementStrategy";
+  public static final String CHARACTER_TYPE_KEY = "characterType";
+  public static final String CHARACTER_REPLACEMENT_STRATEGY_KEY = "characterReplacementStrategy";
   private static final CharacterType DEFAULT_SUPPORTED_CHARACTER_TYPE = CharacterType.BMP;
   private static final CharacterReplacementStrategy DEFAULT_CHARACTER_REPLACEMENT_STRATEGY = CharacterReplacementStrategy.UNDERSCORE;
   /**

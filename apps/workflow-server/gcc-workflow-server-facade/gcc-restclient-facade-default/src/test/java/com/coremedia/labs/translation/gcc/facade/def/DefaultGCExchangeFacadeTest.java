@@ -7,6 +7,9 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.facade.config.CharacterReplacementStrategy;
+import com.coremedia.labs.translation.gcc.facade.config.CharacterType;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -320,6 +323,127 @@ class DefaultGCExchangeFacadeTest {
         .hasMessageContaining(subject)
         .hasMessageContaining(sourceLocale.toLanguageTag())
       ;
+    }
+
+    @Nested
+    class SubmissionNameUseCases {
+      @Test
+      void shouldApplySourceTargetLocaleInformation(@NonNull TestInfo testInfo) {
+        String subject = "Subject: %s".formatted(testInfo.getDisplayName());
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subject,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName())
+          .contains(Locale.US.toLanguageTag())
+          .contains(Locale.GERMANY.toLanguageTag());
+      }
+
+      @Test
+      void shouldApplySomeDefaultSubmissionName() {
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).isNotEmpty();
+      }
+
+      @Test
+      void shouldApplyDefaultSubmissionNameSanitizing() {
+        String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedSubject = "SMP-Dove: _";
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subjectChallenge,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).startsWith(expectedSanitizedSubject);
+      }
+
+      @Test
+      void shouldRespectAlternativeReplacementConfiguration() {
+        String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedSubject = "SMP-Dove: ?";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
+          GCSubmissionName.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subjectChallenge,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).startsWith(expectedSanitizedSubject);
+      }
+
+      @Test
+      void shouldRespectAlternativeCharacterTypeConfiguration() {
+        String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
+          GCSubmissionName.CHARACTER_TYPE_KEY, CharacterType.UNICODE
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subjectChallenge,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).startsWith(subjectChallenge);
+      }
     }
   }
 
