@@ -133,6 +133,15 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     );
   }
 
+  @VisibleForTesting
+  DefaultGCExchangeFacade(GCExchange delegate, String fileType) {
+    this.delegate = delegate;
+    fileTypeSupplier = () -> fileType;
+    isSendSubmitter = false;
+    submissionName = GCSubmissionName.DEFAULT;
+    submissionInstruction = GCSubmissionInstruction.DEFAULT;
+  }
+
   /**
    * GCC backend does not validate the connector key during connection setup.
    * Not validating it upfront may lead to unexpected states, such as that we
@@ -149,15 +158,6 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     if (!availableConnectorKeys.contains(configuredKey)) {
       throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).".formatted(gcExchange.getConfig().getApiUrl()));
     }
-  }
-
-  @VisibleForTesting
-  DefaultGCExchangeFacade(GCExchange delegate, String fileType) {
-    this.delegate = delegate;
-    fileTypeSupplier = () -> fileType;
-    isSendSubmitter = false;
-    submissionName = GCSubmissionName.DEFAULT;
-    submissionInstruction = GCSubmissionInstruction.DEFAULT;
   }
 
   private static String requireNonNullConfig(@NonNull Map<String, Object> config, String key) {
