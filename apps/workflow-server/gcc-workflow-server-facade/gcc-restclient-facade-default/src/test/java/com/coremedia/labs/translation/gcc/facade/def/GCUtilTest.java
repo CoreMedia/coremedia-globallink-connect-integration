@@ -1,7 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Assertions;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
@@ -14,7 +13,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -45,42 +43,6 @@ class GCUtilTest {
     ZonedDateTime expectedDateTime = probe.withZoneSameInstant(ZoneOffset.UTC);
     ZonedDateTime actualDateTime = ZonedDateTime.ofInstant(actualDate.toInstant(), ZoneOffset.UTC);
     assertThat(actualDateTime).isCloseTo(expectedDateTime, Assertions.within(1L, MILLIS));
-  }
-
-  @ParameterizedTest
-  @DisplayName("textToHtml: Text should be transformed to HTML")
-  @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
-          text         | expected
-          &            | &amp;
-          <            | &lt;
-          >            | &gt;
-          "            | &quot;
-          NL           | <br>
-          CR           | <br>
-          CRNL         | <br>
-    """)
-  void shouldTransformTextToHtml(@NonNull String text, @NonNull String expected) {
-    String textFixture = text
-      .replace("NL", "\n")
-      .replace("CR", "\r");
-    assertThat(GCUtil.textToHtml(textFixture)).isEqualTo(expected);
-  }
-
-  @ParameterizedTest
-  @DisplayName("textToHtml: Text should be transformed to HTML")
-  @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
-          text         | expected
-          "\u0000"     | "\u0000"
-          "\t"         | "\t"
-          a            | a
-          ö            | ö
-          \uFFFF       | \uFFFF
-          \uD800\uDC00 | U+10000
-          \uD83D\uDD4A | U+1F54A
-          \uDBFF\uDFFF | U+10FFFF
-    """)
-  void shouldTransformTextContainOnlyBmpCharacters(@NonNull String text, @NonNull String expected) {
-    assertThat(GCUtil.textToBmp(text)).isEqualTo(expected);
   }
 
   @Nested

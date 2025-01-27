@@ -10,8 +10,6 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.MatchResult;
-import java.util.regex.Pattern;
 
 import static java.time.ZoneOffset.UTC;
 
@@ -21,63 +19,8 @@ import static java.time.ZoneOffset.UTC;
 @DefaultAnnotation(NonNull.class)
 final class GCUtil {
 
-  /**
-   * Pattern to match Unicode characters above the basic multilingual plane.
-   */
-  private static final Pattern HIGHER_UNICODE_CHARACTERS = Pattern.compile("[^\\x00-\\uffff]");
-  private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\R");
-
   private GCUtil() {
     // Utility class
-  }
-
-  /**
-   * Instruction texts (aka comments) in general do not support any Unicode
-   * characters that do not belong to the Basic Multilingual Plane (BMP).
-   * This method will replace them by their Unicode code point as text.
-   *
-   * @param text text to modify
-   * @return text with all characters within BMP
-   */
-  @NonNull
-  static String textToBmp(@NonNull String text) {
-    return HIGHER_UNICODE_CHARACTERS
-      .matcher(text)
-      .replaceAll(GCUtil::unicodeToText);
-  }
-
-  /**
-   * Poor-man's transformation of Unicode characters to text.
-   */
-  @NonNull
-  private static String unicodeToText(@NonNull MatchResult matchResult) {
-    return String.format("U+%04X", matchResult.group().codePointAt(0));
-  }
-
-  /**
-   * Transforms the given text into HTML.
-   * <p>
-   * Transformations applied:
-   * <ul>
-   *   <li>Transform {@code <} to {@code &lt;}</li>
-   *   <li>Transform {@code >} to {@code &gt;}</li>
-   *   <li>Transform {@code &} to {@code &amp;}</li>
-   *   <li>Transform {@code "} to {@code &quot;}</li>
-   *   <li>Transform tabs to non-breaking space (indent: 2)</li>
-   *   <li>Transform newlines to {@code <br>}</li>
-   * </li>
-   *
-   * @param text text to transform
-   * @return transformed text
-   */
-  static String textToHtml(@NonNull String text) {
-    String result = text
-      .replace("&", "&amp;")
-      .replace("<", "&lt;")
-      .replace(">", "&gt;")
-      .replace("\"", "&quot;")
-      .replace("\t", "&nbsp;&nbsp;");
-    return NEWLINE_PATTERN.matcher(result).replaceAll("<br>");
   }
 
   /**
