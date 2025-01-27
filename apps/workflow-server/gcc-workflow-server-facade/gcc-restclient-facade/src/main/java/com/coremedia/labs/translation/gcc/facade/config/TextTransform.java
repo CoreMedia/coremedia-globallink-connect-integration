@@ -31,7 +31,7 @@ public enum TextTransform {
     private static final String SPACE_INDENT = "&nbsp;";
     private static final String TAB_INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
     private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\R");
-    private static final Pattern LEADING_SPACES = Pattern.compile("(?m)^\\s+");
+    private static final Pattern LEADING_SPACES = Pattern.compile("(?m)^ +");
 
     /**
      * Transforms the given plain-text to the expected HTML.
@@ -53,7 +53,8 @@ public enum TextTransform {
         .replace("\t", TAB_INDENT);
       // For all leading spaces in each line, replace with non-breaking spaces.
       // This is meant to keep the indentation.
-      result = LEADING_SPACES.matcher(result).replaceAll(SPACE_INDENT);
+      result = LEADING_SPACES.matcher(result)
+        .replaceAll(match -> SPACE_INDENT.repeat(match.group().length()));
       return NEWLINE_PATTERN.matcher(result).replaceAll("<br>");
     }
   },
