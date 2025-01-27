@@ -25,7 +25,7 @@ public enum TextTransform {
    */
   NONE,
   /**
-   * Signals HTML content.
+   * Transform plain-text to HTML.
    */
   TEXT_TO_HTML {
     private static final String SPACE_INDENT = "&nbsp;";
