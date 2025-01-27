@@ -4,16 +4,14 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import java.util.Locale;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.coremedia.labs.translation.gcc.facade.config.TextTransform.TEXT_TO_HTML;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,35 +93,8 @@ class TextTransformTest {
 
   static class ConfigTestCaseFixtureProvider implements ArgumentsProvider {
     @Override
-    public @NonNull java.util.stream.Stream<? extends Arguments> provideArguments(@NonNull org.junit.jupiter.api.extension.ExtensionContext context) {
-      return java.util.stream.Stream.of(TextTransform.values())
-        .flatMap(tt -> java.util.stream.Stream.of(TextCaseFixture.values())
-          .map(testCaseFixture -> Arguments.of(tt, testCaseFixture.toConfigValue(tt))));
-    }
-  }
-
-  enum TextCaseFixture {
-    NAME(TextTransform::name),
-    LOWER_CASE(tt -> tt.name().toLowerCase(Locale.ROOT)),
-    UPPER_CASE(tt -> tt.name().toLowerCase(Locale.ROOT)),
-    CAMEL_CASE(tt -> {
-      Pattern pattern = Pattern.compile("_(.)");
-      Matcher matcher = pattern.matcher(tt.name().toLowerCase(Locale.ROOT));
-      return matcher.replaceAll(m -> m.group(1).toUpperCase(Locale.ROOT));
-    }),
-    KEBAP_CASE(tt -> tt.name().toLowerCase(Locale.ROOT).replace('_', '-')),
-    ;
-
-    @NonNull
-    private final Function<TextTransform, String> toConfigValue;
-
-    TextCaseFixture(@NonNull Function<TextTransform, String> toConfigValue) {
-      this.toConfigValue = toConfigValue;
-    }
-
-    @NonNull
-    public String toConfigValue(@NonNull TextTransform transform) {
-      return toConfigValue.apply(transform);
+    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ExtensionContext context) {
+      return EnumConfigValueFixture.provideArguments(TextTransform.values());
     }
   }
 
