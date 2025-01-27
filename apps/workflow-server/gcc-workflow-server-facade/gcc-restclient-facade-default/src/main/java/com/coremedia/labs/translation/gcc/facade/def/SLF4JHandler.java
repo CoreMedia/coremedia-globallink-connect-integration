@@ -41,17 +41,18 @@ final class SLF4JHandler extends Handler {
     Level level = record.getLevel();
     String message = record.getMessage();
     Throwable thrown = record.getThrown();
-
+    String messageWithLevel = "%s: %s".formatted(level.getName(), message);
     if (level == Level.SEVERE) {
-      slf4jLogger.error(message, thrown);
+      slf4jLogger.error(messageWithLevel, thrown);
     } else if (level == Level.WARNING) {
-      slf4jLogger.warn(message, thrown);
+      slf4jLogger.warn(messageWithLevel, thrown);
     } else if (level == Level.INFO) {
-      slf4jLogger.info(message, thrown);
+      // Lower to `debug` because `info` for GCFacade is too verbose.
+      slf4jLogger.debug(messageWithLevel, thrown);
     } else if (level == Level.CONFIG || level == Level.FINE) {
-      slf4jLogger.debug(message, thrown);
+      slf4jLogger.debug(messageWithLevel, thrown);
     } else {
-      slf4jLogger.trace(message, thrown);
+      slf4jLogger.trace(messageWithLevel, thrown);
     }
   }
 
