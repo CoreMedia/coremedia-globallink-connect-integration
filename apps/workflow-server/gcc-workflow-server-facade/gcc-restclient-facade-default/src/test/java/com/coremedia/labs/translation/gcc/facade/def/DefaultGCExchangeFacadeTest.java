@@ -10,9 +10,11 @@ import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.assertj.core.api.SoftAssertions;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.dto.MessageResponse;
+import org.gs4tr.gcc.restclient.model.Connector;
 import org.gs4tr.gcc.restclient.model.GCSubmission;
 import org.gs4tr.gcc.restclient.model.GCTask;
 import org.gs4tr.gcc.restclient.model.Status;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -44,6 +47,7 @@ import org.springframework.core.io.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -77,23 +81,25 @@ import static org.mockito.Mockito.when;
 @DefaultAnnotation(NonNull.class)
 class DefaultGCExchangeFacadeTest {
   private static final String LOREM_IPSUM = "Lorem Ipsum";
+  private static final String MOCK_GCC_URL = "https://example.com";
+  private static final String MOCK_GCC_API_KEY = "api-key";
+  private static final String MOCK_GCC_CONNECTOR_KEY = "connector-key";
   @Mock
   private GCExchange gcExchange;
+  private Map<String, Object> requiredConfig;
+
+  @BeforeEach
+  void setUp() {
+    requiredConfig = ofEntries(
+      Map.entry(GCConfigProperty.KEY_URL, MOCK_GCC_URL),
+      Map.entry(GCConfigProperty.KEY_API_KEY, MOCK_GCC_API_KEY),
+      Map.entry(GCConfigProperty.KEY_KEY, MOCK_GCC_CONNECTOR_KEY)
+    );
+  }
 
   @Nested
   @DisplayName("DefaultGCExchangeFacade(Map<String, Object>)")
   class ConstructorTests {
-    private Map<String, Object> requiredConfig;
-
-    @BeforeEach
-    void setUp() {
-      requiredConfig = ofEntries(
-        Map.entry(GCConfigProperty.KEY_URL, "https://example.com"),
-        Map.entry(GCConfigProperty.KEY_API_KEY, "api-key"),
-        Map.entry(GCConfigProperty.KEY_KEY, "connector-key")
-      );
-    }
-
     @ParameterizedTest(name = "[{index}] Missing required parameter: ''{0}''")
     @DisplayName("Constructor should signal missing required keys in configuration.")
     @ValueSource(strings = {
@@ -243,6 +249,35 @@ class DefaultGCExchangeFacadeTest {
       assertions.assertThat(request.getSourceLocale()).isEqualTo(sourceLocale.toLanguageTag());
       assertions.assertThat(request.getContentLocales()).hasSize(1);
       assertions.assertAll();
+    }
+
+    @ParameterizedTest
+    @EnumSource(IsSendSubmitterFixture.class)
+    void shouldRespectIsSendSubmitter(@NonNull IsSendSubmitterFixture fixture, @NonNull TestInfo testInfo) {
+      String id = testInfo.getTestMethod().map(Method::getName).orElse("unknown");
+      Map<String, Object> config = new HashMap<>(requiredConfig);
+      fixture.applyConfig(config);
+
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+      String submitter = "Submitter: %s".formatted(id);
+      String fileId = "1234-5678";
+      ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+        null,
+        null,
+        ZonedDateTime.now().plusDays(1L),
+        null,
+        submitter,
+        Locale.US,
+        Map.of(fileId, List.of(Locale.GERMANY))
+      );
+      verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+      SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+      if (fixture.expectedSendSubmitter()) {
+        assertThat(request.getSubmitter()).isEqualTo(submitter);
+      } else {
+        assertThat(request.getSubmitter()).isNull();
+      }
     }
 
     @ParameterizedTest(name = "[{index}] {arguments}")
@@ -655,9 +690,68 @@ class DefaultGCExchangeFacadeTest {
     }
   }
 
+  enum IsSendSubmitterFixture {
+    UNSET("unset", false),
+    NULL(null, false),
+    BOOLEAN_TRUE(true, true),
+    BOOLEAN_FALSE(false, false),
+    STRING_TRUE("true", true),
+    STRING_FALSE("false", false),
+    STRING_ANY("anyString", false),
+    ;
+
+    private final Object sendSubmitterConfig;
+    private final boolean expectedIsSendSubmitter;
+
+    IsSendSubmitterFixture(Object sendSubmitterConfig, boolean expectedIsSendSubmitter) {
+      this.sendSubmitterConfig = sendSubmitterConfig;
+      this.expectedIsSendSubmitter = expectedIsSendSubmitter;
+    }
+
+    public boolean expectedSendSubmitter() {
+      return expectedIsSendSubmitter;
+    }
+
+    public void applyConfig(@NonNull Map<String, Object> config) {
+      if ("unset".equals(sendSubmitterConfig)) {
+        config.remove(GCConfigProperty.KEY_IS_SEND_SUBMITTER);
+      } else {
+        config.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, sendSubmitterConfig);
+      }
+    }
+  }
+
   private static final class MockDefaultGCExchangeFacade extends DefaultGCExchangeFacade {
     MockDefaultGCExchangeFacade(GCExchange delegate) {
       super(delegate, "xliff");
+    }
+
+    MockDefaultGCExchangeFacade(@NonNull Map<String, Object> config, @NonNull GCExchange delegate) {
+      super(config, cfg -> {
+        lenient().when(delegate.getConfig()).thenReturn(cfg);
+        Connector connector = Mockito.mock(Connector.class);
+        lenient().when(delegate.getConnectors()).thenReturn(List.of(connector));
+        lenient().when(connector.getConnectorKey()).thenReturn(MOCK_GCC_CONNECTOR_KEY);
+        return delegate;
+      });
+    }
+
+    public ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
+                                                                       @Nullable String comment,
+                                                                       @NonNull ZonedDateTime dueDate,
+                                                                       @Nullable String workflow,
+                                                                       @Nullable String submitter,
+                                                                       @NonNull Locale sourceLocale,
+                                                                       @NonNull Map<String, List<Locale>> contentMap) {
+      SubmissionSubmit.SubmissionSubmitResponseData response = Mockito.mock(SubmissionSubmit.SubmissionSubmitResponseData.class);
+      long expectedSubmissionId = 42L;
+
+      ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = ArgumentCaptor.forClass(SubmissionSubmitRequest.class);
+      when(getDelegate().submitSubmission(any())).thenReturn(response);
+      when(response.getSubmissionId()).thenReturn(expectedSubmissionId);
+
+      submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, contentMap);
+      return submissionSubmitRequestCaptor;
     }
   }
 }
