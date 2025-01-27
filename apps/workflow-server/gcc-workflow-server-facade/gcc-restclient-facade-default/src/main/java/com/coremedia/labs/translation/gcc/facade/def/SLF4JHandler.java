@@ -11,6 +11,8 @@ import java.util.logging.LogRecord;
 /**
  * Handler for JUL Logger required for
  * {@link org.gs4tr.gcc.restclient.GCConfig#setLogger(java.util.logging.Logger)}.
+ *
+ * @since 2406.1
  */
 final class SLF4JHandler extends Handler {
   @NonNull
