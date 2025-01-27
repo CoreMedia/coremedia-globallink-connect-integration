@@ -5,6 +5,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.CharacterReplacementStrategy;
@@ -802,6 +803,24 @@ class DefaultGCExchangeFacadeTest {
   }
 
   @Nested
+  @DisplayName("Tests for getSubmissionError")
+  class GetSubmissionError {
+    @Test
+    void shouldPropagateSubmissionErrorState() {
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      GCSubmissionModel submissionModel = facade.getErredSubmission();
+      assertThat(submissionModel.isError()).isTrue();
+    }
+
+    @Test
+    void shouldSignalNoErrorForNormalSubmission() {
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      GCSubmissionModel submissionModel = facade.getSuccessfulSubmission();
+      assertThat(submissionModel.isError()).isFalse();
+    }
+  }
+
+  @Nested
   @DisplayName("Tests for getSubmissionState")
   class GetSubmissionState {
     private static final long SUBMISSION_ID = 42L;
@@ -1007,6 +1026,7 @@ class DefaultGCExchangeFacadeTest {
       });
     }
 
+    @NonNull
     public ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
                                                                        @Nullable String comment,
                                                                        @NonNull ZonedDateTime dueDate,
@@ -1023,6 +1043,38 @@ class DefaultGCExchangeFacadeTest {
 
       submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, contentMap);
       return submissionSubmitRequestCaptor;
+    }
+
+    @NonNull
+    private GCSubmission prepareGetSubmissionMock(@NonNull SubmissionStatus status) {
+      GCSubmission submission = Mockito.mock(GCSubmission.class);
+      Status submissionStatus = Mockito.mock(Status.class);
+      lenient().when(submission.getStatus()).thenReturn(submissionStatus);
+      lenient().when(submissionStatus.getStatusName()).thenReturn(status.text());
+      lenient().when(submission.getPdSubmissionIds()).thenReturn(Map.of());
+      lenient().when(submission.getSubmissionName()).thenReturn("Mocked Submission");
+      lenient().when(submission.getSubmitter()).thenReturn("Mocked Submitter");
+
+      Submissions.SubmissionsResponseData response = Mockito.mock(Submissions.SubmissionsResponseData.class);
+
+      when(getDelegate().getSubmissionsList(any())).thenReturn(response);
+      when(response.getSubmissions()).thenReturn(List.of(submission));
+      when(submission.getStatus()).thenReturn(submissionStatus);
+      return submission;
+    }
+
+    @NonNull
+    public GCSubmissionModel getSuccessfulSubmission() {
+      GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.Completed);
+      when(submission.getIsError()).thenReturn(Boolean.FALSE);
+      return getSubmission(42L);
+    }
+
+    @NonNull
+    public GCSubmissionModel getErredSubmission() {
+      GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.PreProcess);
+      when(submission.getIsError()).thenReturn(Boolean.TRUE);
+      return getSubmission(42L);
     }
   }
 }
