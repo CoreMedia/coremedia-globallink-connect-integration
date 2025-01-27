@@ -16,6 +16,7 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
@@ -59,6 +60,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.lang.invoke.MethodHandles.lookup;
@@ -103,7 +105,13 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @throws GCFacadeConfigException        if configuration is incomplete
    * @throws GCFacadeCommunicationException if connection to GCC failed.
    */
-  DefaultGCExchangeFacade(Map<String, Object> config) {
+  DefaultGCExchangeFacade(@NonNull Map<String, Object> config) {
+    this(config, GCExchange::new);
+  }
+
+  @VisibleForTesting
+  DefaultGCExchangeFacade(@NonNull Map<String, Object> config,
+                          @NonNull Function<GCConfig, GCExchange> exchangeFactory) {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
@@ -119,7 +127,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       gcConfig.setLogger(SLF4JHandler.getLogger(GCExchange.class));
       gcConfig.getLogger().finest("JUL Logging redirection to SLF4J: OK");
       LOG.trace("JUL Logging redirected to SLF4J.");
-      delegate = new GCExchange(gcConfig);
+      delegate = exchangeFactory.apply(gcConfig);
       validateConnectorKey(delegate);
     } catch (GCFacadeException e) {
       throw e;

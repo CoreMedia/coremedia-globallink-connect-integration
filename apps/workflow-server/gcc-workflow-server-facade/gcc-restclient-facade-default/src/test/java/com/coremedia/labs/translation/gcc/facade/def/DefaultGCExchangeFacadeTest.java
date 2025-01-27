@@ -49,7 +49,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +59,7 @@ import java.util.function.BiPredicate;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static java.util.Map.ofEntries;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,6 +83,17 @@ class DefaultGCExchangeFacadeTest {
   @Nested
   @DisplayName("DefaultGCExchangeFacade(Map<String, Object>)")
   class ConstructorTests {
+    private Map<String, Object> requiredConfig;
+
+    @BeforeEach
+    void setUp() {
+      requiredConfig = ofEntries(
+        Map.entry(GCConfigProperty.KEY_URL, "https://example.com"),
+        Map.entry(GCConfigProperty.KEY_API_KEY, "api-key"),
+        Map.entry(GCConfigProperty.KEY_KEY, "connector-key")
+      );
+    }
+
     @ParameterizedTest(name = "[{index}] Missing required parameter: ''{0}''")
     @DisplayName("Constructor should signal missing required keys in configuration.")
     @ValueSource(strings = {
@@ -91,18 +102,24 @@ class DefaultGCExchangeFacadeTest {
       GCConfigProperty.KEY_KEY
     })
     void failOnMissingRequiredConfiguration(String excludedKey) {
-      Map<String, Object> config = new HashMap<>();
-      List<String> requiredKeys = new ArrayList<>(List.of(
-        GCConfigProperty.KEY_URL,
-        GCConfigProperty.KEY_API_KEY,
-        GCConfigProperty.KEY_KEY
-      ));
-      requiredKeys.remove(excludedKey);
-
-      for (String requiredKey : requiredKeys) {
-        config.put(requiredKey, "non-null");
-      }
+      Map<String, Object> config = new HashMap<>(requiredConfig);
+      config.remove(excludedKey);
       assertThatCode(() -> new DefaultGCExchangeFacade(config)).hasMessageContaining(excludedKey);
+    }
+
+    /**
+     * A missing connector key should be prevented, as answers from the
+     * GCC backend may be surprising (like: no submissions found instead of
+     * reporting a missing connector key).
+     */
+    @Test
+    void shouldFailOnUnavailableConnectorKey() {
+      Map<String, Object> config = new HashMap<>(requiredConfig);
+      when(gcExchange.getConnectors()).thenReturn(List.of());
+      assertThatCode(() -> new DefaultGCExchangeFacade(config, cfg -> {
+        lenient().when(gcExchange.getConfig()).thenReturn(cfg);
+        return gcExchange;
+      })).hasMessageContaining(GCConfigProperty.KEY_KEY);
     }
   }
 
@@ -147,10 +164,10 @@ class DefaultGCExchangeFacadeTest {
 
     GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
     assertThatThrownBy(() -> facade.uploadContent(someFilename, resource, null))
-            .isInstanceOf(GCFacadeIOException.class)
-            .hasCauseInstanceOf(IOException.class)
-            .hasMessageContaining(someResourceFilename)
-            .hasMessageContaining(someFilename);
+      .isInstanceOf(GCFacadeIOException.class)
+      .hasCauseInstanceOf(IOException.class)
+      .hasMessageContaining(someResourceFilename)
+      .hasMessageContaining(someFilename);
   }
 
   @Test
@@ -160,9 +177,9 @@ class DefaultGCExchangeFacadeTest {
 
     GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
     assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{(byte) 42}), null))
-            .isInstanceOf(GCFacadeCommunicationException.class)
-            .hasCauseInstanceOf(RuntimeException.class)
-            .hasMessageContaining(expectedFileName);
+      .isInstanceOf(GCFacadeCommunicationException.class)
+      .hasCauseInstanceOf(RuntimeException.class)
+      .hasMessageContaining(expectedFileName);
   }
 
   @Nested
@@ -174,18 +191,18 @@ class DefaultGCExchangeFacadeTest {
     @SuppressWarnings("UseOfObsoleteDateTimeApi")
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
-            zoneId
-            America/Chicago
-            CET
-            EET
-            Europe/Berlin
-            Europe/London
-            GMT
-            MET
-            Portugal
-            Universal
-            UTC
-            """)
+      zoneId
+      America/Chicago
+      CET
+      EET
+      Europe/Berlin
+      Europe/London
+      GMT
+      MET
+      Portugal
+      Universal
+      UTC
+      """)
     @DisplayName("Test for successful submission.")
     void happyPath(ZoneId zoneId, TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
@@ -230,18 +247,18 @@ class DefaultGCExchangeFacadeTest {
 
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
-            zoneId
-            America/Chicago
-            CET
-            EET
-            Europe/Berlin
-            Europe/London
-            GMT
-            MET
-            Portugal
-            Universal
-            UTC
-            """)
+      zoneId
+      America/Chicago
+      CET
+      EET
+      Europe/Berlin
+      Europe/London
+      GMT
+      MET
+      Portugal
+      Universal
+      UTC
+      """)
     @DisplayName("Correctly deal with communication errors.")
     void dealWithCommunicationExceptions(ZoneId zoneId, TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
@@ -263,10 +280,10 @@ class DefaultGCExchangeFacadeTest {
 
       GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
       assertThatThrownBy(() -> facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale))))
-              .isInstanceOf(GCFacadeCommunicationException.class)
-              .hasCauseInstanceOf(RuntimeException.class)
-              .hasMessageContaining(subject)
-              .hasMessageContaining(sourceLocale.toLanguageTag())
+        .isInstanceOf(GCFacadeCommunicationException.class)
+        .hasCauseInstanceOf(RuntimeException.class)
+        .hasMessageContaining(subject)
+        .hasMessageContaining(sourceLocale.toLanguageTag())
       ;
     }
   }
@@ -338,9 +355,9 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new ExceptionTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(String.valueOf(expectedTaskId));
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class)
+          .hasMessageContaining(String.valueOf(expectedTaskId));
 
         verify(gcExchange, never()).confirmTask(any());
       }
@@ -360,8 +377,8 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class);
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class);
 
         verify(gcExchange, never()).downloadTask(any());
         verify(gcExchange, never()).confirmTask(any());
@@ -387,9 +404,9 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(String.valueOf(expectedTaskId));
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class)
+          .hasMessageContaining(String.valueOf(expectedTaskId));
 
         verify(gcExchange, never()).confirmTask(any());
 
@@ -409,9 +426,9 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(String.valueOf(expectedTaskId));
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class)
+          .hasMessageContaining(String.valueOf(expectedTaskId));
       }
     }
   }
