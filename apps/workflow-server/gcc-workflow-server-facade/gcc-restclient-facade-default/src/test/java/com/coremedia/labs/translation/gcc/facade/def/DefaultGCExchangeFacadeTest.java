@@ -9,7 +9,9 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.CharacterReplacementStrategy;
 import com.coremedia.labs.translation.gcc.facade.config.CharacterType;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
+import com.coremedia.labs.translation.gcc.facade.config.TextTransform;
 import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -443,6 +445,151 @@ class DefaultGCExchangeFacadeTest {
         SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
 
         assertThat(request.getSubmissionName()).startsWith(subjectChallenge);
+      }
+    }
+
+    @Nested
+    class SubmissionInstructionUseCases {
+      @Test
+      void shouldNotSendInstructionsIfUnset() {
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isNull();
+      }
+
+      @Test
+      void shouldApplyDefaultSubmissionInstructionsUnicodeCharacterSanitizing() {
+        String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedInstructions = "SMP-Dove: U+1F425";
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(expectedSanitizedInstructions);
+      }
+
+      @Test
+      void shouldRespectAlternativeUnicodeCharacterReplacementConfiguration() {
+        String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedInstructions = "SMP-Dove: ?";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
+          GCSubmissionInstruction.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(expectedSanitizedInstructions);
+      }
+
+      @Test
+      void shouldRespectAlternativeUnicodeCharacterTypeConfiguration() {
+        String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
+          GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(instructionsChallenge);
+      }
+
+      @Test
+      void shouldDefaultToTransformPlainTextToHtml() {
+        String instructionsChallenge = "Hello <World>!\nThis is a test.";
+        String expectedHtml = "Hello &lt;World&gt;!<br>This is a test.";
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(expectedHtml);
+      }
+
+      @Test
+      void shouldRespectDisabledTextTypeTransformation() {
+        String instructionsChallenge = "Hello <World>!\nThis is a test.";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
+          GCSubmissionInstruction.TEXT_TRANSFORM_KEY, TextTransform.NONE
+        ));
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(instructionsChallenge);
       }
     }
   }
