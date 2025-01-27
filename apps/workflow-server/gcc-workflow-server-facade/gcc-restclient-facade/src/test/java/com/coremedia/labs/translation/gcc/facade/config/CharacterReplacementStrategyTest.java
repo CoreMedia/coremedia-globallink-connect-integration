@@ -1,79 +1,26 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CharacterReplacementStrategyTest {
-  @Nested
-  @DisplayName("fromString(String):Optional<CharacterReplacementStrategy>")
-  class MethodFromString {
-    @ParameterizedTest(name = "[{index}] {arguments}")
-    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', nullValues = "null", textBlock = """
-      input              | expected
-      none               | NONE
-      NoNe               | NONE
-      EMPTY              | EMPTY
-      underscore         | UNDERSCORE
-      QUESTION_MARK      | QUESTION_MARK
-      question-mark      | QUESTION_MARK
-      questionmark       | QUESTION_MARK
-      unicode-code-point | UNICODE_CODE_POINT
-      unknown            | null
-      """)
-    void shouldParseStrategiesFormatTolerant(@NonNull String input, @Nullable CharacterReplacementStrategy expected) {
-      Optional<CharacterReplacementStrategy> actual = CharacterReplacementStrategy.fromString(input);
-      if (expected != null) {
-        assertThat(actual).hasValue(expected);
-      } else {
-        assertThat(actual).isEmpty();
-      }
-    }
-  }
-
-  @Nested
-  @DisplayName("fromConfig(Object):Optional<CharacterReplacementStrategy>")
-  class MethodFromConfig {
-    @ParameterizedTest(name = "[{index}] {arguments}")
-    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', nullValues = "null", textBlock = """
-      input      | expected
-      none       | NONE
-      NoNe       | NONE
-      EMPTY      | EMPTY
-      underscore | UNDERSCORE
-      unknown    | null
-      null       | null
-      """)
-    void shouldAcceptConfigStringValues(@Nullable String input, @Nullable CharacterReplacementStrategy expected) {
-      Optional<CharacterReplacementStrategy> actual = CharacterReplacementStrategy.fromConfig(input);
-      if (expected != null) {
-        assertThat(actual).hasValue(expected);
-      } else {
-        assertThat(actual).isEmpty();
-      }
-    }
-
-    @ParameterizedTest
-    @EnumSource(CharacterReplacementStrategy.class)
-    void shouldAcceptConfigEnumValues(@NonNull CharacterReplacementStrategy input) {
-      Optional<CharacterReplacementStrategy> actual = CharacterReplacementStrategy.fromConfig(input);
-      assertThat(actual).hasValue(input);
-    }
-  }
-
   @Nested
   @DisplayName("replacer():Function<MatchResult,String>")
   class MethodReplacer {
@@ -155,6 +102,55 @@ class CharacterReplacementStrategyTest {
     }
   }
 
+  @Nested
+  class FactoryMethods {
+    @Nested
+    @DisplayName("fromString(String):Optional<CharacterReplacementStrategy>")
+    class FromString {
+      @ParameterizedTest
+      @ArgumentsSource(ConfigTestCaseFixtureProvider.class)
+      void shouldParseValues(@NonNull CharacterReplacementStrategy expected, @NonNull String configValue) {
+        assertThat(CharacterReplacementStrategy.fromString(configValue)).hasValue(expected);
+      }
+
+      @Test
+      void shouldReturnEmptyOnNull() {
+        assertThat(CharacterReplacementStrategy.fromString(null)).isEmpty();
+      }
+
+      @Test
+      void shouldReturnEmptyOnUnknownType() {
+        assertThat(CharacterReplacementStrategy.fromConfig("unknown")).isEmpty();
+      }
+    }
+
+    @Nested
+    class FromConfig {
+      @ParameterizedTest
+      @ArgumentsSource(ConfigTestCaseFixtureProvider.class)
+      void shouldParseValues(@NonNull CharacterReplacementStrategy expected, @NonNull String configValue) {
+        assertThat(CharacterReplacementStrategy.fromConfig(configValue)).hasValue(expected);
+      }
+
+      @Test
+      void shouldReturnEmptyOnNull() {
+        assertThat(CharacterReplacementStrategy.fromConfig(null)).isEmpty();
+      }
+
+      @Test
+      void shouldReturnEmptyOnUnknownType() {
+        assertThat(CharacterReplacementStrategy.fromConfig(42)).isEmpty();
+      }
+
+      @ParameterizedTest
+      @EnumSource(CharacterReplacementStrategy.class)
+      void shouldReturnEnumAsIs(@NonNull CharacterReplacementStrategy input) {
+        CharacterReplacementStrategy actual = CharacterReplacementStrategy.fromConfig(input).orElse(null);
+        assertThat(actual).isEqualTo(input);
+      }
+    }
+  }
+
   enum PatternFixture {
     ANY(Pattern.compile(".*")),
     ANY_CHAR(Pattern.compile(".")),
@@ -175,6 +171,13 @@ class CharacterReplacementStrategyTest {
     @NonNull
     public Matcher matcher(@NonNull CharSequence input) {
       return pattern.matcher(input);
+    }
+  }
+
+  static class ConfigTestCaseFixtureProvider implements ArgumentsProvider {
+    @Override
+    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ExtensionContext context) {
+      return EnumConfigValueFixture.provideArguments(CharacterReplacementStrategy.values());
     }
   }
 }
