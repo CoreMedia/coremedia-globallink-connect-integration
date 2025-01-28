@@ -31,7 +31,7 @@ public class GCCDateLiesInFutureValidator extends DateLiesInFutureValidator {
   }
 
   private static class LocalizationIssues extends IssuesImpl<Object> {
-    Issues delegate;
+     final Issues delegate;
 
     public LocalizationIssues(Issues delegate) {
       super(null, Collections.emptyList());
@@ -40,7 +40,7 @@ public class GCCDateLiesInFutureValidator extends DateLiesInFutureValidator {
 
     @Override
     public void addIssue(Severity severity, @Nullable String property, String code, Object... arguments) {
-      delegate.addIssue(Issues.LOCALIZATION_ISSUE_CATEGORY, severity, property, code, arguments);
+      delegate.addIssue(LOCALIZATION_ISSUE_CATEGORY, severity, property, code, arguments);
     }
   }
 }

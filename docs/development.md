@@ -36,48 +36,54 @@ To summarize the steps below, everything you need to do:
 
 ### Branches
 
-![Branch Model](img/branch-model.png)
+```mermaid
+---
+title: Branch Model
+---
+gitGraph:
+  commit tag: "v1.0-1"
+  branch develop
+  checkout develop
+  commit
+  branch approval-2406.1
+  checkout approval-2406.1
+  commit
+  commit
+  checkout develop
+  merge approval-2406.1
+  checkout main
+  merge develop tag: "v2406.1.0-1"
+  checkout develop
+  commit id: "fix 2406.1.0-1"
+  checkout main
+  merge develop tag: "v2406.1.0-2"
+  checkout develop
+  commit id: "merge approval 2412.0"
+  checkout main
+  merge develop tag: "v2412.0.0-1"
+```
 
-* **main:** Will be initially used to create `develop` branch. Afterwards,
+* **main:** Will be initially used to create `develop` branch. Afterward,
   it will just be used to merge changes from `develop` branch to `main`,
-  i.e., it will just be recipient afterwards. On _release_ the main merge
+  i.e., it will just be recipient afterward. On _release_ the main merge
   commit will be tagged. See below for details on tagging.
 
 * **develop:** After initial creation, all development by CoreMedia and
-  merging pull request will happen here.
-
-* **ci/develop:** An artificial branch required for CoreMedia CI systems. It
-  is meant to be one commit ahead of `develop` and will contain adaptations
-  to enable running CI pipelines based on that branch.
-
-  To update, you may proceed as follows:
-
-  ```bash
-  $ git checkout "ci/develop"
-  $ git rebase "origin/develop"
-  $ git push --force-with-lease
-  ```
-  
-  There is also a script available in the repository to do this for you:
-
-  ```bash
-  $ ./sh/update-ci-develop.sh
-  ```
-
-  Also, a GitHub Action is available to keep the `ci/develop` branch up-to-date.
+  merging pull request will happen here. Also, any pull requests for adjustments
+  should have set this as the base branch.
 
 ### Tags
 
 The structure of tags is as follows:
 
 ```text
-<CMCC Version>-<GlobalLink Workspace Version>
+v<CMCC Version>-<GlobalLink Workspace Version>
 ```
 
-Thus, `1907.1-1` signals compatibility with CMCC 1907.1 and is the first
-version of this GlobalLink workspace. `1907.1-2` is a patch version for
-version `1907.1-1`, which is based on the same CMCC version, but for example
-contains bug fixes.
+Thus, `v2406.1.0-1` signals compatibility with CMCC v12.2406.1.0 and is the
+first approved version for usage with GlobalLink workspace.
+`v2406.1.0-1` is a patch version for version `v2406.1.0-1`, which is based on
+the same CMCC version, but for example contains bug fixes.
 
 ## Adding GCC Adapter to the Blueprint
 
@@ -120,7 +126,7 @@ Feel free to choose the strategy that fits your needs best. For example:
     $ git commit -m "Initial integration of submodule based on <release-tag>"
     ```
   
-If you want to contribute to this project - which we hope for - you 
+If you want to contribute to this project — which we hope for — you 
 need to fork the project. For example, with the `git subtree` approach, pushing 
 to your fork could look as follows:
 
@@ -243,7 +249,7 @@ processing):
 
 ### Cancellation
 
-GCC offers cancellation at task and submission level. Note, that the
+GCC offers cancellation at the task and the submission level. Note, that the
 CoreMedia CMS translation workflow does not support cancellation at task
 level.
 
@@ -278,16 +284,17 @@ per locale. This means that one submission, holding only one job is created per 
 
 This can be achieved by setting the value _createWorkflowPerTargetSite_ in the GccStudioPlugin
 to _true_ (this is actually the default, therefore you can also completely remove this configuration).
-Furthermore you need to change the type of the workflow variable _targetSiteId_ in the workflow definition _translation-global-link.xml_
+Furthermore, you need to change the type of the workflow variable _targetSiteId_ in the workflow definition _translation-global-link.xml_
 to _String_.
 
 ### Not supported: Reopening
 
-Reopening submissions is not supported by this implementation. Instead, please
-start a new translation workflow for contents where you want to get the translation
-result adjusted.
+Reopening already delivered submissions is not supported by this implementation.
+Instead, please start a new translation workflow for contents where you want to
+get the translation result adjusted.
 
-Implementing reopening would require to cope with challenges like the following:
+Implementing reopening from already delivered submissions would require to cope
+with challenges like the following:
 
 * **Polling:** The implementation uses polling the translation state, while a
     CoreMedia workflow is active. Polling ends as soon as the CoreMedia workflow
@@ -296,11 +303,20 @@ Implementing reopening would require to cope with challenges like the following:
     implementation to use push notifications from GCC backend instead. Push
     notifications is not part of this implementation as it would require to
     expose an additional service of the CoreMedia CMS backend.
+
 * **Updated Contents/Resolving Conflicts:** As reopening may occur after several
     days or even months, it is most likely that your target contents got updated
     meanwhile. Trying to re-import new translation results may cause hard to
     resolve conflicts, because of for example missing linked documents in
     CoreMedia RichText.
+
+**Redelivered Submissions:** Slightly different to that, so-called redelivered
+submissions are supported. Redelivered submissions are submissions that were
+completed already, but have not been marked as delivered (thus, successful
+download and import signalled by this API), for example, because the resulting
+XLIFF is invalid. In these cases an extra twist is supported, where the
+translators instead mark the submission as "Redelivered" and subsequently send
+the XLIFF by different means (like email).
 
 ## Workspace Structure
 
@@ -309,7 +325,7 @@ Manages the workflow-server extension and the gcc-restclient-facade
 
 #### gcc-restclient-facade*
 
-Facades to GCC Java REST Client API. Please see corresponding
+Facades to GCC Java REST Client API. Please, see the corresponding
 _Facade Documentation_ in the workspace for details.
 
 #### gcc-workflow-server
@@ -345,7 +361,7 @@ be linked to your site root documents (also known as Homepages).
 
 <!-- Links, keep at bottom -->
 
-[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.0/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
-[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.0/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
-[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.0/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
-[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.0/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
+[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
+[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
+[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
+[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"

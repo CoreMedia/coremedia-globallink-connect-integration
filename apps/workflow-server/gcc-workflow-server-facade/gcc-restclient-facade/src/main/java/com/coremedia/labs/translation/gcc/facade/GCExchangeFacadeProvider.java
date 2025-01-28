@@ -22,7 +22,7 @@ public interface GCExchangeFacadeProvider {
    *
    * @param typeToken type token from settings
    * @return {@code true}, if {@link #getFacade(Map)} shall be called; {@code false} otherwise
-   * @implNote By default compares to {@link #getTypeToken()} ignoring case.
+   * @implNote By default, compares to {@link #getTypeToken()} ignoring case.
    */
   default boolean isApplicable(String typeToken) {
     return getTypeToken().equalsIgnoreCase(typeToken);

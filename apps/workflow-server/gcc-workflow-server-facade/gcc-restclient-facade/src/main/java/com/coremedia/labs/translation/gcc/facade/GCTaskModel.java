@@ -6,6 +6,7 @@ import java.util.Objects;
 /**
  * Model to store the data of a Task, returned by the GCC-Client.
  */
+@SuppressWarnings("ClassCanBeRecord")
 public class GCTaskModel {
   private final long taskId;
   private final Locale taskLocale;

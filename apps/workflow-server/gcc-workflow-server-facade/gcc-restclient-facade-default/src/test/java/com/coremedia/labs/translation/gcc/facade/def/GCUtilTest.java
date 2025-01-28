@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import org.assertj.core.api.Assertions;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -32,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Tests {@link GCUtil}.
  */
 class GCUtilTest {
+  @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @ParameterizedTest
   @DisplayName("toUnixDateUtc: Dates should be represented as UTC")
   @ArgumentsSource(InstantArgumentsProvider.class)
@@ -39,7 +42,7 @@ class GCUtilTest {
     Date actualDate = GCUtil.toUnixDateUtc(probe);
     ZonedDateTime expectedDateTime = probe.withZoneSameInstant(ZoneOffset.UTC);
     ZonedDateTime actualDateTime = ZonedDateTime.ofInstant(actualDate.toInstant(), ZoneOffset.UTC);
-    assertThat(actualDateTime).isEqualToIgnoringNanos(expectedDateTime);
+    assertThat(actualDateTime).isCloseTo(expectedDateTime, Assertions.within(1L, MILLIS));
   }
 
   @Nested
@@ -74,17 +77,17 @@ class GCUtilTest {
       long numTotalPages = 2L;
       Mockito.when(responseData.getTotalResultPagesCount()).thenReturn(numTotalPages);
       assertThatThrownBy(() -> GCUtil.processAllPages(
-              () -> request,
-              r -> {
-                if (invocations.get() < 1) {
-                  invocations.incrementAndGet();
-                  return responseData;
-                } else {
-                  throw new RuntimeException("Provoked exception.");
-                }
-              })
+        () -> request,
+        r -> {
+          if (invocations.get() < 1) {
+            invocations.incrementAndGet();
+            return responseData;
+          } else {
+            throw new RuntimeException("Provoked exception.");
+          }
+        })
       )
-              .isInstanceOf(GCFacadeCommunicationException.class);
+        .isInstanceOf(GCFacadeCommunicationException.class);
       ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
       Mockito.verify(request, Mockito.atLeastOnce()).setPageNumber(captor.capture());
       assertThat(captor.getAllValues()).containsExactly(1L, 2L);
@@ -112,17 +115,17 @@ class GCUtilTest {
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
       LocalDateTime someTime = LocalDateTime.of(2018, 7, 15, 13, 11, 30, 0);
       return Stream.concat(
-              Stream.of(
-                      ZonedDateTime.of(LocalDateTime.ofEpochSecond(0L, 0, ZoneOffset.UTC), ZoneOffset.UTC),
-                      ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 2, 0, 0), ZoneId.of("Europe/Berlin")),
-                      ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 3, 0, 0), ZoneId.of("Europe/Berlin")),
-                      ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault())
-              ),
-              ZoneId.getAvailableZoneIds().stream()
-                      .map(ZoneId::of)
-                      .map(z -> ZonedDateTime.of(someTime, z))
-      )
-              .map(Arguments::of);
+          Stream.of(
+            ZonedDateTime.of(LocalDateTime.ofEpochSecond(0L, 0, ZoneOffset.UTC), ZoneOffset.UTC),
+            ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 2, 0, 0), ZoneId.of("Europe/Berlin")),
+            ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 3, 0, 0), ZoneId.of("Europe/Berlin")),
+            ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault())
+          ),
+          ZoneId.getAvailableZoneIds().stream()
+            .map(ZoneId::of)
+            .map(z -> ZonedDateTime.of(someTime, z))
+        )
+        .map(Arguments::of);
     }
   }
 }

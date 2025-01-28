@@ -19,7 +19,7 @@ export class TranslationServicesSettings {
   static readonly MAIN_SETTINGS_PATH = "/Settings/Options/Settings";
 
   /**
-   * The name of the settings. It either denotes the name of a settings document
+   * The name of the settings. It either denotes the name of a settings-document,
    * or a path in which to search for settings documents.
    */
   static readonly SETTINGS_NAME = "Translation Services";
@@ -52,7 +52,7 @@ export class TranslationServicesSettings {
   static readonly DEFAULT_DAY_OFFSET_FOR_DUE_DATE = 30;
 
   /**
-   * Get content repository from session.
+   * Get content repository from the session.
    */
   static #getRepository(): ContentRepository {
     return session._.getConnection().getContentRepository();

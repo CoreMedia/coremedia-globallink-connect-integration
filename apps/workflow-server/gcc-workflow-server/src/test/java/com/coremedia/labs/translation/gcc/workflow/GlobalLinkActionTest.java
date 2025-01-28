@@ -16,6 +16,7 @@ import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +86,7 @@ class GlobalLinkActionTest {
   @Configuration
   @Import(XmlRepoConfiguration.class)
   @ImportResource(reader = ResourceAwareXmlBeanDefinitionReader.class)
-  @PropertySource(value = "classpath:META-INF/coremedia/gcc-workflow.properties")
+  @PropertySource("classpath:META-INF/coremedia/gcc-workflow.properties")
   static class LocalConfig {
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     @Bean
@@ -182,7 +184,8 @@ class GlobalLinkActionTest {
     assertFalse(GlobalLinkAction.isRepositoryUnavailableException(new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null)));
   }
 
-  private static class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
+  private static final class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
+    @Serial
     private static final long serialVersionUID = -288745610618179168L;
     private final ApplicationContext applicationContext;
 
@@ -202,10 +205,12 @@ class GlobalLinkActionTest {
     }
 
     @Override
+    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }
 
+    @SuppressWarnings("HttpUrlsUsage")
     @Override
     protected Map<String, Object> getGccSettings(Site site) {
       return ImmutableMap.of(

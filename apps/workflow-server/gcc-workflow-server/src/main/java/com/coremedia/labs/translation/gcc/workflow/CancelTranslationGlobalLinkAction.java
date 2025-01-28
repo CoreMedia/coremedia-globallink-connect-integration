@@ -11,6 +11,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serial;
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCEL
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.COMPLETED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
+import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.REDELIVERED;
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.SUBMISSION_CANCEL_FAILURE;
 import static java.util.Objects.requireNonNull;
 
@@ -33,6 +35,7 @@ import static java.util.Objects.requireNonNull;
  */
 public class CancelTranslationGlobalLinkAction extends
         GlobalLinkAction<CancelTranslationGlobalLinkAction.Parameters, CancelTranslationGlobalLinkAction.Result> {
+  @Serial
   private static final long serialVersionUID = -4912724475227423848L;
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -133,16 +136,21 @@ public class CancelTranslationGlobalLinkAction extends
   void doExecuteGlobalLinkAction(Parameters params, Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
     long submissionId = params.submissionId;
+    // Ignore Submission Error State: As we are trying to cancel the submission,
+    // we don't care about the error state. At least for observed scenarios,
+    // canceling an errored submission is the only way to get out of the error state.
     GCSubmissionModel submission = facade.getSubmission(submissionId);
     GCSubmissionState submissionState = submission.getState();
     boolean cancelled = params.cancelled;
 
-    // Also store the PD submission ids - potentially they were not available before
+    // Also store the PD submission ids — potentially they were not available before
     Result result = new Result(submissionState, cancelled, params.completedLocales, submission.getPdSubmissionIds());
     resultConsumer.accept(result);
 
     // nothing to do, if submission is already cancelled and confirmed or delivered
-    if (submissionState == CANCELLATION_CONFIRMED || submissionState == DELIVERED) {
+    if (submissionState == CANCELLATION_CONFIRMED
+      || submissionState == DELIVERED
+      || submissionState == REDELIVERED) {
       return;
     }
 
@@ -197,6 +205,16 @@ public class CancelTranslationGlobalLinkAction extends
 
   // --- Internal ----------------------------------------------------------------------
 
+  /**
+   * Sends a cancel request to the GlobalLink service.
+   *
+   * @param facade       facade to use for communication
+   * @param submissionId submission to cancel
+   * @param issues       map to store issues during the cancel operation
+   *                     (write-only)
+   * @return {@code true} if the submission was successfully cancelled,
+   * {@code false} otherwise
+   */
   private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<Content>> issues) {
     int httpStatus = facade.cancelSubmission(submissionId);
     if (httpStatus == HTTP_OK) {
@@ -209,16 +227,7 @@ public class CancelTranslationGlobalLinkAction extends
     return false;
   }
 
-  static class Parameters {
-    final long submissionId;
-    final boolean cancelled;
-    final Set<Locale> completedLocales;
-
-    Parameters(long submissionId, boolean cancelled, Set<Locale> completedLocales) {
-      this.submissionId = submissionId;
-      this.cancelled = cancelled;
-      this.completedLocales = completedLocales;
-    }
+  record Parameters(long submissionId, boolean cancelled, Set<Locale> completedLocales) {
   }
 
   static class Result {

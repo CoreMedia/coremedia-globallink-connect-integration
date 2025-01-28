@@ -22,7 +22,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * One-call zip and unzip convenience
  */
-public class Zipper {
+public final class Zipper {
   private static final Logger LOG = LoggerFactory.getLogger(Zipper.class);
   private static final String TMPFILE_PREFIX = "gcczipper";
 
@@ -180,7 +180,7 @@ public class Zipper {
     try {
       FileUtils.forceDelete(file);
     } catch (IOException e) {
-      LOG.warn("Cannot delete " + file.getAbsolutePath() + ", please cleanup manually.", e);
+      LOG.warn("Cannot delete {}, please clean up manually.", file.getAbsolutePath(), e);
     }
   }
 }

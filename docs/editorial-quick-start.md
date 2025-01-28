@@ -35,7 +35,7 @@ The notes are sent as instructions for the translators.
 ![GCC Select](img/gcc-select-type.png)
 
 After having started the workflow, it is shown in the pending workflow section. 
-Double click the workflow to open it in the detail view in the Workflow app.
+Double-click the workflow to open it in the detail view in the Workflow app.
 Here you will see the submission state, the id and other information once
 available.
 
@@ -43,6 +43,10 @@ available.
 
 In case an error occurs, the workflow re-appears in your inbox, and you can 
 select to cancel the workflow, or you can try to fix the problem and retry.
+
+If there was an issue with the XLIFF retrieved from the GCC backend (such as
+being corrupted or invalid), you will have the option to download the XLIFF
+as well as details about the issues (in a ZIP file).
 
 ![GCC Error Handling](img/gcc-connect-error.png)
 
@@ -54,9 +58,25 @@ the content app and finish it.
 
 Well done.
 
+### Further Scenarios
+
+#### Manual XLIFF Override &amp; Redelivered Submission State
+
+Translators at GlobalLink may decide to mark a submission as redelivered. It is
+expected, that in these cases, the XLIFF is sent via different means to the
+editorial team, like, for example, email. The editorial team can then manually
+upload the XLIFF to the submission in the Workflow app.
+
+This redelivered state is represented as an extra task "Review Translation
+(redelivered)" (with status: "Redelivered"). If, as expected, the original
+XLIFF provided by the GCC backend had issues, you can download the (corrupted)
+XLIFF along with its issue details just as for the error handling.
+
+![GCC Redelivered](img/gcc-redelivered.png)
+
 ### Pitfalls
 
-**Publishing content of active submissions** - Once a language is completely 
+**Publishing content of active submissions**: Once a language is completely 
 translated at GlobalLink, it is downloaded and applied to the content for 
 editorial review in the Studio. While it is fine to review this content and even 
 publish it, especially publishing content can cause issues later on. When 
@@ -66,7 +86,7 @@ triggered with "Abort and rollback changes". So, you should make sure that
 a submission does not have to be aborted when publishing content of an active
 workflow.
 
-**Canceling submissions** - Additionally to _Abort and destroy workflows_ the 
+**Canceling submissions**: Additionally to _Abort and destroy workflows_ the 
 workflows of type _Translation with GlobalLink_ can be canceled so that also
 GlobalLink gets notified about the cancelation. In rare cases, when for example
 the submission was at the same time completed in GlobalLink, then you will see 

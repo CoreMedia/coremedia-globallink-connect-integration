@@ -6,12 +6,17 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider
 import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
@@ -24,6 +29,7 @@ import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.dto.GCResponse;
 import org.gs4tr.gcc.restclient.dto.MessageResponse;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
+import org.gs4tr.gcc.restclient.model.Connector;
 import org.gs4tr.gcc.restclient.model.ContentLocales;
 import org.gs4tr.gcc.restclient.model.GCSubmission;
 import org.gs4tr.gcc.restclient.model.GCTask;
@@ -54,6 +60,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.lang.invoke.MethodHandles.lookup;
@@ -77,11 +84,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 @DefaultAnnotation(NonNull.class)
 public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
-  /**
-   * Maximum length of submission name. May require adjustment on
-   * GCC update.
-   */
-  private static final int SUBMISSION_NAME_MAX_LENGTH = 150;
   private static final Integer HTTP_OK = 200;
   /**
    * Some string, so GCC can identify the source of requests.
@@ -91,6 +93,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private final Boolean isSendSubmitter;
   private final GCExchange delegate;
   private final Supplier<String> fileTypeSupplier;
+  @NonNull
+  private final GCSubmissionName submissionName;
+  @NonNull
+  private final GCSubmissionInstruction submissionInstruction;
 
   /**
    * Constructor.
@@ -99,39 +105,74 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @throws GCFacadeConfigException        if configuration is incomplete
    * @throws GCFacadeCommunicationException if connection to GCC failed.
    */
-  DefaultGCExchangeFacade(Map<String, Object> config) {
+  DefaultGCExchangeFacade(@NonNull Map<String, Object> config) {
+    this(config, GCExchange::new);
+  }
+
+  @VisibleForTesting
+  DefaultGCExchangeFacade(@NonNull Map<String, Object> config,
+                          @NonNull Function<GCConfig, GCExchange> exchangeFactory) {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
-    this.isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
+    isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
+    submissionName = GCSubmissionName.fromGlobalLinkConfig(config);
+    submissionInstruction = GCSubmissionInstruction.fromGlobalLinkConfig(config);
     LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
     try {
       GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
       gcConfig.setUserAgent(USER_AGENT);
       gcConfig.setConnectorKey(connectorKey);
-      delegate = new GCExchange(gcConfig);
+      // Redirect logging to SLF4j.
+      gcConfig.setLogger(SLF4JHandler.getLogger(GCExchange.class));
+      gcConfig.getLogger().finest("JUL Logging redirection to SLF4J: OK");
+      LOG.trace("JUL Logging redirected to SLF4J.");
+      delegate = exchangeFactory.apply(gcConfig);
+      validateConnectorKey(delegate);
+    } catch (GCFacadeException e) {
+      throw e;
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);
     } catch (IllegalAccessError e) {
       throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
-    this.fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
-            String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
+    fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
+      String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
     );
   }
 
   @VisibleForTesting
   DefaultGCExchangeFacade(GCExchange delegate, String fileType) {
     this.delegate = delegate;
-    this.fileTypeSupplier = () -> fileType;
-    this.isSendSubmitter = false;
+    fileTypeSupplier = () -> fileType;
+    isSendSubmitter = false;
+    submissionName = GCSubmissionName.DEFAULT;
+    submissionInstruction = GCSubmissionInstruction.DEFAULT;
   }
 
-  private static String requireNonNullConfig(Map<String, Object> config, String key) {
+  /**
+   * GCC backend does not validate the connector key during connection setup.
+   * Not validating it upfront may lead to unexpected states, such as that we
+   * get just no submission for a given ID instead of any failure signal.
+   * <p>
+   * This validation is meant to fail-fast and to prevent unexpected, hard to
+   * debug states.
+   *
+   * @param gcExchange GCC exchange instance to validate
+   */
+  private static void validateConnectorKey(@NonNull GCExchange gcExchange) {
+    String configuredKey = gcExchange.getConfig().getConnectorKey();
+    List<String> availableConnectorKeys = gcExchange.getConnectors().stream().map(Connector::getConnectorKey).toList();
+    if (!availableConnectorKeys.contains(configuredKey)) {
+      throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).".formatted(gcExchange.getConfig().getApiUrl()));
+    }
+  }
+
+  private static String requireNonNullConfig(@NonNull Map<String, Object> config, String key) {
     Object value = config.get(key);
     if (value == null) {
       throw new GCFacadeConfigException("Configuration for %s is missing. Configuration (values hidden): %s", key, config.entrySet().stream()
-              .collect(toMap(Map.Entry::getKey, e -> GCConfigProperty.KEY_URL.equals(e.getKey()) ? e.getValue() : "*****"))
+        .collect(toMap(Map.Entry::getKey, e -> GCConfigProperty.KEY_URL.equals(e.getKey()) ? e.getValue() : "*****"))
       );
     }
     return String.valueOf(value);
@@ -164,24 +205,26 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
                                Map<String, List<Locale>> contentMap) {
 
     List<ContentLocales> contentLocalesList = contentMap.entrySet().stream()
-            .map(e ->
-                    new ContentLocales(
-                            e.getKey(),
-                            e.getValue().stream().map(Locale::toLanguageTag).collect(toList())))
-            .collect(toList());
+      .map(e ->
+        new ContentLocales(
+          e.getKey(),
+          e.getValue().stream().map(Locale::toLanguageTag).collect(toList())))
+      .collect(toList());
 
     SubmissionSubmitRequest request = new SubmissionSubmitRequest(
-            createSubmissionName(subject, sourceLocale, contentMap),
-            // REST API documents using UTC, Java REST Client API (v3.1.3)
-            // uses local time zone instead. This may cause an
-            // `IllegalArgumentException` if the due date is set to today with
-            // only some hours offset.
-            GCUtil.toUnixDateUtc(dueDate),
-            sourceLocale.toLanguageTag(),
-            contentLocalesList
+      createSubmissionName(subject, sourceLocale, contentMap),
+      // REST API documents using UTC, Java REST Client API (v3.1.3)
+      // uses local time zone instead. This may cause an
+      // `IllegalArgumentException` if the due date is set to today with
+      // only some hours offset.
+      GCUtil.toUnixDateUtc(dueDate),
+      sourceLocale.toLanguageTag(),
+      contentLocalesList
     );
     if (comment != null) {
-      request.setInstructions(comment);
+      // Expects incoming comments/notes are plain-text.
+      String instructionsText = submissionInstruction.transformText(comment);
+      request.setInstructions(instructionsText);
     }
     if (isSendSubmitter && submitter != null) {
       request.setSubmitter(submitter);
@@ -195,7 +238,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       return response.getSubmissionId();
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to create submission: subject=%s, source-locale=%s",
-              subject, sourceLocale.toLanguageTag());
+        subject, sourceLocale.toLanguageTag());
     }
   }
 
@@ -208,7 +251,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       }
       // MessageResponse has a statusCode (do not confuse with status), but
       // https://connect.translations.com/docs/api/GlobalLink_Connect_Cloud_API_Documentation.htm#submissions_cancel
-      // does not document it.  Since we cannot on-the-fly plug response#message
+      // does not document it. Since we cannot on-the-fly plug response#message
       // into Studio's resource bundles, the http result is the only useful data
       // here.
       return response.getStatus();
@@ -217,57 +260,37 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
   }
 
-  private String gcResponseToString(GCResponse response) {
+  private static String gcResponseToString(GCResponse response) {
     return com.google.common.base.MoreObjects.toStringHelper(response)
-            .add("status", response.getStatus())
-            .add("statusCode", response.getStatusCode())
-            .add("error", response.getError())
-            .add("message", response.getMessage())
-            .toString();
+      .add("status", response.getStatus())
+      .add("statusCode", response.getStatusCode())
+      .add("error", response.getError())
+      .add("message", response.getMessage())
+      .toString();
   }
 
   /**
-   * Generates a submission name which shall be suitable for easily detecting the
-   * submission in project director. Submission name will be truncated
-   * to the maximum submission name length available at GCC if required.
+   * Generates a submission name which shall be suitable for easily detecting
+   * the submission in project director.
    *
    * @param subject      workflow subject
    * @param sourceLocale source locale
    * @param contentMap   content map, the target languages will be extracted from it
    * @return a descriptive string.
    */
-  private static String createSubmissionName(@Nullable String subject,
-                                             Locale sourceLocale,
-                                             Map<String, List<Locale>> contentMap) {
+  private String createSubmissionName(@Nullable String subject,
+                                      @NonNull Locale sourceLocale,
+                                      @NonNull Map<String, List<Locale>> contentMap) {
     String trimmedSubject = Objects.toString(subject, "").trim();
-    if (trimmedSubject.length() >= SUBMISSION_NAME_MAX_LENGTH) {
-      if (trimmedSubject.length() == SUBMISSION_NAME_MAX_LENGTH) {
-        LOG.debug("Given subject at maximum length {}. Skipping applying further information to subject.", SUBMISSION_NAME_MAX_LENGTH);
-      } else {
-        String truncatedSubject = trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
-        LOG.warn("Given subject exceeds maximum length of {}. Will truncate subject and skip adding further information: {} → {}",
-                SUBMISSION_NAME_MAX_LENGTH,
-                trimmedSubject,
-                truncatedSubject);
-        trimmedSubject = truncatedSubject;
-      }
-      return trimmedSubject;
-    }
-
+    String subjectWithDefault = trimmedSubject.isEmpty() ? Instant.now().toString() : trimmedSubject;
     String allTargetLocales = contentMap.entrySet().stream()
-            .flatMap(e -> e.getValue().stream())
-            .distinct()
-            .map(Locale::toLanguageTag)
-            .collect(joining(", "));
-
-    if (trimmedSubject.isEmpty()) {
-      trimmedSubject = Instant.now().toString();
-    }
-    trimmedSubject = trimmedSubject + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
-    if (trimmedSubject.length() > SUBMISSION_NAME_MAX_LENGTH) {
-      return trimmedSubject.substring(0, SUBMISSION_NAME_MAX_LENGTH);
-    }
-    return trimmedSubject;
+      .flatMap(e -> e.getValue().stream())
+      .distinct()
+      .map(Locale::toLanguageTag)
+      .sorted()
+      .collect(joining(", "));
+    String withLocaleInfo = subjectWithDefault + " [" + sourceLocale.toLanguageTag() + " → " + allTargetLocales + ']';
+    return submissionName.transform(withLocaleInfo);
   }
 
   @Override
@@ -312,16 +335,16 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   @Override
   public void confirmCancelledTasks(long submissionId) {
     Map<TaskStatus, Set<GCTaskModel>> tasksByState =
-            getTasksByState(submissionId,
-                    // Ignore tasks which got already confirmed as being cancelled.
-                    r -> r.setIsCancelConfirmed(0),
-                    Cancelled
-            );
+      getTasksByState(submissionId,
+        // Ignore tasks which got already confirmed as being cancelled.
+        r -> r.setIsCancelConfirmed(0),
+        Cancelled
+      );
     List<GCTaskModel> tasks = new ArrayList<>(tasksByState.getOrDefault(Cancelled, emptySet()));
 
     List<Long> taskIds = tasks.stream()
-            .map(GCTaskModel::getTaskId)
-            .collect(toList());
+      .map(GCTaskModel::getTaskId)
+      .collect(toList());
 
     LOG.debug("Canceling Task IDs of submission {}: {}", submissionId, taskIds);
     confirmTaskCancellations(taskIds);
@@ -329,7 +352,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
   private void confirmTaskCancellations(List<Long> taskIds) {
     if (taskIds.isEmpty()) {
-      // We must not sent a request with empty list of task IDs.
+      // We must not send a request with empty list of task IDs.
       return;
     }
 
@@ -376,8 +399,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     Map<TaskStatus, Set<GCTaskModel>> tasksByState = new EnumMap<>(TaskStatus.class);
 
     GCUtil.processAllPages(
-            () -> createTaskListRequestBase(submissionId, requestPreProcessor, taskStates),
-            r -> executeRequest(r, tasksByState)
+      () -> createTaskListRequestBase(submissionId, requestPreProcessor, taskStates),
+      r -> executeRequest(r, tasksByState)
     );
 
     return tasksByState;
@@ -431,10 +454,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         Locale localeFromGCCTask = new Locale.Builder().setLanguageTag(t.getTargetLocale().getLocale()).build();
         GCTaskModel gcTaskModel = new GCTaskModel(t.getTaskId(), localeFromGCCTask);
         tasksByState.merge(TaskStatus.valueOf(t.getState()), Sets.newHashSet(gcTaskModel),
-                (oldValue, newValue) -> {
-                  oldValue.addAll(newValue);
-                  return oldValue;
-                }
+          (oldValue, newValue) -> {
+            oldValue.addAll(newValue);
+            return oldValue;
+          }
         );
       } catch (IllformedLocaleException exception) {
         LOG.error("Failed to convert LanguageTag tag from GCCTask with ID {}", t.getTaskId());
@@ -470,8 +493,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public GCSubmissionModel getSubmission(long submissionId) {
     GCSubmission submission = getSubmissionById(submissionId);
     if (submission == null) {
-      LOG.warn("Failed to retrieve submission for ID {}. Will fallback to signal submission state OTHER.", submissionId);
-      return GCSubmissionModel.builder(submissionId).build();
+      throw new GCFacadeSubmissionNotFoundException("Submission not found for ID %d", submissionId);
     }
     GCSubmissionState state = GCSubmissionState.fromSubmissionState(submission.getStatus());
     // Fallback check on gcc-restclient update 2.4.0: Both ways to check for cancellation
@@ -494,10 +516,12 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       }
     }
     return GCSubmissionModel.builder(submissionId)
-            .pdSubmissionIds(submission.getPdSubmissionIds().keySet())
-            .state(state)
-            .submitter(submission.getSubmitter())
-            .build();
+      .pdSubmissionIds(submission.getPdSubmissionIds().keySet())
+      .name(submission.getSubmissionName())
+      .state(state)
+      .submitter(submission.getSubmitter())
+      .error(Boolean.TRUE.equals(submission.getIsError()))
+      .build();
   }
 
   /**
@@ -511,23 +535,23 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private boolean areAllSubmissionTasksDone(long submissionId) {
     AtomicBoolean allDone = new AtomicBoolean(true);
     GCUtil.processAllPages(
-            () -> createTaskListRequestBase(submissionId),
-            r -> executeRequest(r, t -> {
-              TaskStatus status = TaskStatus.valueOf(t.getState());
-              LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
-              switch (status) {
-                case Delivered:
-                  break;
-                case Cancelled:
-                  LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
-                  // Logical AND: Only use confirmed state, if value
-                  // is still true. Otherwise, keep false state.
-                  allDone.compareAndSet(true, t.getIsCancelConfirmed());
-                  break;
-                default:
-                  allDone.set(false);
-              }
-            })
+      () -> createTaskListRequestBase(submissionId),
+      r -> executeRequest(r, t -> {
+        TaskStatus status = TaskStatus.valueOf(t.getState());
+        LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
+        switch (status) {
+          case Delivered:
+            break;
+          case Cancelled:
+            LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
+            // Logical AND: Only use confirmed state, if value
+            // is still true. Otherwise, keep false state.
+            allDone.compareAndSet(true, t.getIsCancelConfirmed());
+            break;
+          default:
+            allDone.set(false);
+        }
+      })
     );
 
     return allDone.get();
@@ -558,9 +582,9 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
     if (responseData.getTotalResultPagesCount() > 1L) {
       LOG.warn(
-              "More than one submission ({}) returned for the same ID {}. Will choose the first one.",
-              responseData.getTotalResultPagesCount(),
-              submissionId
+        "More than one submission ({}) returned for the same ID {}. Will choose the first one.",
+        responseData.getTotalResultPagesCount(),
+        submissionId
       );
     }
     return submissions.get(0);
@@ -589,7 +613,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       result = configuredFileType;
     } else {
       throw new GCFacadeFileTypeConfigException("Configured file type '%s' not in supported ones %s for GlobalLink " +
-              "connection at %s", configuredFileType, supportedFileTypes, apiUrl);
+        "connection at %s", configuredFileType, supportedFileTypes, apiUrl);
     }
 
     LOG.info("Using file type '{}' for uploading data to GlobalLink at {}", result, apiUrl);

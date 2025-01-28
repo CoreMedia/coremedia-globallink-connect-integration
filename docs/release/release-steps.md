@@ -11,12 +11,13 @@ of this workspace.
 
 ## 1. Development Workflow
 
-Assuming all branches (main, develop, ci/develop) already exist, proceed as
+Assuming all branches (main, develop) already exist, proceed as
 follows (example here: update GCC REST Client and CMCC version; assuming
 that `origin/main` is the default branch):
 
 ```bash
-$ git clone https://github.com/CoreMedia/coremedia-globallink-connect-integration.git gcc
+$ git clone \
+  https://github.com/CoreMedia/coremedia-globallink-connect-integration.git gcc
 $ cd gcc
 $ git checkout --track "origin/develop"
 # ... perform required updates ...
@@ -24,23 +25,12 @@ $ git commit --all --message="Update GCC REST Client to x.y.z"
 # ... perform required updates ...
 $ git commit --all --message="Update CMCC 1910.1"
 $ git push origin develop 
-
-### For the following steps, it is recommended to use the provided script
-### `./sh/update-ci-develop.sh` instead. Also, a GitHub Action is available
-### to automate this process.
-
-$ git checkout --track "origin/ci/develop"
-$ git rebase "origin/develop"
-# ... resolve possible conflicts ...
-$ git push origin "ci/develop" --force-with-lease
-
-### It is recommended to leave "ci/develop" immediately, as no other commits
-### must make it to this branch than those required to run it in CoreMedia CI!
-
-$ git checkout develop
 ```
 
-See https://github.com/CoreMedia/coremedia-globallink-connect-integration for current and most recent version of GCC REST Client (labels on top of page). 
+See
+[CoreMedia/coremedia-globallink-connect-integration](https://github.com/CoreMedia/coremedia-globallink-connect-integration)
+for the current, and most recent version of GCC REST Client (labels on top of
+page). 
 
 ## 2. Verify Release Versions of Core Packages
 
@@ -82,30 +72,28 @@ changelog, and the version badges, you can proceed with creating the tag.
 $ git checkout main
 $ git merge "origin/develop"
 $ git push origin main
-$ git tag "v1910.1-1"
-$ git push origin "v1910.1-1"
+$ git tag "v2406.1.0-1"
+$ git push origin "v2406.1.0-1"
 ```
 
-Alternatively, for a more transparent review process, create a PR from `develop` to `main`. In this case, you can 
-skip the first three steps. The reviewer gets an overview of the recent changes on GitHub, and the PR can be directly 
-merged after approval.
+Alternatively, for a more transparent review process, create a PR from `develop`
+to `main`. In this case, you can skip the first three steps. The reviewer gets
+an overview of the recent changes on GitHub, and the PR can be directly merged
+after approval.
 
 ## 6. Create GitHub Release
 
-* Create a GitHub release from the tag and the copy the changelog entries to the
-  release description. Please use the same pattern for release title as the
+* Create a GitHub release from the tag, and the copy the changelog entries to
+  the release description. Please use the same pattern for release title as the
   previous releases.
 * Review GitHub issues and possibly adjust state.
 
-## * Sketch: Incorporating Pull Requests for Given CMCC Versions
+## Sketch: Incorporating Pull Requests for Given CMCC Versions
 
 If customers want to provide a patch for a given workspace version, create
 a branch from the given tag. This will then receive the PR results. If
 applicable to current `develop` branch, cherry-pick the PR commits to
 `develop` branch.
-
-If we require a CI, create a branch similar to `ci/develop`, for example
-`ci/1907`.
 
 --------------------------------------------------------------------------------
 

@@ -8,6 +8,7 @@ import org.gs4tr.gcc.restclient.model.SubmissionStatus;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Objects.nonNull;
@@ -30,8 +31,20 @@ import static org.slf4j.LoggerFactory.getLogger;
 @DefaultAnnotation(NonNull.class)
 public enum GCSubmissionState {
 
-  /**
-   * Note: If you add or delete values of this Enum, also adapt the localization for Studio in the appurtenant file: 'GccProcessDefinitions.properties' (also for other languages)
+  /*
+   * ===========================================================================
+   * Note: If you add or delete values of this Enum, also adapt the localization
+   * for Studio in the appurtenant files: 'Gcc_properties.ts' and
+   * 'GccWorkflowLocalization_properties.ts' (also for other languages)
+   * ===========================================================================
+   */
+
+  /*
+   * ===========================================================================
+   * Hint: If you observe the GCC Rest Client not to provide a given state
+   * observed in production scenarios, you may just add it here using the
+   * received state name as string argument.
+   * ===========================================================================
    */
 
   IN_PRE_PROCESS(SubmissionStatus.PreProcess),
@@ -49,6 +62,21 @@ public enum GCSubmissionState {
   TRANSLATE(SubmissionStatus.Translate),
   REVIEW(SubmissionStatus.Review),
   COMPLETED(SubmissionStatus.Completed),
+  /**
+   * State, observed to be reached in scenarios, where a submission
+   * got manually set to redelivered, while the XLIFF has been sent
+   * via other channels (like email).
+   * <p>
+   * The assumed behavior is, that a submission in state
+   * {@link #COMPLETED completed} is set directly to redelivered, without
+   * the XLIFF provided via the GCC backend.
+   * <p>
+   * The GCC API (v3.1.3) does not cover this state, so that we need to
+   * mock it.
+   *
+   * @since 2406.1
+   */
+  REDELIVERED("Redelivered"),
   DELIVERED(SubmissionStatus.Delivered),
   CANCELLED(SubmissionStatus.Cancelled),
   /**
@@ -72,11 +100,11 @@ public enum GCSubmissionState {
   private final String submissionStatusText;
 
   GCSubmissionState() {
-    this.submissionStatusText = null;
+    submissionStatusText = null;
   }
 
   GCSubmissionState(@NonNull SubmissionStatus submissionStatus) {
-    this.submissionStatusText = submissionStatus.text();
+    submissionStatusText = submissionStatus.text();
   }
 
   /**
@@ -108,24 +136,25 @@ public enum GCSubmissionState {
       LOG.warn("Submission state name unavailable for: {} (state-number: {}). Using OTHER as state.", submissionState, submissionState.getStatusNumber());
       return OTHER;
     }
-    return parseSubmissionStatusName(submissionStateName);
+    return findSubmissionStateByName(submissionStateName)
+      .orElseGet(() -> {
+        LOG.warn("Unknown submission state: {}. Using OTHER as state.", submissionStateName);
+        return OTHER;
+      });
   }
 
   /**
    * Parse the status name and return the matching enum value. Empty, if
    * no status with the given name could be found.
    *
-   * @param taskStatusName name to parse
+   * @param statusName name to parse
    * @return status; {@link #OTHER} for any yet unknown status
    */
-  private static GCSubmissionState parseSubmissionStatusName(String taskStatusName) {
+  @NonNull
+  public static Optional<GCSubmissionState> findSubmissionStateByName(@NonNull String statusName) {
     return Arrays.stream(values())
-            .filter(s -> nonNull(s.submissionStatusText))
-            .filter(s -> taskStatusName.equalsIgnoreCase(s.submissionStatusText))
-            .findAny()
-            .orElseGet(() -> {
-              LOG.warn("Unknown submission state: {}. Using OTHER as state.", taskStatusName);
-              return OTHER;
-            });
+      .filter(s -> nonNull(s.submissionStatusText))
+      .filter(s -> statusName.equalsIgnoreCase(s.submissionStatusText))
+      .findAny();
   }
 }

@@ -1,17 +1,25 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
+import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
+import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSubmissionStates;
 import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.lang.invoke.MethodHandles.lookup;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * <p>
@@ -28,8 +36,38 @@ import java.util.stream.Stream;
  */
 @DefaultAnnotation(NonNull.class)
 final class Submission {
+  private static final Logger LOG = getLogger(lookup().lookupClass());
 
+  @NonNull
+  private final MockSettings mockSettings;
+  @NonNull
   private final ImmutableList<Task> tasks;
+
+  /**
+   * The active replay scenario, if any.
+   * <p>
+   * The tri-state logic is important:
+   * <ul>
+   *   <li>
+   *     <strong>Unset</strong>:
+   *     signals, that we have not checked yet, if for a given state a replay
+   *     scenario is available.
+   *   </li>
+   *   <li>
+   *     <strong>Set, but empty</strong>:
+   *     signals, that we just replayed the states and there are no more states
+   *     to replay. If queried again, we will return to the <strong>Unset</strong>
+   *     state.
+   *   </li>
+   *   <li>
+   *     <strong>Set and not empty</strong>:
+   *     signals, that we have a replay scenario available, and we are in the
+   *     process of replaying the states.
+   *   </li>
+   * </ul>
+   */
+  @Nullable
+  private MockSubmissionStates.ReplayScenario activeReplayScenario;
 
   /**
    * <p>
@@ -50,17 +88,24 @@ final class Submission {
    * and {@code delayOffsetPercentage}.
    * </p>
    *
-   * @param subject               subject to provide possibility to control task switching
-   * @param submissionContents    contents which shall be part of the submission
-   * @param delayBaseSeconds      base (minimum) offset in seconds
-   * @param delayOffsetPercentage percentage offset to the base delay, which will either reduce or increase
-   *                              the delay
+   * @param subject            subject to provide possibility to control task switching
+   * @param submissionContents contents which shall be part of the submission
+   * @param mockSettings       settings to control the behavior of the submission
    */
-  Submission(String subject, List<SubmissionContent> submissionContents, long delayBaseSeconds, int delayOffsetPercentage) {
+  Submission(@NonNull String subject,
+             @NonNull List<SubmissionContent> submissionContents,
+             @NonNull MockSettings mockSettings) {
+    this.mockSettings = mockSettings;
     ImmutableList.Builder<Task> builder = ImmutableList.builder();
     for (SubmissionContent c : submissionContents) {
-      for (int i = c.getTargetLocales().size(); i > 0; --i) {
-        builder.add(new Task(c.getFileContent(), delayBaseSeconds, delayOffsetPercentage, c.getTargetLocales().get(i - 1), parseTaskStates(subject)));
+      for (int i = c.targetLocales().size(); i > 0; --i) {
+        builder.add(new Task(
+          c.fileContent(),
+          mockSettings.stateChangeDelaySeconds(),
+          mockSettings.stateChangeDelayOffsetPercentage(),
+          c.targetLocales().get(i - 1),
+          parseTaskStates(subject)
+        ));
       }
     }
     tasks = builder.build();
@@ -75,19 +120,53 @@ final class Submission {
   }
 
   GCSubmissionState getState() {
+    GCSubmissionState result = GCSubmissionState.STARTED;
+
     if (atLeastOneTaskCancellationConfirmedRemainingDelivered()) {
-      return GCSubmissionState.CANCELLATION_CONFIRMED;
+      result = GCSubmissionState.CANCELLATION_CONFIRMED;
+    } else if (anyTaskCancelled()) {
+      result = GCSubmissionState.CANCELLED;
+    } else if (allTasksDelivered()) {
+      result = GCSubmissionState.DELIVERED;
+    } else if (allTasksAtLeastCompleted()) {
+      result = GCSubmissionState.COMPLETED;
     }
-    if (anyTaskCancelled()) {
-      return GCSubmissionState.CANCELLED;
+
+    return possiblyOverrideByMockSubmissionState(result);
+  }
+
+  @NonNull
+  private Optional<GCSubmissionState> getSubmissionStateFromReplayScenario() {
+    MockSubmissionStates.ReplayScenario scenario = activeReplayScenario;
+    if (scenario == null) {
+      LOG.trace("No active replay scenario.");
+      return Optional.empty();
     }
-    if (allTasksDelivered()) {
-      return GCSubmissionState.DELIVERED;
+    Optional<GCSubmissionState> nextState = activeReplayScenario.next();
+    if (nextState.isEmpty()) {
+      LOG.trace("Replay scenario exhausted. Resetting.");
+      activeReplayScenario = null;
+    } else {
+      LOG.debug("Replay scenario (left: {}): {}", activeReplayScenario.size(), nextState.get());
     }
-    if (allTasksAtLeastCompleted()) {
-      return GCSubmissionState.COMPLETED;
+    return nextState;
+  }
+
+  @NonNull
+  private GCSubmissionState possiblyOverrideByMockSubmissionState(@NonNull GCSubmissionState originalSubmissionState) {
+    if (activeReplayScenario != null) {
+      // Prefer states from the replay scenario over the actual state.
+      LOG.debug("Query existing replay scenario for state override of {}.", originalSubmissionState);
+      return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
     }
-    return GCSubmissionState.STARTED;
+    activeReplayScenario = mockSettings.submissionStates().getReplayScenario(originalSubmissionState);
+    if (activeReplayScenario != null) {
+      LOG.debug("Query new replay scenario for state override of {}.", originalSubmissionState);
+      return getSubmissionStateFromReplayScenario().orElse(originalSubmissionState);
+    } else {
+      LOG.trace("No replay scenario for state override of {}.", originalSubmissionState);
+    }
+    return originalSubmissionState;
   }
 
   void cancel() {
@@ -114,7 +193,7 @@ final class Submission {
   }
 
   private boolean allTasksAtLeastCompleted() {
-    return taskStates().allMatch(s -> TaskState.COMPLETED.equals(s) || TaskState.DELIVERED.equals(s));
+    return taskStates().allMatch(s -> TaskState.COMPLETED == s || TaskState.DELIVERED == s);
   }
 
   private Stream<TaskState> taskStates() {
@@ -131,15 +210,15 @@ final class Submission {
 
   private Collection<Task> getTasksInState(TaskState taskState) {
     return tasks.stream()
-            .filter(t -> taskState.equals(t.getTaskState()))
-            .collect(Collectors.toList());
+      .filter(t -> taskState == t.getTaskState())
+      .collect(Collectors.toList());
   }
 
   @Override
   public String toString() {
     return new StringJoiner(", ", Submission.class.getSimpleName() + '[', "]")
-            .add("state=" + getState())
-            .add("tasks=" + tasks)
-            .toString();
+      .add("state=" + getState())
+      .add("tasks=" + tasks)
+      .toString();
   }
 }
