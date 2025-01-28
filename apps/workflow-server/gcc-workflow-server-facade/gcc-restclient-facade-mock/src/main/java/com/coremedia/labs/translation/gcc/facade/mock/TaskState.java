@@ -26,7 +26,7 @@ enum TaskState {
    */
   COMPLETED,
   /**
-   * Deliverd task (reached manually).
+   * Delivered task (reached manually).
    */
   DELIVERED;
 
@@ -38,10 +38,10 @@ enum TaskState {
    * @return parsed state; defaults to {@link #OTHER}
    */
   static TaskState parseState(String taskStateString) {
-    return Arrays.stream(TaskState.values())
+    return Arrays.stream(values())
             .filter(s -> s.name().equalsIgnoreCase(taskStateString))
             .findAny()
-            .orElse(TaskState.OTHER);
+            .orElse(OTHER);
   }
 
   /**
@@ -53,7 +53,6 @@ enum TaskState {
    * @param taskStatesCsv task states as comma-separated values; unmatched states will be mapped to task state {@link #OTHER}
    * @return array of task-states
    */
-  @SuppressWarnings("UnstableApiUsage")
   static TaskState[] parseTaskStatesToArray(String taskStatesCsv) {
     return Splitter.on(',')
             .trimResults()

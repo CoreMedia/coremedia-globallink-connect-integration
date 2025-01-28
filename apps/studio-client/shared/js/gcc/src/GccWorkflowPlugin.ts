@@ -29,7 +29,12 @@ import { translationServicesSettings } from "./TranslationServiceSettings";
 const UNAVAILABLE_SUBMISSION_STATE: string = "unavailable";
 const BLOB_FILE_PROCESS_VARIABLE_NAME: string = "translationResultXliff";
 const TRANSLATION_RESULT_XLIFF_VARIABLE_NAME: string = "translationResultXliff";
-const ERROR_TASK_NAME: string = "HandleDownloadTranslationError";
+/**
+ * Task names where the XLIFF download should be shown. An additional check is
+ * applied, which is, that if the XLIFF download is not available, the button
+ * is hidden, too.
+ */
+const SHOW_XLIFF_DOWNLOAD_TASK_NAMES: string[] = ["HandleDownloadTranslationError", "ReviewRedeliveredTranslation"];
 const CANCEL_REQUESTED_VARIABLE_NAME: string = "cancelRequested";
 const CANCELLATION_ALLOWED_VARIABLE_NAME: string = "cancellationAllowed";
 const TRANSLATION_GLOBAL_LINK_PROCESS_NAME: string = "TranslationGlobalLink";
@@ -123,6 +128,20 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   transitions: [
     {
       task: "ReviewDeliveredTranslation",
+      defaultNextTask: "finishTranslation",
+      nextSteps: [
+        {
+          name: "rollbackTranslation",
+          allowAlways: true,
+        },
+        {
+          name: "finishTranslation",
+          allowAlways: true,
+        },
+      ],
+    },
+    {
+      task: "ReviewRedeliveredTranslation",
       defaultNextTask: "finishTranslation",
       nextSteps: [
         {
@@ -338,6 +357,8 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_DownloadTranslation_displayName,
     ReviewDeliveredTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName,
+    ReviewRedeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewRedeliveredTranslation_displayName,
     ReviewCancelledTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewCancelledTranslation_displayName,
     translationReviewed: GccWorkflowLocalization_properties.TranslationGlobalLink_state_translationReviewed_displayName,
@@ -360,6 +381,8 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_DownloadTranslation_displayName,
     ReviewDeliveredTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName,
+    ReviewRedeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewRedeliveredTranslation_displayName,
     ReviewCancelledTranslation:
       GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewCancelledTranslation_displayName,
     RollbackContent: GccWorkflowLocalization_properties.TranslationGlobalLink_task_RollbackContent_displayName,
@@ -381,8 +404,11 @@ workflowLocalizationRegistry._.addIssuesLocalization({
   "GCC-WF-40000": GccWorkflowLocalization_properties["GCC-WF-40000_text"],
   "GCC-WF-40001": GccWorkflowLocalization_properties["GCC-WF-40001_text"],
   "GCC-WF-40002": GccWorkflowLocalization_properties["GCC-WF-40002_text"],
+  "GCC-WF-40003": GccWorkflowLocalization_properties["GCC-WF-40003_text"],
   "GCC-WF-40050": GccWorkflowLocalization_properties["GCC-WF-40050_text"],
   "GCC-WF-50050": GccWorkflowLocalization_properties["GCC-WF-50050_text"],
+  "GCC-WF-60000": GccWorkflowLocalization_properties["GCC-WF-60000_text"],
+  "GCC-WF-60001": GccWorkflowLocalization_properties["GCC-WF-60001_text"],
   "GCC-WF-61001": GccWorkflowLocalization_properties["GCC-WF-61001_text"],
   dateLiesInPast_globalLinkDueDate: GccWorkflowLocalization_properties.dateLiesInPast_globalLinkDueDate_text,
   dateInvalid_globalLinkDueDate: GccWorkflowLocalization_properties.dateInvalid_globalLinkDueDate_text,
@@ -456,7 +482,7 @@ function downloadNotAvailable(task: Task): boolean {
     !RemoteBeanUtil.isAccessible(task) ||
     !RemoteBeanUtil.isAccessible(<TaskDefinitionImpl>task.getDefinition()) ||
     !RemoteBeanUtil.isAccessible(task.getContainingProcess()) ||
-    task.getDefinition().getName() !== ERROR_TASK_NAME
+    !SHOW_XLIFF_DOWNLOAD_TASK_NAMES.includes(task.getDefinition().getName())
   ) {
     return true;
   }

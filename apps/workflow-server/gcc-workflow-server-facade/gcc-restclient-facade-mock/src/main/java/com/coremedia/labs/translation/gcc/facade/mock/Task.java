@@ -53,13 +53,13 @@ final class Task {
    * </p>
    * <p>
    * If more states are specified, exactly the given states will be reached,
-   * i. e. if you don't add a completed state at the end it will not be added.
-   * The time offsets will then be applied inbetween all task switches. Thus,
+   * i.e., if you don't add a completed state at the end it will not be added.
+   * The time offsets will then be applied in between all task switches. Thus,
    * given two task-states the last state will be reached at about
    * {@code delayBaseSeconds * 2}.
    * </p>
    *
-   * @param content               content represented as String (e. g. XLIFF)
+   * @param content               content represented as String (e.g., XLIFF)
    * @param delayBaseSeconds      base (minimum) offset in seconds
    * @param delayOffsetPercentage percentage offset to the base delay, which will either reduce or increase
    *                              the delay
@@ -139,18 +139,18 @@ final class Task {
   }
 
   void markAsDelivered() {
-    this.delivered = true;
+    delivered = true;
   }
 
   void markAsCancelled() {
     if (!delivered) {
-      this.cancelled = true;
+      cancelled = true;
     }
   }
 
   void markAsCancellationConfirmed() {
     if (!delivered) {
-      this.cancellationConfirmed = true;
+      cancellationConfirmed = true;
     }
   }
 

@@ -4,8 +4,8 @@ This module contains test-data for the GCC extension.
 
 ## /Settings/Options/Settings/Translation Services/GlobalLink
 
-This settings document will tell the GCC extension which credentials
-and endpoints to use. By default it contains some dummy values and
+This settings-document will tell the GCC extension which credentials
+and endpoints to use. By default, it contains some dummy values and
 chooses "mock" as the default implementation for GCC interactions.
 As a result any translations will be forwarded to the Mock GCC RestClient
 Facade which just some character replacements to simulate a translation.

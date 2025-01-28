@@ -6,7 +6,7 @@
      * Change "message" for GCC (Used) version to the recently used version.
 -->
 
-![CoreMedia Content Cloud Version](https://img.shields.io/static/v1?message=2406.0&label=CoreMedia%20Content%20Cloud&style=for-the-badge&color=672779)
+![CoreMedia Content Cloud Version](https://img.shields.io/static/v1?message=2406.1&label=CoreMedia%20Content%20Cloud&style=for-the-badge&color=672779)
 ![GCC Used](https://img.shields.io/static/v1?message=v3.1.3&label=GCC%20REST%20API%20%28Used%29&style=for-the-badge&color=green)
 [![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient.svg?label=GCC%20REST%20API%20%28Recent%29&style=for-the-badge)](https://central.sonatype.com/search?q=com.translations.globallink%3Agcc-restclient)
 
@@ -33,7 +33,7 @@ This open-source extension adds the following functionality to the CoreMedia Stu
 * Editors in CoreMedia Studio are notified about completion, cancellation, and
     import and communication errors of a translation workflow with GlobalLink.
 
-**Detailed documentation available at
+**A detailed documentation available at
 [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
 or browse directly in [docs/ folder](./docs/README.md).**
 
@@ -47,10 +47,6 @@ or browse directly in [docs/ folder](./docs/README.md).**
 * **[develop](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/develop):**
 
     Will contain preparations for next supported major.
-
-* **ci/develop:**
-
-    An artificial branch required for CoreMedia internal CI systems.
 
 * **Version Tags:**
 

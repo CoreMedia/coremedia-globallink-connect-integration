@@ -4,12 +4,15 @@ import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
+import java.io.Serial;
+
 /**
  * Signals a configuration problem, like especially invalid settings.
  */
 @SuppressWarnings("unused")
 @DefaultAnnotation(NonNull.class)
 public class GCFacadeConfigException extends GCFacadeException {
+  @Serial
   private static final long serialVersionUID = 6482445402768874493L;
 
   public GCFacadeConfigException() {

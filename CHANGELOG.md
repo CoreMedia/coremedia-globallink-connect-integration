@@ -1,6 +1,25 @@
 Changelog
 ================================================================================
 
+v2406.1.0-1
+--------------------------------------------------------------------------------
+
+Despite adapting the connector to CoreMedia Content Cloud v12.2406.1.0, we
+hardened the connector in these aspects:
+
+* Introduced a defined behavior for the undocumented submission status
+  `REDELIVERED`.
+* Fixed submission instruction handling to deal with its features (HTML content)
+  and limitations (character types).
+* Fixed submission name handling to deal with its limitations (character types).
+* Hardened the connector in case of submission errors (an extra state reachable
+  in the GCC backend).
+* Hardened the connector for "submission not found" scenarios that may occur
+  due to wrong or connector key settings.
+
+Find more detailed release notes in the newly introduced documentation
+section [Changelog](./docs/changelog/README.md).
+
 v2406.0.1-1
 --------------------------------------------------------------------------------
 
@@ -121,7 +140,7 @@ in the properties file.
 * Configuration has been refactored so that the GlobalLink settings are not 
 automatically published with the pages that they are linked to. The Settings 
 have to be located in specific folders instead. Ensure that the name of the 
-path and the folder match the convention mentioned below.
+path, and the folder match the convention mentioned below.
 
 
   **Upgrade Steps:**
@@ -270,7 +289,7 @@ v2107.3-1
     offered tasks. These features are however not available in the Studio (yet).
 
 * The source locale of the submission is now also send as part of the file upload 
-    call to the gcc API. Thank you @mtommila for suggesting this change and 
+    call to the gcc API. Thank you, @mtommila, for suggesting this change and 
     providing a [Pull Request](https://github.com/CoreMedia/coremedia-globallink-connect-integration/pull/37).
 
     In the context of this change `GCExchangeFacade.uploadContent(String fileName, Resource resource, Locale sourceLocale)` 
@@ -287,14 +306,14 @@ v2104.1-1
 
 * Added the possibility to configure the connection to GlobalLink in properties 
     file on the server with [CoreMedia/coremedia-globallink-connect-integration#25](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/25) - 
-    Thank you @mtommila for suggesting this change and providing a Pull Request.
+    Thank you, @mtommila, for suggesting this change and providing a Pull Request.
 
 * The notes from the Start Translation Workflow Window are now sent as instructions 
     to GlobalLink. Optionally, the submitter's name can be added to the submission. 
     The workflow is also prepared to take an optional string that represents the 
     type of the workflow on the GlobalLink side. This still requires the UI to 
     be implemented in Studio. - [CoreMedia/coremedia-globallink-connect-integration#26](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/26) - 
-    Thank you @mtommila for suggesting this change and providing a Pull Request.
+    Thank you, @mtommila, for suggesting this change and providing a Pull Request.
 
 * Fixed concurrency issue of `DefaultGCExchangeFacadeSessionProvider` which 
   could cause `java.util.NoSuchElementExceptions` [CoreMedia/coremedia-globallink-connect-integration#33](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/33)
@@ -320,7 +339,7 @@ v2101.3-1
 * Fixed [CoreMedia/coremedia-globallink-connect-integration#23](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/18)
 
     The API of the `GCExchangeFacade` was updated to also return the submission identifier 
-    shown in GlobalLink Project Director and Connect Cloud. If you had accessed the
+    shown in GlobalLink Project Director and Connect Cloud. If you had accessed
     the submission state through `GCExchangeFacade.getSubmissionState(submissionId)`, you have
     to migrate to `GCExchangeFacade.getSubmission(submissionId).getState()`.
 

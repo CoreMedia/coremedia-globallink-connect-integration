@@ -5,7 +5,9 @@ import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
 import com.google.common.io.ByteSource;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 
@@ -45,9 +48,13 @@ class MockedGCExchangeFacadeTest {
 
     Resource xliffResource = new ClassPathResource(XLIFF_FILE, MockedGCExchangeFacade.class);
 
-    MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
     // Let the tasks proceed faster.
-    facade.setDelayBaseSeconds(2L).setDelayOffsetPercentage(20);
+    GCExchangeFacade facade = new MockedGCExchangeFacade(MockSettings.fromMockConfig(
+      Map.of(
+        MockSettings.CONFIG_STATE_CHANGE_DELAY_SECONDS, 2L,
+        MockSettings.CONFIG_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE, 20
+      )
+    ));
 
     String fileId = facade.uploadContent(testName, xliffResource, null);
     long submissionId = facade.submitSubmission(
@@ -74,17 +81,12 @@ class MockedGCExchangeFacadeTest {
 
   }
 
-  private class TaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
-    private final StringBuilder xliffResult;
-
-    TaskDataConsumer(StringBuilder xliffResult) {
-      this.xliffResult = xliffResult;
-    }
-
+  private record TaskDataConsumer(StringBuilder xliffResult) implements BiPredicate<InputStream, GCTaskModel> {
     @Override
     public boolean test(InputStream is, GCTaskModel task) {
       ByteSource byteSource = new ByteSource() {
         @Override
+        @NonNull
         public InputStream openStream() {
           return is;
         }
@@ -104,9 +106,13 @@ class MockedGCExchangeFacadeTest {
 
     Resource xliffResource = new ClassPathResource(XLIFF_FILE, MockedGCExchangeFacade.class);
 
-    MockedGCExchangeFacade facade = new MockedGCExchangeFacade();
     // Let the tasks proceed faster.
-    facade.setDelayBaseSeconds(2L).setDelayOffsetPercentage(20);
+    GCExchangeFacade facade = new MockedGCExchangeFacade(MockSettings.fromMockConfig(
+      Map.of(
+        MockSettings.CONFIG_STATE_CHANGE_DELAY_SECONDS, 2L,
+        MockSettings.CONFIG_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE, 20
+      )
+    ));
 
     String fileId = facade.uploadContent(testName, xliffResource, Locale.US);
     long submissionId = facade.submitSubmission(

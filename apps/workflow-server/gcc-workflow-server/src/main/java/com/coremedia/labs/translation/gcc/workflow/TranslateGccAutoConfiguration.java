@@ -21,7 +21,7 @@ import java.util.Map;
         XliffImporterConfiguration.class,
         XliffExporterConfiguration.class,
         TranslateItemConfiguration.class})
-@PropertySource(value = "classpath:META-INF/coremedia/gcc-workflow.properties")
+@PropertySource("classpath:META-INF/coremedia/gcc-workflow.properties")
 @DefaultAnnotation(NonNull.class)
 public class TranslateGccAutoConfiguration {
 
