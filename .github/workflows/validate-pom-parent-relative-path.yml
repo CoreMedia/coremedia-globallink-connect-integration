@@ -1,0 +1,25 @@
+name: "Validate POM parent relativePath"
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+    branches:
+      - 'develop'
+      - 'main'
+    paths:
+      - '**/pom.xml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: "Validate POM parent relativePath"
+        run: |
+          bash bin/validate-pom-parent-relative-path.sh validate
