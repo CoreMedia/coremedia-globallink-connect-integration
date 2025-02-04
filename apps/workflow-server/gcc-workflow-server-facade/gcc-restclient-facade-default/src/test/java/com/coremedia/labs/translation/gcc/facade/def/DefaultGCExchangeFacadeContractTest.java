@@ -21,6 +21,7 @@ import org.gs4tr.gcc.restclient.model.LocaleConfig;
 import org.gs4tr.gcc.restclient.operation.ConnectorsConfig;
 import org.gs4tr.gcc.restclient.operation.Content;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -120,6 +121,11 @@ class DefaultGCExchangeFacadeContractTest {
   void setUp(@NonNull TestInfo testInfo) {
     testName = testInfo.getTestMethod().map(Method::getName).orElse("noname");
     submissionName = "%s: %s".formatted(TEST_ID, testName);
+  }
+
+  @AfterAll
+  static void afterAll() {
+    LOG.info("Contract test finished for ID '{}'.", TEST_ID);
   }
 
   @Nested
