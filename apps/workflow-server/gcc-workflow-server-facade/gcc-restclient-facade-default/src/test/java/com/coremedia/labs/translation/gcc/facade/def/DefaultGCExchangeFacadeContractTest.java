@@ -5,6 +5,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
@@ -37,6 +38,7 @@ import org.springframework.core.io.ByteArrayResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -730,6 +732,7 @@ class DefaultGCExchangeFacadeContractTest {
   }
 
   private static void assertSubmissionReachesAnyStateOf(GCExchangeFacade facade, long submissionId, List<GCSubmissionState> expectedStates, long timeout) {
+    long startNanos = System.nanoTime();
     await("Wait for translation to reach any of the state(s): %s".formatted(expectedStates))
       .atMost(timeout, TimeUnit.MINUTES)
       .pollDelay(1L, TimeUnit.MINUTES)
@@ -738,8 +741,25 @@ class DefaultGCExchangeFacadeContractTest {
         "The submission should not reach an error state.",
         () -> assertThat(facade.getSubmission(submissionId).isError()).isFalse()
       )
-      .conditionEvaluationListener(condition -> LOG.info("Submission {}, Current State: {}, elapsed time in seconds: {}", submissionId, facade.getSubmission(submissionId).getState(), condition.getElapsedTimeInMS() / 1000L))
+      .conditionEvaluationListener(condition -> {
+        GCSubmissionModel submission = facade.getSubmission(submissionId);
+        Duration elapsed = Duration.ofMillis(condition.getElapsedTimeInMS());
+        Duration remaining = Duration.ofMillis(condition.getRemainingTimeInMS());
+        LOG.info("Submission: {}; Current State: {}; Expected States: {}; Time: elapsed {}, remaining {}; Submission Details: {}",
+          submission.getSubmissionId(),
+          submission.getState(),
+          expectedStates,
+          elapsed,
+          remaining,
+          submission.describe()
+        );
+      })
       .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isIn(expectedStates));
+    if (LOG.isInfoEnabled()) {
+      String submissionDetails = facade.getSubmission(submissionId).describe();
+      long elapsedNanos = System.nanoTime() - startNanos;
+      LOG.info("Success after {}: {}", Duration.ofNanos(elapsedNanos), submissionDetails);
+    }
   }
 
   @NonNull
