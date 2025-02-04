@@ -45,18 +45,18 @@ gitGraph:
   branch develop
   checkout develop
   commit
-  branch approval-2406.1
-  checkout approval-2406.1
+  branch approval-2412.0
+  checkout approval-2412.0
   commit
   commit
   checkout develop
-  merge approval-2406.1
+  merge approval-2412.0
   checkout main
-  merge develop tag: "v2406.1.0-1"
+  merge develop tag: "v2412.0.0-1"
   checkout develop
-  commit id: "fix 2406.1.0-1"
+  commit id: "fix 2412.0.0-1"
   checkout main
-  merge develop tag: "v2406.1.0-2"
+  merge develop tag: "v2412.0.0-2"
   checkout develop
   commit id: "merge approval 2412.0"
   checkout main
@@ -80,9 +80,9 @@ The structure of tags is as follows:
 v<CMCC Version>-<GlobalLink Workspace Version>
 ```
 
-Thus, `v2406.1.0-1` signals compatibility with CMCC v12.2406.1.0 and is the
+Thus, `v2412.0.0-1` signals compatibility with CMCC v12.2412.0.0 and is the
 first approved version for usage with GlobalLink workspace.
-`v2406.1.0-1` is a patch version for version `v2406.1.0-1`, which is based on
+`v2412.0.0-1` is a patch version for version `v2412.0.0-1`, which is based on
 the same CMCC version, but for example contains bug fixes.
 
 ## Adding GCC Adapter to the Blueprint
@@ -361,7 +361,7 @@ be linked to your site root documents (also known as Homepages).
 
 <!-- Links, keep at bottom -->
 
-[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
-[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
-[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
-[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-12/artifacts/2406.1/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
+[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
+[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
+[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
+[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
