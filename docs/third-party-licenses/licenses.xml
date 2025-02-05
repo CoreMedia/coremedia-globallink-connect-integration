@@ -4,7 +4,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.12</version>
+      <version>1.5.16</version>
       <licenses>
         <license>
           <name>Eclipse Public License - v 1.0</name>
@@ -14,6 +14,7 @@
         <license>
           <name>GNU Lesser General Public License</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <file>gnu lesser general public license - lgpl-2.1.html</file>
         </license>
       </licenses>
     </dependency>
@@ -95,10 +96,10 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.26.3</version>
+      <version>3.27.3</version>
       <licenses>
         <license>
-          <name>Apache License, Version 2.0</name>
+          <name>Apache-2.0</name>
           <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
           <distribution>repo</distribution>
           <file>apache-2.0 - license-2.0.txt</file>
@@ -146,7 +147,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.11.3</version>
+      <version>5.11.4</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -158,7 +159,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.11.3</version>
+      <version>5.11.4</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -170,7 +171,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.11.3</version>
+      <version>5.11.4</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -182,7 +183,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.14.2</version>
+      <version>5.15.2</version>
       <licenses>
         <license>
           <name>MIT</name>
@@ -195,7 +196,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>5.14.2</version>
+      <version>5.15.2</version>
       <licenses>
         <license>
           <name>MIT</name>
@@ -273,7 +274,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot</artifactId>
-      <version>3.4.0</version>
+      <version>3.4.2</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -285,7 +286,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
-      <version>3.4.0</version>
+      <version>3.4.2</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>

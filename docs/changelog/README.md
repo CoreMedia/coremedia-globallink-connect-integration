@@ -13,6 +13,7 @@ keeping an overview in the main changelog of the workspace.
 
 <!-- Place new releases at the top of the list. -->
 
+* [v2412.0.0-1](./v12.2412.0.0-1.md)
 * [v2406.1.0-1](./v12.2406.1.0-1.md)
 
 --------------------------------------------------------------------------------

@@ -5,7 +5,7 @@
   "license": "CoreMedia Open Source License",
   "private": true,
   "dependencies": {
-    "@coremedia-labs/studio-client.ext.gcc-studio-client": "1.0.0-SNAPSHOT"
+    "@coremedia-labs/studio-client.ext.gcc-studio-client": "workspace:*"
   },
   "devDependencies": {
     "@jangaroo/build": "^3.1.0",

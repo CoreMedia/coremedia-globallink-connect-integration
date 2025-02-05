@@ -3,11 +3,12 @@ package com.coremedia.labs.translation.gcc.facade;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static java.lang.invoke.MethodHandles.lookup;
 
 /**
  * Model to store the data of a Submission returned by the GCC-Client.
@@ -103,6 +104,19 @@ public class GCSubmissionModel {
    */
   public boolean isError() {
     return error;
+  }
+
+  @NonNull
+  public String describe() {
+    return "%s[error=%s, name=%s, pdSubmissionIds=%s, state=%s, submissionId=%s, submitter=%s]".formatted(
+      lookup().lookupClass().getSimpleName(),
+      error,
+      name,
+      pdSubmissionIds,
+      state,
+      submissionId,
+      submitter
+    );
   }
 
   @Override
@@ -225,7 +239,7 @@ public class GCSubmissionModel {
 
     @Override
     public String toString() {
-      return "%s[error=%s, name=%s, pdSubmissionIds=%s, state=%s, submissionId=%s, submitter=%s]".formatted(MethodHandles.lookup().lookupClass().getSimpleName(), error, name, pdSubmissionIds, state, submissionId, submitter);
+      return "%s[error=%s, name=%s, pdSubmissionIds=%s, state=%s, submissionId=%s, submitter=%s]".formatted(lookup().lookupClass().getSimpleName(), error, name, pdSubmissionIds, state, submissionId, submitter);
     }
   }
 }
