@@ -1,6 +1,13 @@
 Changelog
 ================================================================================
 
+v2412.0.0-1
+--------------------------------------------------------------------------------
+
+* Updated dependencies to CoreMedia Content Cloud v12.2412.0.0.
+* **Studio-Client**: Changed references to workspace artifacts using the
+  `workspace:` protocol as version identifier.
+
 v2406.1.0-1
 --------------------------------------------------------------------------------
 
