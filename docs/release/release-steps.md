@@ -22,8 +22,7 @@ $ cd gcc
 $ git switch --create --track "gcc-update-x.y.z" "origin/develop"
 # ... perform required updates ...
 $ git commit --all --message="Update GCC REST Client to x.y.z"
-# ... perform required updates ...
-$ git push --set-upstream origin "gcc-update-x.y.z"
+$ git push
 ```
 
 **TL;DR**: Create a feature branch from `develop`, update GCC REST Client and
