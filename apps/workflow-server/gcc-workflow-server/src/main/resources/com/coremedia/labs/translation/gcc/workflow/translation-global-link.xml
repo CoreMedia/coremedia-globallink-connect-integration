@@ -254,12 +254,8 @@
     </AutomatedTask>
 
     <Switch name="CheckDownloadTranslation" defaultSuccessor="DownloadTranslation">
-      <Case successor="HandleDownloadTranslationError">
-        <!-- if there are errors that are not retried automatically, let the user handle them in the error user task -->
-        <And>
-          <NotEmpty variable="workflowActionIssues"/>
-          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
-        </And>
+      <Case successor="ReviewRedeliveredTranslation">
+        <Equal><Get variable="globalLinkSubmissionStatus"/><String value="REDELIVERED"/></Equal>
       </Case>
       <Case successor="ReviewDeliveredTranslation">
         <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
@@ -269,6 +265,20 @@
       </Case>
       <Case successor="CancelTranslation">
         <Get variable="cancelRequested"/>
+      </Case>
+      <!--
+        Must be last option: As all states above signal a "done" state, where
+        we would not expect to retry a download, these must be checked first.
+      -->
+      <Case successor="HandleDownloadTranslationError">
+        <!--
+          If there are errors that are not retried automatically, let the user
+          handle them in the error user task.
+        -->
+        <And>
+          <NotEmpty variable="workflowActionIssues"/>
+          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
+        </And>
       </Case>
     </Switch>
 
@@ -307,6 +317,41 @@
     </If>
 
     <UserTask name="ReviewDeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
+      <!--
+        Should be kept aligned with ReviewRedeliveredTranslation.
+      -->
+      <Rights>
+        <Grant group="translation-manager-role"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
+        <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
+      </Rights>
+      <!-- store task performer for executing CompleteTranslationAction in task "Complete" -->
+      <EntryAction class="com.coremedia.translate.workflow.ExtractPerformerAction"
+                   performerVariable="performer"/>
+      <Assignment>
+        <Reads variable="subject"/>
+        <Reads variable="targetSiteId"/>
+        <Reads variable="masterContentObjects"/>
+        <Writes variable="comment"/>
+        <Writes variable="derivedContents"/>
+        <Writes variable="createdContents"/>
+        <Writes variable="translationAction"/>
+      </Assignment>
+      <ExitAction class="RegisterPendingProcess"/>
+    </UserTask>
+
+    <UserTask name="ReviewRedeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
+      <!--
+        Should be kept aligned with ReviewDeliveredTranslation.
+
+        Other than for ReviewDeliveredTranslation, we expect the editors have to
+        apply extra steps, such as manually uploading the XLIFF, if it has not
+        been done by automatic means.
+
+        The observed use case is, that a "broken XLIFF" got repaired and
+        subsequently sent via email. Within the GCC backend, the submission
+        directly changed from `Completed` to `Redelivered`.
+      -->
       <Rights>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
@@ -375,23 +420,57 @@
     </AutomatedTask>
 
     <Switch name="CheckCancelTranslation" defaultSuccessor="CancelTranslation">
-      <Case successor="HandleCancelTranslationError">
-        <And>
-          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
-          <NotEmpty variable="workflowActionIssues"/>
-        </And>
-      </Case>
       <Case successor="RollbackContent">
+        <!--
+          Short: If our cancelation request was successful, we automatically
+                 apply a rollback of the translation.
+
+          Successful means, that either:
+
+            * The GCC backend confirmed the cancelation request.
+            * The GCC backend by other means signals "Done" for the submission.
+              In this case, we value the "cancel" request by the user higher
+              than the "done" signal by the backend, so that also in this case
+              we roll back the (partially applied) translation.
+        -->
         <Or>
           <Equal><Get variable="globalLinkSubmissionStatus"/><String value="CANCELLATION_CONFIRMED"/></Equal>
           <And>
-            <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
+            <Or>
+              <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
+              <Equal><Get variable="globalLinkSubmissionStatus"/><String value="REDELIVERED"/></Equal>
+            </Or>
             <Get variable="cancelled"/>
           </And>
         </Or>
       </Case>
+      <!--
+        Further switch-branches: We now know, that the cancelation request
+        towards the GCC backend was not successful, yet. If, in the meantime,
+        we get a "done" signal from the backend, we will not continue to
+        automatically rollback the translation, but instead let the user
+        decide what to do next. Thus, the user may still decide to rollback,
+        or, instead, to accept the translation result.
+      -->
       <Case successor="ReviewDeliveredTranslation">
         <Equal><Get variable="globalLinkSubmissionStatus"/><String value="DELIVERED"/></Equal>
+      </Case>
+      <Case successor="ReviewRedeliveredTranslation">
+        <Equal><Get variable="globalLinkSubmissionStatus"/><String value="REDELIVERED"/></Equal>
+      </Case>
+      <!--
+        Must be last option: As all states above signal a "done" state, where
+        we would not expect to retry a download, these must be checked first.
+      -->
+      <Case successor="HandleCancelTranslationError">
+        <!--
+          If there are errors that are not retried automatically, let the user
+          handle them in the error user task.
+        -->
+        <And>
+          <NotEmpty variable="workflowActionIssues"/>
+          <Equal><Get variable="remainingAutomaticRetries"/><Integer value="0"/></Equal>
+        </And>
       </Case>
     </Switch>
 

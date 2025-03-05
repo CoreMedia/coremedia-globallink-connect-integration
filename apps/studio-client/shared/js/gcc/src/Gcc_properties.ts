@@ -1,5 +1,4 @@
 interface Gcc_properties {
-
   TranslationGlobalLink_submission_id_key: string;
   TranslationGlobalLink_submission_status_key: string;
   TranslationGlobalLink_submission_dueDate_key: string;
@@ -13,9 +12,11 @@ interface Gcc_properties {
   TranslationGlobalLink_submission_status_IN_PROGRESS: string;
   TranslationGlobalLink_submission_status_CANCELLED: string;
   TranslationGlobalLink_submission_status_CANCELLATION_CONFIRMED: string;
+  TranslationGlobalLink_submission_status_CANCELLATION_REQUESTED: string;
   TranslationGlobalLink_submission_status_TRANSLATE: string;
   TranslationGlobalLink_submission_status_REVIEW: string;
   TranslationGlobalLink_submission_status_COMPLETED: string;
+  TranslationGlobalLink_submission_status_REDELIVERED: string;
   TranslationGlobalLink_submission_status_DELIVERED: string;
   TranslationGlobalLink_submission_status_OTHER: string;
   TranslationGlobalLink_submission_status_unavailable: string;
@@ -43,9 +44,11 @@ const Gcc_properties: Gcc_properties = {
   TranslationGlobalLink_submission_status_IN_PROGRESS: "In Progress",
   TranslationGlobalLink_submission_status_CANCELLED: "Canceled",
   TranslationGlobalLink_submission_status_CANCELLATION_CONFIRMED: "Canceled",
+  TranslationGlobalLink_submission_status_CANCELLATION_REQUESTED: "Canceled",
   TranslationGlobalLink_submission_status_TRANSLATE: "Translate",
   TranslationGlobalLink_submission_status_REVIEW: "Review",
   TranslationGlobalLink_submission_status_COMPLETED: "Completed",
+  TranslationGlobalLink_submission_status_REDELIVERED: "Redelivered",
   TranslationGlobalLink_submission_status_DELIVERED: "Delivered",
   TranslationGlobalLink_submission_status_OTHER: "Unknown",
   TranslationGlobalLink_submission_status_unavailable: "Unavailable",

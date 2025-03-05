@@ -12,6 +12,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.translate.item.TranslateItemConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -33,6 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -58,7 +60,6 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 /**
  * Tests {@link SendToGlobalLinkAction}.
  */
-@SuppressWarnings("UnstableApiUsage")
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = SendToGlobalLinkActionTest.LocalConfig.class)
@@ -76,7 +77,7 @@ class SendToGlobalLinkActionTest {
 
     long expectedSubmissionId = 42L;
     Locale masterLocale = Locale.US;
-    final Locale derivedLocale = Locale.GERMANY;
+    Locale derivedLocale = Locale.GERMANY;
 
     String displayName = testInfo.getDisplayName();
     Content masterContent = contentType.createByTemplate("/", displayName, "{3} ({1})", ImmutableMap.<String,Object>builder()
@@ -95,7 +96,7 @@ class SendToGlobalLinkActionTest {
     targetContent.checkIn();
 
     String expectedFileId = targetContent.getId();
-    final String[] uploadedXliff = {null};
+    String[] uploadedXliff = {null};
 
     Mockito.doAnswer(invocation -> readXliff(invocation, expectedFileId, uploadedXliff))
             .when(gcExchangeFacade)
@@ -105,7 +106,7 @@ class SendToGlobalLinkActionTest {
 
     List<Content> derivedContents = singletonList(targetContent);
     String comment = "Test";
-    ZonedDateTime dueDate = ZonedDateTime.of(LocalDateTime.now().plusDays(30), ZoneId.systemDefault());
+    ZonedDateTime dueDate = ZonedDateTime.of(LocalDateTime.now().plusDays(30L), ZoneId.systemDefault());
     String workflow = "pseudo translation";
     SendToGlobalLinkAction.Parameters params = new SendToGlobalLinkAction.Parameters(displayName, comment, derivedContents, masterContents, dueDate, workflow, user);
     AtomicReference<String> resultHolder = new AtomicReference<>();
@@ -168,6 +169,7 @@ class SendToGlobalLinkActionTest {
   }
 
   private static final class MockedSendToGlobalLinkAction extends SendToGlobalLinkAction {
+    @Serial
     private static final long serialVersionUID = -4082795575498550151L;
     private final ApplicationContext applicationContext;
 
@@ -176,6 +178,7 @@ class SendToGlobalLinkActionTest {
     }
 
     @Override
+    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }

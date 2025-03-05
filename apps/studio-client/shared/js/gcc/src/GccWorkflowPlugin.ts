@@ -2,21 +2,19 @@ import ILocalesService from "@coremedia/studio-client.cap-base-models/locale/ILo
 import localesService from "@coremedia/studio-client.cap-base-models/locale/localesService";
 import ContentRepositoryImpl from "@coremedia/studio-client.cap-rest-client-impl/content/impl/ContentRepositoryImpl";
 import TaskDefinitionImpl from "@coremedia/studio-client.cap-rest-client-impl/workflow/impl/TaskDefinitionImpl";
-import session from "@coremedia/studio-client.cap-rest-client/common/session";
-import Content from "@coremedia/studio-client.cap-rest-client/content/Content";
-import Struct from "@coremedia/studio-client.cap-rest-client/struct/Struct";
-import StructRemoteBean from "@coremedia/studio-client.cap-rest-client/struct/StructRemoteBean";
-import Process from "@coremedia/studio-client.cap-rest-client/workflow/Process";
-import Task from "@coremedia/studio-client.cap-rest-client/workflow/Task";
-import WorkflowObjectProperties from "@coremedia/studio-client.cap-rest-client/workflow/WorkflowObjectProperties";
+import { session, Process, Task, WorkflowObjectProperties } from "@coremedia/studio-client.cap-rest-client";
 import RemoteService from "@coremedia/studio-client.client-core-impl/data/impl/RemoteService";
-import Blob from "@coremedia/studio-client.client-core/data/Blob";
-import Calendar from "@coremedia/studio-client.client-core/data/Calendar";
-import RemoteBeanUtil from "@coremedia/studio-client.client-core/data/RemoteBeanUtil";
+import { Blob, Calendar, RemoteBeanUtil } from "@coremedia/studio-client.client-core";
 import ProcessUtil from "@coremedia/studio-client.workflow-models/util/ProcessUtil";
-import { Binding, Button, DateTimeField, TextField, WorkflowState } from "@coremedia/studio-client.workflow-plugin-models/CustomWorkflowApi";
+import {
+  Binding,
+  Button,
+  DateTimeField,
+  TextField,
+  WorkflowState,
+  workflowPlugins,
+} from "@coremedia/studio-client.workflow-plugin-models";
 import { workflowLocalizationRegistry } from "@coremedia/studio-client.workflow-plugin-models/WorkflowLocalizationRegistry";
-import { workflowPlugins } from "@coremedia/studio-client.workflow-plugin-models/WorkflowPluginRegistry";
 import DateUtil from "@jangaroo/ext-ts/Date";
 import { as, is } from "@jangaroo/runtime";
 import resourceManager from "@jangaroo/runtime/l10n/resourceManager";
@@ -26,23 +24,34 @@ import gccCanceledIcon from "./icons/global-link-workflow-canceled.svg";
 import gccIcon from "./icons/global-link-workflow.svg";
 import gccCancelActionIcon from "./icons/remove.svg";
 import gccWarningIcon from "./icons/warning.svg";
-import Logger from "@coremedia/studio-client.client-core-impl/logging/Logger";
+import { translationServicesSettings } from "./TranslationServiceSettings";
 
 const UNAVAILABLE_SUBMISSION_STATE: string = "unavailable";
 const BLOB_FILE_PROCESS_VARIABLE_NAME: string = "translationResultXliff";
 const TRANSLATION_RESULT_XLIFF_VARIABLE_NAME: string = "translationResultXliff";
-const ERROR_TASK_NAME: string = "HandleDownloadTranslationError";
+/**
+ * Task names where the XLIFF download should be shown. An additional check is
+ * applied, which is, that if the XLIFF download is not available, the button
+ * is hidden, too.
+ */
+const SHOW_XLIFF_DOWNLOAD_TASK_NAMES: string[] = ["HandleDownloadTranslationError", "ReviewRedeliveredTranslation"];
 const CANCEL_REQUESTED_VARIABLE_NAME: string = "cancelRequested";
 const CANCELLATION_ALLOWED_VARIABLE_NAME: string = "cancellationAllowed";
 const TRANSLATION_GLOBAL_LINK_PROCESS_NAME: string = "TranslationGlobalLink";
 const GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME: string = "globalLinkSubmissionStatus";
+/**
+ * Virtual state for a translation, where the state itself does not yet
+ * represent the canceled state, but it is only received via an extra
+ * property. Thus, the state could still be `TRANSLATE` while the property
+ * to cancel the translation already has been set.
+ */
+const CANCELLATION_REQUESTED_SUBMISSION_STATE = "CANCELLATION_REQUESTED";
 const CANCELLATION_CONFIRMED_SUBMISSION_STATE: string = "CANCELLATION_CONFIRMED";
 const CANCELLED_SUBMISSION_STATE: string = "CANCELLED";
 const HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME: string = "HandleSendTranslationRequestError";
 const HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME: string = "HandleDownloadTranslationError";
 const HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME: string = "HandleCancelTranslationError";
 const MILLISECONDS_FOR_ONE_DAY: number = 86400000;
-const CMSETTINGS_TYPE: string = "CMSettings";
 
 interface GccViewModel {
   globalLinkPdSubmissionIds?: string;
@@ -56,6 +65,30 @@ interface GccViewModel {
   xliffResultDownloadNotAvailable?: boolean;
 }
 
+/**
+ * Retrieve the submission status from properties. Respects a virtual state
+ * `CANCEL` when the status itself does not yet represent any state that is
+ * part of the cancelation process. Thus, the state may still be _Translate_
+ * while an additional property already denotes, that we requested to cancel
+ * the translation.
+ *
+ * @param process - process to get state for
+ */
+const getSubmissionStatus = (process): string => {
+  const properties = process.getProperties();
+  const gccSubmissionsState = properties.get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as string;
+  if ([CANCELLATION_CONFIRMED_SUBMISSION_STATE, CANCELLED_SUBMISSION_STATE].includes(gccSubmissionsState)) {
+    // No need to override. These are well-known states of the cancelation process.
+    return gccSubmissionsState;
+  }
+  const cancelRequested = properties.get(CANCEL_REQUESTED_VARIABLE_NAME) as boolean;
+  if (cancelRequested) {
+    // Override and use virtual state.
+    return CANCELLATION_REQUESTED_SUBMISSION_STATE;
+  }
+  return gccSubmissionsState;
+};
+
 workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   workflowType: "TRANSLATION",
 
@@ -64,19 +97,26 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   createWorkflowPerTargetSite: false,
 
   customizeWorkflowIcon: (process, task?) => {
-    if (!!task
-      && (!task.getWarnings() || task.getWarnings().length === 0)
-      && !task.isEscalated()
-      && !task.isAccepted()
-      && (task.getDefinition().getName() === HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME
-        || task.getDefinition().getName() === HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME
-        || task.getDefinition().getName() === HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME)) {
+    if (
+      !!task &&
+      (!task.getWarnings() || task.getWarnings().length === 0) &&
+      !task.isEscalated() &&
+      !task.isAccepted() &&
+      (task.getDefinition().getName() === HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME ||
+        task.getDefinition().getName() === HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME ||
+        task.getDefinition().getName() === HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME)
+    ) {
       return gccWarningIcon;
     }
 
-    const gccSubmissionsState: String = process.getProperties().get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as String;
-    const cancelRequested: Boolean = process.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME) as Boolean || gccSubmissionsState === CANCELLATION_CONFIRMED_SUBMISSION_STATE || gccSubmissionsState === CANCELLED_SUBMISSION_STATE;
-    if (cancelRequested) {
+    const status = getSubmissionStatus(process);
+    if (
+      [
+        CANCELLATION_REQUESTED_SUBMISSION_STATE,
+        CANCELLATION_CONFIRMED_SUBMISSION_STATE,
+        CANCELLED_SUBMISSION_STATE,
+      ].includes(status)
+    ) {
       return gccCanceledIcon;
     }
 
@@ -88,6 +128,20 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
   transitions: [
     {
       task: "ReviewDeliveredTranslation",
+      defaultNextTask: "finishTranslation",
+      nextSteps: [
+        {
+          name: "rollbackTranslation",
+          allowAlways: true,
+        },
+        {
+          name: "finishTranslation",
+          allowAlways: true,
+        },
+      ],
+    },
+    {
+      task: "ReviewRedeliveredTranslation",
       defaultNextTask: "finishTranslation",
       nextSteps: [
         {
@@ -186,12 +240,17 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
     computeTaskFromProcess: ProcessUtil.getCurrentTask,
     computeViewModel(state: WorkflowState): GccViewModel {
       return {
-        globalLinkPdSubmissionIds: transformSubmissionId(state.process.getProperties().get("globalLinkPdSubmissionIds")),
-        globalLinkSubmissionStatus: transformSubmissionStatus(state.process.getProperties().get("globalLinkSubmissionStatus")),
+        globalLinkPdSubmissionIds: transformSubmissionId(
+          state.process.getProperties().get("globalLinkPdSubmissionIds"),
+        ),
+        globalLinkSubmissionStatus: transformSubmissionStatus(getSubmissionStatus(state.process)),
         globalLinkDueDate: dateToDate(state.process.getProperties().get("globalLinkDueDate")),
         globalLinkDueDateText: dateToString(state.process.getProperties().get("globalLinkDueDate")),
         completedLocales: convertLocales(state.process.getProperties().get("completedLocales")),
-        completedLocalesTooltip: createQuickTipText(state.process.getProperties().get("completedLocales"), localesService),
+        completedLocalesTooltip: createQuickTipText(
+          state.process.getProperties().get("completedLocales"),
+          localesService,
+        ),
         xliffResultDownloadNotAvailable: downloadNotAvailable(state.task),
       };
     },
@@ -245,7 +304,7 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
       },
       confirmTitle: Gcc_properties.confirm_cancellation_title,
       confirmMessage: Gcc_properties.confirm_cancellation,
-      computeActionState: workflowObjects => {
+      computeActionState: (workflowObjects) => {
         if (!workflowObjects || workflowObjects.length === 0) {
           return {
             hidden: true,
@@ -255,16 +314,20 @@ workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
 
         for (let i: number = 0; i < workflowObjects.length; i++) {
           const wfobject = workflowObjects[i];
-          if (!is(wfobject, Process)
-                  || !RemoteBeanUtil.isAccessible(wfobject)
-                  || wfobject.getDefinition().getName() !== TRANSLATION_GLOBAL_LINK_PROCESS_NAME) {
+          if (
+            !is(wfobject, Process) ||
+            !RemoteBeanUtil.isAccessible(wfobject) ||
+            wfobject.getDefinition().getName() !== TRANSLATION_GLOBAL_LINK_PROCESS_NAME
+          ) {
             return {
               hidden: true,
               disabled: true,
             };
           }
-          if (!wfobject.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME)
-                  || wfobject.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME)) {
+          if (
+            !wfobject.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME) ||
+            wfobject.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME)
+          ) {
             return {
               hidden: false,
               disabled: true,
@@ -288,32 +351,49 @@ workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
   states: {
     Translate: GccWorkflowLocalization_properties.TranslationGlobalLink_state_Translate_displayName,
     rollbackTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_rollbackTranslation_displayName,
-    rollbackTranslation_afterCancellationFailed: GccWorkflowLocalization_properties.TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName,
+    rollbackTranslation_afterCancellationFailed:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName,
     finishTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_finishTranslation_displayName,
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_DownloadTranslation_displayName,
-    ReviewDeliveredTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName,
-    ReviewCancelledTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewCancelledTranslation_displayName,
+    ReviewDeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName,
+    ReviewRedeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewRedeliveredTranslation_displayName,
+    ReviewCancelledTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_ReviewCancelledTranslation_displayName,
     translationReviewed: GccWorkflowLocalization_properties.TranslationGlobalLink_state_translationReviewed_displayName,
     continueRetry: GccWorkflowLocalization_properties.TranslationGlobalLink_state_continueRetry_displayName,
     retryCancellation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_retryCancellation_displayName,
     continueTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_state_continueTranslation_displayName,
-    HandleSendTranslationRequestError: GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleSendTranslationRequestError_displayName,
-    HandleDownloadTranslationError: GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleDownloadTranslationError_displayName,
-    HandleCancelTranslationError: GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleCancelTranslationError_displayName,
+    HandleSendTranslationRequestError:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleSendTranslationRequestError_displayName,
+    HandleDownloadTranslationError:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleDownloadTranslationError_displayName,
+    HandleCancelTranslationError:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_state_HandleCancelTranslationError_displayName,
   },
   tasks: {
     Prepare: GccWorkflowLocalization_properties.TranslationGlobalLink_task_Prepare_displayName,
     AutoMerge: GccWorkflowLocalization_properties.TranslationGlobalLink_task_AutoMerge_displayName,
-    SendTranslationRequest: GccWorkflowLocalization_properties.TranslationGlobalLink_task_SendTranslationRequest_displayName,
+    SendTranslationRequest:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_SendTranslationRequest_displayName,
+    CancelTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_CancelTranslation_displayName,
     DownloadTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_DownloadTranslation_displayName,
-    ReviewDeliveredTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName,
-    ReviewCancelledTranslation: GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewCancelledTranslation_displayName,
+    ReviewDeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewDeliveredTranslation_displayName,
+    ReviewRedeliveredTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewRedeliveredTranslation_displayName,
+    ReviewCancelledTranslation:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_ReviewCancelledTranslation_displayName,
     RollbackContent: GccWorkflowLocalization_properties.TranslationGlobalLink_task_RollbackContent_displayName,
     Complete: GccWorkflowLocalization_properties.TranslationGlobalLink_task_Complete_displayName,
     Finish: GccWorkflowLocalization_properties.TranslationGlobalLink_task_Finish_displayName,
-    HandleSendTranslationRequestError: GccWorkflowLocalization_properties.TranslationGlobalLink_task_HandleSendTranslationRequestError_displayName,
-    HandleDownloadTranslationError: GccWorkflowLocalization_properties.TranslationGlobalLink_task_HandleDownloadTranslationError_displayName,
-    HandleCancelTranslationError: GccWorkflowLocalization_properties.TranslationGlobalLink_task_HandleCancelTranslationError_displayName,
+    HandleSendTranslationRequestError:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_HandleSendTranslationRequestError_displayName,
+    HandleDownloadTranslationError:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_HandleDownloadTranslationError_displayName,
+    HandleCancelTranslationError:
+      GccWorkflowLocalization_properties.TranslationGlobalLink_task_HandleCancelTranslationError_displayName,
   },
 });
 
@@ -324,8 +404,11 @@ workflowLocalizationRegistry._.addIssuesLocalization({
   "GCC-WF-40000": GccWorkflowLocalization_properties["GCC-WF-40000_text"],
   "GCC-WF-40001": GccWorkflowLocalization_properties["GCC-WF-40001_text"],
   "GCC-WF-40002": GccWorkflowLocalization_properties["GCC-WF-40002_text"],
+  "GCC-WF-40003": GccWorkflowLocalization_properties["GCC-WF-40003_text"],
   "GCC-WF-40050": GccWorkflowLocalization_properties["GCC-WF-40050_text"],
   "GCC-WF-50050": GccWorkflowLocalization_properties["GCC-WF-50050_text"],
+  "GCC-WF-60000": GccWorkflowLocalization_properties["GCC-WF-60000_text"],
+  "GCC-WF-60001": GccWorkflowLocalization_properties["GCC-WF-60001_text"],
   "GCC-WF-61001": GccWorkflowLocalization_properties["GCC-WF-61001_text"],
   dateLiesInPast_globalLinkDueDate: GccWorkflowLocalization_properties.dateLiesInPast_globalLinkDueDate_text,
   dateInvalid_globalLinkDueDate: GccWorkflowLocalization_properties.dateInvalid_globalLinkDueDate_text,
@@ -382,23 +465,30 @@ function dateToString(value): string {
 
 function downloadXliff(task: Task): void {
   const currentDate = new Date();
-  const uri = RemoteService.calculateRequestURI("downloadBlob/") +
-          "?process=" + task.getContainingProcess().getId() +
-          "&blobProcessVariable=" + BLOB_FILE_PROCESS_VARIABLE_NAME +
-          "&" + currentDate.getTime();
+  const uri =
+    RemoteService.calculateRequestURI("downloadBlob") +
+    "?process=" +
+    task.getContainingProcess().getId() +
+    "&blobProcessVariable=" +
+    BLOB_FILE_PROCESS_VARIABLE_NAME +
+    "&" +
+    currentDate.getTime();
   window.open(uri);
 }
 
 function downloadNotAvailable(task: Task): boolean {
-  if (!task
-          || !RemoteBeanUtil.isAccessible(task)
-          || !RemoteBeanUtil.isAccessible(<TaskDefinitionImpl>task.getDefinition())
-          || !RemoteBeanUtil.isAccessible(task.getContainingProcess())
-          || task.getDefinition().getName() !== ERROR_TASK_NAME) {
+  if (
+    !task ||
+    !RemoteBeanUtil.isAccessible(task) ||
+    !RemoteBeanUtil.isAccessible(<TaskDefinitionImpl>task.getDefinition()) ||
+    !RemoteBeanUtil.isAccessible(task.getContainingProcess()) ||
+    !SHOW_XLIFF_DOWNLOAD_TASK_NAMES.includes(task.getDefinition().getName())
+  ) {
     return true;
   }
 
-  const properties: WorkflowObjectProperties = task.getContainingProcess() && task.getContainingProcess().getProperties();
+  const properties: WorkflowObjectProperties =
+    task.getContainingProcess() && task.getContainingProcess().getProperties();
   const downloadAvailable: Blob = properties && as(properties.get(TRANSLATION_RESULT_XLIFF_VARIABLE_NAME), Blob);
   return !downloadAvailable;
 }
@@ -410,7 +500,9 @@ function convertLocales(locales: Array<any>): string {
       const displayNameOfLocale: string = locale && locale.getDisplayName();
       return displayNameOfLocale ? displayNameOfLocale : "";
     }
-    return resourceManager.getString(Gcc_properties, "TranslationGlobalLink_Multi_Target_Locale_Text", [locales.length]);
+    return resourceManager.getString(Gcc_properties, "TranslationGlobalLink_Multi_Target_Locale_Text", [
+      locales.length,
+    ]);
   }
   return "";
 }
@@ -429,49 +521,20 @@ function createQuickTipText(locales: Array<any>, localesService: ILocalesService
   return localeQuickTipText;
 }
 
-function getDefaultDueDate(): Calendar {
-  const translationServices: Content = session._.getConnection().getContentRepository().getChild("/Settings/Options/Settings/Translation Services");
-  let settings: Array<Content> = [];
-  if (!RemoteBeanUtil.isAccessible(translationServices)) {
-    return undefined;
-  } else if (translationServices.isFolder()) {
-    settings.push(...translationServices.getChildDocuments());
-  } else if (translationServices.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
-    settings.push(translationServices)
-  } else {
+function getDefaultDueDate(): Calendar | undefined {
+  const dayOffsetForDueDate = translationServicesSettings.getDayOffsetForDueDate();
+  if (dayOffsetForDueDate === undefined) {
     return undefined;
   }
 
-  for (let content of settings) {
-    if (RemoteBeanUtil.isAccessible(content) && content.getType().isSubtypeOf(CMSETTINGS_TYPE)) {
-      const calendar: Calendar = getDueDateFromSetting(content);
-      if (calendar) {
-        Logger.debug("Using due date from setting at " + content.getPath());
-        return calendar;
-      }
-    }
-  }
-
-  return undefined;
+  const dateInFutureInMillieSeconds = new Date().getTime() + MILLISECONDS_FOR_ONE_DAY * dayOffsetForDueDate;
+  const dateInFuture = new Date(dateInFutureInMillieSeconds);
+  return new Calendar({
+    year: dateInFuture.getFullYear(),
+    month: dateInFuture.getMonth(),
+    day: dateInFuture.getDate(),
+    offset: -dateInFuture.getTimezoneOffset() * (60 * 1000),
+    timeZone: as(session._.getConnection().getContentRepository(), ContentRepositoryImpl).getDefaultTimeZone(),
+    normalized: true,
+  });
 }
-
-function getDueDateFromSetting(setting:Content): Calendar {
-  const gccConfig = setting.getProperties().get("settings") as StructRemoteBean;
-  if (RemoteBeanUtil.isAccessible(gccConfig) && gccConfig.get("globalLink")) {
-    const dayOffsetForDueDate: number = as(gccConfig.get("globalLink"), Struct).get("dayOffsetForDueDate");
-    if (dayOffsetForDueDate) {
-      const dateInFutureInMillieSeconds: number = new Date().getTime() + (MILLISECONDS_FOR_ONE_DAY * dayOffsetForDueDate);
-      const dateInFuture = new Date(dateInFutureInMillieSeconds);
-      return new Calendar({
-        year: dateInFuture.getFullYear(),
-        month: dateInFuture.getMonth(),
-        day: dateInFuture.getDate(),
-        offset: -dateInFuture.getTimezoneOffset() * (60 * 1000),
-        timeZone: as(session._.getConnection().getContentRepository(), ContentRepositoryImpl).getDefaultTimeZone(),
-        normalized: true,
-      });
-    }
-  }
-  return undefined;
-}
-

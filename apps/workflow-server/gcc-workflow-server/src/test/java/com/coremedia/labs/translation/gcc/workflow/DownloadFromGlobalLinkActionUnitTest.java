@@ -36,7 +36,7 @@ class DownloadFromGlobalLinkActionUnitTest {
         IOUtils.copy(is, os);
       }
     } catch (IOException e) {
-      assumeTrue(false, "Cannot setup DownloadFromGlobalLinkActionUnitTest: " + e.getMessage());
+      assumeTrue(false, "Cannot set up DownloadFromGlobalLinkActionUnitTest: " + e.getMessage());
     }
   }
 
@@ -91,8 +91,8 @@ class DownloadFromGlobalLinkActionUnitTest {
           assertNotNull(files);
           assertEquals(2, files.length);
           // Check files by well known length, which is sufficiently unique in this test.
-          assertEquals(5, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
-          assertEquals(6, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
+          assertEquals(5L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
+          assertEquals(6L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
         } finally {
           deleteFile(extracted);
         }
@@ -115,17 +115,20 @@ class DownloadFromGlobalLinkActionUnitTest {
     try {
       File newXliffs = new File(workingDir, DownloadFromGlobalLinkAction.NEWXLIFFS);
       assumeTrue(newXliffs.mkdir());
-      copyResourceToDirectory("zipentry2.txt", newXliffs, 5);
-      copyResourceToDirectory("zipentry3.txt", newXliffs, 6);
+      copyResourceToDirectory("zipentry2.txt", newXliffs, 5L);
+      copyResourceToDirectory("zipentry3.txt", newXliffs, 6L);
     } catch (IOException e) {
-      assumeTrue(false, "Cannot prepare working directory: " + e.getMessage());
+      assumeTrue(false, "Cannot prepare the working directory: " + e.getMessage());
     }
   }
 
-  private static void copyResourceToDirectory(String resourceName, File targetDir, int length) throws IOException {
+  private static void copyResourceToDirectory(String resourceName, File targetDir, long length) throws IOException {
     try (InputStream is = DownloadFromGlobalLinkActionUnitTest.class.getResourceAsStream("/com/coremedia/labs/translation/gcc/workflow/" + resourceName)) {
+      if (is == null) {
+        throw new IllegalStateException("Cannot find resource: " + resourceName);
+      }
       long result = Files.copy(is, new File(targetDir, resourceName).toPath());
-      if (length >= 0) {
+      if (length >= 0L) {
         assumeTrue(result == length);
       }
     }
@@ -137,7 +140,7 @@ class DownloadFromGlobalLinkActionUnitTest {
         FileUtils.forceDelete(file);
       }
     } catch (IOException e) {
-      LOG.warn("Cannot delete " + file.getAbsolutePath() + ", please cleanup manually.", e);
+      LOG.warn("Cannot delete {}, please clean up manually.", file.getAbsolutePath(), e);
     }
   }
 

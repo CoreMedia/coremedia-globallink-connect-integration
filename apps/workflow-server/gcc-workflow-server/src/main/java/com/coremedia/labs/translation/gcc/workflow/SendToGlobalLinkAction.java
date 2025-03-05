@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -50,6 +51,7 @@ import static java.util.stream.Collectors.groupingBy;
 public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAction.Parameters, String> {
   private static final Logger LOG = LoggerFactory.getLogger(lookup().lookupClass());
 
+  @Serial
   private static final long serialVersionUID = 7530762957907324426L;
 
   private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "sendTranslationRequestRetryDelay";
@@ -105,7 +107,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   /**
    * Sets the variable to read the performer of the translation workflow from.
-   * This will be used to add the name of the submitter to the translation submission (if enabled=.
+   * This will be used to add the name of the submitter to the translation submission (if enabled).
    *
    * @param performerVariable performer variable name
    */
@@ -142,6 +144,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     return GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
+  @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @Override
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
@@ -253,7 +256,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    * @param dueDate                  date that will be sent as 'dueDate' parameter
    * @param workflow                 workflow to be used for the translation, if not the default
    * @param submitter                username of the submitter
-   * @return the result that contains the ID of the created submission or an error result
+   * @return the result that contains the ID of the created submission, or an error result
    * @throws GCFacadeCommunicationException if submitting the submission failed
    */
   protected String submitSubmission(GCExchangeFacade facade, String subject, String comment,
@@ -265,7 +268,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
     long submissionId = facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, xliffFileIds);
 
-    LOG.info("Submitted submission with internal id {} for {} files to GCC.", submissionId, xliffFileIds.size());
+    LOG.info("Submitted submission with the internal id {} for {} files to GCC.", submissionId, xliffFileIds.size());
     return String.valueOf(submissionId);
   }
 
@@ -306,30 +309,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     return site.getLocale();
   }
 
-  static final class Parameters {
-    final String subject;
-    final String comment;
-    final Collection<Content> derivedContents;
-    final Collection<ContentObject> masterContentObjects;
-    final ZonedDateTime dueDate;
-    final String workflow;
-    final User submitter;
-
-    Parameters(String subject,
-               String comment,
-               Collection<Content> derivedContents,
-               Collection<ContentObject> masterContentObjects,
-               ZonedDateTime dueDate,
-               String workflow,
-               User submitter) {
-      this.subject = subject;
-      this.comment = comment;
-      this.derivedContents = derivedContents;
-      this.masterContentObjects = masterContentObjects;
-      this.dueDate = dueDate;
-      this.workflow = workflow;
-      this.submitter = submitter;
-    }
+  record Parameters(String subject, String comment, Collection<Content> derivedContents,
+                    Collection<ContentObject> masterContentObjects, ZonedDateTime dueDate, String workflow,
+                    User submitter) {
   }
 
 }

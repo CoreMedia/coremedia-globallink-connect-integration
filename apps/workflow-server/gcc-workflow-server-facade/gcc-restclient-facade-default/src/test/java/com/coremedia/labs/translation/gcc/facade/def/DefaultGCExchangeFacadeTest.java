@@ -4,14 +4,23 @@ import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
+import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.facade.config.CharacterReplacementStrategy;
+import com.coremedia.labs.translation.gcc.facade.config.CharacterType;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
+import com.coremedia.labs.translation.gcc.facade.config.TextTransform;
 import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.assertj.core.api.SoftAssertions;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.dto.MessageResponse;
+import org.gs4tr.gcc.restclient.model.Connector;
 import org.gs4tr.gcc.restclient.model.GCSubmission;
 import org.gs4tr.gcc.restclient.model.GCTask;
 import org.gs4tr.gcc.restclient.model.Status;
@@ -30,6 +39,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -42,11 +53,12 @@ import org.springframework.core.io.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -54,10 +66,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiPredicate;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static java.util.Map.ofEntries;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -75,40 +87,63 @@ import static org.mockito.Mockito.when;
 @DefaultAnnotation(NonNull.class)
 class DefaultGCExchangeFacadeTest {
   private static final String LOREM_IPSUM = "Lorem Ipsum";
+  private static final String MOCK_GCC_URL = "https://example.com";
+  private static final String MOCK_GCC_API_KEY = "api-key";
+  private static final String MOCK_GCC_CONNECTOR_KEY = "connector-key";
   @Mock
   private GCExchange gcExchange;
+  private Map<String, Object> requiredConfig;
 
-  @ParameterizedTest(name = "[{index}] Missing required parameter: ''{0}''")
-  @DisplayName("Constructor should signal missing required keys in configuration.")
-  @ValueSource(strings = {
-          GCConfigProperty.KEY_URL,
-          GCConfigProperty.KEY_API_KEY,
-          GCConfigProperty.KEY_KEY
-  })
-  void failOnMissingRequiredConfiguration(String excludedKey) {
-    Map<String, Object> config = new HashMap<>();
-    List<String> requiredKeys = new ArrayList<>(asList(
-            GCConfigProperty.KEY_URL,
-            GCConfigProperty.KEY_API_KEY,
-            GCConfigProperty.KEY_KEY
-    ));
-    requiredKeys.remove(excludedKey);
+  @BeforeEach
+  void setUp() {
+    requiredConfig = ofEntries(
+      Map.entry(GCConfigProperty.KEY_URL, MOCK_GCC_URL),
+      Map.entry(GCConfigProperty.KEY_API_KEY, MOCK_GCC_API_KEY),
+      Map.entry(GCConfigProperty.KEY_KEY, MOCK_GCC_CONNECTOR_KEY)
+    );
+  }
 
-    for (String requiredKey : requiredKeys) {
-      config.put(requiredKey, "non-null");
+  @Nested
+  @DisplayName("DefaultGCExchangeFacade(Map<String, Object>)")
+  class ConstructorTests {
+    @ParameterizedTest(name = "[{index}] Missing required parameter: ''{0}''")
+    @DisplayName("Constructor should signal missing required keys in configuration.")
+    @ValueSource(strings = {
+      GCConfigProperty.KEY_URL,
+      GCConfigProperty.KEY_API_KEY,
+      GCConfigProperty.KEY_KEY
+    })
+    void failOnMissingRequiredConfiguration(String excludedKey) {
+      Map<String, Object> config = new HashMap<>(requiredConfig);
+      config.remove(excludedKey);
+      assertThatCode(() -> new DefaultGCExchangeFacade(config)).hasMessageContaining(excludedKey);
     }
-    assertThatCode(() -> new DefaultGCExchangeFacade(config)).hasMessageContaining(excludedKey);
+
+    /**
+     * A missing connector key should be prevented, as answers from the
+     * GCC backend may be surprising (like: no submissions found instead of
+     * reporting a missing connector key).
+     */
+    @Test
+    void shouldFailOnUnavailableConnectorKey() {
+      Map<String, Object> config = new HashMap<>(requiredConfig);
+      when(gcExchange.getConnectors()).thenReturn(List.of());
+      assertThatCode(() -> new DefaultGCExchangeFacade(config, cfg -> {
+        lenient().when(gcExchange.getConfig()).thenReturn(cfg);
+        return gcExchange;
+      })).hasMessageContaining(GCConfigProperty.KEY_KEY);
+    }
   }
 
   @Nested
   @DisplayName("Tests for uploadContent")
   class UploadContent {
     @Test
-    @DisplayName("Test for successful upload.")
+    @DisplayName("Test for a successful upload.")
     void happyPath(TestInfo testInfo) {
       String expectedFileId = "1234-5678";
       String expectedFileName = testInfo.getDisplayName();
-      byte[] expectedContent = {42};
+      byte[] expectedContent = {(byte) 42};
       Locale expectedSourceLocale = Locale.US;
 
       ArgumentCaptor<UploadFileRequest> uploadFileRequestCaptor = ArgumentCaptor.forClass(UploadFileRequest.class);
@@ -141,10 +176,10 @@ class DefaultGCExchangeFacadeTest {
 
     GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
     assertThatThrownBy(() -> facade.uploadContent(someFilename, resource, null))
-            .isInstanceOf(GCFacadeIOException.class)
-            .hasCauseInstanceOf(IOException.class)
-            .hasMessageContaining(someResourceFilename)
-            .hasMessageContaining(someFilename);
+      .isInstanceOf(GCFacadeIOException.class)
+      .hasCauseInstanceOf(IOException.class)
+      .hasMessageContaining(someResourceFilename)
+      .hasMessageContaining(someFilename);
   }
 
   @Test
@@ -153,10 +188,10 @@ class DefaultGCExchangeFacadeTest {
     when(gcExchange.uploadContent(any())).thenThrow(RuntimeException.class);
 
     GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-    assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{42}), null))
-            .isInstanceOf(GCFacadeCommunicationException.class)
-            .hasCauseInstanceOf(RuntimeException.class)
-            .hasMessageContaining(expectedFileName);
+    assertThatThrownBy(() -> facade.uploadContent(expectedFileName, new ByteArrayResource(new byte[]{(byte) 42}), null))
+      .isInstanceOf(GCFacadeCommunicationException.class)
+      .hasCauseInstanceOf(RuntimeException.class)
+      .hasMessageContaining(expectedFileName);
   }
 
   @Nested
@@ -165,12 +200,34 @@ class DefaultGCExchangeFacadeTest {
     @Mock
     private SubmissionSubmit.SubmissionSubmitResponseData response;
 
-    @Test
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      zoneId
+      America/Chicago
+      CET
+      EET
+      Europe/Berlin
+      Europe/London
+      GMT
+      MET
+      Portugal
+      Universal
+      UTC
+      """)
     @DisplayName("Test for successful submission.")
-    void happyPath(TestInfo testInfo) {
+    void happyPath(ZoneId zoneId, TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
       String comment = "Test";
-      LocalDateTime dueDateLocal = LocalDateTime.now().plusHours(2);
+      // Due to an issue within the GCC REST Java Client API not respecting
+      // UTC Time Zone in argument checks, we require adding an offset that
+      // does not struggle with different time zones. Thus, just an offset
+      // of some hours may raise an `IllegalArgumentException` in REST
+      // Client API.
+      //
+      // The check fails in SubmissionSubmitRequest comparing with local
+      // time zone instead of required UTC: dueDate.compareTo(new Date())
+      LocalDateTime dueDateLocal = LocalDateTime.now(zoneId).plusDays(2L);
       ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3);
       ZonedDateTime dueDate = ZonedDateTime.of(dueDateLocal, zoneOffset);
       String workflow = "pseudo translation";
@@ -200,12 +257,58 @@ class DefaultGCExchangeFacadeTest {
       assertions.assertAll();
     }
 
-    @Test
+    @ParameterizedTest
+    @EnumSource(IsSendSubmitterFixture.class)
+    void shouldRespectIsSendSubmitter(@NonNull IsSendSubmitterFixture fixture, @NonNull TestInfo testInfo) {
+      String id = testInfo.getTestMethod().map(Method::getName).orElse("unknown");
+      Map<String, Object> config = new HashMap<>(requiredConfig);
+      fixture.applyConfig(config);
+
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+      String submitter = "Submitter: %s".formatted(id);
+      String fileId = "1234-5678";
+      ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+        null,
+        null,
+        ZonedDateTime.now().plusDays(1L),
+        null,
+        submitter,
+        Locale.US,
+        Map.of(fileId, List.of(Locale.GERMANY))
+      );
+      verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+      SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+      if (fixture.expectedSendSubmitter()) {
+        assertThat(request.getSubmitter()).isEqualTo(submitter);
+      } else {
+        assertThat(request.getSubmitter()).isNull();
+      }
+    }
+
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      zoneId
+      America/Chicago
+      CET
+      EET
+      Europe/Berlin
+      Europe/London
+      GMT
+      MET
+      Portugal
+      Universal
+      UTC
+      """)
     @DisplayName("Correctly deal with communication errors.")
-    void dealWithCommunicationExceptions(TestInfo testInfo) {
+    void dealWithCommunicationExceptions(ZoneId zoneId, TestInfo testInfo) {
       String subject = testInfo.getDisplayName();
       String comment = "Test";
-      LocalDateTime dueDateLocal = LocalDateTime.now().plusHours(2);
+      // Provide relevant offset (more than one day), so that we do not struggle
+      // with issue in SubmissionSubmitRequest having an issue in v3.1.3
+      // regarding upfront due date validation (ignores UTC requirement of
+      // server).
+      LocalDateTime dueDateLocal = LocalDateTime.now(zoneId).plusDays(2L);
       ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3);
       ZonedDateTime dueDate = ZonedDateTime.of(dueDateLocal, zoneOffset);
       String workflow = "pseudo translation";
@@ -218,11 +321,277 @@ class DefaultGCExchangeFacadeTest {
 
       GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
       assertThatThrownBy(() -> facade.submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, singletonMap(fileId, singletonList(targetLocale))))
-              .isInstanceOf(GCFacadeCommunicationException.class)
-              .hasCauseInstanceOf(RuntimeException.class)
-              .hasMessageContaining(subject)
-              .hasMessageContaining(sourceLocale.toLanguageTag())
+        .isInstanceOf(GCFacadeCommunicationException.class)
+        .hasCauseInstanceOf(RuntimeException.class)
+        .hasMessageContaining(subject)
+        .hasMessageContaining(sourceLocale.toLanguageTag())
       ;
+    }
+
+    @Nested
+    class SubmissionNameUseCases {
+      @Test
+      void shouldApplySourceTargetLocaleInformation(@NonNull TestInfo testInfo) {
+        String subject = "Subject: %s".formatted(testInfo.getDisplayName());
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subject,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName())
+          .contains(Locale.US.toLanguageTag())
+          .contains(Locale.GERMANY.toLanguageTag());
+      }
+
+      @Test
+      void shouldApplySomeDefaultSubmissionName() {
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).isNotEmpty();
+      }
+
+      @Test
+      void shouldApplyDefaultSubmissionNameSanitizing() {
+        String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedSubject = "SMP-Dove: _";
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subjectChallenge,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).startsWith(expectedSanitizedSubject);
+      }
+
+      @Test
+      void shouldRespectAlternativeReplacementConfiguration() {
+        String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedSubject = "SMP-Dove: ?";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
+          GCSubmissionName.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subjectChallenge,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).startsWith(expectedSanitizedSubject);
+      }
+
+      @Test
+      void shouldRespectAlternativeCharacterTypeConfiguration() {
+        String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
+          GCSubmissionName.CHARACTER_TYPE_KEY, CharacterType.UNICODE
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          subjectChallenge,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getSubmissionName()).startsWith(subjectChallenge);
+      }
+    }
+
+    @Nested
+    class SubmissionInstructionUseCases {
+      @Test
+      void shouldNotSendInstructionsIfUnset() {
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          null,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isNull();
+      }
+
+      @Test
+      void shouldApplyDefaultSubmissionInstructionsUnicodeCharacterSanitizing() {
+        String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedInstructions = "SMP-Dove: U+1F425";
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(expectedSanitizedInstructions);
+      }
+
+      @Test
+      void shouldRespectAlternativeUnicodeCharacterReplacementConfiguration() {
+        String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
+        String expectedSanitizedInstructions = "SMP-Dove: ?";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
+          GCSubmissionInstruction.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(expectedSanitizedInstructions);
+      }
+
+      @Test
+      void shouldRespectAlternativeUnicodeCharacterTypeConfiguration() {
+        String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
+          GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE
+        ));
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(instructionsChallenge);
+      }
+
+      @Test
+      void shouldDefaultToTransformPlainTextToHtml() {
+        String instructionsChallenge = "Hello <World>!\nThis is a test.";
+        String expectedHtml = "Hello &lt;World&gt;!<br>This is a test.";
+
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(expectedHtml);
+      }
+
+      @Test
+      void shouldRespectDisabledTextTypeTransformation() {
+        String instructionsChallenge = "Hello <World>!\nThis is a test.";
+        Map<String, Object> config = new HashMap<>(requiredConfig);
+        config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
+          GCSubmissionInstruction.TEXT_TRANSFORM_KEY, TextTransform.NONE
+        ));
+        MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
+        String fileId = "1234-5678";
+        ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
+          null,
+          instructionsChallenge,
+          ZonedDateTime.now().plusDays(1L),
+          null,
+          null,
+          Locale.US,
+          Map.of(fileId, List.of(Locale.GERMANY))
+        );
+        verify(gcExchange).submitSubmission(submissionSubmitRequestCaptor.capture());
+        SubmissionSubmitRequest request = submissionSubmitRequestCaptor.getValue();
+
+        assertThat(request.getInstructions()).isEqualTo(instructionsChallenge);
+      }
     }
   }
 
@@ -242,12 +611,12 @@ class DefaultGCExchangeFacadeTest {
     class SingleTasks {
       @Mock
       private GCTask gcTask;
-      private final long expectedSubmissionId = 1234L;
-      private final long expectedTaskId = 5678L;
+      private static final long expectedSubmissionId = 1234L;
+      private static final long expectedTaskId = 5678L;
       private final byte[] expectedContent = LOREM_IPSUM.getBytes(StandardCharsets.UTF_8);
 
       @Test
-      @DisplayName("Test for successful download.")
+      @DisplayName("Test for a successful download.")
       void happyPath() {
         when(tasksListResponse.getTasks()).thenReturn(singletonList(gcTask));
         when(gcTask.getTaskId()).thenReturn(expectedTaskId);
@@ -266,12 +635,8 @@ class DefaultGCExchangeFacadeTest {
         assertThat(actualContentRead[0]).isEqualTo(LOREM_IPSUM);
       }
 
-      private class HappyPathTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
-        private final String[] actualContentRead;
-
-        private HappyPathTaskDataConsumer(String[] actualContentRead) {
-          this.actualContentRead = actualContentRead;
-        }
+      private record HappyPathTaskDataConsumer(
+        String[] actualContentRead) implements BiPredicate<InputStream, GCTaskModel> {
 
         @Override
         public boolean test(InputStream is, GCTaskModel task) {
@@ -297,20 +662,21 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new ExceptionTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(String.valueOf(expectedTaskId));
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class)
+          .hasMessageContaining(String.valueOf(expectedTaskId));
 
         verify(gcExchange, never()).confirmTask(any());
       }
 
-      private class ExceptionTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+      private static class ExceptionTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
         @Override
         public boolean test(InputStream inputStream, GCTaskModel task) {
           throw new RuntimeException("Provoked failure while reading input stream.");
         }
       }
 
+      @SuppressWarnings("resource")
       @Test
       @DisplayName("Test for failure on getTasksList()")
       void unhappyPathFailureOnGetTaskList() {
@@ -318,14 +684,14 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class);
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class);
 
         verify(gcExchange, never()).downloadTask(any());
         verify(gcExchange, never()).confirmTask(any());
       }
 
-      private class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+      private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
         @Override
         public boolean test(InputStream inputStream, GCTaskModel task) {
           return true;
@@ -345,9 +711,9 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(String.valueOf(expectedTaskId));
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class)
+          .hasMessageContaining(String.valueOf(expectedTaskId));
 
         verify(gcExchange, never()).confirmTask(any());
 
@@ -367,9 +733,9 @@ class DefaultGCExchangeFacadeTest {
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
         assertThatThrownBy(() -> facade.downloadCompletedTasks(expectedSubmissionId, new TrueTaskDataConsumer()))
-                .isInstanceOf(GCFacadeCommunicationException.class)
-                .hasCauseInstanceOf(RuntimeException.class)
-                .hasMessageContaining(String.valueOf(expectedTaskId));
+          .isInstanceOf(GCFacadeCommunicationException.class)
+          .hasCauseInstanceOf(RuntimeException.class)
+          .hasMessageContaining(String.valueOf(expectedTaskId));
       }
     }
   }
@@ -437,6 +803,31 @@ class DefaultGCExchangeFacadeTest {
   }
 
   @Nested
+  @DisplayName("Tests for getSubmission")
+  class GetSubmission {
+    @Test
+    void shouldPropagateSubmissionErrorState() {
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      GCSubmissionModel submissionModel = facade.getErredSubmission();
+      assertThat(submissionModel.isError()).isTrue();
+    }
+
+    @Test
+    void shouldSignalNoErrorForNormalSubmission() {
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      GCSubmissionModel submissionModel = facade.getSuccessfulSubmission();
+      assertThat(submissionModel.isError()).isFalse();
+    }
+
+    @Test
+    void shouldFailWithExceptionIfSubmissionNotFound() {
+      MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
+      assertThatThrownBy(facade::getNotExistingSubmission)
+        .isInstanceOf(GCFacadeSubmissionNotFoundException.class);
+    }
+  }
+
+  @Nested
   @DisplayName("Tests for getSubmissionState")
   class GetSubmissionState {
     private static final long SUBMISSION_ID = 42L;
@@ -470,13 +861,13 @@ class DefaultGCExchangeFacadeTest {
     }
 
     @Test
-    @DisplayName("Submission Unavailable, State: OTHER")
+    @DisplayName("Fail on Submission Unavailable")
     void dealWithUnavailableSubmission() {
       when(submissionsResponseData.getSubmissions()).thenReturn(emptyList());
 
       GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-      GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
-      assertThat(state).isEqualTo(GCSubmissionState.OTHER);
+      assertThatCode(() -> facade.getSubmission(SUBMISSION_ID))
+        .isInstanceOf(GCFacadeSubmissionNotFoundException.class);
     }
 
     @Test
@@ -485,7 +876,7 @@ class DefaultGCExchangeFacadeTest {
       lenient().when(additionalSubmission.getStatus()).thenReturn(additionalSubmissionState);
       lenient().when(additionalSubmissionState.getStatusName()).thenReturn(SubmissionStatus.Translate.text());
 
-      when(submissionsResponseData.getSubmissions()).thenReturn(asList(submission, additionalSubmission));
+      when(submissionsResponseData.getSubmissions()).thenReturn(List.of(submission, additionalSubmission));
 
       GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
       GCSubmissionState state = facade.getSubmission(SUBMISSION_ID).getState();
@@ -541,7 +932,7 @@ class DefaultGCExchangeFacadeTest {
         @Test
         @DisplayName("'cancelled', if not all tasks have their cancellation confirmed")
         void someTasksUnconfirmedCancellation() {
-          when(tasksListResponse.getTasks()).thenReturn(asList(task, additionalTask1, additionalTask2));
+          when(tasksListResponse.getTasks()).thenReturn(List.of(task, additionalTask1, additionalTask2));
           when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
           when(additionalTask1.getState()).thenReturn(TaskStatus.Cancelled.text());
@@ -580,7 +971,7 @@ class DefaultGCExchangeFacadeTest {
         @Test
         @DisplayName("'cancellation confirmed', if all tasks are either confirmed or delivered")
         void tasksAreCancellationConfirmedOrDelivered() {
-          when(tasksListResponse.getTasks()).thenReturn(asList(task, additionalTask1, additionalTask2));
+          when(tasksListResponse.getTasks()).thenReturn(List.of(task, additionalTask1, additionalTask2));
           when(task.getState()).thenReturn(TaskStatus.Cancelled.text());
           when(task.getIsCancelConfirmed()).thenReturn(Boolean.TRUE);
           when(additionalTask1.getState()).thenReturn(TaskStatus.Delivered.text());
@@ -596,9 +987,111 @@ class DefaultGCExchangeFacadeTest {
     }
   }
 
+  enum IsSendSubmitterFixture {
+    UNSET("unset", false),
+    NULL(null, false),
+    BOOLEAN_TRUE(true, true),
+    BOOLEAN_FALSE(false, false),
+    STRING_TRUE("true", true),
+    STRING_FALSE("false", false),
+    STRING_ANY("anyString", false),
+    ;
+
+    private final Object sendSubmitterConfig;
+    private final boolean expectedIsSendSubmitter;
+
+    IsSendSubmitterFixture(Object sendSubmitterConfig, boolean expectedIsSendSubmitter) {
+      this.sendSubmitterConfig = sendSubmitterConfig;
+      this.expectedIsSendSubmitter = expectedIsSendSubmitter;
+    }
+
+    public boolean expectedSendSubmitter() {
+      return expectedIsSendSubmitter;
+    }
+
+    public void applyConfig(@NonNull Map<String, Object> config) {
+      if ("unset".equals(sendSubmitterConfig)) {
+        config.remove(GCConfigProperty.KEY_IS_SEND_SUBMITTER);
+      } else {
+        config.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, sendSubmitterConfig);
+      }
+    }
+  }
+
   private static final class MockDefaultGCExchangeFacade extends DefaultGCExchangeFacade {
     MockDefaultGCExchangeFacade(GCExchange delegate) {
       super(delegate, "xliff");
+    }
+
+    MockDefaultGCExchangeFacade(@NonNull Map<String, Object> config, @NonNull GCExchange delegate) {
+      super(config, cfg -> {
+        lenient().when(delegate.getConfig()).thenReturn(cfg);
+        Connector connector = Mockito.mock(Connector.class);
+        lenient().when(delegate.getConnectors()).thenReturn(List.of(connector));
+        lenient().when(connector.getConnectorKey()).thenReturn(MOCK_GCC_CONNECTOR_KEY);
+        return delegate;
+      });
+    }
+
+    @NonNull
+    public ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
+                                                                       @Nullable String comment,
+                                                                       @NonNull ZonedDateTime dueDate,
+                                                                       @Nullable String workflow,
+                                                                       @Nullable String submitter,
+                                                                       @NonNull Locale sourceLocale,
+                                                                       @NonNull Map<String, List<Locale>> contentMap) {
+      SubmissionSubmit.SubmissionSubmitResponseData response = Mockito.mock(SubmissionSubmit.SubmissionSubmitResponseData.class);
+      long expectedSubmissionId = 42L;
+
+      ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = ArgumentCaptor.forClass(SubmissionSubmitRequest.class);
+      when(getDelegate().submitSubmission(any())).thenReturn(response);
+      when(response.getSubmissionId()).thenReturn(expectedSubmissionId);
+
+      submitSubmission(subject, comment, dueDate, workflow, submitter, sourceLocale, contentMap);
+      return submissionSubmitRequestCaptor;
+    }
+
+    @NonNull
+    private GCSubmission prepareGetSubmissionMock(@NonNull SubmissionStatus status) {
+      GCSubmission submission = Mockito.mock(GCSubmission.class);
+      Status submissionStatus = Mockito.mock(Status.class);
+      lenient().when(submission.getStatus()).thenReturn(submissionStatus);
+      lenient().when(submissionStatus.getStatusName()).thenReturn(status.text());
+      lenient().when(submission.getPdSubmissionIds()).thenReturn(Map.of());
+      lenient().when(submission.getSubmissionName()).thenReturn("Mocked Submission");
+      lenient().when(submission.getSubmitter()).thenReturn("Mocked Submitter");
+
+      Submissions.SubmissionsResponseData response = Mockito.mock(Submissions.SubmissionsResponseData.class);
+
+      when(getDelegate().getSubmissionsList(any())).thenReturn(response);
+      when(response.getSubmissions()).thenReturn(List.of(submission));
+      when(submission.getStatus()).thenReturn(submissionStatus);
+      return submission;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    @NonNull
+    public GCSubmissionModel getNotExistingSubmission() {
+      Submissions.SubmissionsResponseData response = Mockito.mock(Submissions.SubmissionsResponseData.class);
+
+      when(getDelegate().getSubmissionsList(any())).thenReturn(response);
+      when(response.getSubmissions()).thenReturn(List.of());
+      return getSubmission(42L);
+    }
+
+    @NonNull
+    public GCSubmissionModel getSuccessfulSubmission() {
+      GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.Completed);
+      when(submission.getIsError()).thenReturn(Boolean.FALSE);
+      return getSubmission(42L);
+    }
+
+    @NonNull
+    public GCSubmissionModel getErredSubmission() {
+      GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.PreProcess);
+      when(submission.getIsError()).thenReturn(Boolean.TRUE);
+      return getSubmission(42L);
     }
   }
 }

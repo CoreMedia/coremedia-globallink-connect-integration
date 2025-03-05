@@ -17,16 +17,18 @@ import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import jakarta.activation.MimeType;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.activation.MimeType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -49,16 +51,15 @@ import static com.coremedia.cap.translate.xliff.XliffImportResultCode.FAILED;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_INTERNAL_LINK;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_LOCALE;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.SUCCESS;
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLATION_CONFIRMED;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
-import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.DELIVERED;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 /**
  * Workflow action that downloads results from the translation service if the translation job is complete.
  */
 public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromGlobalLinkAction.Parameters, DownloadFromGlobalLinkAction.Result> {
-
+  @Serial
   private static final long serialVersionUID = 5160741359795894412L;
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -215,7 +216,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
       resultConsumer.accept(result);
       doExecuteGlobalLinkAction(facade, submissionId, result, issues);
     } catch (GCFacadeException | GlobalLinkWorkflowException e) {
-      throw e; // do not delete working directory, it's needed and deleted in #doStoreResult
+      throw e; // do not delete the working directory, it's needed and deleted in #doStoreResult
     } catch (RuntimeException e) {
       forceDelete(result.workingDir); // #doStoreResult is not called for arbitrary exceptions, must clean up here
       throw e;
@@ -235,10 +236,12 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     if (submission.getState() == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
       LOG.info("Confirmed cancellation of submission {} (PD ID {}) initiated by GlobalLink.", submissionId, submission.getPdSubmissionIds());
+    } else if (submission.isError()) {
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, List.of());
     } else {
       facade.downloadCompletedTasks(submissionId,
               (inputStream, task) -> importXliffFile(inputStream, task, result.completedLocales, issues, result));
-      LOG.info("Checked for update of submission {} (PD ID {}) in state {} with completed locales [{}].",
+      LOG.info("Checked for an update of submission {} (PD ID {}) in state {} with completed locales [{}].",
               submissionId, submission.getPdSubmissionIds(), submission.getState(),
               result.completedLocales.stream().map(Locale::toLanguageTag).collect(Collectors.toList()));
       //disable cancel if any tasks are completed
@@ -247,8 +250,12 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
     // retrieve potentially updated submission after confirming cancellation or download completed task
     submission = facade.getSubmission(submissionId);
-    if (submission.getState() != DELIVERED && submission.getState() != CANCELLATION_CONFIRMED) {
-      LOG.debug("Submission {} (PD ID {}) in state {} and thus not completed yet.", submissionId, submission.getPdSubmissionIds(), submission.getState());
+    if (LOG.isDebugEnabled()) {
+      String verboseSubmissionState = switch(submission.getState()) {
+        case REDELIVERED, DELIVERED, CANCELLATION_CONFIRMED -> "completed";
+        default -> "not completed yet";
+      };
+      LOG.debug("Submission {} (PD ID {}) in state {} regarded as: {}", submissionId, submission.getPdSubmissionIds(), submission.getState(), verboseSubmissionState);
     }
 
     result.globalLinkStatus = submission.getState();
@@ -259,10 +266,15 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     try {
       Process process = task.getContainingProcess();
       if (result.globalLinkStatus != null) {
-        process.set(globalLinkSubmissionStatusVariable, result.globalLinkStatus.toString());
+        process.set(globalLinkSubmissionStatusVariable, result.globalLinkStatus.name());
       }
 
-      process.set(globalLinkPdSubmissionIdsVariable, result.pdSubmissionIds);
+      // Due to an error retrieving the submission by its ID, we may not have
+      // the PD submission IDs. In this case, we do not want to overwrite the
+      // existing value in the process variable.
+      if (result.pdSubmissionIds != null) {
+        process.set(globalLinkPdSubmissionIdsVariable, result.pdSubmissionIds);
+      }
 
       process.set(xliffResultVariable, updateXliffsZip(result));
 
@@ -308,13 +320,13 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   private static void addIssueDetails(File xliffResultDir, Map<Long, List<XliffImportResultItem>> resultItems, String issueDetailsFileName) throws IOException {
-    if (resultItems != null && resultItems.size() > 0) {
+    if (resultItems != null && !resultItems.isEmpty()) {
       for (Map.Entry<Long, List<XliffImportResultItem>> longListEntry : resultItems.entrySet()) {
         File itemsDir = new File(xliffResultDir, issueDetailsFileName);
         File itemsFile = new File(itemsDir, longListEntry.getKey() + "-issuedetails.txt");
 
         ensureDir(itemsDir);
-        try (PrintWriter pw = new PrintWriter(itemsFile)) {
+        try (PrintWriter pw = new PrintWriter(itemsFile, UTF_8)) {
           for (XliffImportResultItem item : longListEntry.getValue()) {
             pw.println(item.toString());
           }
@@ -404,7 +416,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
               .add(errorResultItem.getContent());
     }
 
-    //store each errorList under its taskID so it can be referenced correctly later
+    //store each errorList under its taskID, so it can be referenced correctly later
     result.resultItems.put(task.getTaskId(), errorResultItems);
     return false;
   }
@@ -439,11 +451,11 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     try {
       FileUtils.forceDelete(file);
     } catch (IOException e) {
-      LOG.warn("Cannot delete " + file.getAbsolutePath() + ", please cleanup manually!", e);
+      LOG.warn("Cannot delete {}, please clean up manually!", file.getAbsolutePath(), e);
     }
   }
 
-  private void disableCancelWhenCompletedLocalesExist(Result result) {
+  private static void disableCancelWhenCompletedLocalesExist(Result result) {
     if (!result.completedLocales.isEmpty()) {
       result.cancellationAllowed = false;
     }
@@ -451,9 +463,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
   @VisibleForTesting
   static final class Parameters {
-    private long submissionId;
-    private Set<Locale> completedLocales;
-    private boolean cancellationAllowed;
+    private final long submissionId;
+    private final Set<Locale> completedLocales;
+    private final boolean cancellationAllowed;
 
     Parameters(long submissionId, Set<Locale> completedLocales, boolean cancellationAllowed) {
       this.submissionId = submissionId;
@@ -471,7 +483,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     // Set during xliff import callback
     final Map<Long, List<XliffImportResultItem>> resultItems = new HashMap<>();
 
+    @Nullable
     private GCSubmissionState globalLinkStatus;
+    @Nullable
     private List<String> pdSubmissionIds;
     private Set<Locale> completedLocales;
     private boolean cancellationAllowed;

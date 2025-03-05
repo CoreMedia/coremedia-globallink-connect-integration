@@ -26,7 +26,7 @@ Example message for such a failure report:
 
 ### Submission Locales
 
-What do the submission locales refer to? From Connectors - Config:
+What do the submission locales refer to? From Connectors — Config:
 
 * `locale_label`,
 * `pd_locale`, or

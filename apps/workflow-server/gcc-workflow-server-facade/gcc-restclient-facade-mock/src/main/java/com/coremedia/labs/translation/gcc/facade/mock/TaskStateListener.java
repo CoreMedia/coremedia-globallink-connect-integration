@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * Interface for listener which will receive a signal when a
+ * Interface for a listener which will receive a signal when a
  * task state changed.
  */
 @DefaultAnnotation(NonNull.class)

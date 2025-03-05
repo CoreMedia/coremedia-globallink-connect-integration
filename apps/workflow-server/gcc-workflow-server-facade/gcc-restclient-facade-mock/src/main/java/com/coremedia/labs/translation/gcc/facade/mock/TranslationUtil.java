@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -146,7 +147,7 @@ final class TranslationUtil {
   }
 
   private static String convertToString(Document doc) throws TransformerException {
-    DOMSource source = new DOMSource(doc);
+    Source source = new DOMSource(doc);
     Writer writer = new StringWriter();
     Result result = new StreamResult(writer);
 
@@ -167,8 +168,7 @@ final class TranslationUtil {
     NodeList elementsByTagName = doc.getElementsByTagName("trans-unit");
     for (int i = 0; i < elementsByTagName.getLength(); i++) {
       Node transUnitNode = elementsByTagName.item(i);
-      if (transUnitNode instanceof Element) {
-        Element transUnitElement = (Element) transUnitNode;
+      if (transUnitNode instanceof Element transUnitElement) {
         Node targetNode = transUnitElement.getElementsByTagName("target").item(0);
         if (targetNode != null) {
           String targetContent = targetNode.getTextContent();
@@ -196,6 +196,7 @@ final class TranslationUtil {
     }
   }
 
+  @SuppressWarnings("HttpUrlsUsage")
   private static DocumentBuilderFactory newDocumentBuilderFactory() throws ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);

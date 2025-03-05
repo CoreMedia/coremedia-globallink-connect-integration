@@ -5,6 +5,7 @@ import com.coremedia.cap.common.Blob;
 import com.coremedia.cap.common.CapException;
 import com.coremedia.cap.common.RepositoryNotAvailableException;
 import com.coremedia.cap.content.Content;
+import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.errorcodes.CapErrorCodes;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
@@ -12,8 +13,10 @@ import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
+import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +39,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +86,7 @@ class GlobalLinkActionTest {
   @Configuration
   @Import(XmlRepoConfiguration.class)
   @ImportResource(reader = ResourceAwareXmlBeanDefinitionReader.class)
-  @PropertySource(value = "classpath:META-INF/coremedia/gcc-workflow.properties")
+  @PropertySource("classpath:META-INF/coremedia/gcc-workflow.properties")
   static class LocalConfig {
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     @Bean
@@ -120,6 +124,34 @@ class GlobalLinkActionTest {
   }
 
   @Test
+  void testCheckedOutByOtherIssueSerialization(@Autowired ContentRepository repository) {
+    Content someContent = repository.createContentBuilder()
+            .name("Some Content")
+            .type("SimpleEmpty")
+            .nameTemplate()
+            .create();
+    Map<Severity, Map<String, List<Content>>> issues = Map.of(
+            Severity.ERROR,
+            Map.of(
+                    CapErrorCodes.CHECKED_OUT_BY_OTHER,
+                    List.of(someContent)
+            )
+    );
+    // Failed with JsonIOException as described in CoreMedia/coremedia-globallink-connect-integration#61
+    // on inappropriate type adapter registration. Requires `registerTypeHierarchyAdapter` for content items rather
+    // than `registerTypeAdapter`.
+    String actual = GlobalLinkAction.issuesAsJsonString(issues);
+    assertThat(actual)
+            .isEqualTo(
+                    "{\"%s\":{\"%s\":[\"%s\"]}}".formatted(
+                            Severity.ERROR,
+                            CapErrorCodes.CHECKED_OUT_BY_OTHER,
+                            someContent.getId()
+                    )
+            );
+  }
+
+  @Test
   void testRepositoryUnavailable_positive() {
     RepositoryNotAvailableException repositoryNotAvailableException = new RepositoryNotAvailableException("foo", null, null);
     CapException contentRepositoryUnvailableCapException = new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null);
@@ -152,7 +184,8 @@ class GlobalLinkActionTest {
     assertFalse(GlobalLinkAction.isRepositoryUnavailableException(new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null)));
   }
 
-  private static class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
+  private static final class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
+    @Serial
     private static final long serialVersionUID = -288745610618179168L;
     private final ApplicationContext applicationContext;
 
@@ -172,10 +205,12 @@ class GlobalLinkActionTest {
     }
 
     @Override
+    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }
 
+    @SuppressWarnings("HttpUrlsUsage")
     @Override
     protected Map<String, Object> getGccSettings(Site site) {
       return ImmutableMap.of(

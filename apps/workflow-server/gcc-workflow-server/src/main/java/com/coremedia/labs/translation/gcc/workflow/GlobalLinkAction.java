@@ -20,13 +20,15 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeAccessException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionException;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -37,12 +39,13 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import jakarta.activation.MimeType;
+import jakarta.activation.MimeTypeParseException;
 import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.activation.MimeType;
-import jakarta.activation.MimeTypeParseException;
+import java.io.Serial;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -92,6 +95,7 @@ import static java.util.Objects.requireNonNull;
 abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final Logger LOG = LoggerFactory.getLogger(GlobalLinkAction.class);
 
+  @Serial
   private static final long serialVersionUID = -7130959823193680910L;
 
   private static final String CMSETTINGS_SETTINGS = "settings";
@@ -121,7 +125,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final MimeType MIME_TYPE_JSON = mimeType("application/json");
   private static final Gson contentObjectReturnsIdGson = new GsonBuilder()
           .enableComplexMapKeySerialization()
-          .registerTypeAdapter(Content.class, new ContentObjectSerializer())
+          .registerTypeHierarchyAdapter(Content.class, new ContentObjectSerializer())
           .create();
 
   /**
@@ -146,9 +150,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final int MIN_RETRY_DELAY_SECS = 60; // one minute
 
   /**
-   * If the value is accidentally set to a very big delay and the workflow process picks this value, you will have
+   * If the value is accidentally set to a very big delay, and the workflow process picks this value, you will have
    * to wait very long until it checks again for an update.
-   * Changing this accidentally got also a lot more likely, since times can be change in the content repository directly.
+   * Changing this accidentally got also a lot more likely, since times can be changed in the content repository directly.
    */
   private static final int MAX_RETRY_DELAY_SECS = 86400; // one day
 
@@ -314,12 +318,21 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
       return getResultForGCCConnectionError(e, result, issues, parameters, gccRetryDelaySeconds, maxAutomaticRetries);
+    } catch (GCFacadeSubmissionNotFoundException e) {
+      LOG.warn("{}: Failed to find submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, e);
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, Collections.emptyList());
+    } catch (GCFacadeSubmissionException e) {
+      LOG.warn("{}: Failed to handle submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, e);
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, Collections.emptyList());
     } catch (GCFacadeIOException e) {
       LOG.warn("{}: Local I/O error ({}).", getName(), GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, Collections.emptyList());
     } catch (GCFacadeFileTypeConfigException e) {
       LOG.warn("{}: Communication failed because of unsupported configured file type ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_FILE_TYPE_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_FILE_TYPE_ERROR, Collections.emptyList());
+    } catch (GCFacadeConnectorKeyConfigException e) {
+      LOG.warn("{}: Connector key is unavailable ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_CONNECTOR_KEY_ERROR, e);
+      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_CONNECTOR_KEY_ERROR, Collections.emptyList());
     } catch (GCFacadeConfigException e) {
       LOG.warn("{}: Communication failed because of invalid/missing settings ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, Collections.emptyList());
@@ -330,7 +343,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       LOG.warn("{}: Unknown error occurred ({})", getName(), GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, Collections.emptyList());
     } catch (GlobalLinkWorkflowException e) {
-      LOG.warn("{}: " + e.getMessage() + "({})", getName(), e.getErrorCode(), e);
+      LOG.warn("{}: {} ({})", getName(), e.getMessage(), e.getErrorCode(), e);
       issues.put(e.getErrorCode(), Collections.emptyList());
     } catch (RuntimeException e) {
       // automatically retry upon CMS connection errors
@@ -395,7 +408,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * changed as result of this action.
    *
    * <p>If this method throws a {@link GCFacadeException} or {@link GlobalLinkWorkflowException}, then method
-   * {@link #doStoreResult(Task, Object)} will still be called afterwards if a result has been set at the
+   * {@link #doStoreResult(Task, Object)} will still be called afterward if a result has been set at the
    * consumer. In case of other exceptions, no results are stored and exceptions are propagated and
    * may lead to task escalation, depending on the value of the {@code rethrowResultException} constructor
    * parameter.
@@ -690,7 +703,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return getConnection().getBlobService().fromBytes(bytes, MIME_TYPE_JSON);
   }
 
-  private static String issuesAsJsonString(Map<Severity, Map<String, List<Content>>> issues) {
+  @NonNull
+  @VisibleForTesting
+  static String issuesAsJsonString(Map<Severity, Map<String, List<Content>>> issues) {
     Type typeToken = new TypeToken<Map<Severity, Map<XliffImportResultCode, List<Content>>>>() {
     }.getType();
     return contentObjectReturnsIdGson.toJson(issues, typeToken);
@@ -707,35 +722,27 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  static class Parameters<P> {
-    final P extendedParameters;
-    final Collection<ContentObject> masterContentObjects;
-    final int remainingAutomaticRetries;
-
-    Parameters(P extendedParameters, Collection<ContentObject> masterContentObjects, int remainingAutomaticRetries) {
-      this.extendedParameters = extendedParameters;
-      this.masterContentObjects = masterContentObjects;
-      this.remainingAutomaticRetries = remainingAutomaticRetries;
-    }
+  record Parameters<P>(P extendedParameters, Collection<ContentObject> masterContentObjects,
+                       int remainingAutomaticRetries) {
   }
 
   @VisibleForTesting
   static class Result<R> {
     /**
-     * holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
+     * Holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // suppress warning for non-typical usage of Optional
             Optional<R> extendedResult = Optional.empty();
     /**
-     * json with map from studio severity to map of error codes to possibly empty list of affected contents
+     * JSON with a map from studio severity to a map of error codes to possibly empty list of affected contents
      */
     Blob issues;
     /**
-     * number of remaining automatic retries, if there are issues
+     * Number of remaining automatic retries, if there are issues
      */
     int remainingAutomaticRetries;
     /**
-     * seconds to delay before next retry
+     * Seconds to delay before next retry
      */
     int retryDelaySeconds;
   }

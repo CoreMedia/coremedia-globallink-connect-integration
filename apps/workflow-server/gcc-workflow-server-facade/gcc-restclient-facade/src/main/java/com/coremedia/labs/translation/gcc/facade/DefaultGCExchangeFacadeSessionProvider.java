@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static java.lang.invoke.MethodHandles.lookup;
@@ -27,12 +26,10 @@ public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeF
 
   private DefaultGCExchangeFacadeSessionProvider() {
     ServiceLoader<GCExchangeFacadeProvider> loader = ServiceLoader.load(GCExchangeFacadeProvider.class);
-    facadeProviders = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toUnmodifiableList());
+    facadeProviders = StreamSupport.stream(loader.spliterator(), false).toList();
   }
 
   /**
-   * {@inheritDoc}
-   *
    * @implNote Uses property {@value GCConfigProperty#KEY_TYPE} to decide which
    * facade to instantiate.
    */

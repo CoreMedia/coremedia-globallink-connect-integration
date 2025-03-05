@@ -11,8 +11,12 @@
 
 ### IntelliJ IDEA ###
 
-/.idea/
+.idea/
 *.iml
+
+### Visual Studio Code ###
+
+.vscode/
 
 ### Emacs ###
 # -*- mode: gitignore; -*-

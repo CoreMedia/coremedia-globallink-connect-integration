@@ -8,12 +8,124 @@
           <StringProperty Name="key">Your Connector Key</StringProperty>
           <StringProperty Name="fileType">xliff</StringProperty>
           <IntProperty Name="dayOffsetForDueDate">20</IntProperty>
-          <!-- Uses translation type "mock" by default. Additional options: "disabled" or "default" (which again is the default if unset. -->
           <StringProperty Name="type">mock</StringProperty>
           <IntProperty Name="retryCommunicationErrors">5</IntProperty>
-          <IntProperty Name="mockDelaySeconds">0</IntProperty>
-          <IntProperty Name="mockDelayOffsetPercentage">0</IntProperty>
-          <StringProperty Name="mockError">Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.</StringProperty>
+          <StructProperty Name="additionalConfigurationOptions">
+            <Struct>
+              <StringProperty
+                Name="comment"><![CDATA[Copy & Paste: Additional configuration options for the GlobalLink exchange facade for reference (add to `globalLink` struct to use and to override system-level configuration).]]></StringProperty>
+              <StructProperty Name="exampleKeys">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Place to possibly store relevant `key` values for later use.]]></StringProperty>
+                </Struct>
+              </StructProperty>
+              <StructProperty Name="availableTypes">
+                <Struct>
+                  <StringProperty
+                    Name="default"><![CDATA[Use GCC Facade (same as unset).]]></StringProperty>
+                  <StringProperty
+                    Name="disabled"><![CDATA[Meant to temporarily turn off GCC communication.]]></StringProperty>
+                  <StringProperty
+                    Name="mock"><![CDATA[Meant for testing locally, providing options to further control the behavior by `mock` settings.]]></StringProperty>
+                </Struct>
+              </StructProperty>
+              <StringProperty
+                Name="apiKey"><![CDATA[Your API Key; for security reasons should be set at system-level in production use.]]></StringProperty>
+              <BooleanProperty Name="isSendSubmitter">true</BooleanProperty>
+              <IntProperty Name="sendTranslationRequestRetryDelay">60</IntProperty>
+              <IntProperty Name="downloadTranslationRetryDelay">60</IntProperty>
+              <IntProperty Name="cancelTranslationRetryDelay">60</IntProperty>
+              <StructProperty Name="submissionInstruction">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Submission instruction behavior for GlobalLink.]]></StringProperty>
+                  <StringProperty Name="characterType">bmp</StringProperty>
+                  <StringProperty Name="characterReplacementStrategy">unicode-code-point</StringProperty>
+                  <StringProperty Name="textTransform">text-to-html</StringProperty>
+                </Struct>
+              </StructProperty>
+              <StructProperty Name="submissionName">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Submission name behavior for GlobalLink.]]></StringProperty>
+                  <StringProperty Name="characterType">bmp</StringProperty>
+                  <StringProperty Name="characterReplacementStrategy">underscore</StringProperty>
+                </Struct>
+              </StructProperty>
+            </Struct>
+          </StructProperty>
+          <StructProperty Name="mock">
+            <Struct>
+              <StringProperty
+                Name="comment"><![CDATA[Configuration for the mock implementation of the GlobalLink exchange facade (type=mock).]]></StringProperty>
+              <IntProperty Name="stateChangeDelaySeconds">0</IntProperty>
+              <IntProperty Name="stateChangeDelayOffsetPercentage">0</IntProperty>
+              <StringProperty
+                Name="error"><![CDATA[Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.]]></StringProperty>
+              <StructProperty Name="errorExamples">
+                <Struct>
+                  <StringProperty
+                    Name="cancel_communication"><![CDATA[Submission-Cancellation: Trigger a communication error.]]></StringProperty>
+                  <StringProperty
+                    Name="cancel_result"><![CDATA[Submission-Cancellation: Trigger an error response from GCC backend.]]></StringProperty>
+                  <StringProperty
+                    Name="download_communication"><![CDATA[XLIFF-Download: Trigger a general communication error.]]></StringProperty>
+                  <StringProperty
+                    Name="download_xliff"><![CDATA[Broken XLIFF file on downloading translation results.]]></StringProperty>
+                  <StringProperty
+                    Name="submission_error"><![CDATA[Trigger an internal error state of the submission.]]></StringProperty>
+                  <StringProperty
+                    Name="upload_communication"><![CDATA[XLIFF-Upload: Trigger a general communication error.]]></StringProperty>
+                </Struct>
+              </StructProperty>
+              <StructProperty Name="example1:submissionStates">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Example for replacing `Delivered` submission state with `Redelivered` state.]]></StringProperty>
+                  <StringProperty
+                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
+                  <StructProperty Name="Delivered">
+                    <Struct>
+                      <StringProperty Name="override">Redelivered</StringProperty>
+                      <BooleanProperty Name="final">true</BooleanProperty>
+                    </Struct>
+                  </StructProperty>
+                </Struct>
+              </StructProperty>
+              <StructProperty Name="example2:submissionStates">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Example to follow with submission state `Redelivered` after `Completed`. Suggestion to also set `download_xliff` as error to simulate real-world scenario.]]></StringProperty>
+                  <StringProperty
+                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
+                  <StructProperty Name="Completed">
+                    <Struct>
+                      <StringListProperty Name="after">
+                        <String>Completed</String>
+                        <String>Redelivered</String>
+                      </StringListProperty>
+                      <BooleanProperty Name="final">true</BooleanProperty>
+                    </Struct>
+                  </StructProperty>
+                </Struct>
+              </StructProperty>
+              <StructProperty Name="example3:submissionStates">
+                <Struct>
+                  <StringProperty
+                    Name="comment"><![CDATA[Example for mocking submission-error behavior. Suggestion to also set `submission_error` as error to simulate real-world scenario.]]></StringProperty>
+                  <StringProperty
+                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
+                  <StructProperty Name="Started">
+                    <Struct>
+                      <StringProperty Name="override">Pre-Process</StringProperty>
+                      <BooleanProperty Name="final">true</BooleanProperty>
+                    </Struct>
+                  </StructProperty>
+                </Struct>
+              </StructProperty>
+            </Struct>
+          </StructProperty>
         </Struct>
       </StructProperty>
     </Struct>

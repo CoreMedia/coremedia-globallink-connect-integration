@@ -24,7 +24,7 @@ import static com.coremedia.rest.cap.workflow.validation.configuration.Translati
 
 @AutoConfiguration
 @Import(TranslationWorkflowValidationConfiguration.class)
-public class GlobalLinkWorkflowValidationConfiguration {
+public class GlobalLinkWorkflowValidationAutoConfiguration {
 
   public static final String GLOBAL_LINK_DUE_DATE_KEY = "globalLinkDueDate";
   public static final String TRANSLATION_GLOBAL_LINK_VALIDATOR_KEY = "TranslationGlobalLink";
