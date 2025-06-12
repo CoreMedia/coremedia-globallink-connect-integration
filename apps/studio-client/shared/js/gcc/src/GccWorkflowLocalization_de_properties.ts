@@ -2,8 +2,8 @@ import ResourceBundleUtil from "@jangaroo/runtime/l10n/ResourceBundleUtil";
 import GccWorkflowLocalization_properties from "./GccWorkflowLocalization_properties";
 
 ResourceBundleUtil.override(GccWorkflowLocalization_properties, {
-  TranslationGlobalLink_displayName: "Übersetzung mit GlobalLink",
-  TranslationGlobalLink_description: "Übersetzung mit GlobalLink",
+  TranslationGlobalLink_displayName: "Übersetzung mit GlobalLink mit Abnahme",
+  TranslationGlobalLink_description: "Übersetzung mit GlobalLink  mit Abnahme",
 
   TranslationGlobalLink_task_Prepare_displayName: "Vorbereitung",
   TranslationGlobalLink_task_AutoMerge_displayName: "Aktualisierung nicht zu übersetzender Felder",

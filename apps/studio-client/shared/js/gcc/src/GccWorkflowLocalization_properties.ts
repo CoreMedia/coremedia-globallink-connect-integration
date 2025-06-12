@@ -52,8 +52,8 @@ interface GccWorkflowLocalization_properties {
 }
 
 const GccWorkflowLocalization_properties: GccWorkflowLocalization_properties = {
-  TranslationGlobalLink_displayName: "Translation with GlobalLink",
-  TranslationGlobalLink_description: "Translation with GlobalLink",
+  TranslationGlobalLink_displayName: "Reviewed Translation with GlobalLink",
+  TranslationGlobalLink_description: "Reviewed Translation with GlobalLink",
 
   TranslationGlobalLink_task_Prepare_displayName: "Preparing",
   TranslationGlobalLink_task_AutoMerge_displayName: "Updating non-translatable fields",
