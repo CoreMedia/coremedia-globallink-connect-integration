@@ -5,7 +5,6 @@ import TaskDefinitionImpl from "@coremedia/studio-client.cap-rest-client-impl/wo
 import { session, Process, Task, WorkflowObjectProperties } from "@coremedia/studio-client.cap-rest-client";
 import RemoteService from "@coremedia/studio-client.client-core-impl/data/impl/RemoteService";
 import { Blob, Calendar, RemoteBeanUtil } from "@coremedia/studio-client.client-core";
-import ProcessUtil from "@coremedia/studio-client.workflow-models/util/ProcessUtil";
 import {
   Binding,
   Button,
@@ -13,11 +12,15 @@ import {
   TextField,
   WorkflowState,
   workflowPlugins,
+  TranslationWorkflowPlugin,
+  StartWorkflowFormExtension,
+  RunningWorkflowFormExtension,
 } from "@coremedia/studio-client.workflow-plugin-models";
 import { workflowLocalizationRegistry } from "@coremedia/studio-client.workflow-plugin-models/WorkflowLocalizationRegistry";
 import DateUtil from "@jangaroo/ext-ts/Date";
 import { as, is } from "@jangaroo/runtime";
 import resourceManager from "@jangaroo/runtime/l10n/resourceManager";
+import { getLocalizer } from "@coremedia/studio-client.i18n-models";
 import GccWorkflowLocalization_properties from "./GccWorkflowLocalization_properties";
 import Gcc_properties from "./Gcc_properties";
 import gccCanceledIcon from "./icons/global-link-workflow-canceled.svg";
@@ -89,259 +92,266 @@ const getSubmissionStatus = (process): string => {
   return gccSubmissionsState;
 };
 
-workflowPlugins._.addTranslationWorkflowPlugin<GccViewModel>({
-  workflowType: "TRANSLATION",
+const getWorkflowPlugin = async (): Promise<TranslationWorkflowPlugin> => {
+  const localizer = await getLocalizer(Gcc_properties);
+  return {
+    workflowType: "TRANSLATION",
 
-  workflowName: "TranslationGlobalLink",
+    workflowName: "TranslationGlobalLink",
 
-  createWorkflowPerTargetSite: false,
+    createWorkflowPerTargetSite: false,
 
-  customizeWorkflowIcon: (process, task?) => {
-    if (
-      !!task &&
-      (!task.getWarnings() || task.getWarnings().length === 0) &&
-      !task.isEscalated() &&
-      !task.isAccepted() &&
-      (task.getDefinition().getName() === HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME ||
-        task.getDefinition().getName() === HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME ||
-        task.getDefinition().getName() === HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME)
-    ) {
-      return gccWarningIcon;
-    }
-
-    const status = getSubmissionStatus(process);
-    if (
-      [
-        CANCELLATION_REQUESTED_SUBMISSION_STATE,
-        CANCELLATION_CONFIRMED_SUBMISSION_STATE,
-        CANCELLED_SUBMISSION_STATE,
-      ].includes(status)
-    ) {
-      return gccCanceledIcon;
-    }
-
-    return gccIcon;
-  },
-
-  nextStepVariable: "translationAction",
-
-  transitions: [
-    {
-      task: "ReviewDeliveredTranslation",
-      defaultNextTask: "finishTranslation",
-      nextSteps: [
-        {
-          name: "rollbackTranslation",
-          allowAlways: true,
-        },
-        {
-          name: "finishTranslation",
-          allowAlways: true,
-        },
-      ],
-    },
-    {
-      task: "ReviewRedeliveredTranslation",
-      defaultNextTask: "finishTranslation",
-      nextSteps: [
-        {
-          name: "rollbackTranslation",
-          allowAlways: true,
-        },
-        {
-          name: "finishTranslation",
-          allowAlways: true,
-        },
-      ],
-    },
-    {
-      task: "ReviewCancelledTranslation",
-      defaultNextTask: "rollbackTranslation",
-      nextSteps: [
-        {
-          name: "rollbackTranslation",
-          allowAlways: true,
-        },
-      ],
-    },
-    {
-      task: "HandleSendTranslationRequestError",
-      defaultNextTask: "rollbackTranslation",
-      nextSteps: [
-        {
-          name: "rollbackTranslation",
-          allowAlways: true,
-        },
-        {
-          name: "continueRetry",
-          allowAlways: true,
-        },
-      ],
-    },
-    {
-      task: "HandleDownloadTranslationError",
-      defaultNextTask: "rollbackTranslation",
-      nextSteps: [
-        {
-          name: "rollbackTranslation",
-          allowAlways: true,
-        },
-        {
-          name: "continueRetry",
-          allowAlways: true,
-        },
-      ],
-    },
-    {
-      task: "HandleCancelTranslationError",
-      defaultNextTask: "rollbackTranslation",
-      nextSteps: [
-        {
-          name: "rollbackTranslation_afterCancellationFailed",
-          allowAlways: true,
-        },
-        {
-          name: "retryCancellation",
-          allowAlways: true,
-        },
-        {
-          name: "continueTranslation",
-          allowAlways: true,
-        },
-      ],
-    },
-  ],
-  startWorkflowFormExtension: {
-    computeViewModel() {
-      const defaultDueDate = getDefaultDueDate();
-      if (!defaultDueDate) {
-        return undefined;
+    customizeWorkflowIcon: (process, task?) => {
+      if (
+        !!task &&
+        (!task.getWarnings() || task.getWarnings().length === 0) &&
+        !task.isEscalated() &&
+        !task.isAccepted() &&
+        (task.getDefinition().getName() === HANDLE_SEND_TRANSLATION_REQUEST_ERROR_TASK_NAME ||
+          task.getDefinition().getName() === HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME ||
+          task.getDefinition().getName() === HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME)
+      ) {
+        return gccWarningIcon;
       }
 
-      return { globalLinkDueCalendar: defaultDueDate };
+      const status = getSubmissionStatus(process);
+      if (
+        [
+          CANCELLATION_REQUESTED_SUBMISSION_STATE,
+          CANCELLATION_CONFIRMED_SUBMISSION_STATE,
+          CANCELLED_SUBMISSION_STATE,
+        ].includes(status)
+      ) {
+        return gccCanceledIcon;
+      }
+
+      return gccIcon;
     },
 
-    saveViewModel(viewModel: GccViewModel): Record<string, any> {
-      return { globalLinkDueDate: viewModel.globalLinkDueCalendar };
-    },
+    nextStepVariable: "translationAction",
 
-    remotelyValidatedViewModelFields: ["globalLinkDueCalendar"],
-
-    fields: [
-      DateTimeField({
-        label: Gcc_properties.TranslationGlobalLink_submission_dueDate_key,
-        tooltip: Gcc_properties.TranslationGlobalLink_submission_dueDate_tooltip,
-        value: Binding("globalLinkDueCalendar"),
-      }),
-    ],
-  },
-
-  runningWorkflowFormExtension: {
-    computeTaskFromProcess: ProcessUtil.getCurrentTask,
-    computeViewModel(state: WorkflowState): GccViewModel {
-      return {
-        globalLinkPdSubmissionIds: transformSubmissionId(
-          state.process.getProperties().get("globalLinkPdSubmissionIds"),
-        ),
-        globalLinkSubmissionStatus: transformSubmissionStatus(getSubmissionStatus(state.process)),
-        globalLinkDueDate: dateToDate(state.process.getProperties().get("globalLinkDueDate")),
-        globalLinkDueDateText: dateToString(state.process.getProperties().get("globalLinkDueDate")),
-        completedLocales: convertLocales(state.process.getProperties().get("completedLocales")),
-        completedLocalesTooltip: createQuickTipText(
-          state.process.getProperties().get("completedLocales"),
-          localesService,
-        ),
-        xliffResultDownloadNotAvailable: downloadNotAvailable(state.task),
-      };
-    },
-
-    saveViewModel(viewModel: GccViewModel) {
-      return {};
-    },
-
-    fields: [
-      TextField({
-        label: Gcc_properties.TranslationGlobalLink_submission_id_key,
-        value: Binding("globalLinkPdSubmissionIds"),
-        readonly: true,
-      }),
-      TextField({
-        label: Gcc_properties.TranslationGlobalLink_submission_status_key,
-        value: Binding("globalLinkSubmissionStatus"),
-        readonly: true,
-      }),
-      TextField({
-        label: Gcc_properties.TranslationGlobalLink_submission_dueDate_key,
-        readonly: true,
-        value: Binding("globalLinkDueDateText"),
-      }),
-      TextField({
-        label: Gcc_properties.TranslationGlobalLink_completed_Locales,
-        readonly: true,
-        value: Binding("completedLocales"),
-        tooltip: Binding("completedLocalesTooltip"),
-      }),
-      Button({
-        label: Gcc_properties.translationResultXliff_Label_Button_text,
-        value: Gcc_properties.translationResultXliff_Button_text,
-        validationState: "error",
-        handler: (state): GccViewModel | void => downloadXliff(state.task),
-        hidden: Binding("xliffResultDownloadNotAvailable"),
-      }),
-    ],
-  },
-
-  workflowListActions: [
-    {
-      text: "Cancel",
-      tooltip: Gcc_properties.Action_Tooltip_Cancel_Process,
-      svgIcon: gccCancelActionIcon,
-      handler: (workflowObjects): void => {
-        const processes: Array<Process> = <Array<Process>>workflowObjects;
-        processes.forEach((po: Process): void => {
-          po.getProperties().set(CANCEL_REQUESTED_VARIABLE_NAME, true);
-        });
+    transitions: [
+      {
+        task: "ReviewDeliveredTranslation",
+        defaultNextTask: "finishTranslation",
+        nextSteps: [
+          {
+            name: "rollbackTranslation",
+            allowAlways: true,
+          },
+          {
+            name: "finishTranslation",
+            allowAlways: true,
+          },
+        ],
       },
-      confirmTitle: Gcc_properties.confirm_cancellation_title,
-      confirmMessage: Gcc_properties.confirm_cancellation,
-      computeActionState: (workflowObjects) => {
-        if (!workflowObjects || workflowObjects.length === 0) {
-          return {
-            hidden: true,
-            disabled: true,
-          };
+      {
+        task: "ReviewRedeliveredTranslation",
+        defaultNextTask: "finishTranslation",
+        nextSteps: [
+          {
+            name: "rollbackTranslation",
+            allowAlways: true,
+          },
+          {
+            name: "finishTranslation",
+            allowAlways: true,
+          },
+        ],
+      },
+      {
+        task: "ReviewCancelledTranslation",
+        defaultNextTask: "rollbackTranslation",
+        nextSteps: [
+          {
+            name: "rollbackTranslation",
+            allowAlways: true,
+          },
+        ],
+      },
+      {
+        task: "HandleSendTranslationRequestError",
+        defaultNextTask: "rollbackTranslation",
+        nextSteps: [
+          {
+            name: "rollbackTranslation",
+            allowAlways: true,
+          },
+          {
+            name: "continueRetry",
+            allowAlways: true,
+          },
+        ],
+      },
+      {
+        task: "HandleDownloadTranslationError",
+        defaultNextTask: "rollbackTranslation",
+        nextSteps: [
+          {
+            name: "rollbackTranslation",
+            allowAlways: true,
+          },
+          {
+            name: "continueRetry",
+            allowAlways: true,
+          },
+        ],
+      },
+      {
+        task: "HandleCancelTranslationError",
+        defaultNextTask: "rollbackTranslation",
+        nextSteps: [
+          {
+            name: "rollbackTranslation_afterCancellationFailed",
+            allowAlways: true,
+          },
+          {
+            name: "retryCancellation",
+            allowAlways: true,
+          },
+          {
+            name: "continueTranslation",
+            allowAlways: true,
+          },
+        ],
+      },
+    ],
+    startWorkflowFormExtension: StartWorkflowFormExtension<GccViewModel>({
+      computeViewModel() {
+        const defaultDueDate = getDefaultDueDate();
+        if (!defaultDueDate) {
+          return undefined;
         }
 
-        for (let i: number = 0; i < workflowObjects.length; i++) {
-          const wfobject = workflowObjects[i];
-          if (
-            !is(wfobject, Process) ||
-            !RemoteBeanUtil.isAccessible(wfobject) ||
-            wfobject.getDefinition().getName() !== TRANSLATION_GLOBAL_LINK_PROCESS_NAME
-          ) {
+        return { globalLinkDueCalendar: defaultDueDate };
+      },
+
+      saveViewModel(viewModel: GccViewModel): Record<string, any> {
+        return { globalLinkDueDate: viewModel.globalLinkDueCalendar };
+      },
+
+      remotelyValidatedViewModelFields: ["globalLinkDueCalendar"],
+
+      fields: [
+        DateTimeField({
+          label: localizer("TranslationGlobalLink_submission_dueDate_key"),
+          tooltip: localizer("TranslationGlobalLink_submission_dueDate_tooltip"),
+          value: Binding("globalLinkDueCalendar"),
+        }),
+      ],
+    }),
+
+    runningWorkflowFormExtension: RunningWorkflowFormExtension<GccViewModel>({
+      computeTaskFromProcess: (process) => process.getCurrentTask(),
+      computeViewModel(state: WorkflowState): GccViewModel {
+        return {
+          globalLinkPdSubmissionIds: transformSubmissionId(
+            state.process.getProperties().get("globalLinkPdSubmissionIds"),
+          ),
+          globalLinkSubmissionStatus: transformSubmissionStatus(getSubmissionStatus(state.process)),
+          globalLinkDueDate: dateToDate(state.process.getProperties().get("globalLinkDueDate")),
+          globalLinkDueDateText: dateToString(state.process.getProperties().get("globalLinkDueDate")),
+          completedLocales: convertLocales(state.process.getProperties().get("completedLocales")),
+          completedLocalesTooltip: createQuickTipText(
+            state.process.getProperties().get("completedLocales"),
+            localesService,
+          ),
+          xliffResultDownloadNotAvailable: downloadNotAvailable(state.task),
+        };
+      },
+
+      saveViewModel(viewModel: GccViewModel) {
+        return {};
+      },
+
+      fields: [
+        TextField({
+          label: localizer("TranslationGlobalLink_submission_id_key"),
+          value: Binding("globalLinkPdSubmissionIds"),
+          readonly: true,
+        }),
+        TextField({
+          label: localizer("TranslationGlobalLink_submission_status_key"),
+          value: Binding("globalLinkSubmissionStatus"),
+          readonly: true,
+        }),
+        TextField({
+          label: localizer("TranslationGlobalLink_submission_dueDate_key"),
+          readonly: true,
+          value: Binding("globalLinkDueDateText"),
+        }),
+        TextField({
+          label: localizer("TranslationGlobalLink_completed_Locales"),
+          readonly: true,
+          value: Binding("completedLocales"),
+          tooltip: Binding("completedLocalesTooltip"),
+        }),
+        Button({
+          label: localizer("translationResultXliff_Label_Button_text"),
+          value: localizer("translationResultXliff_Button_text"),
+          validationState: "error",
+          handler: (state): GccViewModel | void => downloadXliff(state.task),
+          hidden: Binding("xliffResultDownloadNotAvailable"),
+        }),
+      ],
+    }),
+
+    workflowListActions: [
+      {
+        text: "Cancel",
+        tooltip: localizer("Action_Tooltip_Cancel_Process"),
+        svgIcon: gccCancelActionIcon,
+        handler: (workflowObjects): void => {
+          const processes: Array<Process> = <Array<Process>>workflowObjects;
+          processes.forEach((po: Process): void => {
+            po.getProperties().set(CANCEL_REQUESTED_VARIABLE_NAME, true);
+          });
+        },
+        confirmTitle: localizer("confirm_cancellation_title"),
+        confirmMessage: localizer("confirm_cancellation"),
+        computeActionState: (workflowObjects) => {
+          if (!workflowObjects || workflowObjects.length === 0) {
             return {
               hidden: true,
               disabled: true,
             };
           }
-          if (
-            !wfobject.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME) ||
-            wfobject.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME)
-          ) {
-            return {
-              hidden: false,
-              disabled: true,
-            };
-          }
-        }
 
-        return {
-          hidden: false,
-          disabled: false,
-        };
+          for (let i: number = 0; i < workflowObjects.length; i++) {
+            const wfobject = workflowObjects[i];
+            if (
+              !is(wfobject, Process) ||
+              !RemoteBeanUtil.isAccessible(wfobject) ||
+              wfobject.getDefinition().getName() !== TRANSLATION_GLOBAL_LINK_PROCESS_NAME
+            ) {
+              return {
+                hidden: true,
+                disabled: true,
+              };
+            }
+            if (
+              !wfobject.getProperties().get(CANCELLATION_ALLOWED_VARIABLE_NAME) ||
+              wfobject.getProperties().get(CANCEL_REQUESTED_VARIABLE_NAME)
+            ) {
+              return {
+                hidden: false,
+                disabled: true,
+              };
+            }
+          }
+
+          return {
+            hidden: false,
+            disabled: false,
+          };
+        },
       },
-    },
-  ],
+    ],
+  };
+};
+
+getWorkflowPlugin().then((workflowPlugin) => {
+  workflowPlugins._.addTranslationWorkflowPlugin(workflowPlugin);
 });
 
 workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", {
@@ -480,7 +490,7 @@ function downloadNotAvailable(task: Task): boolean {
   if (
     !task ||
     !RemoteBeanUtil.isAccessible(task) ||
-    !RemoteBeanUtil.isAccessible(<TaskDefinitionImpl>task.getDefinition()) ||
+    !RemoteBeanUtil.isAccessible(task.getDefinition()) ||
     !RemoteBeanUtil.isAccessible(task.getContainingProcess()) ||
     !SHOW_XLIFF_DOWNLOAD_TASK_NAMES.includes(task.getDefinition().getName())
   ) {
