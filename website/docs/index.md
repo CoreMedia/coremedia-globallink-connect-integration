@@ -1,6 +1,7 @@
 ---
 label: GCC Intro
 sidebar_position: 1
+slug: /
 ---
 
 ![CoreMedia Labs Logo](https://documentation.coremedia.com/badges/banner_coremedia_labs_wide.png "CoreMedia Labs Logo Title Text")
