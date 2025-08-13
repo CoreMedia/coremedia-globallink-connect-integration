@@ -101,28 +101,28 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'About CoreMedia',
           items: [
             {
-              label: 'Tutorial',
-              to: '/docs/intro',
+              label: 'Homepage',
+              href: 'https://www.coremedia.com/',
+            },
+            {
+              label: 'Blog',
+              href: 'https://www.coremedia.com/blog',
             },
           ],
         },
         {
-          title: 'Community',
+          title: 'Customer Support',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'Support',
+              href: 'https://www.coremedia.com/support',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
+              label: 'CoreMedia Help Center',
+              href: 'https://support.coremedia.com/hc/en-us',
             },
           ],
         },
@@ -130,17 +130,17 @@ const config: Config = {
           title: 'More',
           items: [
             {
-              label: 'Blog',
-              to: '/blog',
+              label: 'Docusaurus',
+              href: 'https://docusaurus.io/',
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/CoreMedia/coremedia-globallink-connect-integration',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} CoreMedia. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} CoreMedia GmbH, CoreMedia Corporation. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
