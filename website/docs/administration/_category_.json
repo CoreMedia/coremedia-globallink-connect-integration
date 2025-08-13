@@ -1,6 +1,6 @@
 {
   "label": "Administration",
-  "position": 4,
+  "position": 2,
   "link": {
     "type": "generated-index",
     "description": "Guidance for administrating the CoreMedia GlobalLink Connector in CoreMedia Content Cloud (CMCC)."
