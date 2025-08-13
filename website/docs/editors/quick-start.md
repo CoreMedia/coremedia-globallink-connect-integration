@@ -1,4 +1,9 @@
-# Editorial Quick Start
+---
+sidebar_position: 1
+description: Quick start information for editors.
+---
+
+# Quick Start
 
 Assuming that you are familiar with the CoreMedia Studio and that you created a
 new campaign in the English master site that has now to be translated into

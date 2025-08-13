@@ -1,86 +1,11 @@
-# Administration
+---
+sidebar_position: 4
+description: How to configure GlobalLink connection credentials and behavior.
+---
 
-This page provides guidance for administrating the CoreMedia GlobalLink
-Connector in CoreMedia Content Cloud (CMCC).
+# Configuring Connection Settings
 
-## Prerequisites
-
-Ensure you have your GCC parameters at hand:
-
-* GCC REST Base URL
-* API Key
-* File Type
-* _Optional:_ Client Secret Key (see below)
-
-For more details on available options and how to configure them in CoreMedia
-Studio read [this](#configuring-globallink-connection-settings).
-
-## Retrieve Client Secret Key
-
-If you did not receive a client secret key as part of your _Client Onboarding_
-you can query it via REST API `/api/v3/connectors` which, provides a response
-similar to this:
-
-```json title="Example response /api/v3/connectors"
-{
-    "status": 200,
-    "message": "Connector details",
-    "response_data": [
-        {
-            "connector_key": "8dccce941d37cc697f41724d50c487d2",
-            "connector_name": "Connector 1"
-        },
-        {
-            "connector_key": "c89bc6f7fdbba90ed4a98d5d8d8a2662",
-            "connector_name": "Connector 2"
-        }
-    ]
-}
-```
-
-## Setup of GlobalLink Connect Cloud
-
-There is some mandatory configuration required in GlobalLink Connect Cloud so
-that the integration between both systems runs smoothly:
-
-* The connector uses the XLIFF file format to exchange translatable texts with
-  GlobalLink. Make sure that your GlobalLink instance is configured
-  accordingly and request the file format identifier from your contacts at
-  Translations.com. This identifier is configured
-  [here](#configuring-globallink-connection-settings).
-
-* The connector automatically detects submissions that have been cancelled in
-  GlobalLink and shows this state to editors in CoreMedia Studio. Canceling
-  individual jobs of a submission is not supported yet and will most likely
-  yield unexpected results. To prevent this from happening, make sure that
-  GlobalLink Cloud Connect only allows the cancellation of submissions.
-
-* Re-opening of submissions is not yet supported by the connector. Ask your
-  contacts at Translations.com to disable this functionality in GlobalLink
-  Connect Cloud to avoid misunderstandings.
-
-* A connector instance at GlobalLink Connect Cloud currently requires unique
-  ISO-639-1 language codes in the source locales of the sites. This essentially
-  means that Translations.com would have to set up multiple connectors if your
-  site hierarchy looks like the following example. Each site in CoreMedia
-  consequently has to use the `key` of the corresponding connector in its
-  [settings](#configuring-globallink-connection-settings).
-
-  ```text title="Example Site Hierarchy"
-  |
-  |- en_FR
-  |  |
-  |  `- fr_FR
-  |
-  |- en_DE
-  |  |
-  |  `- de_DE
-  |
-  ```
-
-## Configuring GlobalLink Connection Settings
-
-### Server-side configuration
+## Server-side configuration
 
 Various default values are defined globally in the properties file of
 the `gcc-workflow-server` module (see
@@ -95,7 +20,7 @@ it is just called `apiKey` (type:`String`).
 If the API key is to be set upon system startup, you can do so by defining
 variable `GCC_APIKEY` with the appropriate value. Check with development that
 the required actions have been taken on the code (see
-[Enabling External Definition of API Key](./development#enabling-external-definition-of-api-key)).
+[Enabling External Definition of API Key](/development/coremedia-blueprint/#enabling-external-definition-of-api-key)).
 In context of a CoreMedia-hosted cloud instance, store the values in
 _Cloud Manager Secrets_ and request activation through _CoreMedia
 Cloud Support_.
@@ -114,7 +39,7 @@ values.
 If the delay is to be set upon system startup, you can do so by defining
 variable `GCC_CMS_RETRY_DELAY` with the appropriate value.
 
-### Configuration in Studio
+## Configuration in Studio
 
 GlobalLink Settings can be configured globally for all sites or specifically
 for some site. Site-specific settings override global settings except for
@@ -186,56 +111,9 @@ would have to wait until it is expired.
 You can also define parameters for testing with the mock facade
 (see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
 
-**⚠️ Make sure to restrict read and write rights to the Settings content to
+:::warning Restrict Access to Settings
+
+Make sure to restrict read and write rights to the Settings content to
 those user groups that actually need access. Do not publish the
 Settings and follow the recommendations from the previous chapter.
-This will reduce the risk of accidentally leaking sensitive information.**
-
-## Questions &amp; Answers
-
-### What to do when deriving a new site?
-
-**Short:** _Enable Target Language at GCC, Configure Language Mapping_
-
-When you derive a new site and want to propagate translations to this site
-via GlobalLink Translation Workflow, you need to ensure that your target locale
-is supported by GlobalLink and that (if required) GlobalLink knows how to
-represent the CMS locale tag (represented as IETF BCP 47 language tag) within
-GlobalLink Project Director.
-
-You can validate the configuration by retrieving the Connectors Config via
-REST. It will contain a section `supported_locales` where `pd_locale` maps
-to the locale representation within Project Director and `connector_locale`
-should be equal to your derived site locale as IETF BCP 47 language tag.
-
-You will find the language tags in `/Settings/Options/Settings/LocaleSettings`
-in your CMS.
-
-### Why does my workflow show "Status: Completed", but the content is not translated, and it is still in the list of running workflows?
-
-**Short:** _Ask GlobalLink to check task states and to complete all tasks
-of the submission._
-
-In GlobalLink the state can be handled separately for the submission, and the
-actual translation tasks. A submission can be accidentally marked as completed
-by the translator while the actual tasks might not be completed yet.
-
-The workflow in CoreMedia Studio requires the tasks to be completed, so that it
-can download the translated content of a single task. Other tasks might still be
-in translation. Only if all tasks in GlobalLink are completed the workflow in
-CoreMedia Studio can finish.
-
-This only happened rarely in the past, but if you are wondering why a workflow
-seems to hang forever, then ask the GlobalLink support to check the states of
-the individual tasks of the submission and complete them if possible.
-
-As a system administrator you can enable DEBUG logging for
-`com.coremedia.labs.translation.gcc` in the workflow-server application.
-You should find an entry like `Checked for update of submission 1669718090545
-(PD ID [45360]) in state COMPLETED with completed locales [[]].` which indicates
-that tasks at GlobalLink that are represented by `completed locales`
-have not been completed properly.
-
-## See Also
-
-* [Development](./development/)
+This will reduce the risk of accidentally leaking sensitive information.
