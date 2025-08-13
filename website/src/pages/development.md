@@ -154,7 +154,7 @@ gcc.apiKey=
 ```
 
 If in doubt, check with the system's administrator how the API key is to be
-defined. See [Server-side configuration](administration.md#server-side-configuration)
+defined. See [Server-side configuration](./administration#server-side-configuration)
 in _Administration Guide_.
 
 ## Extension Point for Custom Properties
@@ -343,7 +343,7 @@ be linked to your site root documents (also known as Homepages).
 
 ## See Also
 
-* [Administration](administration.md)
+* [Administration](./administration)
 
 <!-- Links, keep at bottom -->
 

@@ -21,7 +21,7 @@ If you did not receive a client secret key as part of your _Client Onboarding_
 you can query it via REST API `/api/v3/connectors` which, provides a response
 similar to this:
 
-```json
+```json title="Example response /api/v3/connectors"
 {
     "status": 200,
     "message": "Connector details",
@@ -66,7 +66,7 @@ that the integration between both systems runs smoothly:
   consequently has to use the `key` of the corresponding connector in its
   [settings](#configuring-globallink-connection-settings).
 
-  ```text
+  ```text title="Example Site Hierarchy"
   |
   |- en_FR
   |  |
@@ -95,7 +95,7 @@ it is just called `apiKey` (type:`String`).
 If the API key is to be set upon system startup, you can do so by defining
 variable `GCC_APIKEY` with the appropriate value. Check with development that
 the required actions have been taken on the code (see
-[Enabling External Definition of API Key](development.md#enabling-external-definition-of-api-key)).
+[Enabling External Definition of API Key](./development#enabling-external-definition-of-api-key)).
 In context of a CoreMedia-hosted cloud instance, store the values in
 _Cloud Manager Secrets_ and request activation through _CoreMedia
 Cloud Support_.
@@ -238,4 +238,4 @@ have not been completed properly.
 
 ## See Also
 
-* [Development](development.md)
+* [Development](./development/)
