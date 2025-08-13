@@ -1,3 +1,8 @@
+---
+sidebar_position: 1
+description: Manual tests to perform prior to release.
+---
+
 # Manual Test Steps
 
 --------------------------------------------------------------------------------
@@ -432,7 +437,7 @@ contract test, you may want to review in GCC Management Dashboard:
    The "Cancel" button used to be in the upper right corner of the opened
    submission.
 
-   ![GlobalLink Management Dashboard](img/screenshot-globallink-mgmt-cancelation.png)
+   ![GlobalLink Management Dashboard](/img/screenshot-globallink-mgmt-cancelation.png)
 
 5. Go back to the _Workflow App_
  

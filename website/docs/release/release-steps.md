@@ -1,3 +1,8 @@
+---
+sidebar_position: 2
+description: Steps to perform a release of this workspace.
+---
+
 # Release Steps
 
 --------------------------------------------------------------------------------
