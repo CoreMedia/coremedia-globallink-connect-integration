@@ -133,14 +133,7 @@ const config: Config = {
           type: 'docsVersionDropdown',
         },
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Tutorial',
-        },
-        {to: '/blog', label: 'Blog', position: 'left'},
-        {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/CoreMedia/coremedia-globallink-connect-integration',
           label: 'GitHub',
           position: 'right',
         },
