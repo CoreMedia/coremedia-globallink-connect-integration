@@ -7,6 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'coremedia-globallink-connect-integration',
   tagline: 'Translation integration via GlobalLink Connect Cloud',
+  favicon: 'img/favicon-picture--thumbnail.ico',
   headTags: [
     {
       tagName: 'link',
