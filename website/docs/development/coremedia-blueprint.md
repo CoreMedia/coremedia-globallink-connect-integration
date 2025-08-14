@@ -33,8 +33,9 @@ Feel free to choose the strategy that fits your needs best. For example:
   git subtree pull --prefix modules/extensions/gcc gcc main --squash
   ```
 
-  See [Issue 28](https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/28) for
-  a more detailed description of a similar approach.
+  See
+  [Issue 28](<https://github.com/CoreMedia/coremedia-globallink-connect-integration/issues/28> "Git subtree approach · Issue #28 · CoreMedia/coremedia-globallink-connect-integration")
+  for a more detailed description of a similar approach.
 
 * Or as a Git Submodule from the workspace root
 
@@ -95,8 +96,8 @@ gcc.apiKey=
 ```
 
 If in doubt, check with the system's administrator how the API key is to be
-defined. See [Server-side configuration](./administration#server-side-configuration)
-in _Administration Guide_.
+defined. See [Server-side configuration](<../administration/configure-gcc-settings#server-side-configuration> "Administration | Configuring Connection Settings")
+for details.
 
 ## Extension Point for Custom Properties
 
@@ -104,13 +105,7 @@ In case you need additional properties for interacting with GlobalLink REST
 backend, you may need to extend the Studio Workflow UI as well as the Workflow
 Actions. You will find details how to do that here:
 
-* [Blueprint Developer Manual / Configuration and Customization][DOC-CM-TRANSLATION]
-* [Blueprint Developer Manual / Translation Workflow Studio UI][DOC-CM-TRANSLATION-UI]
-* [Workflow Manual / Workflow Variables][DOC-WF-VARS]
-
-<!-- Links, keep at bottom -->
-
-[DOC-CM-PEXT]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions"
-[DOC-CM-TRANSLATION]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization"
-[DOC-CM-TRANSLATION-UI]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI"
-[DOC-WF-VARS]: <https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables"
+* [Blueprint Developer Manual / Project Extensions](<https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/projectExtensions.html> "Blueprint Developer Manual / Project Extensions")
+* [Blueprint Developer Manual / Configuration and Customization](<https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/translationWorkflow_configurationAndCustomization.html> "Blueprint Developer Manual / Configuration and Customization")
+* [Blueprint Developer Manual / Translation Workflow Studio UI](<https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/coremedia-en/content/TranslationWorkflowUiCustomization.html> "Blueprint Developer Manual / Translation Workflow Studio UI")
+* [Workflow Manual / Workflow Variables](<https://documentation.coremedia.com/cmcc-12/artifacts/2412.0/webhelp/workflow-developer-en/content/WorkflowVariables.html> "Workflow Manual / Workflow Variables")
