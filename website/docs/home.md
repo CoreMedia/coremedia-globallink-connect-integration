@@ -50,10 +50,3 @@ This extension adds the following functionality to the CoreMedia Studio:
 5. [Changelog](changelog/README.md)
 
    Release information (since v12.2406.1.0-1).
-
-## See Also
-
-* [Used Third-Party Libraries](THIRD-PARTY.txt)
-
-    <!-- GitHub Pages is not able to list directory contents. Jump back to GitHub directly.  -->
-    For license texts have a look at [third-party-licenses/](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/docs/third-party-licenses).
