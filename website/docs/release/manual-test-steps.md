@@ -5,29 +5,7 @@ description: Manual tests to perform prior to release.
 
 # Manual Test Steps
 
---------------------------------------------------------------------------------
-
-\[[Up](README.md)\] \[[Top](#manual-test-steps)\]
-
---------------------------------------------------------------------------------
-
-## Contents
-
-### General
-
-1. [Prepare](#prepare)
-2. [General Advice for Manual Test Steps Within CoreMedia Studio](#general-advice-for-manual-test-steps-within-coremedia-studio)
-
-### Scenarios
-
-1. [Contract Test](#scenario-contract-test)
-2. [Happy Path](#scenario-happy-path)
-3. [General Error Handling](#scenario-general-error-handling)
-4. [Cancelation](#scenario-cancelation)
-5. [Wrong Or Invalid Connector Key Recovery](#scenario-wrong-or-invalid-connector-key-recovery)
-6. [GCC Backend Error Handling (Submission Error State)](#scenario-gcc-backend-error-handling-submission-error-state)
-7. [XLIFF Import Error Handling](#scenario-xliff-import-error-handling)
-8. [Redelivered State Handling](#scenario-redelivered-state-handling)
+Manual tests to perform prior to release.
 
 ## Prepare
 
@@ -174,7 +152,7 @@ work with the manual workflow though.
 ### Set Up
 
 To run the test you need to create a file with the name
-[.gcc.properties](example.gcc.properties.txt)
+[.gcc.properties](/files/example.gcc.properties.txt)
 in your user home folder
 
 ### Manual Review
@@ -793,9 +771,3 @@ The following steps simulate this scenario:
 If you have time and want to do it: In Project Director you may multi-select
 submissions, cancel them and subsequently archive them. This way, the overview
 at least in Project Director is kept clean.
-
---------------------------------------------------------------------------------
-
-\[[Up](README.md)\] \[[Top](#manual-test-steps)\]
-
---------------------------------------------------------------------------------
