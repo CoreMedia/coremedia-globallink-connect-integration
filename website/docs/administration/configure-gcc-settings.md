@@ -9,7 +9,7 @@ description: How to configure GlobalLink connection credentials and behavior.
 
 Various default values are defined globally in the properties file of
 the `gcc-workflow-server` module (see
-[gcc-workflow.properties](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties)).
+[gcc-workflow.properties](<https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/main/apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties> "apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties")).
 
 The following configuration shall only be stored there so that you do not
 accidentally leak it to clients that have read access to the content repository:
@@ -20,7 +20,7 @@ it is just called `apiKey` (type:`String`).
 If the API key is to be set upon system startup, you can do so by defining
 variable `GCC_APIKEY` with the appropriate value. Check with development that
 the required actions have been taken on the code (see
-[Enabling External Definition of API Key](/development/coremedia-blueprint/#enabling-external-definition-of-api-key)).
+[Enabling External Definition of API Key](<../development/coremedia-blueprint#enabling-external-definition-of-api-key> "Development | CoreMedia Blueprint | Enabling External Definition of API Key")).
 In context of a CoreMedia-hosted cloud instance, store the values in
 _Cloud Manager Secrets_ and request activation through _CoreMedia
 Cloud Support_.
@@ -69,7 +69,7 @@ in CoreMedia Studio and add a struct named
   GlobalLink setup, then this has to be set to the XLIFF file type identifier
   to be used by your connector. (_optional_, default: `xliff`, type:`String`)
 * `type` Determines which facade implementation will be used (see
-  [Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)).
+  [Facade Documentation](<https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md> "apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md")).
   (_optional_, type:`String`)
 * `dayOffsetForDueDate` Defines the offset for the
   `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow
@@ -109,7 +109,7 @@ would have to wait until it is expired.
   cancellation of a submission. (_optional_, default: `180`, type: `Integer`)
 
 You can also define parameters for testing with the mock facade
-(see [Mock Facade Documentation](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)).
+(see [Mock Facade Documentation](<https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md> "apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md")).
 
 :::warning Restrict Access to Settings
 
