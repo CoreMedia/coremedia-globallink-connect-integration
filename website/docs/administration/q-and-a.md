@@ -23,7 +23,11 @@ should be equal to your derived site locale as IETF BCP 47 language tag.
 You will find the language tags in `/Settings/Options/Settings/LocaleSettings`
 in your CMS.
 
-## Why does my workflow show "Status: Completed", but the content is not translated, and it is still in the list of running workflows?
+## Why does my workflow unexpectedly state "Status: Completed"?
+
+Sometimes, you may find your workflow showing _"Status: Completed"_ while the
+content is not translated, and the workflow is still in the list of running
+workflows.
 
 **Short:** _Ask GlobalLink to check task states and to complete all tasks
 of the submission._
