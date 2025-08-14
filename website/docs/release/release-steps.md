@@ -5,12 +5,6 @@ description: Steps to perform a release of this workspace.
 
 # Release Steps
 
---------------------------------------------------------------------------------
-
-\[[Up](README.md)\] \[[Top](#release-steps)\]
-
---------------------------------------------------------------------------------
-
 In here you will find a description of steps to perform a release of this
 workspace.
 
@@ -37,9 +31,9 @@ Next, create a pull request from the feature branch to `develop` and wait for
 the approval.
 
 See
-[CoreMedia/coremedia-globallink-connect-integration](https://github.com/CoreMedia/coremedia-globallink-connect-integration)
+[CoreMedia/coremedia-globallink-connect-integration](<https://github.com/CoreMedia/coremedia-globallink-connect-integration> "CoreMedia/coremedia-globallink-connect-integration: Translation integration via GlobalLink Connect Cloud")
 for the current, and most recent version of GCC REST Client (labels on top of
-page). 
+page).
 
 ## 2. Verify Release Versions of Core Packages
 
@@ -62,10 +56,10 @@ the `gcc-workflow-server-parent` Maven module match.
 
 * Update CMCC and GCC Version in badges at main workspace `README.md`.
 
-* Update documentation links in [development.md](../development.md) right at
-  the bottom of the MarkDown file.
+* Update documentation links in the
+  [Development section](<../development/coremedia-blueprint#extension-point-for-custom-properties>).
 
-* And, do not forget to mention all the changes including upgrade advice in 
+* And, do not forget to mention all the changes including upgrade advice in
   `CHANGELOG.md`
 
 ## 4. Manual Testing
@@ -105,9 +99,3 @@ If customers want to provide a patch for a given workspace version, create
 a branch from the given tag. This will then receive the PR results. If
 applicable to current `develop` branch, cherry-pick the PR commits to
 `develop` branch.
-
---------------------------------------------------------------------------------
-
-\[[Up](README.md)\] \[[Top](#release-steps)\]
-
---------------------------------------------------------------------------------
