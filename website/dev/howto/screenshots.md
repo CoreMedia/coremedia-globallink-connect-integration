@@ -1,3 +1,9 @@
+---
+id: screenshots
+sidebar_label: Screenshots
+description: How to Update and Add Screenshots.
+---
+
 # Updating and Adding Screenshots
 
 This document is a recommendation how to update or add screenshots to the
@@ -90,8 +96,6 @@ screenshot they are referring to.
 
 ### gcc-connect-error.png
 
-![GCC Error Handling](gcc-connect-error.png)
-
 A screenshot representing an upload communication error in the GlobalLink
 connector.
 
@@ -110,8 +114,6 @@ connector.
 **Cleanup**: Consider selecting _Rollback_ to end the workflow.
 
 ### gcc-redelivered.png
-
-![GCC Redelivered](gcc-redelivered.png)
 
 A screenshot representing a redelivered submission state in the GlobalLink
 connector.
@@ -145,8 +147,6 @@ connector.
 
 ### gcc-running.png
 
-![GCC Running](gcc-running.png)
-
 A screenshot representing the running workflow when opened in the Workflow App.
 
 1. **Translation Settings:** Ensure, that no provoked errors are adapted
@@ -168,8 +168,6 @@ A screenshot representing the running workflow when opened in the Workflow App.
 the workflow.
 
 ### gcc-select-type.png
-
-![GCC Select](gcc-select-type.png)
 
 A screenshot that shows the Start Translation Workflow Window while selecting
 the localization workflow type.
@@ -195,8 +193,6 @@ external screenshot tool, to trigger the screenshot via a hotkey.
 
 ### gcc-settings.png
 
-![GCC Settings](gcc-settings.png)
-
 A screenshot that gives an impression on the `GlobalLink` settings document
 and its location.
 
@@ -219,8 +215,6 @@ and its location.
    * Close all other tabs but that for the "mocked" settings document.
 
 ### gcc-start-wf.png
-
-![GCC Start Workflow](gcc-start-wf.png)
 
 A screenshot that provides a hint on how to start a translation workflow.
 
@@ -245,8 +239,6 @@ adjust your screenshot tool to also capture the mouse cursor.
    tool supports capturing the mouse cursor hover it above "Start localization".
 
 ### gcc-success.png
-
-![GCC Success](gcc-success.png)
 
 A screenshot that shows the task "Review Translation" in the Content App along
 with the differencing view.
