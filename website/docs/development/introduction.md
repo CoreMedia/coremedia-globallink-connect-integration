@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-description: General overview on branches and tags.
+description: General overview.
 ---
 
 # Introduction
