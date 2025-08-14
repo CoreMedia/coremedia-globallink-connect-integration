@@ -1,6 +1,7 @@
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import type {Options as DocsOptions} from '@docusaurus/plugin-content-docs';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -118,6 +119,21 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      'content-docs',
+      {
+        id: 'dev',
+        path: 'dev',
+        routeBasePath: 'dev',
+        sidebarPath: './sidebarsDev.ts',
+        // Please change this to your repo.
+        editUrl:
+          'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+      } satisfies DocsOptions,
+    ]
+  ],
+
   themeConfig: {
     // Replace with your project's social card
     // image: 'img/docusaurus-social-card.jpg',
@@ -131,7 +147,20 @@ const config: Config = {
       },
       items: [
         {
+          type: 'doc',
+          position: 'left',
+          docId: 'introduction',
+          label: 'Docs',
+        },
+        {
+          to: '/dev/home',
+          label: 'Development',
+          position: 'left',
+          activeBaseRegex: `/dev/`,
+        },
+        {
           type: 'docsVersionDropdown',
+          position: 'right',
         },
         {
           href: 'https://github.com/CoreMedia/coremedia-globallink-connect-integration',

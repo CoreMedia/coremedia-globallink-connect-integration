@@ -48,7 +48,7 @@ the `gcc-workflow-server-parent` Maven module match.
   declared CMCC version (most third-party dependencies) are managed in Blueprint
   and CMCC Core.
 
-* Update [THIRD-PARTY.txt](/files/THIRD-PARTY.txt) and license downloads by running:
+* Update `THIRD-PARTY.txt` and license downloads by running:
 
   ```bash
   $ mvn -Pdocs-third-party generate-resources

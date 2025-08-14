@@ -152,7 +152,7 @@ work with the manual workflow though.
 ### Set Up
 
 To run the test you need to create a file with the name
-[.gcc.properties](/files/example.gcc.properties.txt)
+[.gcc.properties](./files/example.gcc.properties.txt)
 in your user home folder
 
 ### Manual Review
@@ -415,7 +415,7 @@ contract test, you may want to review in GCC Management Dashboard:
    The "Cancel" button used to be in the upper right corner of the opened
    submission.
 
-   ![GlobalLink Management Dashboard](/img/screenshot-globallink-mgmt-cancelation.png)
+   ![GlobalLink Management Dashboard](./img/screenshot-globallink-mgmt-cancelation.png)
 
 5. Go back to the _Workflow App_
  

@@ -1,4 +1,5 @@
 ---
+id: introduction
 title: Home
 sidebar_position: 1
 slug: /
