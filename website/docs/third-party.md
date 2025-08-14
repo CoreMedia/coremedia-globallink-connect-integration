@@ -1,6 +1,7 @@
 ---
-title: Third-Party
-sidebar_position: 6
+title: Used Third-Party Libraries
+sidebar_label: Third-Party
+sidebar_position: 7
 ---
 
 # Used Third-Party Libraries and Licenses
