@@ -7,7 +7,63 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'coremedia-globallink-connect-integration',
   tagline: 'Translation integration via GlobalLink Connect Cloud',
-  favicon: 'img/favicon.ico',
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: 'img/favicon-apple-touch-picture--thumbnail.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'mask-icon',
+        color: '#672779',
+        href: 'img/favicon-safari-picture--thumbnail.svg',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: 'img/favicon-16x16-picture--thumbnail.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: 'img/favicon-32x32-picture--thumbnail.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'shortcut icon',
+        href: 'img/favicon-picture--thumbnail.ico',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'msapplication-TileImage',
+        content: 'img/favicon-mstile-picture--thumbnail.png',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'msapplication-TileColor',
+        content: '#672779',
+      },
+    },
+  ],
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -63,12 +119,14 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    // image: 'img/docusaurus-social-card.jpg',
     navbar: {
       title: 'coremedia-globallink-connect-integration',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'CoreMedia Logo',
         src: 'img/logo.svg',
+        srcDark: 'img/logo-dark.svg',
+        href: 'https://www.coremedia.com/',
       },
       items: [
         {
