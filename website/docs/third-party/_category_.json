@@ -1,0 +1,8 @@
+{
+  "label": "Third-Party",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "description": "Used third-party libraries."
+  }
+}
