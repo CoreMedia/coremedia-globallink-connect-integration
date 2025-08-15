@@ -159,7 +159,7 @@ const config: Config = {
         },
         {
           to: '/dev/home',
-          label: 'Development',
+          label: 'Contributors',
           position: 'left',
           activeBaseRegex: `/dev/`,
         },

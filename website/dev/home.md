@@ -3,6 +3,6 @@ title: Home
 sidebar_position: 1
 ---
 
-# Development Home
+# Contributors Home
 
 Find in here information about development within this repository.
