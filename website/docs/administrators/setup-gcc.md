@@ -12,7 +12,7 @@ that the integration between both systems runs smoothly:
   GlobalLink. Make sure that your GlobalLink instance is configured
   accordingly and request the file format identifier from your contacts at
   Translations.com. Section
-  [Configuring Connection Settings](<./configure-gcc-settings> "Administration | Configuring Connection Settings")
+  [Configuring Connection Settings](<./configure-gcc-settings> "Administrators | Configuring Connection Settings")
   will tell you how to configure the identifier.
 
 * The connector automatically detects submissions that have been cancelled in
@@ -31,7 +31,7 @@ that the integration between both systems runs smoothly:
   site hierarchy looks like the following example. Each site in CoreMedia
   consequently has to use the `key` of the corresponding connector in its
   settings (see
-  [Configuring Connection Settings](<./configure-gcc-settings> "Administration | Configuring Connection Settings")).
+  [Configuring Connection Settings](<./configure-gcc-settings> "Administrators | Configuring Connection Settings")).
 
   ```text title="Example Site Hierarchy"
   |

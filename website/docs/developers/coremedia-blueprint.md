@@ -96,7 +96,7 @@ gcc.apiKey=
 ```
 
 If in doubt, check with the system's administrator how the API key is to be
-defined. See [Server-side configuration](<../administration/configure-gcc-settings#server-side-configuration> "Administration | Configuring Connection Settings")
+defined. See [Server-side configuration](<../administrators/configure-gcc-settings#server-side-configuration> "Administrators | Configuring Connection Settings")
 for details.
 
 ## Extension Point for Custom Properties

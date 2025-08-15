@@ -13,4 +13,4 @@ Ensure you have your GCC parameters at hand:
 * _Optional:_ Client Secret Key (see below)
 
 For more details on available options and how to configure them in CoreMedia
-Studio visit [Configuring Connection Settings](<./configure-gcc-settings> "Administration | Configuring Connection Settings").
+Studio visit [Configuring Connection Settings](<./configure-gcc-settings> "Administrators | Configuring Connection Settings").
