@@ -2,6 +2,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import type {Options as DocsOptions} from '@docusaurus/plugin-content-docs';
+import * as path from 'path';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -9,6 +10,7 @@ const config: Config = {
   title: 'coremedia-globallink-connect-integration',
   tagline: 'Translation integration via GlobalLink Connect Cloud',
   favicon: 'img/favicon-picture--thumbnail.ico',
+
   headTags: [
     {
       tagName: 'link',
@@ -106,10 +108,13 @@ const config: Config = {
         docs: {
           routeBasePath: '/', // Serve the docs at the site's root
           sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          // remark-file-list: We need to add this before the default plugins,
+          // so that we benefit from dynamic asset links being created.
+          beforeDefaultRemarkPlugins: [
+            [require('./src/remark/remark-file-list.ts'), {}]
+          ],
         },
         blog: false, // Disable blog feature
         theme: {

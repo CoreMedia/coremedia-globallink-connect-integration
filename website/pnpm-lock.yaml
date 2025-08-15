@@ -11,6 +11,9 @@ importers:
       '@docusaurus/core':
         specifier: 3.8.1
         version: 3.8.1(@mdx-js/react@3.1.0(@types/react@19.1.10)(react@19.1.1))(acorn@8.15.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.6.3)
+      '@docusaurus/logger':
+        specifier: ^3.8.1
+        version: 3.8.1
       '@docusaurus/plugin-content-docs':
         specifier: ^3.8.1
         version: 3.8.1(@mdx-js/react@3.1.0(@types/react@19.1.10)(react@19.1.1))(acorn@8.15.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.6.3)
@@ -23,9 +26,15 @@ importers:
       '@mdx-js/react':
         specifier: ^3.0.0
         version: 3.1.0(@types/react@19.1.10)(react@19.1.1)
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
+      mdast-util-from-markdown:
+        specifier: ^2.0.2
+        version: 2.0.2
       prism-react-renderer:
         specifier: ^2.3.0
         version: 2.4.1(react@19.1.1)
@@ -35,6 +44,15 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
+      remark:
+        specifier: ^15.0.1
+        version: 15.0.1
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.0.0
     devDependencies:
       '@docusaurus/module-type-aliases':
         specifier: 3.8.1
@@ -45,6 +63,9 @@ importers:
       '@docusaurus/types':
         specifier: 3.8.1
         version: 3.8.1(acorn@8.15.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@types/unist':
+        specifier: ^3.0.3
+        version: 3.0.3
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
@@ -4546,6 +4567,9 @@ packages:
 
   remark-stringify@11.0.0:
     resolution: {integrity: sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw==}
+
+  remark@15.0.1:
+    resolution: {integrity: sha512-Eht5w30ruCXgFmxVUSlNWQ9iiimq07URKeFS3hNc8cUWy1llX4KDWfyEDZRycMc+znsN9Ux5/tJ/BFdgdOwA3A==}
 
   renderkid@3.0.0:
     resolution: {integrity: sha512-q/7VIQA8lmM1hF+jn+sFSPWGlMkSAeNYcPLmDQx2zzuiDfaLrOmumR8iaUKlenFgh0XRPIUeSPlH3A+AW3Z5pg==}
@@ -11283,6 +11307,15 @@ snapshots:
       '@types/mdast': 4.0.4
       mdast-util-to-markdown: 2.1.2
       unified: 11.0.5
+
+  remark@15.0.1:
+    dependencies:
+      '@types/mdast': 4.0.4
+      remark-parse: 11.0.0
+      remark-stringify: 11.0.0
+      unified: 11.0.5
+    transitivePeerDependencies:
+      - supports-color
 
   renderkid@3.0.0:
     dependencies:
