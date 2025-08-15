@@ -20,7 +20,7 @@ it is just called `apiKey` (type:`String`).
 If the API key is to be set upon system startup, you can do so by defining
 variable `GCC_APIKEY` with the appropriate value. Check with development that
 the required actions have been taken on the code (see
-[Enabling External Definition of API Key](<../development/coremedia-blueprint#enabling-external-definition-of-api-key> "Development | CoreMedia Blueprint | Enabling External Definition of API Key")).
+[Enabling External Definition of API Key](<../developers/coremedia-blueprint#enabling-external-definition-of-api-key> "Developers | CoreMedia Blueprint | Enabling External Definition of API Key")).
 In context of a CoreMedia-hosted cloud instance, store the values in
 _Cloud Manager Secrets_ and request activation through _CoreMedia
 Cloud Support_.

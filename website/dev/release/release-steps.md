@@ -57,7 +57,7 @@ the `gcc-workflow-server-parent` Maven module match.
 * Update CMCC and GCC Version in badges at main workspace `README.md`.
 
 * Update documentation links in the
-  [Development section](<../development/coremedia-blueprint#extension-point-for-custom-properties>).
+  [Developers section](<../developers/coremedia-blueprint#extension-point-for-custom-properties>).
 
 * And, do not forget to mention all the changes including upgrade advice in
   `CHANGELOG.md`
