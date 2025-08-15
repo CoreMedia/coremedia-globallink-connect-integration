@@ -64,3 +64,12 @@ This workflow ensures that:
 - No need to cherry-pick documentation fixes across multiple branches
 - Clear separation between code releases and documentation maintenance
 - Consistent documentation experience across all deployed versions
+
+:::info
+
+The future is yet to be designed. The more versions we ship, the more complex
+the documentation will get. The suggestion is to archive not maintained versions
+later, like not only removing the corresponding `release/*` branch, but also
+removing the versioned documentation. For now, refer to the official Docusaurus
+documentation, how to proceed with this scenario (and think about updating
+this documentation).
