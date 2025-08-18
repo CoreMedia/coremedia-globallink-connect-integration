@@ -3,6 +3,7 @@ id: third-party
 title: Used Third-Party
 sidebar_label: Used Third-Party
 description: Used Third-Party Libraries.
+sidebar_position: 1
 ---
 
 # Third-Party Libraries
