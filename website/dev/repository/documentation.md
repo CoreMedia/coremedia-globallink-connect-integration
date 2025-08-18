@@ -114,6 +114,8 @@ gitGraph:
   update these reports, you have to manually apply them to the versioned
   documentation branch.
 
+  :::
+
 - **Release branches have static documentation**: Documentation sources on
   `release/` branches (e.g., `release/2406.0`, `release/2412.0`) are not
   maintained after creation. They serve only for building the specific version

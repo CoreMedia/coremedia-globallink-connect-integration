@@ -117,3 +117,5 @@ Make sure to restrict read and write rights to the Settings content to
 those user groups that actually need access. Do not publish the
 Settings and follow the recommendations from the previous chapter.
 This will reduce the risk of accidentally leaking sensitive information.
+
+:::

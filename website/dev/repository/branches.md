@@ -65,3 +65,5 @@ gitGraph:
 Until approval of 2406.1.0 and 2412.0.0 we stick to a Git-Flow process. Starting
 with 2406.2.0 in August 2025, we changed to this new branching model. That is
 why the actual branches may not match the graph above.
+
+:::
