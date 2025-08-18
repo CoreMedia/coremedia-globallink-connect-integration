@@ -1,7 +1,25 @@
 {
   "name": "website",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "GitHub Pages for CoreMedia GCC integration provided by Docusaurus.",
+  "author": {
+    "name": "CoreMedia GmbH",
+    "email": "info@coremedia.com",
+    "url": "https://coremedia.com/"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": "^10.9"
+  },
   "private": true,
+  "keywords": [
+    "docusaurus",
+    "globallink",
+    "gcc",
+    "coremedia",
+    "coremedia cms",
+    "coremedia cmcc"
+  ],
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
@@ -13,7 +31,9 @@
     "version-snapshot": "docusaurus docs:version",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "update:latest": "pnpm update --interactive --latest --recursive",
+    "preinstall": "node ./scripts/check-pnpm.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "3.8.1",
@@ -50,8 +70,5 @@
       "last 3 firefox version",
       "last 5 safari version"
     ]
-  },
-  "engines": {
-    "node": ">=18.0"
   }
 }
