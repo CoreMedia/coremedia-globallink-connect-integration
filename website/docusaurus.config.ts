@@ -133,7 +133,7 @@ const config: Config = {
         sidebarPath: './sidebarsDev.ts',
         // Please change this to your repo.
         editUrl:
-          'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/website/',
       } satisfies DocsOptions,
     ]
   ],

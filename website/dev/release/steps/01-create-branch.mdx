@@ -1,0 +1,167 @@
+---
+title: Create Branch
+description: Create Branch for Approval Process
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Create Feature Branch for Approval
+
+:::tip TL;DR
+Create a feature branch from the _closest_ release branch. For review
+(and to track your changes), create a PR towards the base branch, while only
+branches branched off from `main` will later be merged.
+:::
+
+<Tabs
+  lazy
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```mermaid
+---
+title: "Git Perspective"
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#00aa00'
+      'git1': '#888888'
+      'git2': '#bbbbbb'
+      'git3': '#aa0000'
+      'gitBranchLabel0': '#ffffff'
+      'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel2': '#000000'
+      'gitBranchLabel3': '#ffffff'
+---
+gitGraph:
+  commit
+  commit
+  branch "release/2406.0"
+  commit
+  commit tag: "v2406.0.0-1"
+  checkout main
+  merge "release/2406.0"
+  commit
+  branch "release/2412.0"
+  commit
+  commit tag: "v2412.0.0-1"
+  checkout main
+  merge "release/2412.0"
+  commit
+  branch "release/2506.0"
+  commit type: HIGHLIGHT
+  checkout main
+  merge "release/2506.0" id: "GitHub PR for Review" type: REVERSE
+```
+</TabItem>
+<TabItem value="minor">
+```mermaid
+---
+title: "Git Perspective"
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#aa00aa'
+      'git1': '#00aa00'
+      'git2': '#005500'
+      'git3': '#bbbbbb'
+      'git4': '#aa0000'
+      'gitBranchLabel0': '#ffffff'
+      'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel2': '#ffffff'
+      'gitBranchLabel3': '#000000'
+      'gitBranchLabel4': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 1
+---
+gitGraph:
+  commit
+  commit
+  branch "release/2406.0" order: 2
+  commit
+  commit tag: "v2406.0.0-1"
+  checkout main
+  merge "release/2406.0"
+  commit
+  branch "release/2412.0" order: 3
+  commit
+  commit tag: "v2412.0.0-1"
+  checkout main
+  merge "release/2412.0"
+  commit
+  checkout "release/2406.0"
+  branch "release/2406.1" order: 4
+  commit type: HIGHLIGHT
+  checkout "release/2406.0"
+  merge "release/2406.1" id: "PR for Review" type: REVERSE
+  checkout main
+  branch "documentation/2406.1" order: 0
+  commit
+  checkout main
+  merge "documentation/2406.1" id: "PR for Documentation" type: REVERSE
+```
+</TabItem>
+</Tabs>
+
+:::info Merge Commit Representing GitHub Pull Request Base
+
+```mermaid
+---
+config:
+  theme: 'default'
+---
+gitGraph:
+  commit
+  branch "release/xxxx.y"
+  commit type: HIGHLIGHT
+  checkout main
+  merge "release/xxxx.y" id: "GitHub PR for Review" type: REVERSE
+```
+
+For now the _merge commit_ used in the graphs is just to represent a base to
+compare the changes with. This is suitable for reviewers, so that they get an
+overview of the applied changes. Only PRs with base `main` will later be
+merged.
+:::
+
+For each new approval of a CMCC version, we need to apply updates to the GCC
+repository (new API, new or updated dependencies and alike).
+
+All adaptations are done on an _approval feature-branch_ that in general is
+never merged back to its originating branch (only exception for approval
+branches, that started from `main`). As we will keep the branch after the
+approval/release, we just use `release/*` as a prefix.
+
+<Tabs
+  lazy
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```bash
+git switch --create --track "release/2506.0" "origin/main"
+```
+</TabItem>
+<TabItem value="minor">
+```bash
+git switch --create --track "release/2406.1" "origin/release/2406.0"
+git branch --track "documentation/2406.1" "origin/main"
+```
+</TabItem>
+</Tabs>
+
+**Documentation Branch:** When approving/releasing a minor version, a parallel
+documentation branch `documentation/xxxx.y` needs to be created. This is
+because documentation changes are only relevant on the `main` branch.
+
+For major approval/release we can skip this extra branch, as adaptations to
+the code as well as to the documentation are both meant to be merged to
+`main` eventually.
