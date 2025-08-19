@@ -1,6 +1,11 @@
 ---
 title: Update Third-Party
 description: Update Third-Party Dependencies.
+tags:
+  - development
+  - contributors
+  - release
+  - third-party
 ---
 
 # Verify or Update Third-Party Dependency Versions

@@ -1,5 +1,9 @@
 ---
 description: Overview and Introduction to Major/Minor Release
+tags:
+  - development
+  - contributors
+  - release
 ---
 
 # Introduction

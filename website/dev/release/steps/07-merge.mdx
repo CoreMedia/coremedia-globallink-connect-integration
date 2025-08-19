@@ -1,0 +1,143 @@
+---
+description: Merging Changes to main.
+tags:
+  - development
+  - contributors
+  - release
+  - git
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Merge Changes
+
+After successful review of the applied changes, you have to merge at least one
+branch to `main`.
+
+## Branch Overview
+
+Given the
+[original branch setup](./01-create-branch.mdx) we started with, the next
+steps for persisting the changes is illustrated in the following Git graph.
+
+<Tabs
+  lazy
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```mermaid
+---
+title: "Git Perspective"
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#00aa00'
+      'git1': '#aa0000'
+      'gitBranchLabel0': '#ffffff'
+      'gitBranchLabel1': '#ffffff'
+---
+gitGraph:
+  commit
+  commit
+  branch "release/2506.0"
+  commit id: "Set CMCC Version"
+  commit id: "Update GCC Client"
+  commit id: "Update Third-Party"
+  commit id: "Update Documentation" tag: "v2506.0.0-1"
+  checkout main
+  merge "release/2506.0" id: "Merge Updates"
+  checkout "release/2506.0"
+  commit id: "2506.0+ maintenance"
+  checkout main
+  commit id: "further development"
+```
+</TabItem>
+<TabItem value="minor">
+```mermaid
+---
+title: "Git Perspective"
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#aa00aa'
+      'git1': '#00aa00'
+      'git2': '#005500'
+      'git3': '#aa0000'
+      'gitBranchLabel0': '#ffffff'
+      'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel2': '#ffffff'
+      'gitBranchLabel3': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 1
+---
+gitGraph:
+  commit
+  commit
+  branch "release/2406.0" order: 2
+  commit
+  commit tag: "v2406.0.0-1"
+  checkout main
+  merge "release/2406.0"
+  commit
+  checkout "release/2406.0"
+  branch "release/2406.1" order: 4
+  commit id: "Set CMCC Version"
+  commit id: "Update GCC Client"
+  commit id: "Update Third-Party" tag: "v2406.1.0-1"
+  commit id: "2406.1+ maintenance"
+  checkout main
+  branch "documentation/2406.1" order: 0
+  commit id: "Update Documentation"
+  checkout main
+  merge "documentation/2406.1" id: "Merge Documentation Updates"
+```
+</TabItem>
+</Tabs>
+
+## Git Steps
+
+Thus, for a **major release** approval we merge the branch _once_ to `main`,
+but keep the branch for later maintenance releases.
+
+For a **minor release** we just merge the documentation updates, keeping the
+created release branch unmerged as is for later maintenance.
+
+In both scenarios, the release tag will be applied to the release branch only.
+
+Git commands to create the corresponding release tag:
+
+<Tabs
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```bash
+git switch "release/2506.0"
+git tag "v2506.0.0-1"
+git push origin "v2506.0.0-1"
+```
+</TabItem>
+<TabItem value="minor">
+```bash
+git switch "release/2406.1"
+git tag "v2406.1.0-1"
+git push origin "v2406.1.0-1"
+```
+</TabItem>
+</Tabs>
+
+## Automatic Documentation Deployment
+
+As soon as the documentation update is merged, it is deployed to the
+[gh-pages branch](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/gh-pages).
+
+The corresponding actions may also be triggered manually at any time within the
+[GitHub Actions](https://github.com/CoreMedia/coremedia-globallink-connect-integration/actions).

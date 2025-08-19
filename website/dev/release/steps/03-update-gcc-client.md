@@ -1,6 +1,11 @@
 ---
 title: Update GCC REST Client
 description: Verify or Update GCC REST Client.
+tags:
+  - development
+  - contributors
+  - release
+  - gcc-rest-client
 ---
 
 # Verify or Update GCC REST Client

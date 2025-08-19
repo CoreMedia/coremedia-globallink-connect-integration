@@ -1,6 +1,11 @@
 ---
 title: Manual Test Execution
 description: Execute the Manual and Half-Automatic Tests.
+tags:
+  - development
+  - contributors
+  - release
+  - test
 ---
 
 # Manual and Half-Automated Test Execution

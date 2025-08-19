@@ -1,5 +1,10 @@
 ---
 description: Set CMCC Version in Workspace.
+tags:
+  - development
+  - contributors
+  - release
+  - cmcc
 ---
 
 # Set CMCC Version
