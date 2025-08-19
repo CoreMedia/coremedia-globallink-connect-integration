@@ -85,7 +85,7 @@ const config: Config = {
   deploymentBranch: 'gh-pages',
   // Follow advice, that `trailingSlash` must be set (to either `true` or
   // `false` for GitHub pages deployment.)
-  trailingSlash: true,
+  trailingSlash: false,
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

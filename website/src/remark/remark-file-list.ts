@@ -19,10 +19,9 @@ import logger from '@docusaurus/logger';
  * ```
  * ````
  *
- * **Restriction:** Due to Docusaurus (or webpack) limitations, this plugin may
- * not work as expected with certain file types, such as HTML files. For HTML
- * files, as defensive option, no link will be rendered as it will not correctly
- * resolve to an asset path.
+ * **Note:** HTML files will not be processed as assets by Docusaurus
+ * transformLinks plugin (by design). They will link directly to the raw files.
+ * This is a known limitation of Docusaurus for HTML files.
  */
 const remarkFileList: Plugin<[], Root> = () => {
   return (tree, file) => {
@@ -54,15 +53,19 @@ const remarkFileList: Plugin<[], Root> = () => {
         const filteredFiles = files.filter(f => !exclude.includes(f));
         logger.info(`[File-List-Plugin] Found ${filteredFiles.length} files.`);
 
-        // 1. Build a raw Markdown string for the list
+        // Create regular markdown links for all files
+        // Note: HTML files won't be processed as assets by Docusaurus (by design)
         const markdownList = filteredFiles
-          .map(f => `* ${f.endsWith(".html") ? f : `[${f}](<./${path.join(directory, f)}>)`}`)
+          .map(f => {
+            const relativePath = `./${path.join(directory, f)}`;
+            return `* [${f}](<${relativePath}>)`;
+          })
           .join('\n');
 
-        // 2. Parse the string into a valid AST
+        // Parse the markdown into AST
         const listAst = fromMarkdown(markdownList);
 
-        // 3. Replace the original code block with the new nodes
+        // Replace the original code block with the new nodes
         if (listAst.children.length > 0) {
           (parent as any).children.splice(index, 1, ...listAst.children);
         } else {
