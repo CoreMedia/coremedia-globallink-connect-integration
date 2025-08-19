@@ -1,4 +1,0 @@
-# Enable auto-env through the sdkman_auto_env config
-java=21.0.8-amzn
-#java=17.0.15-amzn
-maven=3.9.11
