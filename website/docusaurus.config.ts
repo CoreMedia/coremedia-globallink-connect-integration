@@ -88,8 +88,6 @@ const config: Config = {
   trailingSlash: false,
 
   // Only warn due to false-positive matches in `licenses.md`.
-  // TODO: Seems they are not even copied in build. We may just need to copy
-  // them manually.
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
