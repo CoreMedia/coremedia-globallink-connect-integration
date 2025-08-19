@@ -87,7 +87,10 @@ const config: Config = {
   // `false` for GitHub pages deployment.)
   trailingSlash: false,
 
-  onBrokenLinks: 'throw',
+  // Only warn due to false-positive matches in `licenses.md`.
+  // TODO: Seems they are not even copied in build. We may just need to copy
+  // them manually.
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
