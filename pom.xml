@@ -47,7 +47,9 @@
               <licenseMerge>Apache License, Version 2.0|Apache Public License 2.0</licenseMerge>
               <licenseMerge>Apache License, Version 2.0|Apache-2.0</licenseMerge>
               <licenseMerge>Eclipse Distribution License, Version 1.0|EDL 1.0</licenseMerge>
-              <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1</licenseMerge>
+              <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU LESSER GENERAL PUBLIC
+                LICENSE, Version 2.1</licenseMerge>
+              <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU Lesser General Public License</licenseMerge>
               <licenseMerge>MIT License|The MIT License</licenseMerge>
               <licenseMerge>MIT License|MIT</licenseMerge>
             </licenseMerges>

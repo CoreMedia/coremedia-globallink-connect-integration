@@ -12,8 +12,9 @@
           <file>eclipse public license - v 1.0 - epl-v10.html</file>
         </license>
         <license>
-          <name>GNU Lesser General Public License</name>
+          <name>GNU Lesser General Public License, Version 2.1</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <file>gnu lesser general public license - lgpl-2.1.html</file>
         </license>
       </licenses>
     </dependency>
@@ -95,7 +96,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.27.3</version>
+      <version>3.27.4</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -120,7 +121,7 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>3.42.0</version>
+      <version>3.34.0</version>
       <licenses>
         <license>
           <name>MIT License</name>
@@ -133,7 +134,7 @@
     <dependency>
       <groupId>org.glassfish.corba</groupId>
       <artifactId>glassfish-corba-omgapi</artifactId>
-      <version>5.0.0</version>
+      <version>4.2.2</version>
       <licenses>
         <license>
           <name>Eclipse Distribution License, Version 1.0</name>
@@ -146,7 +147,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.13.2</version>
+      <version>5.13.4</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -158,7 +159,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.13.2</version>
+      <version>5.13.4</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -170,7 +171,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.13.2</version>
+      <version>5.13.4</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -182,7 +183,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.18.0</version>
+      <version>5.19.0</version>
       <licenses>
         <license>
           <name>MIT License</name>
@@ -195,7 +196,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>5.18.0</version>
+      <version>5.19.0</version>
       <licenses>
         <license>
           <name>MIT License</name>
@@ -273,7 +274,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot</artifactId>
-      <version>3.5.3</version>
+      <version>3.4.8</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -285,7 +286,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
-      <version>3.5.3</version>
+      <version>3.4.8</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
