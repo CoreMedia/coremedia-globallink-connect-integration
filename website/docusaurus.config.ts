@@ -83,6 +83,9 @@ const config: Config = {
   organizationName: 'CoreMedia',
   projectName: 'coremedia-globallink-connect-integration',
   deploymentBranch: 'gh-pages',
+  // Follow advice, that `trailingSlash` must be set (to either `true` or
+  // `false` for GitHub pages deployment.)
+  trailingSlash: true,
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

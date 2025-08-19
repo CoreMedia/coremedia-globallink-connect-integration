@@ -1,0 +1,73 @@
+name: Deploy Website to GitHub Pages
+
+on:
+  workflow_dispatch: {}
+  workflow_call: {}
+  push:
+    branches:
+      - main
+    paths:
+      - website/**
+
+env:
+  # https://github.com/actions/runner-images/issues/70
+  NODE_OPTIONS: "--max_old_space_size=4096"
+  NODE_VERSION: 22
+  PNPM_VERSION: 10.9
+
+jobs:
+  build:
+    name: Build Docusaurus
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: installPnpm
+        name: "Install: Use PNPM ${{ env.PNPM_VERSION }}"
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+      - id: installNodeJs
+        name: "Install: Use Node.js ${{ env.NODE_VERSION }}"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - id: install
+        name: Install
+        run: |
+          cd website
+          pnpm install --frozen-lockfile
+      - id: build
+        name: Build website
+        run: |
+          cd website
+          pnpm run build
+      - id: upload
+        name: Upload Build Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/build
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
