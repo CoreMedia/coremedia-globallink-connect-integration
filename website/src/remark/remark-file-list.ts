@@ -55,6 +55,10 @@ const remarkFileList: Plugin<[], Root> = () => {
 
         // Create regular markdown links for all files
         // Note: HTML files won't be processed as assets by Docusaurus (by design)
+        // We have an extra plugin copy-html-files that will take care of this
+        // in production builds. Unfortunately, these files are not delivered
+        // at the expected URL using `docusaurus serve`. But GitHub pages will
+        // correctly link the files.
         const markdownList = filteredFiles
           .map(f => {
             const relativePath = `./${path.join(directory, f)}`;

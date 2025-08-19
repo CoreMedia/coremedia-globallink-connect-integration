@@ -139,7 +139,8 @@ const config: Config = {
         editUrl:
             'https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/website/',
       } satisfies DocsOptions,
-    ]
+    ],
+    './src/plugins/copy-html-files.ts',
   ],
 
   themeConfig: {
