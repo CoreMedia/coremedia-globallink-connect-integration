@@ -140,7 +140,13 @@ const config: Config = {
             'https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/website/',
       } satisfies DocsOptions,
     ],
-    './src/plugins/copy-html-files.ts',
+    [
+      './src/plugins/copy-file-assets.ts',
+      {
+        paths: ['docs', 'dev'],
+        fileExtensions: ['.html']
+      }
+    ],
   ],
 
   themeConfig: {
