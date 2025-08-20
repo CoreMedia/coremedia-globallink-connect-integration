@@ -39,6 +39,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+          cache-dependency-path: "website/pnpm-lock.yaml"
       - id: install
         name: Install
         run: |
