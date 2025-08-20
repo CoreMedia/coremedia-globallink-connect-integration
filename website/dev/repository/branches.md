@@ -2,43 +2,38 @@
 
 ```mermaid
 gitGraph:
-  commit id: "build updates"
-  commit tag: "v2406.0.0-1"
-  branch release/2406.0
-  checkout release/2406.0
-  commit id: "2406.0 changes"
-  commit id: "2406.0 bugfix"
-  commit tag: "v2406.0.0-2"
+  branch gh-pages
+  commit id: "(see below)"
   checkout main
-  commit id: "ongoing dev"
-  commit id: "CI improvements"
-  commit tag: "v2412.0.0-1"
+  commit
+  commit id: "branch-off 2406.0"
+  branch release/2406.0
+  commit id: "2406.0 approval" tag: "v2406.0.0-1"
+  checkout main
+  merge release/2406.0 id: "one-time merge 2406.x"
+  commit
+  commit id: "branch-off 2412.0"
   branch release/2412.0
-  checkout release/2412.0
-  commit id: "2412.0 approval"
-  commit id: "2412.0 changes"
+  commit id: "2412.0 approval" tag: "v2412.0.0-1"
+  checkout main
+  merge release/2412.0 id: "one-time merge 2412.x"
   checkout release/2406.0
+  commit id: "2406.0 bugfix release" tag: "v2406.0.0-2"
+  commit id: "branch-off 2406.1"
   branch release/2406.1
-  checkout release/2406.1
-  commit id: "2406.1 approval"
-  commit tag: "v2406.1.0-1"
-  checkout release/2406.1
+  commit id: "2406.1 approval" tag: "v2406.1.0-1"
+  commit id: "branch-off 2406.2"
   branch release/2406.2
-  checkout release/2406.2
-  commit id: "2406.2 approval"
-  commit tag: "v2406.2.0-1"
+  commit id: "2406.2 approval" tag: "v2406.2.0-1"
   checkout release/2412.0
   commit id: "2412.0 bugfix"
   commit tag: "v2412.0.0-2"
   checkout main
-  commit id: "dependency updates"
-  commit id: "new features"
-  commit tag: "v2506.0.0-1"
+  commit id: "branch-off 2506.0"
   branch release/2506.0
-  checkout release/2506.0
-  commit id: "2506.0 approval"
+  commit id: "2506.0 approval" tag: "v2506.0.0-1"
   checkout main
-  commit id: "continue development"
+  merge release/2506.0 id: "one-time merge 2506.x"
   commit id: "..."
 ```
 
@@ -60,10 +55,12 @@ gitGraph:
   to `-2`, `-3`, etc. for bug fixes within the same platform version). Once a
   newer minor version branch is created, the previous branch may be discontinued.
 
-:::note
+* **gh-pages:** An orphaned branch used to publish GitHub Pages website. For
+  details and how it interacts with the release/approval process, see the
+  [Documentation section](./documentation.md).
 
+:::note
 Until approval of 2406.1.0 and 2412.0.0 we stick to a Git-Flow process. Starting
 with 2406.2.0 in August 2025, we changed to this new branching model. That is
 why the actual branches may not match the graph above.
-
 :::

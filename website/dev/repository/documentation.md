@@ -13,35 +13,35 @@ config:
     mainBranchOrder: 1
 ---
 gitGraph:
-  commit id: "ongoing dev"
-  commit id: "used third-party update 2406.x"
-  commit id: "doc snapshot 2406.x"
-  commit tag: "v2406.0.0-1"
+  branch gh-pages order: 99
+  commit id: "Create orphaned branch"
+  checkout main
+  commit id: "prior art"
+  commit id: "start 2406.0.0"
   branch release/2406.0
-  branch gh-pages order: 3
-  checkout gh-pages
-  commit id: "deploy 2406.x docs"
+  commit id: "docs 2406.0.0"
+  commit id: "approve 2406.0.0" tag: "v2406.0.0-1"
   checkout main
-  commit id: "development"
-  commit id: "used third-party update 2412.x"
-  commit id: "doc snapshot 2412.x"
-  commit tag: "v2412.0.0-1"
+  merge release/2406.0 id: "merge 2406.0"
+  checkout gh-pages
+  merge main id: "publish docs 2406.0"
+  checkout main
+  commit id: "start 2412.0.0"
   branch release/2412.0
-  checkout gh-pages
-  commit id: "deploy 2412.x docs"
+  commit id: "docs 2412.0.0"
+  commit id: "approve 2412.0.0" tag: "v2412.0.0-1"
   checkout main
-  commit id: "doc fixes"
+  merge release/2412.0 id: "merge 2412.0"
   checkout gh-pages
-  commit id: "update docs"
+  merge main id: "publish docs 2412.0"
+  checkout release/2406.0
+  commit id: "start 2406.1.0"
+  branch release/2406.1
+  commit id: "approve 2406.1.0" tag: "v2406.1.0-1"
   checkout main
-  commit id: "used third-party update 2506.x"
-  commit id: "doc snapshot 2506.x"
-  commit tag: "v2506.0.0-1"
-  branch release/2506.0
+  commit id: "docs 2406.1.0"
   checkout gh-pages
-  commit id: "deploy 2506.x docs"
-  checkout main
-  commit id: "continue dev"
+  merge main id: "publish docs 2406.1"
 ```
 
 ## Documentation Versioning Strategy
@@ -66,30 +66,32 @@ on `main` the _documentation branches_ will look like this:
 ---
 title: Embedded Documentation VCS
 config:
+  theme: 'forest'
   gitGraph:
     mainBranchName: docs
     showCommitLabel: false
 ---
 gitGraph:
-  commit id: "prepare 2406.0.0 documentation"
-  commit id: "used third-party update 2406.0.0"
-  commit tag: "version-2406.x"
+  commit id: "prepare 2406.0.0 docs"
+  commit id: "3rd-party 2406.0.0"
+  commit id: "create version-2406.x"
   branch version-2406.x
-  commit
+  commit id: "version-2406.x"
   checkout docs
-  commit id: "prepare 2412.0.0 documentation"
-  commit id: "used third-party update 2412.0.0"
-  commit tag: "version-2412.x"
+  commit id: "prepare 2412.0.0 docs"
+  commit id: "3rd-party 2412.0.0"
+  commit id: "create version-2412.x"
   branch version-2412.x
-  commit
+  commit id: "version-2412.x"
   checkout version-2406.x
-  commit id: "adapt 2406.1.0 documentation"
+  commit id: "2406.1.0 docs"
   checkout docs
-  commit id: "prepare 2506.0.0 documentation"
-  commit id: "used third-party update 2506.0.0"
-  commit tag: "version-2506.x"
+  commit id: "NO 3rd-party 2406.1.0" type: REVERSE
+  commit id: "prepare 2506.0.0 docs"
+  commit id: "3rd-party 2506.0.0"
+  commit id: "create version-2506.x"
   branch version-2506.x
-  commit
+  commit id: "version-2506.x"
   checkout docs
   commit id: "more commits"
 ```
@@ -107,13 +109,11 @@ gitGraph:
   ```
 
   :::note
-
   This approach has a glitch: For updates on maintenance branches we will not
   (necessarily) update the used third-party overview (because all updates will
   just happen on the _main_ documentation branch). If you still want or need to
   update these reports, you have to manually apply them to the versioned
   documentation branch.
-
   :::
 
 - **Release branches have static documentation**: Documentation sources on
@@ -139,10 +139,10 @@ This workflow ensures that:
 - Consistent documentation experience across all deployed versions
 
 :::info
-
 The future is yet to be designed. The more versions we ship, the more complex
 the documentation will get. The suggestion is to archive not maintained versions
 later, like not only removing the corresponding `release/*` branch, but also
 removing the versioned documentation. For now, refer to the official Docusaurus
 documentation, how to proceed with this scenario (and think about updating
 this documentation).
+:::
