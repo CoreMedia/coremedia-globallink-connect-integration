@@ -55,6 +55,9 @@
             </licenseMerges>
             <licensesOutputFile>${docs.directory}/third-party/files/licenses.xml</licensesOutputFile>
             <licensesOutputDirectory>${docs.directory}/third-party/files</licensesOutputDirectory>
+            <licenseUrlFileNames>
+              <spdx/> <!-- activate built-in file name entries based on spdx.org license IDs -->
+            </licenseUrlFileNames>
             <outputDirectory>${docs.directory}/third-party</outputDirectory>
             <removeOrphanLicenseFiles>true</removeOrphanLicenseFiles>
             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>

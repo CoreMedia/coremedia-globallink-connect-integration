@@ -113,10 +113,10 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           editUrl:
             'https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/website/',
-          // remark-file-list: We need to add this before the default plugins,
+          // file-list: We need to add this before the default plugins,
           // so that we benefit from dynamic asset links being created.
           beforeDefaultRemarkPlugins: [
-            [require('./src/remark/remark-file-list.ts'), {}]
+            [require('./src/remark/file-list.ts'), {}]
           ],
         },
         blog: false, // Disable blog feature
@@ -139,13 +139,6 @@ const config: Config = {
         editUrl:
             'https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/website/',
       } satisfies DocsOptions,
-    ],
-    [
-      './src/plugins/copy-file-assets.ts',
-      {
-        paths: ['docs', 'dev'],
-        fileExtensions: ['.html']
-      }
     ],
   ],
 

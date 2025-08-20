@@ -20,8 +20,7 @@ import logger from '@docusaurus/logger';
  * ````
  *
  * **Note:** HTML files will not be processed as assets by Docusaurus
- * transformLinks plugin (by design). They will link directly to the raw files.
- * This is a known limitation of Docusaurus for HTML files.
+ * transformLinks plugin (by design).
  */
 const remarkFileList: Plugin<[], Root> = () => {
   return (tree, file) => {
@@ -51,23 +50,51 @@ const remarkFileList: Plugin<[], Root> = () => {
         }
 
         const filteredFiles = files.filter(f => !exclude.includes(f));
-        logger.info(`[File-List-Plugin] Found ${filteredFiles.length} files.`);
+
+        if (filteredFiles.length === 0) {
+          logger.warn(`[File-List-Plugin] No files found in ${targetDir} after filtering.`);
+          return;
+        } else {
+          logger.info(`[File-List-Plugin] Found ${filteredFiles.length} files.`);
+        }
+
+        let containsHtml = false;
 
         // Create regular markdown links for all files
-        // Note: HTML files won't be processed as assets by Docusaurus (by design)
-        // We have an extra plugin copy-html-files that will take care of this
-        // in production builds. Unfortunately, these files are not delivered
-        // at the expected URL using `docusaurus serve`. But GitHub pages will
-        // correctly link the files.
+        //
+        // Note: HTML files won't be processed as assets by Docusaurus
+        // (by design). Only exception here are those in `static/` folder, which
+        // we cannot use, as (at least for licenses) we need to have them as
+        // versioned artifacts.
+        //
+        // After several attempts to trick Docusaurus into processing these
+        // files giving up, as we found no good option that works with
+        // versioned documentation.
+        //
+        // See Also:
+        // * <https://docusaurus.io/feature-requests/p/support-html-files-as-file-assets-in-docs>
         const markdownList = filteredFiles
           .map(f => {
+            if (f.endsWith('.html')) {
+              containsHtml = true;
+              return `* ${f} \\*)`;
+            }
             const relativePath = `./${path.join(directory, f)}`;
             return `* [${f}](<${relativePath}>)`;
-          })
-          .join('\n');
+          });
+
+        // Add Disclaimer as Admonition, if HTML files are contained:
+        if (containsHtml) {
+          const disclaimerMarkdown = `
+
+_\\*) Links to HTML files cannot be provided due to technical limitations.
+Check the GitHub repository instead for these files._
+`;
+          markdownList.push(disclaimerMarkdown);
+        }
 
         // Parse the markdown into AST
-        const listAst = fromMarkdown(markdownList);
+        const listAst = fromMarkdown(markdownList.join('\n'));
 
         // Replace the original code block with the new nodes
         if (listAst.children.length > 0) {
