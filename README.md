@@ -34,8 +34,7 @@ This open-source extension adds the following functionality to the CoreMedia Stu
     import and communication errors of a translation workflow with GlobalLink.
 
 **A detailed documentation available at
-[GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
-or browse directly in [docs/ folder](./docs/README.md).**
+[GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/).
 
 # ⑃ Branches &amp; Tags
 
