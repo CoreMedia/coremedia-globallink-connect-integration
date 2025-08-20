@@ -32,30 +32,38 @@ For debugging, you may want to open:
 
 * <http://localhost:3000/coremedia-globallink-connect-integration/__docusaurus/debug>
 
-## Build
+## Create new Version
+
+To create a new versioned documentation branch (thus, a new versioned folder
+within the website), run, for example:
+
+```bash
+pnpm version-snapshot 2412.x
+```
+
+See details in "Contributors" section of the website.
+
+## Covered by GitHub Action
+
+The following steps are covered by a GitHub action. You may still want to
+trigger them manually for testing purpose, for example.
+
+### Build
 
 ```bash
 pnpm build
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+This command generates static content into the `build` directory and can be
+served using any static contents hosting service.
 
-## Deployment
-
-Using SSH:
-
-```bash
-USE_SSH=true pnpm deploy
-```
-
-Not using SSH:
+### Deployment
 
 ```bash
 GIT_USER=<Your GitHub username> pnpm deploy
 ```
 
-If you are using GitHub pages for hosting, this command is a convenient way to
-build the website and push to the `gh-pages` branch.
+This will push the website to the `gh-pages` branch.
 
 ## Structure
 
