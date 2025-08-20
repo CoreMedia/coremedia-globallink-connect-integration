@@ -33,7 +33,9 @@
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
     "update:latest": "pnpm update --interactive --latest --recursive",
-    "preinstall": "node ./scripts/check-pnpm.mjs"
+    "preinstall": "node ./scripts/check-pnpm.mjs",
+    "deps:check": "depcheck",
+    "deps:unused": "depcheck --json | jq '.dependencies + .devDependencies'"
   },
   "dependencies": {
     "@docusaurus/core": "3.8.1",
@@ -53,10 +55,10 @@
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.8.1",
     "@docusaurus/tsconfig": "3.8.1",
     "@docusaurus/types": "3.8.1",
     "@types/unist": "^3.0.3",
+    "depcheck": "^1.4.7",
     "typescript": "~5.9.2"
   },
   "browserslist": {
