@@ -1,12 +1,9 @@
 ---
 sidebar_position: 4
-title: Further Scenarios
-description: Further Scenarios.
+description: Manual XLIFF Override &amp; Redelivered Submission State.
 ---
 
-# Further Scenarios
-
-## Manual XLIFF Override &amp; Redelivered Submission State
+# Redelivered Submissions
 
 Translators at GlobalLink may decide to mark a submission as redelivered. It is
 expected, that in these cases, the XLIFF is sent via different means to the
