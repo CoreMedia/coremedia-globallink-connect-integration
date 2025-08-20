@@ -107,9 +107,6 @@
   <profiles>
     <profile>
       <id>docs-third-party</id>
-      <!--
-        Will create generated resources for docs/ folder.
-      -->
       <build>
         <plugins>
           <plugin>
