@@ -273,3 +273,20 @@ For the given example of the 2506.0.0 approval, call:
 ```bash
 pnpm run version-snapshot 2506.x
 ```
+
+:::warning
+If the major releases are not approved in strict chronological order, the
+sorting of the versions in `website/versions.json` must be adjusted manually
+after creating a snapshot.
+
+For example, if you created the version snapshot for `2406.x` after the
+snapshot for `2412.x`, apply this change:
+
+```diff
+  [
+-   "2406.x",
+-   "2412.x"
++   "2412.x",
++   "2406.x"
+  ]
+:::
