@@ -21,15 +21,15 @@ static website generator.
 
 ## Cheat Sheet
 
-| Command                   | Description                                              |
-|---------------------------|----------------------------------------------------------|
-| `pnpm build`              | Build website artifacts (to `build/`).                   |
-| `pnpm clear`              | Clear Docusaurus cache.                                  |
-| `pnpm deploy`             | Deploy to `gh-pages` branch.                             |
-| `pnpm docusaurus <cmd>`   | Execute Docusaurus command.                              |
-| `pnpm install`            | _(required)_ Install dependency artifacts.               |
-| `pnpm serve`              | Serve website artifacts (from `build/`).                 |
-| `pnpm start`              | Start local web server with site (opens default browser) |
+| Command                 | Description                                |
+|-------------------------|--------------------------------------------|
+| `pnpm build`            | Build website artifacts (to `build/`).     |
+| `pnpm clear`            | Clear Docusaurus cache.                    |
+| `pnpm deploy`           | Deploy to `gh-pages` branch.               |
+| `pnpm docusaurus <cmd>` | Execute Docusaurus command.                |
+| `pnpm install`          | _(required)_ Install dependency artifacts. |
+| `pnpm serve`            | Serve website artifacts (from `build/`).   |
+| `pnpm start`            | Start local server (opens default browser) |
 
 ## Installation
 
@@ -154,3 +154,9 @@ If you consider to re-introduce versioned documentation, note, that the current
 folder layout is prepared in that way, that documentation that must not be
 versioned is placed in `dev/` while documentation related to approved CMCC
 versions is placed in `docs/`.
+
+## IDE Recommendation
+
+For editing within Visual Studio Code, you may want to install MDX support:
+
+* [MDX - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
