@@ -27,7 +27,8 @@ export const context = {
     repository: {
       organization: `${gitOrg}`,
       name: `${gitRepository}`,
-      url: `${gitRepoUrl}`
+      url: `${gitRepoUrl}`,
+      resolve: (path: string) => `${gitRepoUrl}/blob/${gitVersionTag}/${path}`
     },
     version: {
       tag: `${gitVersionTag}`,
