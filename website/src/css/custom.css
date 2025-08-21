@@ -59,6 +59,7 @@ main article a:hover::after {
 }
 
 main article a.card::after,
+main article a.hash-link::after,
 main article nav a::after,
 main article footer a::after {
   display: none;
