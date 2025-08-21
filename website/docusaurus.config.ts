@@ -214,6 +214,10 @@ const config: Config = {
           title: 'Customer Support',
           items: [
             {
+              label: 'Documentation',
+              href: 'https://documentation.coremedia.com/',
+            },
+            {
               label: 'Support',
               href: 'https://www.coremedia.com/support',
             },
