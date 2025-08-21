@@ -21,21 +21,20 @@
     "coremedia cmcc"
   ],
   "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
     "build": "docusaurus build",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
+    "deploy": "docusaurus deploy",
+    "deps:check": "depcheck",
+    "deps:unused": "depcheck --json | jq '.dependencies + .devDependencies'",
+    "docusaurus": "docusaurus",
+    "preinstall": "node ./scripts/check-pnpm.mjs",
+    "start": "docusaurus start",
+    "swizzle": "docusaurus swizzle",
     "serve": "docusaurus serve",
-    "version-snapshot": "docusaurus docs:version",
-    "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
     "update:latest": "pnpm update --interactive --latest --recursive",
-    "preinstall": "node ./scripts/check-pnpm.mjs",
-    "deps:check": "depcheck",
-    "deps:unused": "depcheck --json | jq '.dependencies + .devDependencies'"
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "write-translations": "docusaurus write-translations"
   },
   "dependencies": {
     "@docusaurus/core": "3.8.1",

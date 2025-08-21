@@ -7,6 +7,13 @@ import type {Options as DocsOptions} from '@docusaurus/plugin-content-docs';
 
 const config: Config = {
   title: 'coremedia-globallink-connect-integration',
+  titleDelimiter: '–',
+  // Set the production url of your site here
+  url: 'https://coremedia.github.io/',
+  // Set the /<baseUrl>/ pathname under which your site is served
+  // For GitHub pages deployment, it is often '/<projectName>/'
+  baseUrl: '/coremedia-globallink-connect-integration/',
+
   tagline: 'Translation integration via GlobalLink Connect Cloud',
   favicon: 'img/favicon-picture--thumbnail.ico',
 
@@ -73,26 +80,21 @@ const config: Config = {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
 
-  // Set the production url of your site here
-  url: 'https://coremedia.github.io/',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/coremedia-globallink-connect-integration/',
-
   // GitHub pages deployment config.
-  organizationName: 'CoreMedia',
+  organizationName: 'coremedia',
   projectName: 'coremedia-globallink-connect-integration',
   deploymentBranch: 'gh-pages',
   // Follow advice, that `trailingSlash` must be set (to either `true` or
   // `false` for GitHub pages deployment.)
   trailingSlash: false,
 
+  onBrokenAnchors: 'throw',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
+  onDuplicateRoutes: 'throw',
 
   // Even if you don't use internationalization, you can use this field to set
-  // useful metadata like html lang. For example, if your site is Chinese, you
-  // may want to replace "en" with "zh-Hans".
+  // useful metadata like html lang.
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -101,6 +103,7 @@ const config: Config = {
   markdown: {
     mermaid: true,
   },
+
   themes: ['@docusaurus/theme-mermaid'],
 
   presets: [
@@ -142,10 +145,23 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    // image: 'img/docusaurus-social-card.jpg',
+    metadata: [
+      {
+        name: 'keywords',
+        content: 'CoreMedia, GlobalLink, Connect, Integration, Documentation, GCC, Translation, REST',
+      },
+    ],
+    colorMode: {
+      defaultMode: 'dark',
+      respectPrefersColorScheme: true,
+    },
+    docs: {
+      sidebar: {
+        hideable: true,
+      },
+    },
     navbar: {
-      title: 'coremedia-globallink-connect-integration',
+      title: 'CoreMedia GlobalLink Connect Integration',
       logo: {
         alt: 'CoreMedia Logo',
         src: 'img/logo.svg',
@@ -166,8 +182,9 @@ const config: Config = {
           activeBaseRegex: `/dev/`,
         },
         {
-          type: 'docsVersionDropdown',
+          type: 'html',
           position: 'right',
+          value: '<span style="font-weight:var(--ifm-font-weight-semibold);">v2412.0.0-1</span>',
         },
         {
           href: 'https://github.com/CoreMedia/coremedia-globallink-connect-integration',
