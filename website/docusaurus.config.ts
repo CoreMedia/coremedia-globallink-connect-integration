@@ -2,6 +2,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import type {Options as DocsOptions} from '@docusaurus/plugin-content-docs';
+import { context } from './src/ts/context';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -184,7 +185,7 @@ const config: Config = {
         {
           type: 'html',
           position: 'right',
-          value: '<span style="font-weight:var(--ifm-font-weight-semibold);">v2412.0.0-1</span>',
+          value: `<span style="font-weight:var(--ifm-font-weight-semibold);">${context.gcc.version}</span>`,
         },
         {
           href: 'https://github.com/CoreMedia/coremedia-globallink-connect-integration',
