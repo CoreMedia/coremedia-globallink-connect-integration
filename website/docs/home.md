@@ -1,6 +1,7 @@
 ---
 id: introduction
 title: Home
+description: Documentation of CoreMedia GlobalLink Connect Cloud Integration
 sidebar_position: 1
 slug: /
 ---
