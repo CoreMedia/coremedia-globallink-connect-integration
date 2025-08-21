@@ -7,13 +7,13 @@ import { context } from './src/ts/context';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'coremedia-globallink-connect-integration',
+  title: `${context.git.repository.name}`,
   titleDelimiter: '–',
   // Set the production url of your site here
-  url: 'https://coremedia.github.io/',
+  url: `${context.site.url}`,
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/coremedia-globallink-connect-integration/',
+  baseUrl: `${context.site.context}`,
 
   tagline: 'Translation integration via GlobalLink Connect Cloud',
   favicon: 'img/favicon-picture--thumbnail.ico',
@@ -82,8 +82,8 @@ const config: Config = {
   },
 
   // GitHub pages deployment config.
-  organizationName: 'coremedia',
-  projectName: 'coremedia-globallink-connect-integration',
+  organizationName: `${context.git.repository.organization}`,
+  projectName: `${context.git.repository.name}`,
   deploymentBranch: 'gh-pages',
   // Follow advice, that `trailingSlash` must be set (to either `true` or
   // `false` for GitHub pages deployment.)
@@ -114,8 +114,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/', // Serve the docs at the site's root
           sidebarPath: './sidebars.ts',
-          editUrl:
-            'https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/website/',
+          editUrl: `${context.site.editUrl}`,
           // file-list: We need to add this before the default plugins,
           // so that we benefit from dynamic asset links being created.
           beforeDefaultRemarkPlugins: [
@@ -139,8 +138,7 @@ const config: Config = {
         routeBasePath: 'dev',
         sidebarPath: './sidebarsDev.ts',
         // Please change this to your repo.
-        editUrl:
-            'https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/main/website/',
+        editUrl: `${context.site.editUrl}`
       } satisfies DocsOptions,
     ],
   ],
@@ -185,10 +183,10 @@ const config: Config = {
         {
           type: 'html',
           position: 'right',
-          value: `<span style="font-weight:var(--ifm-font-weight-semibold);">${context.gcc.version}</span>`,
+          value: `<span style="font-weight:var(--ifm-font-weight-semibold);">${context.git.version.tag}</span>`,
         },
         {
-          href: 'https://github.com/CoreMedia/coremedia-globallink-connect-integration',
+          href: `${context.git.repository.url}`,
           label: 'GitHub',
           position: 'right',
         },
@@ -236,7 +234,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/CoreMedia/coremedia-globallink-connect-integration',
+              href: `${context.git.repository.url}`,
             },
           ],
         },

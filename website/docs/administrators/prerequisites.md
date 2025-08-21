@@ -10,7 +10,7 @@ Ensure you have your GCC parameters at hand:
 * GCC REST Base URL
 * API Key
 * File Type
-* _Optional:_ Client Secret Key (see below)
+* _Optional:_ Client Secret Key
 
 For more details on available options and how to configure them in CoreMedia
-Studio visit [Configuring Connection Settings](<./configure-gcc-settings> "Administrators | Configuring Connection Settings").
+Studio visit [Configuring Connection Settings](<./configure-gcc-settings.md> "Administrators | Configuring Connection Settings").

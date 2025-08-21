@@ -1,6 +1,6 @@
 ---
 sidebar_position: 4
-description: How to configure GlobalLink connection credentials and behavior.
+description: "How to configure GlobalLink connection credentials etc."
 ---
 
 # Configuring Connection Settings
