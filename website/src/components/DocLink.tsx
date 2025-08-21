@@ -28,6 +28,8 @@ interface DocLinkProps {
  * that all documentation links automatically point to the correct version
  * without requiring manual updates across multiple files.
  *
+ * The component is globally available in all MDX files without requiring imports.
+ *
  * The generated URL follows this pattern:
  * https://documentation.coremedia.com/cmcc-{main}/artifacts/{major}.{minor}/webhelp/{path}
  *

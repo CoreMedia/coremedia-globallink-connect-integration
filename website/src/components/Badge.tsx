@@ -1,19 +1,30 @@
 import React from 'react';
 
+/**
+ * Props for the Badge component
+ */
 interface BadgeConfig {
+  /** The left-side label text */
   label: string;
+  /** Badge style (e.g., "for-the-badge", "flat", "plastic") */
   style: string;
+  /** Badge color (hex code without #) */
   color: string;
+  /** The right-side message text */
   message: string;
+  /** Optional alternative text for accessibility */
   alt?: string;
 }
 
 /**
- * Create a shields.io static badge.
+ * Badge Component
  *
- * Usage example:
+ * Creates a shields.io static badge for displaying version information,
+ * build status, or other metadata. The component is globally available
+ * in all MDX files without requiring imports.
  *
- * ```
+ * Example usage in MDX files:
+ * ```mdx
  * <Badge
  *   label="CoreMedia Content Cloud"
  *   style="for-the-badge"
@@ -21,6 +32,9 @@ interface BadgeConfig {
  *   message="2412.0"
  * />
  * ```
+ *
+ * @param config - The badge configuration
+ * @returns An img element displaying the shields.io badge
  */
 const Badge = (config: BadgeConfig) => {
   const {
