@@ -46,6 +46,12 @@ pnpm start
 This command starts a local development server and opens up a browser window.
 Most changes are reflected live without having to restart the server.
 
+To start without opening the default browser, use:
+
+```bash
+pnpm start --no-open
+```
+
 If you observe some caching issues, you may want to call this before start:
 
 ```bash
