@@ -32,10 +32,12 @@ export const context = {
     },
     version: {
       tag: `${gitVersionTag}`,
+      url: `${gitRepoVersionUrl}`
     },
   },
   cmcc: {
     version: {
+      ...cmccVersion,
       short: `${cmccVersion.major}.${cmccVersion.minor}`,
       long: `${cmccVersion.major}.${cmccVersion.minor}.${cmccVersion.patch}`,
       full: `v${cmccVersion.major}.${cmccVersion.minor}.${cmccVersion.patch}-${cmGccVersion}`
