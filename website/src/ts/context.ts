@@ -40,7 +40,7 @@ export const context = {
       ...cmccVersion,
       short: `${cmccVersion.major}.${cmccVersion.minor}`,
       long: `${cmccVersion.major}.${cmccVersion.minor}.${cmccVersion.patch}`,
-      full: `v${cmccVersion.major}.${cmccVersion.minor}.${cmccVersion.patch}-${cmGccVersion}`
+      full: `${gitVersionTag}`
     }
   }
 };
