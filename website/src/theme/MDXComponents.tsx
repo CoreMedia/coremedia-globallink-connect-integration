@@ -1,6 +1,7 @@
 import DocLink from '../components/DocLink';
 import Badge from '../components/Badge';
 import RepositoryLink from '../components/RepositoryLink';
+import OriginalMDXComponents from '@theme-original/MDXComponents';
 
 /**
  * MDX Components Configuration
@@ -31,6 +32,7 @@ import RepositoryLink from '../components/RepositoryLink';
  * @see https://docusaurus.io/docs/markdown-features/react#mdx-component-scope
  */
 const MDXComponents = {
+  ...OriginalMDXComponents, // Include original MDX components provided by Docusaurus
   // Make components globally available in all MDX files
   DocLink,
   Badge,
