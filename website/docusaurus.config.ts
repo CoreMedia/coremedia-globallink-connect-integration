@@ -3,6 +3,8 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import type {Options as DocsOptions} from '@docusaurus/plugin-content-docs';
 import { context } from './src/ts/context';
+import { NormalizedSidebar } from '@docusaurus/plugin-content-docs/src/sidebars/types.js';
+import logger from '@docusaurus/logger';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -120,6 +122,32 @@ const config: Config = {
           beforeDefaultRemarkPlugins: [
             [require('./src/remark/file-list.ts'), {}]
           ],
+          async sidebarItemsGenerator({defaultSidebarItemsGenerator, ...args}) {
+            const items = await defaultSidebarItemsGenerator(args);
+            const {categoriesMetadata} = args;
+
+            // Apply reverse sorting to categories with customProps.sort: "descending"
+            const processItems = (items: NormalizedSidebar): NormalizedSidebar => {
+              return items.map((item) => {
+                if (item.type === 'category') {
+                  // Try both the exact label and lowercase version for matching
+                  const categoryMetadata = categoriesMetadata[item.label] || categoriesMetadata[item.label.toLowerCase()];
+                  const shouldReverse = categoryMetadata?.customProps?.sort === 'descending';
+
+                  if (shouldReverse) {
+                    logger.info(`Applying descending sort to category: ${item.label}`);
+                    return {...item, items: [...item.items].reverse()};
+                  }
+
+                  // Recursively process nested categories
+                  return {...item, items: processItems(item.items)};
+                }
+                return item;
+              });
+            };
+
+            return processItems(items);
+          },
         },
         blog: false, // Disable blog feature
         theme: {
