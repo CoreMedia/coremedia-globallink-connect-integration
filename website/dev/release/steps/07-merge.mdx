@@ -32,69 +32,67 @@ steps for persisting the changes is illustrated in the following Git graph.
 <TabItem value="major">
 ```mermaid
 ---
-title: "Git Perspective"
 config:
   theme: 'default'
   themeVariables:
-      'git0': '#00aa00'
-      'git1': '#aa0000'
+      'git0': '#dd342b'
+      'git1': '#179b17'
+      'git2': '#006cae'
       'gitBranchLabel0': '#ffffff'
       'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel2': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 97
 ---
 gitGraph:
-  commit
-  commit
-  branch "release/2506.0"
-  commit id: "Set CMCC Version"
-  commit id: "Update GCC Client"
-  commit id: "Update Third-Party"
-  commit id: "Update Documentation" tag: "v2506.0.0-1"
+  branch gh-pages order: 98
+  commit id: "orphaned"
   checkout main
-  merge "release/2506.0" id: "Merge Updates"
-  checkout "release/2506.0"
-  commit id: "2506.0+ maintenance"
+  commit id: " "
+  commit id: "maintenance/2506.x"
+  branch "maintenance/2506.x" order: 50
+  commit id: "adaptations 2506.0" tag: "v2506.0.0-1"
   checkout main
-  commit id: "further development"
+  merge "maintenance/2506.x"
+  checkout gh-pages
+  merge main id: "publish 2506.0 docs"
 ```
 </TabItem>
 <TabItem value="minor">
 ```mermaid
 ---
-title: "Git Perspective"
 config:
   theme: 'default'
   themeVariables:
-      'git0': '#aa00aa'
-      'git1': '#00aa00'
-      'git2': '#005500'
-      'git3': '#aa0000'
+      'git0': '#dd342b'
+      'git1': '#179b17'
+      'git2': '#006cae'
       'gitBranchLabel0': '#ffffff'
       'gitBranchLabel1': '#ffffff'
       'gitBranchLabel2': '#ffffff'
-      'gitBranchLabel3': '#ffffff'
   gitGraph:
-    mainBranchOrder: 1
+    mainBranchOrder: 97
 ---
 gitGraph:
-  commit
-  commit
-  branch "release/2406.0" order: 2
-  commit
-  commit tag: "v2406.0.0-1"
+  branch gh-pages order: 98
+  commit id: "orphaned"
   checkout main
-  merge "release/2406.0"
-  commit
-  checkout "release/2406.0"
-  branch "release/2406.1" order: 4
-  commit id: "Set CMCC Version"
-  commit id: "Update GCC Client"
-  commit id: "Update Third-Party" tag: "v2406.1.0-1"
-  commit id: "2406.1+ maintenance"
+  commit id: " "
+  commit id: "maintenance/2406.x"
+  branch "maintenance/2406.x" order: 50
+  commit id: "  " tag: "v2406.0.0-1"
   checkout main
-  branch "documentation/2406.1" order: 0
-  commit id: "Update Documentation"
+  merge "maintenance/2406.x"
+  checkout gh-pages
+  merge main
   checkout main
-  merge "documentation/2406.1" id: "Merge Documentation Updates"
+  commit id: "   "
+  checkout "maintenance/2406.x"
+  commit id: "merge approve/2406.1" tag: "v2406.1.0-1"
+  checkout main
+  commit id: "update documentation"
+  checkout gh-pages
+  merge main
 ```
 </TabItem>
 </Tabs>
@@ -139,5 +137,7 @@ git push origin "v2406.1.0-1"
 As soon as the documentation update is merged, it is deployed to the
 [gh-pages branch](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/gh-pages).
 
-The corresponding actions may also be triggered manually at any time within the
+The corresponding
+<RepositoryLink path=".github/workflows" title="workflows"/> may also be
+triggered manually at any time within the
 [GitHub Actions](https://github.com/CoreMedia/coremedia-globallink-connect-integration/actions).

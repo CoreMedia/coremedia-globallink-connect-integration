@@ -13,11 +13,8 @@ import TabItem from '@theme/TabItem';
 
 # Create Feature Branch for Approval
 
-:::tip TL;DR
-Create a feature branch from the _closest_ release branch. For review
-(and to track your changes), create a PR towards the base branch, while only
-branches branched off from `main` will later be merged.
-:::
+In the subsequent process we will distinguish a major release approval like
+CMCC v12.2506.0.0 and a minor release approval like CMCC v12.2406.1.0.
 
 <Tabs
   lazy
@@ -30,117 +27,135 @@ branches branched off from `main` will later be merged.
 <TabItem value="major">
 ```mermaid
 ---
-title: "Git Perspective"
 config:
   theme: 'default'
   themeVariables:
-      'git0': '#00aa00'
-      'git1': '#888888'
-      'git2': '#bbbbbb'
-      'git3': '#aa0000'
-      'gitBranchLabel0': '#ffffff'
+      'git0': '#e4d4c8'
+      'git1': '#a47786'
+      'git2': '#dd342b'
+      'git3': '#179b17'
+      'git4': '#006cae'
+      'gitBranchLabel0': '#000000'
       'gitBranchLabel1': '#ffffff'
-      'gitBranchLabel2': '#000000'
+      'gitBranchLabel2': '#ffffff'
       'gitBranchLabel3': '#ffffff'
+      'gitBranchLabel4': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 97
 ---
 gitGraph:
-  commit
-  commit
-  branch "release/2406.0"
-  commit
-  commit tag: "v2406.0.0-1"
+  branch gh-pages order: 98
+  commit id: "orphaned"
   checkout main
-  merge "release/2406.0"
-  commit
-  branch "release/2412.0"
-  commit
-  commit tag: "v2412.0.0-1"
+  commit id: " "
+  commit id: "maintenance/2406.x"
+  branch "maintenance/2406.x" order: 50
+  commit id: "  " tag: "v2406.0.0-1"
   checkout main
-  merge "release/2412.0"
-  commit
-  branch "release/2506.0"
-  commit type: HIGHLIGHT
+  merge "maintenance/2406.x"
+  checkout gh-pages
+  merge main
   checkout main
-  merge "release/2506.0" id: "GitHub PR for Review" type: REVERSE
+  commit id: "   "
+  commit id: "maintenance/2412.x"
+  branch "maintenance/2412.x" order: 50
+  commit id: "    " tag: "v2412.0.0-1"
+  checkout main
+  merge "maintenance/2412.x"
+  checkout gh-pages
+  merge main
+  checkout main
+  commit id: "    "
+  commit id: "maintenance/2506.x"
+  branch "maintenance/2506.x" order: 50
+  commit id: "adaptations 2506.0" type: HIGHLIGHT
+  checkout main
+  merge "maintenance/2506.x" type: REVERSE
 ```
 </TabItem>
 <TabItem value="minor">
 ```mermaid
 ---
-title: "Git Perspective"
 config:
   theme: 'default'
   themeVariables:
-      'git0': '#aa00aa'
-      'git1': '#00aa00'
-      'git2': '#005500'
-      'git3': '#bbbbbb'
-      'git4': '#aa0000'
+      'git0': '#dd342b'
+      'git1': '#e4d4c8'
+      'git2': '#a47786'
+      'git3': '#179b17'
+      'git4': '#006cae'
       'gitBranchLabel0': '#ffffff'
-      'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel1': '#000000'
       'gitBranchLabel2': '#ffffff'
-      'gitBranchLabel3': '#000000'
+      'gitBranchLabel3': '#ffffff'
       'gitBranchLabel4': '#ffffff'
   gitGraph:
-    mainBranchOrder: 1
+    mainBranchOrder: 97
 ---
 gitGraph:
-  commit
-  commit
-  branch "release/2406.0" order: 2
-  commit
-  commit tag: "v2406.0.0-1"
+  branch gh-pages order: 98
+  commit id: "orphaned"
   checkout main
-  merge "release/2406.0"
-  commit
-  branch "release/2412.0" order: 3
-  commit
-  commit tag: "v2412.0.0-1"
+  commit id: " "
+  commit id: "maintenance/2406.x"
+  branch "maintenance/2406.x" order: 50
+  commit id: "  " tag: "v2406.0.0-1"
   checkout main
-  merge "release/2412.0"
-  commit
-  checkout "release/2406.0"
-  branch "release/2406.1" order: 4
-  commit type: HIGHLIGHT
-  checkout "release/2406.0"
-  merge "release/2406.1" id: "PR for Review" type: REVERSE
+  merge "maintenance/2406.x"
+  checkout gh-pages
+  merge main
   checkout main
-  branch "documentation/2406.1" order: 0
-  commit
+  commit id: "   "
+  commit id: "maintenance/2412.x"
+  branch "maintenance/2412.x" order: 50
+  commit id: "    " tag: "v2412.0.0-1"
   checkout main
-  merge "documentation/2406.1" id: "PR for Documentation" type: REVERSE
+  merge "maintenance/2412.x"
+  checkout gh-pages
+  merge main
+  checkout "maintenance/2406.x"
+  commit id: "approve/2406.1"
+  branch "approve/2406.1"
+  commit id: "adaptations 2406.1" type: HIGHLIGHT
+  checkout "maintenance/2406.x"
+  merge "approve/2406.1" type: REVERSE
+  checkout main
+  commit id: "..."
 ```
 </TabItem>
 </Tabs>
 
-:::info Merge Commit Representing GitHub Pull Request Base
-
+:::info INFO: Merge Commit Representing GitHub Pull Request Base
 ```mermaid
 ---
 config:
   theme: 'default'
+  gitGraph:
+    mainBranchOrder: 97
 ---
 gitGraph:
-  commit
-  branch "release/xxxx.y"
-  commit type: HIGHLIGHT
+  commit id: " "
+  branch "maintenance/MMMM.x"
+  commit id: "adaptations" type: HIGHLIGHT
   checkout main
-  merge "release/xxxx.y" id: "GitHub PR for Review" type: REVERSE
+  merge "maintenance/MMMM.x" id: "PR for Review" type: REVERSE
 ```
 
-For now the _merge commit_ used in the graphs is just to represent a base to
+The _merge commit_ used in the graphs is just to represent a base to
 compare the changes with. This is suitable for reviewers, so that they get an
 overview of the applied changes. Only PRs with base `main` will later be
 merged.
+
+It uses the _reverse_ commit type (shown as `X`) to signal, that it has not been
+merged yet.
 :::
 
 For each new approval of a CMCC version, we need to apply updates to the GCC
 repository (new API, new or updated dependencies and alike).
 
-All adaptations are done on an _approval feature-branch_ that in general is
-never merged back to its originating branch (only exception for approval
-branches, that started from `main`). As we will keep the branch after the
-approval/release, we just use `release/*` as a prefix.
+When starting the approval process, a new branch needs to be created from
+either the `main` branch (for _major_ versions) or from the related
+maintenance branch (for _minor_ versions).
 
 <Tabs
   defaultValue="major"
@@ -151,16 +166,26 @@ approval/release, we just use `release/*` as a prefix.
 >
 <TabItem value="major">
 ```bash
-git switch --create --track "release/2506.0" "origin/main"
+git switch --create --track "maintenance/2506.x" "origin/main"
 ```
 </TabItem>
 <TabItem value="minor">
 ```bash
-git switch --create --track "release/2406.1" "origin/release/2406.0"
+git switch --create --track "approval/2406.1" "origin/maintenance/2406.x"
 git branch --track "documentation/2406.1" "origin/main"
 ```
 </TabItem>
 </Tabs>
+
+In general all adaptations are done on an `approval/*` branch, which is later
+reviewed, merged and deleted. We simplify the process for _major_ releases by
+using the `maintenance/*` branch directly.
+
+:::caution CAUTION: Protect Branches
+If creating new maintenance branches, you should mark them as protected branches
+in GitHub, so that they are not deleted by accident when later merged back to
+main again (as one-time merge only).
+:::
 
 **Documentation Branch:** When approving/releasing a minor version, a parallel
 documentation branch `documentation/xxxx.y` needs to be created. This is
@@ -169,3 +194,6 @@ because documentation changes are only relevant on the `main` branch.
 For major approval/release we can skip this extra branch, as adaptations to
 the code as well as to the documentation are both meant to be merged to
 `main` eventually.
+
+It is up to you, if you create this documentation update branch during the
+approval phase or later.
