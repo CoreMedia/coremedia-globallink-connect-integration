@@ -34,7 +34,7 @@ hardened the connector in these aspects:
   due to wrong or connector key settings.
 
 Find more detailed release notes in the newly introduced documentation
-section [Changelog](https://coremedia.github.io/coremedia-globallink-connect-integration/dev/category/changelog).
+section [Changelog](https://coremedia.github.io/coremedia-globallink-connect-integration/category/changelog).
 
 <!-- ======================================================================= -->
 
