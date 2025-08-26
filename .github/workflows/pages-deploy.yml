@@ -9,6 +9,10 @@ on:
     paths:
       - website/**
 
+# Restrict permissions to minimal required set
+permissions:
+  contents: read # Required for actions/checkout
+
 env:
   # https://github.com/actions/runner-images/issues/70
   NODE_OPTIONS: "--max_old_space_size=4096"
@@ -19,6 +23,9 @@ jobs:
   build:
     name: Build Docusaurus
     runs-on: ubuntu-latest
+    # Build job only needs to read repository contents
+    permissions:
+      contents: read
     steps:
       - id: checkout
         uses: actions/checkout@v4
@@ -59,6 +66,7 @@ jobs:
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
+      contents: read # Required for the deployment action
       pages: write # to deploy to Pages
       id-token: write # to verify the deployment originates from an appropriate source
 
