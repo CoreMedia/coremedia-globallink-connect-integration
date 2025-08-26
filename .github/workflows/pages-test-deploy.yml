@@ -35,28 +35,26 @@ jobs:
       contents: read
     if: github.event.pull_request.draft == false
     steps:
-      - id: authorize
-        name: "NPM Authorization"
-        run: |
-          result=$(curl -s -H "Accept: application/json" -H "Content-Type:application/json" -X PUT --data '{"name": "${{ secrets.CM_NPM_USER }}", "password": "${{ secrets.CM_NPM_READ_ONLY_PASSWORD }}"}' "${{ env.NPM_URL }}/-/user/org.couchdb.user:${{ secrets.CM_NPM_USER }}" | jq -r .token)
-          # Ensure, the token is not exposed in output.
-          echo "::add-mask::${result}"
-          echo "NPM_AUTH_TOKEN=${result}" >> $GITHUB_ENV
       - id: checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
-      - id: npmrc
-        name: "Init: .npmrc"
+      - id: setup-npmrc
+        name: "Setup NPM Authentication"
         run: |
-          npmHost="${{ env.NPM_HOST }}"
-          npmUrl="${{ env.NPM_URL }}"
-          npmAuthToken="${{ env.NPM_AUTH_TOKEN }}"
+          # Get token
+          token=$(curl -s -H "Accept: application/json" -H "Content-Type:application/json" \
+            -X PUT --data '{"name": "${{ secrets.CM_NPM_USER }}", "password": "${{ secrets.CM_NPM_READ_ONLY_PASSWORD }}"}' \
+            "${{ env.NPM_URL }}/-/user/org.couchdb.user:${{ secrets.CM_NPM_USER }}" | jq -r .token)
 
-          echo "//${npmHost}/:_authToken=${npmAuthToken}" >> .npmrc
-          echo "@coremedia:registry=${npmUrl}" >> .npmrc
-          # We must not commit this change.
-          git update-index --assume-unchanged .npmrc
+          # Create .npmrc in home directory (safer than repo root)
+          cat > ~/.npmrc << EOF
+          //${{ env.NPM_HOST }}/:_authToken=${token}
+          @coremedia:registry=${{ env.NPM_URL }}
+          EOF
+
+          # Ensure token is masked
+          echo "::add-mask::${token}"
       - id: installPnpm
         name: "Install: Use PNPM ${{ env.PNPM_VERSION }}"
         uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
