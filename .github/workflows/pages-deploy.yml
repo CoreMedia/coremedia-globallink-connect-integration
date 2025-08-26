@@ -28,18 +28,18 @@ jobs:
       contents: read
     steps:
       - id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
       - id: installPnpm
         name: "Install: Use PNPM ${{ env.PNPM_VERSION }}"
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
       - id: installNodeJs
         name: "Install: Use Node.js ${{ env.NODE_VERSION }}"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
@@ -56,7 +56,7 @@ jobs:
           pnpm run build
       - id: upload
         name: Upload Build Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: website/build
 
@@ -79,4 +79,4 @@ jobs:
     steps:
       - id: deployment
         name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

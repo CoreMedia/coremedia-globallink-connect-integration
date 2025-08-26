@@ -9,7 +9,9 @@ on:
     paths:
       - website/**
 
-permissions: {}
+# Restrict permissions to minimal required set
+permissions:
+  contents: read # Required for actions/checkout
 
 env:
   # https://github.com/actions/runner-images/issues/70
@@ -21,21 +23,24 @@ jobs:
   test-deploy:
     name: Test deployment
     runs-on: ubuntu-latest
+    # Test deploy job only needs to read repository contents
+    permissions:
+      contents: read
     if: github.event.pull_request.draft == false
     steps:
       - id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
       - id: installPnpm
         name: "Install: Use PNPM ${{ env.PNPM_VERSION }}"
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
       - id: installNodeJs
         name: "Install: Use Node.js ${{ env.NODE_VERSION }}"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
