@@ -4,6 +4,10 @@ description: "Overview of Branches main, gh-pages, etc."
 
 # Branches
 
+Overview of Branches `main`, `maintenance/MMMM.x` and `gh-pages`.
+
+## Branch Overview
+
 ```mermaid
 ---
 config:
@@ -52,16 +56,12 @@ gitGraph:
   commit id: "docs: adapt 2406.1"
   checkout gh-pages
   merge main id: "publish 2406.1 adaptations"
+  checkout maintenance/2412.x
+  commit id: "2412.0 bugfix" tag: "v2412.0.0-2"
   checkout main
   commit id: "   "
   commit id: "maintenance/2506.x"
   branch maintenance/2506.x
-  checkout maintenance/2412.x
-  commit id: "2412.0 bugfix" tag: "v2412.0.0-2"
-  checkout maintenance/2506.x
-  cherry-pick id: "2412.0 bugfix"
-  commit id: "    "
-  commit id: "     "
   commit id: "2506.0 approval" tag: "v2506.0.0-1"
   checkout main
   merge maintenance/2506.x id: "one-time merge 2506.x"
@@ -71,44 +71,40 @@ gitGraph:
   commit id: "..."
 ```
 
-* **main:** The primary development branch where ongoing work for future
-  releases takes place. All new feature development and pull requests should
-  target this branch. New major release branches (e.g., `maintenance/2406.x`,
-  `maintenance/2412.x`) are created from `main` when a new major version of the
-  underlying platform needs to be prepared.
+## Branch Details
 
-* **maintenance/MMMM.x:** Major Version specific release branches created for
-  each major/ version of the underlying platform. It is created as soon as the
-  approval for the next major version starts.
+### main
 
-  Approvals for minor version within the same major version (e.g., `2406.1`,
-  `2406.2`) are created from the respective `maintenance/MMMM.x` branch. These
-  branches receive approval-specific changes, dependency updates, and API
-  adaptations.
+The primary development branch where ongoing work for future releases takes
+place. All new feature development and pull requests should target this branch.
+New major release branches (e.g., `maintenance/2406.x`, `maintenance/2412.x`)
+are created from `main` when a new major version of the underlying platform
+needs to be prepared.
 
-  Release tags are always only applied to maintenance branches.
+### maintenance/MMMM.x
 
-  Bug fix releases (in context of issues within this integration) typically
-  increase the last digit of the tag (e.g., `v2406.0.0-2`, `v2406.0.0-3`).
+Major Version specific release branches created for each major version of the
+underlying platform. It is created as soon as the approval for the next major
+version starts.
 
-* **gh-pages:** An orphaned branch used to publish GitHub Pages website. For
-  details and how it interacts with the release/approval process, see the
-  [Documentation section](./documentation.md).
+Approvals for minor version within the same major version (e.g., `2406.1`,
+`2406.2`) are created from the respective `maintenance/MMMM.x` branch. These
+branches receive approval-specific changes, dependency updates, and API
+adaptations.
 
-:::note NOTE: Previous Branch Model
+Release tags are always applied to maintenance branches only.
+
+Bug fix releases (in context of issues within this integration) typically
+increase the last digit of the tag (e.g., `v2406.0.0-2`, `v2406.0.0-3`).
+
+### gh-pages
+
+An orphaned branch used to publish GitHub Pages website. For details and how it
+interacts with the release/approval process, see the
+[Documentation section](./documentation.md).
+
+## Previous Branch Model
+
 Until approval of 2406.1.0 and 2412.0.0 we stick to a Git-Flow process. Starting
 with 2406.2.0 in August 2025, we changed to this new branching model. That is
 why the actual branches may not match the graph above.
-:::
-
-:::info INFO: Option to Archive Branches
-The CoreMedia GlobalLink Connect Integration is only maintained for CMCC
-versions in standard support.
-
-Assuming that all maintenance branches always end with a commit that is tagged,
-it is recommended to just delete maintenance branches as soon as they are not
-supported anymore. This also includes any version that reaches extended support.
-
-These maintenance branches can later be restored easily, if required based on
-the last release/approval tag.
-:::
