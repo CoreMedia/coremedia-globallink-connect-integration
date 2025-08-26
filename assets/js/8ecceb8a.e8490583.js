@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[592],{8407:e=>{e.exports=JSON.parse('{"tags":[{"label":"GCC","permalink":"/coremedia-globallink-connect-integration/tags/gcc","count":1}]}')}}]);
