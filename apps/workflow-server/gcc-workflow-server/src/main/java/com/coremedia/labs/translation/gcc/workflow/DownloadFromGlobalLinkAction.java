@@ -134,7 +134,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
    * Sets the name of the process variable that holds the submission IDs shown to editors in Studio and
    * in the GlobalLink tools.
    *
-   * @param globalLinkPdSubmissionIdsVariable string workflow variable name
+   * @param globalLinkPdSubmissionIdsVariable name of workflow aggregation variable of type string
    */
   @SuppressWarnings("unused") // set from workflow definition
   public void setGlobalLinkPdSubmissionIdsVariable(String globalLinkPdSubmissionIdsVariable) {
