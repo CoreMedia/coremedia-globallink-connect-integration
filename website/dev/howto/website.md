@@ -37,7 +37,7 @@ file, like it is done for the changelog:
   "position": 6,
   "link": {
     "type": "generated-index",
-    "description": "Overview of changes to CoreMedia GlobalLink Connect Integration."
+    "description": "Overview of changes to CoreMedia GlobalLink Connect Cloud Integration."
   },
   "customProps": {
     "sort": "descending"

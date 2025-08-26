@@ -188,7 +188,7 @@ const config: Config = {
       },
     },
     navbar: {
-      title: 'CoreMedia GlobalLink Connect Integration',
+      title: 'CoreMedia GlobalLink Connect Cloud Integration',
       logo: {
         alt: 'CoreMedia Logo',
         src: 'img/logo.svg',

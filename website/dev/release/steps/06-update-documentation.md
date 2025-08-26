@@ -12,8 +12,8 @@ tags:
 The documentation below `website/` comes in two parts. While `website/dev/`
 contains documentation related to this repository (like this section here),
 `website/docs/` contains the documentation for using the
-CoreMedia GlobalLink Connect Integration. This section is about updating the
-latter.
+CoreMedia GlobalLink Connect Cloud Integration. This section is about updating
+the latter.
 
 :::info INFO: Auto-Deployment of Documentation
 The documentation is deployed to an extra branch `gh-pages`. It is generated

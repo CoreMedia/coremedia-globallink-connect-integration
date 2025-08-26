@@ -6,7 +6,7 @@ description: How to Archive Maintenance Branches.
 
 # Archive Branch
 
-CoreMedia GlobalLink Connect Integration is only maintained for
+CoreMedia GlobalLink Connect Cloud Integration is only maintained for
 CoreMedia Content Cloud (CMCC) Releases that are actively maintained (thus, for
 example, maintenance ends when a CMCC version reaches extended support).
 
