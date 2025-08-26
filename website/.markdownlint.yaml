@@ -1,0 +1,3 @@
+default: true
+MD025: false # single-h1: Too many false-positives due to the front-matter
+MD033: false # inline-html: Allow inline HTML, especially React Components

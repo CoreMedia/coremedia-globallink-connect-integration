@@ -1,0 +1,52 @@
+name: Test Website Deployment
+
+on:
+  workflow_dispatch: {}
+  workflow_call: {}
+  pull_request:
+    branches:
+      - main
+    paths:
+      - website/**
+
+permissions: {}
+
+env:
+  # https://github.com/actions/runner-images/issues/70
+  NODE_OPTIONS: "--max_old_space_size=4096"
+  NODE_VERSION: 22
+  PNPM_VERSION: 10.9
+
+jobs:
+  test-deploy:
+    name: Test deployment
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: installPnpm
+        name: "Install: Use PNPM ${{ env.PNPM_VERSION }}"
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+      - id: installNodeJs
+        name: "Install: Use Node.js ${{ env.NODE_VERSION }}"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+          cache-dependency-path: "website/pnpm-lock.yaml"
+      - id: install
+        name: Install
+        run: |
+          cd website
+          pnpm install --frozen-lockfile
+      - id: build
+        name: Build website
+        run: |
+          cd website
+          pnpm run build

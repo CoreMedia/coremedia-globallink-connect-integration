@@ -1,0 +1,187 @@
+---
+title: Create Branch
+description: Create Branch for Approval Process
+tags:
+  - development
+  - contributors
+  - release
+  - branches
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Create Feature Branch for Approval
+
+In the subsequent process we will distinguish a major release approval like
+CMCC v12.2506.0.0 and a minor release approval like CMCC v12.2406.1.0.
+
+<Tabs
+  lazy
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```mermaid
+---
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#e4d4c8'
+      'git1': '#a47786'
+      'git2': '#dd342b'
+      'git3': '#179b17'
+      'git4': '#006cae'
+      'gitBranchLabel0': '#000000'
+      'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel2': '#ffffff'
+      'gitBranchLabel3': '#ffffff'
+      'gitBranchLabel4': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 97
+---
+gitGraph:
+  branch gh-pages order: 98
+  commit id: "orphaned"
+  checkout main
+  commit id: " "
+  commit id: "maintenance/2406.x"
+  branch "maintenance/2406.x" order: 50
+  commit id: "  " tag: "v2406.0.0-1"
+  checkout main
+  merge "maintenance/2406.x"
+  checkout gh-pages
+  merge main
+  checkout main
+  commit id: "   "
+  commit id: "maintenance/2412.x"
+  branch "maintenance/2412.x" order: 50
+  commit id: "    " tag: "v2412.0.0-1"
+  checkout main
+  merge "maintenance/2412.x"
+  checkout gh-pages
+  merge main
+  checkout main
+  commit id: "    "
+  commit id: "maintenance/2506.x"
+  branch "maintenance/2506.x" order: 50
+  commit id: "adaptations 2506.0" type: HIGHLIGHT
+  checkout main
+  merge "maintenance/2506.x" type: REVERSE
+```
+</TabItem>
+<TabItem value="minor">
+```mermaid
+---
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#dd342b'
+      'git1': '#e4d4c8'
+      'git2': '#a47786'
+      'git3': '#179b17'
+      'git4': '#006cae'
+      'gitBranchLabel0': '#ffffff'
+      'gitBranchLabel1': '#000000'
+      'gitBranchLabel2': '#ffffff'
+      'gitBranchLabel3': '#ffffff'
+      'gitBranchLabel4': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 97
+---
+gitGraph:
+  branch gh-pages order: 98
+  commit id: "orphaned"
+  checkout main
+  commit id: " "
+  commit id: "maintenance/2406.x"
+  branch "maintenance/2406.x" order: 50
+  commit id: "  " tag: "v2406.0.0-1"
+  checkout main
+  merge "maintenance/2406.x"
+  checkout gh-pages
+  merge main
+  checkout main
+  commit id: "   "
+  commit id: "maintenance/2412.x"
+  branch "maintenance/2412.x" order: 50
+  commit id: "    " tag: "v2412.0.0-1"
+  checkout main
+  merge "maintenance/2412.x"
+  checkout gh-pages
+  merge main
+  checkout "maintenance/2406.x"
+  commit id: "approve/2406.1"
+  branch "approve/2406.1"
+  commit id: "adaptations 2406.1" type: HIGHLIGHT
+  checkout "maintenance/2406.x"
+  merge "approve/2406.1" type: REVERSE
+  checkout main
+  commit id: "..."
+```
+</TabItem>
+</Tabs>
+
+:::info INFO: Merge Commit Representing GitHub Pull Request Base
+```mermaid
+---
+config:
+  theme: 'default'
+  gitGraph:
+    mainBranchOrder: 97
+---
+gitGraph:
+  commit id: " "
+  branch "maintenance/MMMM.x"
+  commit id: "adaptations" type: HIGHLIGHT
+  checkout main
+  merge "maintenance/MMMM.x" id: "PR for Review" type: REVERSE
+```
+
+The _merge commit_ used in the graphs is just to represent a base to
+compare the changes with. This is suitable for reviewers, so that they get an
+overview of the applied changes. Only PRs with base `main` will later be
+merged.
+
+It uses the _reverse_ commit type (shown as `X`) to signal, that it has not been
+merged yet.
+:::
+
+For each new approval of a CMCC version, we need to apply updates to the GCC
+repository (new API, new or updated dependencies and alike).
+
+When starting the approval process, a new branch needs to be created from
+either the `main` branch (for _major_ versions) or from the related
+maintenance branch (for _minor_ versions).
+
+<Tabs
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```bash
+git switch --create --track "maintenance/2506.x" "origin/main"
+```
+</TabItem>
+<TabItem value="minor">
+```bash
+git switch --create --track "approval/2406.1" "origin/maintenance/2406.x"
+```
+</TabItem>
+</Tabs>
+
+In general all adaptations are done on an `approval/*` branch, which is later
+reviewed, merged and deleted. We simplify the process for _major_ releases by
+using the `maintenance/*` branch directly.
+
+:::caution CAUTION: Protect Branches
+If creating new maintenance branches, you should mark them as protected branches
+in GitHub, so that they are not deleted by accident when later merged back to
+main again (as one-time merge only).
+:::

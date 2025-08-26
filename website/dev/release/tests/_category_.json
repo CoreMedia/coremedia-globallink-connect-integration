@@ -1,0 +1,8 @@
+{
+  "label": "Manual Test Steps",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Set of manual test-cases."
+  }
+}

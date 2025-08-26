@@ -20,73 +20,61 @@ result eventually.
 ## Feature Overview
 
 This open-source extension adds the following functionality to the CoreMedia Studio:
+
 * Send content to GlobalLink for translation into one or multiple languages
-    with individual due dates in one or multiple workflows.
+  with individual due dates in one or multiple workflows.
+
 * Retrieve content from GlobalLink once the translation is finished.
+
 * Automatically detect cancellations of submissions at GlobalLink and cancel the
-    translation workflow in CoreMedia Studio.
+  translation workflow in CoreMedia Studio.
 * Configure the connection to GlobalLink per site hierarchy.
+
 * Show additional information like the translation status from GlobalLink in
-    CoreMedia Studio.
+  CoreMedia Studio.
+
 * Download XLIFF files and import log files in CoreMedia Studio if an error
-    occurs during import.
+  occurs during import.
+
 * Editors in CoreMedia Studio are notified about completion, cancellation, and
-    import and communication errors of a translation workflow with GlobalLink.
+  import and communication errors of a translation workflow with GlobalLink.
 
-**A detailed documentation available at
-[GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/),
-or browse directly in [docs/ folder](./docs/README.md).**
+> **GitHub Pages for more**
+>
+> A detailed documentation available at
+> [GitHub Pages](https://coremedia.github.io/coremedia-globallink-connect-integration/).
 
-# ⑃ Branches &amp; Tags
+# Version Tags
 
-* **[master](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/master):**
-
-    When development has finished on `develop` branch, changes will be merged to
-    `master` branch.
-
-* **[develop](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/develop):**
-
-    Will contain preparations for next supported major.
-
-* **Version Tags:**
-
-    For adaptions to CoreMedia CMS major versions you will find corresponding
-    tags named according to the CMS major version. It is recommended to
-    take these tags as starting point from within your project,
-    choosing the major version matching your project version.
+For adaptions to CoreMedia CMS major versions you will find corresponding tags
+named according to the CMS major version. It is recommended to take these tags
+as a starting point from within your project, choosing the major version
+matching your project version.
 
 # See Also
-
-* **[Changelog](CHANGELOG.md)**
-
-    for recent changes
-
-* **[Documentation](https://coremedia.github.io/coremedia-globallink-connect-integration/)**
-
-    for guides for editors, administrators and developers
 
 ## GCC Java REST Client Facades
 
 * **[README: gcc-restclient-facade](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md)**
 
-    Facade encapsulating all calls to GCC REST, the Java API as well as the REST
-    backend.
-    
+  Facade encapsulating all calls to GCC REST, the Java API as well as the REST
+  backend.
+
 * **[README: gcc-restclient-facade-default](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-default/README.md)**
 
-    This is the default and fallback facade used when nothing is defined in
-    settings — or if there is no other facade applicable.
+  This is the default and fallback facade used when nothing is defined in
+  settings — or if there is no other facade applicable.
 
 * **[README: gcc-restclient-facade-disabled](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-disabled/README.md)**
 
-    This facade mainly serves as example how to implement custom connection
-    types. The implementation just throws exceptions on every interaction with the facade.
-    
+  This facade mainly serves as example how to implement custom connection
+  types. The implementation just throws exceptions on every interaction with the facade.
+
 * **[README: gcc-restclient-facade-mock](apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md)**
 
-    The mock facade will simulate a translation service in that way, that it
-    replaces the target nodes (pre-filled with values from source nodes) in
-    XLIFF with some other characters. 
+  The mock facade will simulate a translation service in that way, that it
+  replaces the target nodes (pre-filled with values from source nodes) in
+  XLIFF with some other characters.
 
 # CoreMedia Labs
 
@@ -105,5 +93,5 @@ CoreMedia workspace.
 The code we provide is meant to be example code, illustrating a set of features
 that could be used to enhance your CoreMedia experience. We'd love to hear your
 feedback on use-cases and further developments! If you're having problems with
-our code, please refer to our issues section. If you already have a solution to 
-an issue, we love to review and integrate your pull requests. 
+our code, please refer to our issues section. If you already have a solution to
+an issue, we love to review and integrate your pull requests.

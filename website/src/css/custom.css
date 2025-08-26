@@ -1,0 +1,72 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #672779;
+  --ifm-color-primary-dark: #5d236d;
+  --ifm-color-primary-darker: #582167;
+  --ifm-color-primary-darkest: #481b55;
+  --ifm-color-primary-light: #712b85;
+  --ifm-color-primary-lighter: #762d8b;
+  --ifm-color-primary-lightest: #86339d;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+--ifm-color-primary: #be8ce0;
+  --ifm-color-primary-dark: #a970c9;
+  --ifm-color-primary-darker: #9d61c2;
+  --ifm-color-primary-darkest: #8648ab;
+  --ifm-color-primary-light: #d3a8ec;
+  --ifm-color-primary-lighter: #dab3f0;
+  --ifm-color-primary-lightest: #e8d1f6;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Link styling with icons */
+/* External links (starting with http:// or https://) */
+main article a[href^="http://"]::after,
+main article a[href^="https://"]::after {
+  content: " ↗";
+  font-size: 0.8em;
+  color: var(--ifm-color-primary);
+  margin-left: 2px;
+  text-decoration: none !important;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+/* Internal links (relative paths, anchors, or same-domain links) */
+main article a:not([href^="http://"]):not([href^="https://"])::after {
+  content: " →";
+  font-size: 0.8em;
+  color: var(--ifm-color-primary);
+  margin-left: 2px;
+  text-decoration: none !important;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+/* Hover effect for link icons */
+main article a:hover::after {
+  opacity: 1;
+}
+
+main article a.card::after,
+main article a.hash-link::after,
+main article nav a::after,
+main article footer a::after {
+  display: none;
+}
+
+/* Special handling for buttons styled as links */
+main article a.button::after,
+main article a[class*="button"]::after {
+  display: none;
+}

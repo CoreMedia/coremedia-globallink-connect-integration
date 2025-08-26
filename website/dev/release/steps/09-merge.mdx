@@ -1,0 +1,146 @@
+---
+description: Merging Changes to main.
+tags:
+  - development
+  - contributors
+  - release
+  - git
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Merge Changes
+
+After successful review of the applied changes, you have to merge at least one
+branch to `main`.
+
+## Branch Overview
+
+Given the
+[original branch setup](./01-create-branch.mdx) we started with, the next
+steps for persisting the changes is illustrated in the following Git graph.
+
+<Tabs
+  lazy
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```mermaid
+---
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#dd342b'
+      'git1': '#179b17'
+      'git2': '#006cae'
+      'gitBranchLabel0': '#ffffff'
+      'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel2': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 97
+---
+gitGraph:
+  branch gh-pages order: 98
+  commit id: "orphaned"
+  checkout main
+  commit id: " "
+  commit id: "maintenance/2506.x"
+  branch "maintenance/2506.x" order: 50
+  commit id: "adaptations 2506.0" tag: "v2506.0.0-1"
+  checkout main
+  merge "maintenance/2506.x"
+  checkout gh-pages
+  merge main id: "publish 2506.0 docs"
+```
+</TabItem>
+<TabItem value="minor">
+```mermaid
+---
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#dd342b'
+      'git1': '#179b17'
+      'git2': '#006cae'
+      'gitBranchLabel0': '#ffffff'
+      'gitBranchLabel1': '#ffffff'
+      'gitBranchLabel2': '#ffffff'
+  gitGraph:
+    mainBranchOrder: 97
+---
+gitGraph:
+  branch gh-pages order: 98
+  commit id: "orphaned"
+  checkout main
+  commit id: " "
+  commit id: "maintenance/2406.x"
+  branch "maintenance/2406.x" order: 50
+  commit id: "  " tag: "v2406.0.0-1"
+  checkout main
+  merge "maintenance/2406.x"
+  checkout gh-pages
+  merge main
+  checkout main
+  commit id: "   "
+  checkout "maintenance/2406.x"
+  commit id: "merge approve/2406.1" tag: "v2406.1.0-1"
+```
+</TabItem>
+</Tabs>
+
+## Git Steps
+
+:::caution CAUTION: Protect Branches
+Prior to merging a major approval branch, ensure that it is marked as protected
+within the GitHub settings. It will be deleted otherwise on merge.
+:::
+
+Thus, for a **major release** approval we merge the branch _once_ to `main`,
+but keep the branch for later maintenance releases.
+
+For a **minor release** we just merge approval branch. No changes are applied
+to `main` including no updates done on the documentation (unless, of course,
+you need to cherry-pick adaptations to `main`).
+
+In both scenarios, the release tag will be applied to the maintenance branch
+only.
+
+Git commands to create the corresponding release tag:
+
+<Tabs
+  defaultValue="major"
+  values={[
+    { value: "major", label: "2506.0" },
+    { value: "minor", label: "2406.1" },
+  ]}
+>
+<TabItem value="major">
+```bash
+git switch "maintenance/2506.x"
+git tag "v2506.0.0-1"
+git push origin "v2506.0.0-1"
+```
+</TabItem>
+<TabItem value="minor">
+```bash
+git switch "maintenance/2406.x"
+git tag "v2406.1.0-1"
+git push origin "v2406.1.0-1"
+```
+</TabItem>
+</Tabs>
+
+## Automatic Documentation Deployment
+
+As soon as the documentation update is merged, it is deployed to the
+[gh-pages branch](https://github.com/CoreMedia/coremedia-globallink-connect-integration/tree/gh-pages).
+
+The corresponding
+<RepositoryLink path=".github/workflows" title="workflows"/> may also be
+triggered manually at any time within the
+[GitHub Actions](https://github.com/CoreMedia/coremedia-globallink-connect-integration/actions).
