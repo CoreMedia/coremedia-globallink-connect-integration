@@ -18,12 +18,6 @@ contains documentation related to this repository (like this section here),
 CoreMedia GlobalLink Connect Integration. This section is about updating the
 latter.
 
-**Section Markers Mj and Mn:**
-Steps required for major version approvals are marked with **Mj** while
-steps required for minor version approvals are marked with **Mn** to ease
-browsing the table of contents. Steps that are optional for minor
-version approvals are marked with a lower-cased **mn**.
-
 :::info INFO: Auto-Deployment of Documentation
 The documentation is deployed to an extra branch `gh-pages`. It is generated
 by [Docusaurus](https://docusaurus.io/) and located within the `website/`
@@ -33,7 +27,7 @@ Deployment is done automatically from `main` branch, as soon as changes have
 been merged.
 :::
 
-## a) CoreMedia Documentation Links (Mj, Mn)
+## a) CoreMedia Documentation Links
 
 For reference towards
 [documentation.coremedia.com](https://documentation.coremedia.com/) the
@@ -41,15 +35,7 @@ documentation should use the MDX Component `<DocLink>`. If all documentation
 adheres to this pattern, updating versioned links just requires updating
 <RepositoryLink path="website/src/ts/context.ts"/>.
 
-:::caution CAUTION: Apply to Approval Branch Only
-Apply this update only to the branch you use for the approval, thus,
-`maintenance/MMMM.x` for major version approvals and
-`approval/MMMM.Y` for minor version approvals.
-
-The changes for minor version approvals must not make it to the main branch.
-:::
-
-## b) Content Revision (Mj, Mn)
+## b) Content Revision
 
 On each CMCC version update, we need to check if the documentation for
 administrators, editors and developers are still aligned with the product.
@@ -58,7 +44,7 @@ Unless we introduced new behaviors to the GCC integration, or the integration
 into CoreMedia Blueprint has to be adapted, there is nothing to be done here
 most of the time.
 
-## c) Screenshot Revision (Mj, mn)
+## c) Screenshot Revision
 
 :::info INFO: Skip for Minor Release Approval
 Unless it is about documenting new features or behaviors, aligning screenshots,
@@ -70,7 +56,7 @@ The section _"Editors"_ contains screenshots, that may require an update.
 Consider reading the corresponding [How-to](../../howto/screenshots.md) to guide
 you through the process (like resolutions to choose, etc.).
 
-## d) Third-Party Reports (Mj, Mn)
+## d) Third-Party Reports
 
 Used third-party libraries must be reported and their licenses integrated into
 the documentation (as at least some licenses require this). We only maintain
@@ -90,14 +76,6 @@ To create a new report:
   This will update the auto-generated file
   `website/docs/third-party/third-party.md` as well as adding downloaded
   licenses to `website/docs/third-party/files`.
-
-:::caution CAUTION: Apply to Approval Branch Only
-Apply this update only to the branch you use for the approval, thus,
-`maintenance/MMMM.x` for major version approvals and
-`approval/MMMM.Y` for minor version approvals.
-
-The changes for minor version approvals must not make it to the main branch.
-:::
 
 :::note NOTE: Customizing Report
 For generating the Markdown report `third-party.md` the FreeMarker template

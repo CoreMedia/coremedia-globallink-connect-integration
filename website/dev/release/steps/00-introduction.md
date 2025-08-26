@@ -79,13 +79,18 @@ Thus, we have approved the GCC integration for (_major_) versions
 CMCC v12.2406.0.0 and CMCC v12.2412.0.0.
 
 :::info INFO: Deploy Documentation from Main
-All documentation updates must eventually go to the `origin/main` branch, as
-`gh-pages` will be only deployed from that branch.
+Only documentation updates on `origin/main` branch will eventually be
+deployed to `gh-pages`, thus, published. For subsequent maintenance
+releases, the corresponding documentation is only updated within the
+repository sources.
 :::
 
 :::warning WARNING: Stick to CMCC Release Order
-Approvals done on a given branch like `origin/main` must be performed in
+Approvals done on a given branch like `origin/main` should be performed in
 the same order as releases in the CMS. Thus, if you happen to have a delay
 in your approval process, and `2412.0.0` as well as `2506.0.0` need to be
-approved, you must strictly stick to first approving `2412.0.0`.
+approved, you should stick to first approving `2412.0.0`.
+
+If you deviate from this, you must ensure to skip merging a created
+`maintenance/2412.x` branch to `origin/main`.
 :::

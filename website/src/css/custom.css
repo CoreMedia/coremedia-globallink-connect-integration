@@ -37,7 +37,7 @@ main article a[href^="https://"]::after {
   font-size: 0.8em;
   color: var(--ifm-color-primary);
   margin-left: 2px;
-  text-decoration: none;
+  text-decoration: none !important;
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }
@@ -48,7 +48,7 @@ main article a:not([href^="http://"]):not([href^="https://"])::after {
   font-size: 0.8em;
   color: var(--ifm-color-primary);
   margin-left: 2px;
-  text-decoration: none;
+  text-decoration: none !important;
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }

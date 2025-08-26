@@ -24,9 +24,8 @@ CMCC workspace.
 The documentation references the CMCC documentation at
 [documentation.coremedia.com](https://documentation.coremedia.com/).
 While you are at adapting the CMCC version number, you may want to update the
-documentation reference right away. In general, this is only required for
-_major_ version approvals.
+documentation reference right away.
 
 For details see the
-[documentation update reference](./06-update-documentation.mdx).
+[documentation update reference](./06-update-documentation.md).
 :::

@@ -172,7 +172,6 @@ git switch --create --track "maintenance/2506.x" "origin/main"
 <TabItem value="minor">
 ```bash
 git switch --create --track "approval/2406.1" "origin/maintenance/2406.x"
-git branch --track "documentation/2406.1" "origin/main"
 ```
 </TabItem>
 </Tabs>
@@ -186,14 +185,3 @@ If creating new maintenance branches, you should mark them as protected branches
 in GitHub, so that they are not deleted by accident when later merged back to
 main again (as one-time merge only).
 :::
-
-**Documentation Branch:** When approving/releasing a minor version, a parallel
-documentation branch `documentation/xxxx.y` needs to be created. This is
-because documentation changes are only relevant on the `main` branch.
-
-For major approval/release we can skip this extra branch, as adaptations to
-the code as well as to the documentation are both meant to be merged to
-`main` eventually.
-
-It is up to you, if you create this documentation update branch during the
-approval phase or later.
