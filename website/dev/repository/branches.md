@@ -52,10 +52,6 @@ gitGraph:
   checkout main
   checkout maintenance/2406.x
   commit id: "approve 2406.1" tag: "v2406.1.0-1"
-  checkout main
-  commit id: "docs: adapt 2406.1"
-  checkout gh-pages
-  merge main id: "publish 2406.1 adaptations"
   checkout maintenance/2412.x
   commit id: "2412.0 bugfix" tag: "v2412.0.0-2"
   checkout main
