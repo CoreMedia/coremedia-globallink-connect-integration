@@ -54,13 +54,9 @@ gitGraph:
   merge main id: "publish 2412.0 docs"
   checkout main
   checkout maintenance/2406.x
+  commit id: "adapt 2406.1 docs" type: HIGHLIGHT
   commit id: "approve 2406.1" tag: "v2406.1.0-1"
   checkout main
-  commit id: "docs: adapt 2406.1"
-  checkout gh-pages
-  merge main id: "publish 2406.1 adaptations" type: HIGHLIGHT
-  checkout main
-  commit id: "   "
   commit id: "maintenance/2506.x"
   branch maintenance/2506.x
   commit id: "2506.0 approval" tag: "v2506.0.0-1"
@@ -75,30 +71,54 @@ gitGraph:
 The documentation is always only deployed from the `main` branch (performed
 automatically by GitHub actions).
 
-For releases based on minor version increments (like `v2406.1.0-1`) the
-documentation itself is typically considered **_frozen_**. In other words:
-expect no changes to `website/` folder on maintenance branches after the first
-approval of the major version.
+## Previous Versions
 
-Do not forget, though, to update the changelog on the `main` branch also for
-minor release approvals (as can be seen for highlighted publication named
-_publish 2406.1 adaptations_).
-
-:::info INFO: Option to Adapt Maintenance Branches
-You are free to decide to still adapt the documentation also on maintenance
-branches for more relevant changes. For a specific version, customers of this
-workspace may decide to browse it locally via `pnpm start`.
-:::
-
-## Documentation Versioning
-
-We do not use documentation versioning as provided as opt-in by Docusaurus.
-Instead for documentation of previous releases the recommended approach is to
-switch to the corresponding version tag and locally deploy the documentation for
-browsing:
+For any documentation for a given approved/released version, the documentation
+site should be deployed locally for browsing:
 
 ```bash
 cd website
 pnpm install
 pnpm start
 ```
+
+## docs/ vs. dev/
+
+<RepositoryLink path="website/docs/" /> contains version specific documentation,
+while <RepositoryLink path="website/dev/" /> is not related to any version.
+Thus, typically `dev/` is only maintained on `main` while `docs` is maintained
+also on the maintenance branches.
+
+## Changelogs
+
+We maintain two changelogs:
+
+* <RepositoryLink path="website/docs/changelog/" /> contains a changelog with
+  many details like upgrade information.
+
+* [Release Description](https://github.com/CoreMedia/coremedia-globallink-connect-integration/releases)
+  is meant to contain an overview of the applied changes.
+
+While the changelog within the website is only maintained for sequential
+releases (thus, `maintenance/2406.x` only contains changes relevant for
+`2406.0`, `2406.1`, etc.), the _Releases_ changelog provides an overview of all
+releases.
+
+As a result for the website, the changelog deployed to GitHub pages (published
+from `main`) always only contains changes along major version approvals.
+
+:::note NOTE: CHANGELOG.md
+In August 2025 we dropped a central `CHANGELOG.md` at repository root. Instead
+the releases must contain a corresponding changelog and a more detailed
+changelog with upgrade information is maintained
+at <RepositoryLink path="website/docs/changelog/" />.
+:::
+
+## Third-Party Reports
+
+For each release/approval we also generate the third-party reports. Just as
+for the changelogs, as GitHub pages is only deployed from `main`, the published
+reports only contain the report for the latest approved major version.
+
+For maintenance versions, we still update the third-party report, but it is
+only available for repository or local browsing.
