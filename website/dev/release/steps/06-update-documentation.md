@@ -7,9 +7,6 @@ tags:
   - docusaurus
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Update Documentation
 
 The documentation below `website/` comes in two parts. While `website/dev/`
@@ -81,41 +78,3 @@ To create a new report:
 For generating the Markdown report `third-party.md` the FreeMarker template
 `src/main/templates/third-party-md.ftl` is used.
 :::
-
-## e) Add Changelog Entry (Mj, Mn)
-
-The release notes at
-[GitHub/Releases](https://github.com/CoreMedia/coremedia-globallink-connect-integration/releases)
-and in
-[CHANGELOG.md](https://github.com/CoreMedia/coremedia-globallink-connect-integration/blob/main/CHANGELOG.md)
-typically represent just an excerpt of all changes applied.
-
-A more verbose changelog is maintained at
-<RepositoryLink path="website/docs/changelog/"/>.
-Add a corresponding file to represent the new version.
-
-:::info INFO: Only Apply to Main Branch
-For convenience the changelog should only be applied to the changes that make
-it to the `main` branch. Thus, for major version approvals, you can directly
-apply it on the later merged `maintenance/MMMM.x` branch, for minor version
-approvals, you need to apply it on an extra pull request with base `main`.
-:::
-
-## f) Update CHANGELOG.md (Mj, Mn)
-
-As an excerpt of the previous changes (and as main entry-point), update
-<RepositoryLink path="CHANGELOG.md"/>.
-
-These entries will later be used for the release note at
-[GitHub/Releases](https://github.com/CoreMedia/coremedia-globallink-connect-integration/releases).
-
-## g) Update README.md (Mj, mn)
-
-:::info Optional for Minor Release Approval
-On the `main` branch, we always only represent the most recent versions.
-For consistency, you may consider adapting the `README.md` on the corresponding
-`maintenance/*` branch. But it is totally optional.
-:::
-
-Update version badges at
-<RepositoryLink path="README.md"/>.
