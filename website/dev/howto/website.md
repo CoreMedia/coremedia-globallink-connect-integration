@@ -54,6 +54,13 @@ The setting `customProps.sort` is respected by a corresponding
 You find custom MDX components at `website/src/components` and registered in
 `website/src/theme/MDXComponents.tsx`.
 
+:::tip TIP: MDX Plugin
+For syntax highlighting in MDX enabled files, you may want to use this
+Visual Studio Code Plugin:
+
+* [MDX - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
+:::
+
 ### Badge
 
 Used to render a [Shields.io](https://shields.io/) badge within this

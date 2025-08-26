@@ -3,22 +3,6 @@
 This website is built using [Docusaurus](https://docusaurus.io/), a modern
 static website generator.
 
-> 👉 **Visit Previous Documentation**
->
-> While versioned documentation is not enabled, you can still browse it directly
-> within the [docs/](./docs/) folder. For even better navigation experience
-> use these two commands to open a local browser with the previous state of
-> the navigation:
->
-> ```bash
-> pnpm install
-> pnpm start
-> ```
->
-> The local browser will be opened with the URL:
->
-> * <http://localhost:3000/coremedia-globallink-connect-integration/>
-
 ## Cheat Sheet
 
 | Command                 | Description                                |
