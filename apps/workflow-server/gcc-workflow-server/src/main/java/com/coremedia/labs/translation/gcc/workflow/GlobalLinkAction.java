@@ -128,37 +128,29 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
           .create();
 
   /**
-   * Property for specification of delay in seconds before retrying Content Management Server communication
-   * (GlobalLinkAction.MIN_RETRY_DELAY_SECS <= value <= GlobalLinkAction.MAX_RETRY_DELAY_SECS).
-   * This value cannot be overwritten by the corresponding settings in the content repository.
+   * Property for specification of delay in seconds before retrying Content
+   * Management Server communication.
+   * <p>
+   * Values ensured to be within bounds:
+   * {@code RetryDelay.MIN_VALUE} <= {@code value} <= {@code RetryDelay.MAX_VALUE}.
+   * <p>
+   * This value cannot be overwritten by the corresponding settings in the
+   * content repository.
    */
   private static final String CMS_RETRY_DELAY_SETTINGS_KEY = "cms-retry-delay";
 
   /**
-   * Property for specification of delay in seconds before retrying GlobalLink communication
-   * (GlobalLinkAction.MIN_RETRY_DELAY_SECS <= value <= GlobalLinkAction.MAX_RETRY_DELAY_SECS).
-   * This is only a fallback for sub-classing actions that don't provide a unique retry delay by
-   * overwriting method {@link #getGCCRetryDelaySettingsKey()}.
+   * Property for specification of delay in seconds before retrying GlobalLink
+   * communication.
+   * <p>
+   * Values ensured to be within bounds:
+   * {@code RetryDelay.MIN_VALUE} <= {@code value} <= {@code RetryDelay.MAX_VALUE}.
+   * <p>
+   * This is only a fallback for sub-classing actions that don't provide a
+   * unique retry delay by overwriting method
+   * {@link #getGCCRetryDelaySettingsKey()}.
    */
   private static final String DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY = "gcc-retry-delay";
-
-  /**
-   * Minimum delay between retrying communication with GlobalLink. Firing too many update requests on the external system
-   * could be considered a DoS attack.
-   */
-  private static final int MIN_RETRY_DELAY_SECS = 60; // one minute
-
-  /**
-   * If the value is accidentally set to a very big delay, and the workflow process picks this value, you will have
-   * to wait very long until it checks again for an update.
-   * Changing this accidentally got also a lot more likely, since times can be changed in the content repository directly.
-   */
-  private static final int MAX_RETRY_DELAY_SECS = 86400; // one day
-
-  /**
-   * Fallback delay between retrying communication with GlobalLink for illegal values.
-   */
-  private static final int FALLBACK_RETRY_COMMUNICATION_DELAY_SECS = 900;
 
   private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = Set.of(
           CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
@@ -269,28 +261,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @NonNull
-  private static Integer ensureRetryDelayConfig(@NonNull Map<String, Object> config, @NonNull String key) {
-    Object value = config.get(key);
-    if (value == null) {
-      LOG.warn("\"{}\" value must not be null. Falling back to {}.", key, FALLBACK_RETRY_COMMUNICATION_DELAY_SECS);
-      return FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
-    }
-    int retryDelayInSec;
-    try {
-      retryDelayInSec = Integer.parseInt(String.valueOf(value));
-    } catch (NumberFormatException e) {
-      LOG.debug("Error while parsing configuration value \"{}\" of \"{}\": .", value, key, e);
-      LOG.warn("Invalid value \"{}\" for \"{}\": {}. Falling back to {}.", value, key, e.getMessage(), FALLBACK_RETRY_COMMUNICATION_DELAY_SECS);
-      return FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
-    }
-    if (retryDelayInSec < MIN_RETRY_DELAY_SECS) {
-      LOG.warn("\"{}\" must not be smaller than {} seconds, but is {}. Falling back to minimum.", key, MIN_RETRY_DELAY_SECS, retryDelayInSec);
-      retryDelayInSec = MIN_RETRY_DELAY_SECS;
-    } else if (retryDelayInSec > MAX_RETRY_DELAY_SECS) {
-      LOG.warn("\"{}\" must not be bigger than {} seconds, but is {}. Falling back to maximum.", key, MAX_RETRY_DELAY_SECS, retryDelayInSec);
-      retryDelayInSec = MAX_RETRY_DELAY_SECS;
-    }
-    return retryDelayInSec;
+  private static RetryDelay getRetryDelay(@NonNull Map<String, Object> config, @NonNull String key) {
+    return Optional.ofNullable(config.get(key))
+      .flatMap(v -> RetryDelay.trySaturatedParse(String.valueOf(v)))
+      .orElse(RetryDelay.DEFAULT);
   }
 
   @Override
@@ -307,12 +281,12 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     // maps error codes to affected contents; list of contents may be empty for some errors */
     Map<String, List<Content>> issues = new HashMap<>();
 
-    int gccRetryDelaySeconds = FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
+    RetryDelay retryDelay = RetryDelay.DEFAULT;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
     try {
       Site masterSite = getMasterSite(parameters.masterContentObjects);
       Map<String, Object> settings = getGccSettings(masterSite);
-      gccRetryDelaySeconds = ensureRetryDelayConfig(settings, getGCCRetryDelaySettingsKey());
+      retryDelay = getRetryDelay(settings, getGCCRetryDelaySettingsKey());
       maxAutomaticRetries = maxAutomaticRetries(masterSite);
 
       GCExchangeFacade gccSession = openSession(masterSite);
@@ -324,7 +298,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     } catch (GCFacadeCommunicationException e) {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
-      return getResultForGCCConnectionError(e, result, issues, parameters, gccRetryDelaySeconds, maxAutomaticRetries);
+      return getResultForGCCConnectionError(e, result, issues, parameters, retryDelay.toSecondsInt(), maxAutomaticRetries);
     } catch (GCFacadeSubmissionNotFoundException e) {
       LOG.warn("{}: Failed to find submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, Collections.emptyList());
@@ -359,7 +333,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     // set retry delay for continuation of non-completed GlobalLink task, e.g., download of translations that are
     // still missing
-    result.retryDelaySeconds = gccRetryDelaySeconds;
+    result.retryDelaySeconds = retryDelay.toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
     return result;
   }
@@ -590,6 +564,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return Collections.emptyMap();
   }
 
+  @SuppressWarnings("SameParameterValue")
   @Nullable
   private static Struct getStruct(Content content, String name) {
     if (content != null && content.isInProduction()) {
@@ -617,7 +592,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
     // get delay for retries on CMS connection error *just* from properties
     Map<String, Object> properties = getGccSettingsFromProperties();
-    int cmsRetryDelaySeconds = ensureRetryDelayConfig(properties, CMS_RETRY_DELAY_SETTINGS_KEY);
+    int cmsRetryDelaySeconds = getRetryDelay(properties, CMS_RETRY_DELAY_SETTINGS_KEY).toSecondsInt();
     LOG.info("{}: Failed to connect to CMS. Will retry after {} seconds.", getName(), cmsRetryDelaySeconds, exception);
     result.remainingAutomaticRetries = Integer.MAX_VALUE;
     result.retryDelaySeconds = cmsRetryDelaySeconds;
