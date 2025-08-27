@@ -275,7 +275,14 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       LOG.warn("\"{}\" value must not be null. Falling back to {}.", key, FALLBACK_RETRY_COMMUNICATION_DELAY_SECS);
       return FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
     }
-    int retryDelayInSec = Integer.parseInt(String.valueOf(value));
+    int retryDelayInSec;
+    try {
+      retryDelayInSec = Integer.parseInt(String.valueOf(value));
+    } catch (NumberFormatException e) {
+      LOG.debug("Error while parsing configuration value \"{}\" of \"{}\": .", value, key, e);
+      LOG.warn("Invalid value \"{}\" for \"{}\": {}. Falling back to {}.", value, key, e.getMessage(), FALLBACK_RETRY_COMMUNICATION_DELAY_SECS);
+      return FALLBACK_RETRY_COMMUNICATION_DELAY_SECS;
+    }
     if (retryDelayInSec < MIN_RETRY_DELAY_SECS) {
       LOG.warn("\"{}\" must not be smaller than {} seconds, but is {}. Falling back to minimum.", key, MIN_RETRY_DELAY_SECS, retryDelayInSec);
       retryDelayInSec = MIN_RETRY_DELAY_SECS;
