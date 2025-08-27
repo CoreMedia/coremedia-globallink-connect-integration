@@ -268,7 +268,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
-  private static Integer ensureRetryDelayConfig(Map<String, Object> config, String key) {
+  @NonNull
+  private static Integer ensureRetryDelayConfig(@NonNull Map<String, Object> config, @NonNull String key) {
     Object value = config.get(key);
     if (value == null) {
       LOG.warn("\"{}\" value must not be null. Falling back to {}.", key, FALLBACK_RETRY_COMMUNICATION_DELAY_SECS);
