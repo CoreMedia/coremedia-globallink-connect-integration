@@ -8,8 +8,8 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeConnectorKeyConfigExcep
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
-import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.CharacterType;
+import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
@@ -57,6 +57,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.lang.invoke.MethodHandles.lookup;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -305,7 +306,11 @@ class DefaultGCExchangeFacadeContractTest {
        * If cancellation fails because of invalid state: Extend the forbidden
        * states in the Awaitility call above.
        */
-      delegate.cancelSubmission(submissionId);
+      int status = facade.cancelSubmission(submissionId);
+
+      assertThat(status)
+        .as("Cancellation should have been successful.")
+        .isEqualTo(HTTP_OK);
 
       await("Wait until submission is marked as cancelled.")
         .atMost(2L, TimeUnit.MINUTES)
