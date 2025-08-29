@@ -487,31 +487,16 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @VisibleForTesting
   Map<String, Object> getGccSettings(Site site) {
 
-    Map<String, Object> result = new HashMap<>();
-
-    Map<String, Object> defaultSettings = getGccSettingsFromProperties();
-    if (!defaultSettings.isEmpty()) {
-      LOG.debug("Applying default settings for GCC connection with keys \"{}\" from properties file.", defaultSettings.keySet());
-      result.putAll(defaultSettings);
-    }
-
-    // Global configuration
-    Map<String, Object> globalSettings = getGccConfigsFromLocation(site, GLOBAL_CONFIGURATION_PATH);
-    if (!globalSettings.isEmpty()) {
-      LOG.debug("Applying global settings for GCC connection with keys \"{}\".", globalSettings.keySet());
-      result.putAll(globalSettings);
-    }
-
-    // Site specific configuration overrides global configuration
-    Content siteRootFolder = site.getSiteRootFolder();
-    String sitePath = siteRootFolder.getPath() + SITE_CONFIGURATION_PATH;
-    Map<String, Object> siteSettings = getGccConfigsFromLocation(site, sitePath);
-    if (!siteSettings.isEmpty()) {
-      LOG.debug("Applying site settings for GCC Connection with keys \"{}\".", globalSettings.keySet());
-      result.putAll(siteSettings);
-    }
-
-    return Collections.unmodifiableMap(result);
+    Settings settings = Settings.builder()
+      .sources(
+        this::getGccSettingsFromProperties,
+        // Global configuration
+        () -> getGccConfigsFromLocation(site, GLOBAL_CONFIGURATION_PATH),
+        // Site specific configuration overrides global configuration
+        () -> getGccConfigsFromLocation(site, site.getSiteRootFolder().getPath() + SITE_CONFIGURATION_PATH)
+      )
+      .build();
+    return Collections.unmodifiableMap(settings.properties());
   }
 
   @SuppressWarnings("unchecked")
