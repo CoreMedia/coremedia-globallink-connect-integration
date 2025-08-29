@@ -212,6 +212,7 @@ class GlobalLinkActionTest {
 
     @SuppressWarnings("HttpUrlsUsage")
     @Override
+    @NonNull
     protected Map<String, Object> getGccSettings(Site site) {
       return ImmutableMap.of(
               GCConfigProperty.KEY_URL, "http://lorem.ipsum.fun/",

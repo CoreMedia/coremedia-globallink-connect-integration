@@ -114,6 +114,46 @@ public record Settings(@NonNull Map<String, Object> properties) {
     private final List<SettingsSource> sources = new ArrayList<>();
 
     /**
+     * Adds the given source to be merged. Sources are processed in the given
+     * order where later sources take precedence for conflicting values.
+     * <p>
+     * Sources are merged deeply, meaning if a value is a map, the same merge
+     * pattern is applied recursively to nested maps. This allows for granular
+     * overriding of specific nested properties.
+     * <p>
+     * Multiple calls to this method append additional sources, which will
+     * override previously added sources for specific values at any given path.
+     *
+     * @param source source to add for merging
+     * @return self-reference for method chaining
+     */
+    @NonNull
+    public Builder source(@NonNull SettingsSource source) {
+      sources.add(source);
+      return this;
+    }
+
+    /**
+     * Adds the given sources to be merged. Sources are processed in the given
+     * order where later sources take precedence for conflicting values.
+     * <p>
+     * Sources are merged deeply, meaning if a value is a map, the same merge
+     * pattern is applied recursively to nested maps. This allows for granular
+     * overriding of specific nested properties.
+     * <p>
+     * Multiple calls to this method append additional sources, which will
+     * override previously added sources for specific values at any given path.
+     *
+     * @param sources sources to add for merging
+     * @return self-reference for method chaining
+     */
+    @NonNull
+    public Builder sources(@NonNull List<SettingsSource> sources) {
+      this.sources.addAll(sources);
+      return this;
+    }
+
+    /**
      * Adds the given sources to be merged. Sources are processed in the given
      * order where later sources take precedence for conflicting values.
      * <p>
@@ -129,8 +169,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      */
     @NonNull
     public Builder sources(@NonNull SettingsSource... sources) {
-      this.sources.addAll(Arrays.asList(sources));
-      return this;
+      return sources(Arrays.asList(sources));
     }
 
     /**
