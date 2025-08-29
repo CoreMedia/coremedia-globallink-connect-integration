@@ -43,6 +43,7 @@ import jakarta.activation.MimeTypeParseException;
 import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 
 import java.io.Serial;
 import java.lang.reflect.Type;
@@ -95,20 +96,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @Serial
   private static final long serialVersionUID = -7130959823193680910L;
-
-  /**
-   * Defines the global configuration path.
-   * The integration will look up a 'GlobalLink' settings document in this folder.
-   */
-  private static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
-
-  /**
-   * Defines the site specific configuration path.
-   * If a GlobalLink parameter should be different in a specific site,
-   * then the 'GlobalLink' settings document can additionally be but in this subfolder of the site.
-   */
-  private static final String SITE_CONFIGURATION_PATH = "Options/Settings/Translation Services";
-
 
   /**
    * Name of the config parameter in {@link #getGccSettings(Site)} to control how many times communication
@@ -498,15 +485,18 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @VisibleForTesting
   @NonNull
   Map<String, Object> getGccSettings(@Nullable ContentRepository repository, @Nullable Site site) {
-    Settings.Builder builder = Settings.builder();
-    builder.source(SettingsSource.fromContext(getSpringContext()));
-    if (repository != null) {
-      SettingsSource.findAllAt(repository, GLOBAL_CONFIGURATION_PATH).forEach(builder::source);
-    }
-    if (site != null) {
-      SettingsSource.findAllAt(site, SITE_CONFIGURATION_PATH).forEach(builder::source);
-    }
-    Settings settings = builder.build();
+    return getGccSettings(getSpringContext(), repository, site);
+  }
+
+  @NonNull
+  private static Map<String, Object> getGccSettings(@NonNull BeanFactory springContext,
+                                                    @Nullable ContentRepository repository,
+                                                    @Nullable Site site) {
+    Settings settings = Settings.builder()
+      .beanSource(springContext)
+      .optionalRepositorySource(repository)
+      .optionalSiteSource(site)
+      .build();
     return Collections.unmodifiableMap(settings.properties());
   }
 

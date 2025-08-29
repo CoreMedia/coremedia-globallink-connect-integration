@@ -1,9 +1,13 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
+import com.coremedia.cap.content.ContentRepository;
+import com.coremedia.cap.multisite.Site;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.BeanFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +33,21 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public record Settings(@NonNull Map<String, Object> properties) {
   private static final Logger LOG = getLogger(lookup().lookupClass());
+
+  /**
+   * Defines the global configuration path.
+   * The integration will look up a 'GlobalLink' settings document in this folder.
+   */
+  @VisibleForTesting
+  static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
+
+  /**
+   * Defines the site specific configuration path.
+   * If a GlobalLink parameter should be different in a specific site,
+   * then the 'GlobalLink' settings document can additionally be but in this subfolder of the site.
+   */
+  @VisibleForTesting
+  static final String SITE_CONFIGURATION_PATH = "Options/Settings/Translation Services";
 
   /**
    * Maximum allowed nesting depth for map structures to prevent stack overflow.
@@ -112,6 +131,40 @@ public record Settings(@NonNull Map<String, Object> properties) {
      */
     @NonNull
     private final List<SettingsSource> sources = new ArrayList<>();
+
+    @NonNull
+    public Builder beanSource(@NonNull BeanFactory beanFactory) {
+      sources.add(SettingsSource.fromContext(beanFactory));
+      return this;
+    }
+
+    @NonNull
+    public Builder optionalSiteSource(@Nullable Site site) {
+      if (site != null) {
+        return siteSource(site);
+      }
+      return this;
+    }
+
+    @NonNull
+    public Builder siteSource(@NonNull Site site) {
+      SettingsSource.findAllAt(site, SITE_CONFIGURATION_PATH).forEach(this::source);
+      return this;
+    }
+
+    @NonNull
+    public Builder optionalRepositorySource(@Nullable ContentRepository repository) {
+      if (repository != null) {
+        return repositorySource(repository);
+      }
+      return this;
+    }
+
+    @NonNull
+    public Builder repositorySource(@NonNull ContentRepository repository) {
+      SettingsSource.findAllAt(repository, GLOBAL_CONFIGURATION_PATH).forEach(this::source);
+      return this;
+    }
 
     /**
      * Adds the given source to be merged. Sources are processed in the given
