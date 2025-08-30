@@ -25,6 +25,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeFileTypeConfigException
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
+import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;

@@ -1,4 +1,4 @@
-package com.coremedia.labs.translation.gcc.workflow;
+package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
