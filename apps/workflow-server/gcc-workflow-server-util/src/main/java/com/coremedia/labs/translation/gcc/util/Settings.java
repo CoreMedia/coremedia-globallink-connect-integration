@@ -1,8 +1,7 @@
-package com.coremedia.labs.translation.gcc.workflow;
+package com.coremedia.labs.translation.gcc.util;
 
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
-import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -40,7 +39,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * The integration will look up a 'GlobalLink' settings document in this folder.
    */
   @VisibleForTesting
-  static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
+  public static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
 
   /**
    * Defines the site specific configuration path.
@@ -48,14 +47,14 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * then the 'GlobalLink' settings document can additionally be but in this subfolder of the site.
    */
   @VisibleForTesting
-  static final String SITE_CONFIGURATION_PATH = "Options/Settings/Translation Services";
+  public static final String SITE_CONFIGURATION_PATH = "Options/Settings/Translation Services";
 
   /**
    * Maximum allowed nesting depth for map structures to prevent stack overflow.
    * This limit protects against maliciously crafted or accidentally deeply nested data.
    */
   @VisibleForTesting
-  static final int MAX_DEPTH = 100;
+  public static final int MAX_DEPTH = 100;
 
   /**
    * Retrieves a value at the specified path within the settings properties.
