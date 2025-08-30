@@ -1,4 +1,4 @@
-package com.coremedia.labs.translation.gcc.workflow;
+package com.coremedia.labs.translation.gcc.util;
 
 import com.coremedia.cap.common.CapObjectDestroyedException;
 import com.coremedia.cap.common.CapPropertyDescriptor;
@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static com.coremedia.cap.common.CapPropertyDescriptorType.STRUCT;
-import static com.coremedia.labs.translation.gcc.facade.GCConfigProperty.KEY_GLOBALLINK_ROOT;
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -39,6 +38,12 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * Default property that is expected to contain settings.
    */
   String P_SETTINGS = "settings";
+  /**
+   * Root node for GCC Settings in Struct.
+   * <p>
+   * <strong>Type</strong>: {@code Struct}
+   */
+  String KEY_GLOBALLINK_ROOT = "globalLink";
 
   /**
    * Returns the logger for this class.

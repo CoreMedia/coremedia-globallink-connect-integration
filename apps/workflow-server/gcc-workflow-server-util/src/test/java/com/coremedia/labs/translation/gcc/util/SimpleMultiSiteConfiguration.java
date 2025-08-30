@@ -1,4 +1,4 @@
-package com.coremedia.labs.translation.gcc.workflow;
+package com.coremedia.labs.translation.gcc.util;
 
 import com.coremedia.cap.multisite.DefaultSiteModel;
 import com.coremedia.cap.multisite.SiteModel;
