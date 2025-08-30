@@ -272,7 +272,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       Site masterSite = getMasterSite(parameters.masterContentObjects);
       Map<String, Object> settings = getGccSettings(masterSite);
       retryDelay = getRetryDelay(settings, getGCCRetryDelaySettingsKey());
-      maxAutomaticRetries = maxAutomaticRetries(masterSite);
+      maxAutomaticRetries = maxAutomaticRetries(settings);
 
       GCExchangeFacade gccSession = openSession(settings);
 
@@ -456,8 +456,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
             .orElseThrow(() -> new IllegalStateException("No master site found"));
   }
 
-  private int maxAutomaticRetries(Site masterSite) {
-    Map<String, Object> gccSettings = getGccSettings(masterSite);
+  private static int maxAutomaticRetries(Map<String, Object> gccSettings) {
     Object value = gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS);
     if (value != null) {
       try {
@@ -471,35 +470,31 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @VisibleForTesting
   @NonNull
-  Map<String, Object> getGccSettings() {
-    return getGccSettings(null, null);
-  }
-
-  @VisibleForTesting
-  @NonNull
   Map<String, Object> getGccSettings(@Nullable Site site) {
     if (site != null) {
-      return getGccSettings(site.getSiteIndicator().getRepository(), site);
+      ContentRepository repository = site.getSiteIndicator().getRepository();
+      return getGccSettings(getSpringContext(), repository, site);
     }
-    return getGccSettings(null, null);
-  }
-
-  @VisibleForTesting
-  @NonNull
-  Map<String, Object> getGccSettings(@Nullable ContentRepository repository, @Nullable Site site) {
-    return getGccSettings(getSpringContext(), repository, site);
+    return getGccSettings(getSpringContext(), null, null);
   }
 
   @NonNull
   private static Map<String, Object> getGccSettings(@NonNull BeanFactory springContext,
                                                     @Nullable ContentRepository repository,
                                                     @Nullable Site site) {
-    Settings settings = Settings.builder()
+    Settings settings = getSettings(springContext, repository, site);
+    return Collections.unmodifiableMap(settings.properties());
+  }
+
+  @NonNull
+  private static Settings getSettings(@NonNull BeanFactory springContext,
+                                      @Nullable ContentRepository repository,
+                                      @Nullable Site site) {
+    return Settings.builder()
       .beanSource(springContext)
       .optionalRepositorySource(repository)
       .optionalSiteSource(site)
       .build();
-    return Collections.unmodifiableMap(settings.properties());
   }
 
   @VisibleForTesting
@@ -525,7 +520,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       throw exception;
     }
     // get delay for retries on CMS connection error *just* from properties
-    Map<String, Object> properties = getGccSettings();
+    Map<String, Object> properties = getGccSettings(getSpringContext(), null, null);
     int cmsRetryDelaySeconds = getRetryDelay(properties, CMS_RETRY_DELAY_SETTINGS_KEY).toSecondsInt();
     LOG.info("{}: Failed to connect to CMS. Will retry after {} seconds.", getName(), cmsRetryDelaySeconds, exception);
     result.remainingAutomaticRetries = Integer.MAX_VALUE;
