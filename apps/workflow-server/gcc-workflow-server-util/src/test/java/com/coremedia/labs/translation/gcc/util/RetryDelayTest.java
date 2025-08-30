@@ -1,4 +1,4 @@
-package com.coremedia.labs.translation.gcc.workflow;
+package com.coremedia.labs.translation.gcc.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.jupiter.api.Nested;
