@@ -1,4 +1,4 @@
-package com.coremedia.labs.translation.gcc.workflow;
+package com.coremedia.labs.translation.gcc.util;
 
 import com.coremedia.cap.common.CapConnection;
 import com.coremedia.cap.content.Content;
@@ -31,8 +31,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import static com.coremedia.labs.translation.gcc.facade.GCConfigProperty.KEY_GLOBALLINK_ROOT;
-import static com.coremedia.labs.translation.gcc.workflow.SimpleMultiSiteConfiguration.CT_SITE_CONTENT;
+import static com.coremedia.labs.translation.gcc.util.SettingsSource.KEY_GLOBALLINK_ROOT;
+import static com.coremedia.labs.translation.gcc.util.SimpleMultiSiteConfiguration.CT_SITE_CONTENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 

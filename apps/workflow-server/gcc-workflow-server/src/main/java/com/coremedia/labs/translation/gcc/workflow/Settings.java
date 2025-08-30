@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
+import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
