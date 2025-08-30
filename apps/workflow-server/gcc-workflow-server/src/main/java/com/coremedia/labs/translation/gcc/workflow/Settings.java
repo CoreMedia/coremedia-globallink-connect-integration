@@ -148,7 +148,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
 
     @NonNull
     public Builder siteSource(@NonNull Site site) {
-      SettingsSource.findAllAt(site, SITE_CONFIGURATION_PATH).forEach(this::source);
+      SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).forEach(this::source);
       return this;
     }
 
@@ -162,7 +162,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
 
     @NonNull
     public Builder repositorySource(@NonNull ContentRepository repository) {
-      SettingsSource.findAllAt(repository, GLOBAL_CONFIGURATION_PATH).forEach(this::source);
+      SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).forEach(this::source);
       return this;
     }
 
