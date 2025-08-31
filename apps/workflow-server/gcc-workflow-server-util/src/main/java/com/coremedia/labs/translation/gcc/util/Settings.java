@@ -32,7 +32,11 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @param properties merged properties from all sources
  */
 public record Settings(@NonNull Map<String, Object> properties) {
+  @NonNull
   private static final Logger LOG = getLogger(lookup().lookupClass());
+
+  @NonNull
+  public static final Settings EMPTY = new Settings(Map.of());
 
   /**
    * Defines the global configuration path.
@@ -104,6 +108,11 @@ public record Settings(@NonNull Map<String, Object> properties) {
       Stream.of(otherElements)
     ).toList();
     return at(path);
+  }
+
+  @NonNull
+  public static Settings of(@NonNull Map<String, Object> properties) {
+    return new Settings(properties);
   }
 
   /**
@@ -181,6 +190,26 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @return self-reference for method chaining
      */
     @NonNull
+    public Builder source(@NonNull Settings settings) {
+      sources.add(() -> settings.properties());
+      return this;
+    }
+
+    /**
+     * Adds the given source to be merged. Sources are processed in the given
+     * order where later sources take precedence for conflicting values.
+     * <p>
+     * Sources are merged deeply, meaning if a value is a map, the same merge
+     * pattern is applied recursively to nested maps. This allows for granular
+     * overriding of specific nested properties.
+     * <p>
+     * Multiple calls to this method append additional sources, which will
+     * override previously added sources for specific values at any given path.
+     *
+     * @param source source to add for merging
+     * @return self-reference for method chaining
+     */
+    @NonNull
     public Builder source(@NonNull SettingsSource source) {
       sources.add(source);
       return this;
@@ -235,7 +264,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      */
     @NonNull
     public Settings build() {
-      return new Settings(mergedSources(sources));
+      return Settings.of(mergedSources(sources));
     }
   }
 

@@ -50,6 +50,7 @@ import org.springframework.beans.factory.BeanFactory;
 import java.io.Serial;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,7 +101,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private static final long serialVersionUID = -7130959823193680910L;
 
   /**
-   * Name of the config parameter in {@link #getGccSettings(Site)} to control how many times communication
+   * Name of the config parameter to control how many times communication
    * errors should be retried automatically. Defaults to {@link #DEFAULT_RETRY_COMMUNICATION_ERRORS} if unset.
    */
   private static final String CONFIG_RETRY_COMMUNICATION_ERRORS = "retryCommunicationErrors";
@@ -246,9 +247,14 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @NonNull
-  private static RetryDelay getRetryDelay(@NonNull Map<String, Object> config, @NonNull String key) {
-    return Optional.ofNullable(config.get(key))
-      .flatMap(v -> RetryDelay.trySaturatedParse(String.valueOf(v)))
+  private static RetryDelay getRetryDelay(@NonNull Settings config, @NonNull String key) {
+    return config.at(key)
+      .flatMap(v -> {
+        if (v instanceof Duration) {
+          return Optional.of(RetryDelay.saturatedOf((Duration) v));
+        }
+        return RetryDelay.trySaturatedParse(String.valueOf(v));
+      })
       .orElse(RetryDelay.DEFAULT);
   }
 
@@ -268,9 +274,12 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     RetryDelay retryDelay = RetryDelay.DEFAULT;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
+    Settings settings = withContextSettings(Settings.EMPTY, getSpringContext());
+
     try {
+      settings = withGlobalSettings(settings, getConnection().getContentRepository());
       Site masterSite = getMasterSite(parameters.masterContentObjects);
-      Map<String, Object> settings = getGccSettings(masterSite);
+      settings = withSiteSettings(settings, masterSite);
       retryDelay = getRetryDelay(settings, getGCCRetryDelaySettingsKey());
       maxAutomaticRetries = maxAutomaticRetries(settings);
 
@@ -318,9 +327,15 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     // set retry delay for continuation of non-completed GlobalLink task, e.g., download of translations that are
     // still missing
-    result.retryDelaySeconds = retryDelay.toSecondsInt();
+    result.retryDelaySeconds = delayForRetry(retryDelay, settings).toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
     return result;
+  }
+
+  @NonNull
+  protected RetryDelay delayForRetry(@NonNull RetryDelay originalRetryDelay,
+                                     @NonNull Settings settings) {
+    return originalRetryDelay;
   }
 
   @Override
@@ -456,54 +471,55 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
             .orElseThrow(() -> new IllegalStateException("No master site found"));
   }
 
-  private static int maxAutomaticRetries(Map<String, Object> gccSettings) {
-    Object value = gccSettings.get(CONFIG_RETRY_COMMUNICATION_ERRORS);
-    if (value != null) {
-      try {
-        return Integer.parseInt(String.valueOf(value));
-      } catch (NumberFormatException e) {
-        LOG.warn("Ignoring setting '{}'. Not an integer: {}", CONFIG_RETRY_COMMUNICATION_ERRORS, value);
-      }
-    }
-    return DEFAULT_RETRY_COMMUNICATION_ERRORS;
-  }
-
-  @VisibleForTesting
-  @NonNull
-  Map<String, Object> getGccSettings(@Nullable Site site) {
-    if (site != null) {
-      ContentRepository repository = site.getSiteIndicator().getRepository();
-      return getGccSettings(getSpringContext(), repository, site);
-    }
-    return getGccSettings(getSpringContext(), null, null);
+  private static int maxAutomaticRetries(@NonNull Settings settings) {
+    return settings.at(CONFIG_RETRY_COMMUNICATION_ERRORS)
+      .map(v -> {
+        try {
+          return Integer.parseInt(String.valueOf(v));
+        } catch (NumberFormatException e) {
+          LOG.warn("Ignoring setting '{}'. Not an integer: {}", CONFIG_RETRY_COMMUNICATION_ERRORS, v);
+          return null;
+        }
+      })
+      .orElse(DEFAULT_RETRY_COMMUNICATION_ERRORS);
   }
 
   @NonNull
-  private static Map<String, Object> getGccSettings(@NonNull BeanFactory springContext,
-                                                    @Nullable ContentRepository repository,
-                                                    @Nullable Site site) {
-    Settings settings = getSettings(springContext, repository, site);
-    return Collections.unmodifiableMap(settings.properties());
-  }
-
-  @NonNull
-  private static Settings getSettings(@NonNull BeanFactory springContext,
-                                      @Nullable ContentRepository repository,
-                                      @Nullable Site site) {
+  private static Settings withContextSettings(@NonNull Settings base,
+                                              @NonNull BeanFactory springContext) {
     return Settings.builder()
+      .source(base)
       .beanSource(springContext)
-      .optionalRepositorySource(repository)
-      .optionalSiteSource(site)
+      .build();
+  }
+
+  @NonNull
+  private static Settings withGlobalSettings(@NonNull Settings base,
+                                             @NonNull ContentRepository repository) {
+    return Settings.builder()
+      .source(base)
+      .repositorySource(repository)
+      .build();
+  }
+
+  @NonNull
+  private static Settings withSiteSettings(@NonNull Settings base,
+                                           @NonNull Site site) {
+    return Settings.builder()
+      .source(base)
+      .siteSource(site)
       .build();
   }
 
   @VisibleForTesting
-  GCExchangeFacade openSession(Site site) {
-    Map<String, Object> settings = getGccSettings(site);
-    return openSession(settings);
+  @NonNull
+  private static GCExchangeFacade openSession(@NonNull Settings settings) {
+    return openSession(settings.properties());
   }
 
-  private static GCExchangeFacade openSession(@NonNull Map<String, Object> settings) {
+  @VisibleForTesting
+  @NonNull
+  static GCExchangeFacade openSession(@NonNull Map<String, Object> settings) {
     return defaultFactory().openSession(settings);
   }
 
@@ -520,8 +536,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       throw exception;
     }
     // get delay for retries on CMS connection error *just* from properties
-    Map<String, Object> properties = getGccSettings(getSpringContext(), null, null);
-    int cmsRetryDelaySeconds = getRetryDelay(properties, CMS_RETRY_DELAY_SETTINGS_KEY).toSecondsInt();
+    BeanFactory springContext = getSpringContext();
+    Settings settings = withContextSettings(Settings.EMPTY, springContext);
+    int cmsRetryDelaySeconds = getRetryDelay(settings, CMS_RETRY_DELAY_SETTINGS_KEY).toSecondsInt();
     LOG.info("{}: Failed to connect to CMS. Will retry after {} seconds.", getName(), cmsRetryDelaySeconds, exception);
     result.remainingAutomaticRetries = Integer.MAX_VALUE;
     result.retryDelaySeconds = cmsRetryDelaySeconds;

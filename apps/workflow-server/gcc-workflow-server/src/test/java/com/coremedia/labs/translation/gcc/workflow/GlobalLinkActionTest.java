@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.workflow;
 
 import com.coremedia.cache.EvaluationException;
 import com.coremedia.cap.common.Blob;
+import com.coremedia.cap.common.CapConnection;
 import com.coremedia.cap.common.CapException;
 import com.coremedia.cap.common.RepositoryNotAvailableException;
 import com.coremedia.cap.content.Content;
@@ -58,7 +59,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
-        classes = GlobalLinkActionTest.LocalConfig.class
+  classes = GlobalLinkActionTest.LocalConfig.class
 )
 @DirtiesContext(classMode = AFTER_CLASS)
 class GlobalLinkActionTest {
@@ -90,8 +91,11 @@ class GlobalLinkActionTest {
   static class LocalConfig {
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     @Bean
-    public GlobalLinkAction<Void, Void> globalLinkAction(ApplicationContext context) {
-      return new MockedGlobalLinkAction(context);
+    public GlobalLinkAction<Void, Void> globalLinkAction(@NonNull ApplicationContext context,
+                                                         @NonNull CapConnection connection) {
+      MockedGlobalLinkAction action = new MockedGlobalLinkAction(context);
+      action.setConnection(connection);
+      return action;
     }
 
     @ConfigurationProperties(prefix = "gcc")
@@ -104,7 +108,11 @@ class GlobalLinkActionTest {
 
   @Test
   void testOpenSession() {
-    GCExchangeFacade facade = globalLinkAction.openSession(site);
+    GCExchangeFacade facade = GlobalLinkAction.openSession(ImmutableMap.of(
+      GCConfigProperty.KEY_URL, "http://lorem.ipsum.fun/",
+      GCConfigProperty.KEY_API_KEY, "abcd",
+      GCConfigProperty.KEY_KEY, "012345",
+      GCConfigProperty.KEY_TYPE, "mock"));
     assertThat(facade).isNotNull();
     assertThat(facade).isInstanceOf(MockedGCExchangeFacade.class);
   }
@@ -112,10 +120,10 @@ class GlobalLinkActionTest {
   @Test
   void testRepositoryException() {
     GlobalLinkAction.Parameters<Object> params =
-            new GlobalLinkAction.Parameters<>(null, null, 0);
+      new GlobalLinkAction.Parameters<>(null, null, 0);
     GlobalLinkAction<Void, Void> exceptingGlobalLinkAction = spy(globalLinkAction);
     doThrow(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null))
-            .when(exceptingGlobalLinkAction).getSitesService();
+      .when(exceptingGlobalLinkAction).getSitesService();
     doReturn(CMS_ISSUES_BLOB).when(exceptingGlobalLinkAction).issuesAsJsonBlob(anyMap());
     GlobalLinkAction.Result<Void> result = exceptingGlobalLinkAction.doExecute(params);
     assertThat(result.issues).isEqualTo(CMS_ISSUES_BLOB);
@@ -126,29 +134,29 @@ class GlobalLinkActionTest {
   @Test
   void testCheckedOutByOtherIssueSerialization(@Autowired ContentRepository repository) {
     Content someContent = repository.createContentBuilder()
-            .name("Some Content")
-            .type("SimpleEmpty")
-            .nameTemplate()
-            .create();
+      .name("Some Content")
+      .type("SimpleEmpty")
+      .nameTemplate()
+      .create();
     Map<Severity, Map<String, List<Content>>> issues = Map.of(
-            Severity.ERROR,
-            Map.of(
-                    CapErrorCodes.CHECKED_OUT_BY_OTHER,
-                    List.of(someContent)
-            )
+      Severity.ERROR,
+      Map.of(
+        CapErrorCodes.CHECKED_OUT_BY_OTHER,
+        List.of(someContent)
+      )
     );
     // Failed with JsonIOException as described in CoreMedia/coremedia-globallink-connect-integration#61
     // on inappropriate type adapter registration. Requires `registerTypeHierarchyAdapter` for content items rather
     // than `registerTypeAdapter`.
     String actual = GlobalLinkAction.issuesAsJsonString(issues);
     assertThat(actual)
-            .isEqualTo(
-                    "{\"%s\":{\"%s\":[\"%s\"]}}".formatted(
-                            Severity.ERROR,
-                            CapErrorCodes.CHECKED_OUT_BY_OTHER,
-                            someContent.getId()
-                    )
-            );
+      .isEqualTo(
+        "{\"%s\":{\"%s\":[\"%s\"]}}".formatted(
+          Severity.ERROR,
+          CapErrorCodes.CHECKED_OUT_BY_OTHER,
+          someContent.getId()
+        )
+      );
   }
 
   @Test
@@ -208,17 +216,6 @@ class GlobalLinkActionTest {
     @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
-    }
-
-    @SuppressWarnings("HttpUrlsUsage")
-    @Override
-    @NonNull
-    protected Map<String, Object> getGccSettings(Site site) {
-      return ImmutableMap.of(
-              GCConfigProperty.KEY_URL, "http://lorem.ipsum.fun/",
-              GCConfigProperty.KEY_API_KEY, "abcd",
-              GCConfigProperty.KEY_KEY, "012345",
-              GCConfigProperty.KEY_TYPE, "mock");
     }
   }
 }
