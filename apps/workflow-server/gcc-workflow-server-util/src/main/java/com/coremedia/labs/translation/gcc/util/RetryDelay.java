@@ -7,10 +7,10 @@ import org.springframework.format.annotation.DurationFormat;
 import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.invoke.MethodHandles.lookup;
+import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.format.datetime.standard.DurationFormatterUtils.detectAndParse;
 
@@ -62,7 +62,7 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
    * @throws IllegalArgumentException if value is out of permitted bounds
    */
   public RetryDelay {
-    Objects.requireNonNull(value, "value must not be null");
+    requireNonNull(value, "value must not be null");
     if (MIN_DELAY_DURATION.compareTo(value) > 0) {
       throw new IllegalArgumentException("value must be greater than or equal to %s".formatted(pretty(MIN_DELAY_DURATION)));
     }
@@ -210,6 +210,51 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   public static Optional<RetryDelay> trySaturatedParse(@NonNull String value) {
     try {
       return Optional.of(saturatedParse(value));
+    } catch (IllegalArgumentException e) {
+      LOG.trace("Unable to parse retry delay value: {}. Returning empty.", value, e);
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Tries to determine the retry delay from the given value. If the value
+   * represents a number its unit is expected to be seconds. Alternative units
+   * may be given like {@code 15m}, {@code 1h}. For details on duration parsing
+   * see
+   * {@link DurationFormatterUtils#detectAndParse(String, DurationFormat.Unit)}.
+   * <p>
+   * Returns the result of the detected, transformed or parsed value unless it
+   * would overflow or underflow in which case {@link RetryDelay#MAX_VALUE} or
+   * {@link RetryDelay#MIN_VALUE} is returned, respectively.
+   * <p>
+   * Supported types of value:
+   * <ul>
+   * <li><strong>{@code RetryDelay}:</strong> returned as is</li>
+   * <li><strong>{@code Number}:</strong> interpreted as seconds</li>
+   * <li><strong>else:</strong> String representation will be parsed
+   * as duration</li>
+   * </ul>
+   *
+   * @param value duration value to detect, transform or parse
+   * @return retry delay with detected duration
+   * @throws IllegalArgumentException if value is invalid
+   */
+  @NonNull
+  public static Optional<RetryDelay> trySaturatedFromObject(@NonNull Object value) {
+    requireNonNull(value);
+
+    try {
+      if (value instanceof RetryDelay) {
+        return Optional.of((RetryDelay) value);
+      }
+      if (value instanceof Duration) {
+        return Optional.of(saturatedOf((Duration) value));
+      }
+      if (value instanceof Number) {
+        Number number = (Number) value;
+        return Optional.of(saturatedOf(Duration.ofSeconds(number.longValue())));
+      }
+      return Optional.of(saturatedParse(String.valueOf(value)));
     } catch (IllegalArgumentException e) {
       LOG.trace("Unable to parse retry delay value: {}. Returning empty.", value, e);
       return Optional.empty();
