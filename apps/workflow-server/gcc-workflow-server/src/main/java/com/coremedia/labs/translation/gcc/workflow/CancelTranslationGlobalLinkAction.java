@@ -122,6 +122,7 @@ public class CancelTranslationGlobalLinkAction extends
   }
 
   @Override
+  @NonNull
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
     String submissionId = process.getString(globalLinkSubmissionIdVariable);

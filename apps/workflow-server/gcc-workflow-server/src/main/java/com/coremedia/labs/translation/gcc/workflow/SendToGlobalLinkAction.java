@@ -146,6 +146,7 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @Override
+  @NonNull
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
 

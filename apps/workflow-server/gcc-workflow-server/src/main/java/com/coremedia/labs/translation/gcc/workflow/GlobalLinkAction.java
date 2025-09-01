@@ -40,6 +40,7 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
 import org.omg.CORBA.SystemException;
@@ -368,7 +369,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    *
    * @param originalRetryDelay original (default/general) retry delay
    * @param settings           settings, like where to read an alternative delay from
-   * @param extendedParameters your action specific parameters
+   * @param extendedParameters your action specific parameters; result of
+   *                           {@link #doExtractParameters(Task)}, thus,
+   *                           the nullability state depends on the implementation
    * @param extendedResult     your action specific result
    * @param issues             a (mutable) map of issues; may be used to determine a
    *                           different behavior when issues exist as well as to add more
@@ -380,7 +383,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @NonNull
   protected RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
                                                  @NonNull Settings settings,
-                                                 P extendedParameters,
+                                                 @UnknownNullness P extendedParameters,
                                                  @NonNull Optional<R> extendedResult,
                                                  @NonNull Map<String, List<Content>> issues) {
     return originalRetryDelay;
@@ -417,15 +420,19 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   // --- Methods to be implemented / overridden by concrete subclass -------------------------------
 
   /**
-   * Extract parameters from the {@link Task} and return them as a single object of type {@code <T>}.
-   * The result will be passed as argument to method {@link #doExecuteGlobalLinkAction(Object, Consumer, GCExchangeFacade, Map)}.
-   *
-   * <p>This method is called from {@link com.coremedia.cap.workflow.plugin.LongAction#extractParameters(Task)} and
-   * the constraints documented for that method apply here as well.
+   * Extract parameters from the {@link Task} and return them as a single
+   * object of type {@code <T>}. The result will be passed as argument to method
+   * {@link #doExecuteGlobalLinkAction(Object, Consumer, GCExchangeFacade, Map)}.
+   * <p>
+   * This method is called from
+   * {@link com.coremedia.cap.workflow.plugin.LongAction#extractParameters(Task)}
+   * and the constraints documented for that method apply here as well.
    *
    * @param task the task in which the action should be executed
-   * @return the parameters for the actual computation or null if no parameters are needed
+   * @return the parameters for the actual computation or {@code null} if no
+   * parameters are needed
    */
+  @Nullable
   abstract P doExtractParameters(Task task);
 
   /**
@@ -509,7 +516,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   // --- Internal -------------------------------------------------------------
 
-  private Site getMasterSite(Collection<? extends ContentObject> masterContents) {
+  private Site getMasterSite(@NonNull Collection<? extends ContentObject> masterContents) {
     SitesService sitesService = getSitesService();
     return masterContents.stream()
             .map(sitesService::getSiteAspect)
@@ -684,7 +691,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  record Parameters<P>(P extendedParameters, Collection<ContentObject> masterContentObjects,
+  record Parameters<P>(@Nullable P extendedParameters,
+                       @NonNull Collection<ContentObject> masterContentObjects,
                        int remainingAutomaticRetries) {
   }
 
