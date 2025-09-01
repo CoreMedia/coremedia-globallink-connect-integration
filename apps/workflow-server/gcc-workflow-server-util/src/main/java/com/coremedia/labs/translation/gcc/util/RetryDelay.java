@@ -154,7 +154,14 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
    */
   @NonNull
   private static String pretty(@NonNull Duration duration) {
-    return DurationFormatterUtils.print(duration, DurationFormat.Style.COMPOSITE);
+    try {
+      return DurationFormatterUtils.print(duration, DurationFormat.Style.COMPOSITE);
+    } catch (ArithmeticException e) {
+      // Observed, that we cannot pretty-print, for example,
+      // Duration.ofSeconds(Long.MIN_VALUE) as composite representation.
+      LOG.debug("Failed to pretty print as COMPOSITE: {}. Using default toString", duration, e);
+      return duration.toString();
+    }
   }
 
   /**
