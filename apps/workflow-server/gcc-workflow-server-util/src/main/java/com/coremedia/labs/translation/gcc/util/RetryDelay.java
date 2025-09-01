@@ -162,22 +162,6 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
    * number its unit is expected to be seconds. Alternative units may be given
    * like {@code 15m}, {@code 1h}. For details on duration parsing see
    * {@link DurationFormatterUtils#detectAndParse(String, DurationFormat.Unit)}.
-   *
-   * @param value duration value to parse
-   * @return parsed duration
-   * @throws IllegalArgumentException if value is {@code null}, cannot be parsed
-   *                                  or is out of bounds
-   */
-  @NonNull
-  public static RetryDelay parse(@NonNull String value) {
-    return of(detectAndParse(value, DurationFormat.Unit.SECONDS));
-  }
-
-  /**
-   * Parses the retry delay from the given value. If the value represents a
-   * number its unit is expected to be seconds. Alternative units may be given
-   * like {@code 15m}, {@code 1h}. For details on duration parsing see
-   * {@link DurationFormatterUtils#detectAndParse(String, DurationFormat.Unit)}.
    * <p>
    * Returns the result of the parsed value unless it would overflow or
    * underflow in which case {@link RetryDelay#MAX_VALUE} or {@link RetryDelay#MIN_VALUE}
@@ -190,30 +174,6 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   @NonNull
   public static RetryDelay saturatedParse(@NonNull String value) {
     return saturatedOf(detectAndParse(value, DurationFormat.Unit.SECONDS));
-  }
-
-  /**
-   * Parses the retry delay from the given value. If the value represents a
-   * number its unit is expected to be seconds. Alternative units may be given
-   * like {@code 15m}, {@code 1h}. For details on duration parsing see
-   * {@link DurationFormatterUtils#detectAndParse(String, DurationFormat.Unit)}.
-   * <p>
-   * Returns the result of the parsed value unless it would overflow or
-   * underflow in which case {@link RetryDelay#MAX_VALUE} or {@link RetryDelay#MIN_VALUE}
-   * is returned, respectively.
-   *
-   * @param value duration value to parse
-   * @return parsed duration
-   * @throws IllegalArgumentException if value cannot be parsed or is {@code null}
-   */
-  @NonNull
-  public static Optional<RetryDelay> trySaturatedParse(@NonNull String value) {
-    try {
-      return Optional.of(saturatedParse(value));
-    } catch (IllegalArgumentException e) {
-      LOG.trace("Unable to parse retry delay value: {}. Returning empty.", value, e);
-      return Optional.empty();
-    }
   }
 
   /**

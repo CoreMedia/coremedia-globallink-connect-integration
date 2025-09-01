@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.format.annotation.DurationFormat;
@@ -15,6 +16,7 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 class RetryDelayTest {
   @Nested
@@ -112,131 +114,138 @@ class RetryDelayTest {
   }
 
   @Nested
-  class ParseAndSaturatedParseBehavior {
+  @ParameterizedClass
+  // Excluding milli-deviations as they cannot be distinguished based on
+  // seconds representation.
+  @EnumSource(
+    value = ValidDuration.class,
+    mode = EnumSource.Mode.EXCLUDE,
+    names = {"MILLI_ABOVE_MIN_DELAY", "MILLI_BELOW_MAX_DELAY"}
+  )
+  class AsSecondsBehavior {
+    @NonNull
+    private final Duration duration;
+
+    AsSecondsBehavior(@NonNull ValidDuration validDuration) {
+      duration = validDuration.duration();
+    }
+
+    @Test
+    void shouldDefaultToParseAsSecondsOnTrySaturatedParse() {
+      long durationSeconds = duration.toSeconds();
+      String durationAsString = Long.toString(durationSeconds);
+      assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
+        .hasValue(RetryDelay.of(duration));
+    }
+  }
+
+  @Nested
+  class HumanReadableBehavior {
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      retryDelay | expected
+      60s        | 1m
+      61s        | 1m1s
+      1m         | 1m
+      60m        | 1h
+      61m        | 1h1m
+      3601s      | 1h1s
+      86398s     | 23h59m58s
+      1d         | 1d
+      """)
+    // Resolving parameter RetryDelay from String requires only one static
+    // factory method to exist, that returns RetryDelay and accepts String.
+    // If this changes, a parameter parser must be added explicitly.
+    void shouldProvideSomeHumanReadableDurationRepresentation(@NonNull RetryDelay fixture,
+                                                              @NonNull String expectedString) {
+      assertThat(fixture.humanReadable())
+        .isEqualTo(expectedString);
+    }
+  }
+
+  @Nested
+  class TrySaturatedFromObjectBehavior {
     @Nested
     @ParameterizedClass
-    @EnumSource(DurationFormat.Style.class)
-    class AnyDurationFormatUnitBehavior {
+    @EnumSource(ValidDuration.class)
+    class ValidDurationBehavior {
       @NonNull
-      private final DurationFormat.Style durationFormatStyle;
+      private final Duration duration;
 
-      AnyDurationFormatUnitBehavior(@NonNull DurationFormat.Style durationFormatStyle) {
-        this.durationFormatStyle = durationFormatStyle;
+      ValidDurationBehavior(@NonNull ValidDuration validDuration) {
+        duration = validDuration.duration();
       }
 
-      @Nested
-      @ParameterizedClass
-      @EnumSource(ValidDuration.class)
-      class ValidDurationBehavior {
-        @NonNull
-        private final Duration duration;
-
-        ValidDurationBehavior(@NonNull ValidDuration validDuration) {
-          duration = validDuration.duration();
-        }
-
-        @Test
-        void shouldParseValidDurationToExpectedDelayViaParse() {
-          String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-          assertThat(RetryDelay.parse(durationAsString))
-            .isEqualTo(RetryDelay.of(duration));
-        }
-
-        @Test
-        void shouldParseValidDurationToExpectedDelayViaSaturatedParse() {
-          String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-          assertThat(RetryDelay.saturatedParse(durationAsString))
-            .isEqualTo(RetryDelay.of(duration));
-        }
-
-        @Test
-        void shouldParseValidDurationToExpectedDelayViaTrySaturatedParse() {
-          String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-          assertThat(RetryDelay.trySaturatedParse(durationAsString))
-            .hasValue(RetryDelay.of(duration));
-        }
+      @ParameterizedTest
+      @EnumSource(DurationFormat.Style.class)
+      void shouldParseValidDurationStringToExpectedDelay(@NonNull DurationFormat.Style durationFormatStyle) {
+        String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
+        assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
+          .hasValue(RetryDelay.of(duration));
       }
 
-      @Nested
-      @ParameterizedClass
-      // Excluding MIN, MAX, as they have issues in the String representation
-      // for SIMPLE and COMPOSITE formatting, causing irrelevant failures.
-      @EnumSource(
-        value = InvalidDuration.class,
-        mode = EnumSource.Mode.EXCLUDE,
-        names = {"MIN", "MAX"}
-      )
-      class InvalidDurationBehavior {
-        @NonNull
-        private final Duration duration;
+      @Test
+      void shouldReturnRetryDelayAsIs() {
+        RetryDelay retryDelay = RetryDelay.of(duration);
+        assertThat(RetryDelay.trySaturatedFromObject(retryDelay))
+          .containsSame(retryDelay);
+      }
 
-        InvalidDurationBehavior(@NonNull InvalidDuration invalidDuration) {
-          duration = invalidDuration.duration();
-        }
+      @Test
+      void shouldReturnDurationWrappedInRetryDelay() {
+        assertThat(RetryDelay.trySaturatedFromObject(duration))
+          .hasValue(RetryDelay.of(duration));
+      }
 
-        @Test
-        void shouldDenyParsedDurationOutOfBoundsOnParse() {
-          String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-          assertThatThrownBy(() -> RetryDelay.parse(durationAsString))
-            .hasMessageContainingAll("value", "than or equal to")
-            .isInstanceOf(IllegalArgumentException.class);
-        }
-
-        @Test
-        void shouldNormalizeToWithinBoundsOnSaturatedParse() {
-          String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-          assertThat(RetryDelay.saturatedParse(durationAsString))
-            .isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE);
-        }
-
-        @Test
-        void shouldNormalizeToWithinBoundsOnTrySaturatedParse() {
-          String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-          assertThat(RetryDelay.trySaturatedParse(durationAsString))
-            .hasValueSatisfying(v -> assertThat(v).isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE));
-        }
+      @Test
+      void shouldReturnNumberAsRetryDelayInSeconds() {
+        long seconds = duration.toSeconds();
+        RetryDelay expected = RetryDelay.of(Duration.ofSeconds(seconds));
+        assertThat(RetryDelay.trySaturatedFromObject(seconds))
+          .hasValue(expected);
       }
     }
 
     @Nested
     @ParameterizedClass
-    // Excluding milli-deviations as they cannot be distinguished based on
-    // seconds representation.
-    @EnumSource(
-      value = ValidDuration.class,
-      mode = EnumSource.Mode.EXCLUDE,
-      names = {"MILLI_ABOVE_MIN_DELAY", "MILLI_BELOW_MAX_DELAY"}
-    )
-    class AsSecondsBehavior {
+    @EnumSource(InvalidDuration.class)
+    class InvalidDurationBehavior {
       @NonNull
       private final Duration duration;
+      @NonNull
+      private final InvalidDuration invalidDuration;
 
-      AsSecondsBehavior(@NonNull ValidDuration validDuration) {
-        duration = validDuration.duration();
+      InvalidDurationBehavior(@NonNull InvalidDuration invalidDuration) {
+        this.invalidDuration = invalidDuration;
+        duration = invalidDuration.duration();
+      }
+
+      @ParameterizedTest
+      @EnumSource(DurationFormat.Style.class)
+      void shouldParseDurationStringToBeWithinBounds(@NonNull DurationFormat.Style durationFormatStyle) {
+        // Excluding MIN, MAX, as they have issues in the String representation
+        // for SIMPLE and COMPOSITE formatting, causing irrelevant failures.
+        assumeThat(invalidDuration)
+          .as("Format styles COMPOSITE AND SIMPLE have irrelevant issues with MIN, MAX fixtures. Ignoring these combinations.")
+          .satisfiesAnyOf(
+            id -> assertThat(id).isNotIn(InvalidDuration.MIN, InvalidDuration.MAX),
+            id -> assertThat(durationFormatStyle).isNotIn(DurationFormat.Style.COMPOSITE, DurationFormat.Style.SIMPLE)
+          );
+        String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
+        assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
+          .hasValueSatisfying(v -> assertThat(v).isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE));
       }
 
       @Test
-      void shouldDefaultToParseAsSecondsOnParse() {
-        long durationSeconds = duration.toSeconds();
-        String durationAsString = Long.toString(durationSeconds);
-        assertThat(RetryDelay.parse(durationAsString))
-          .isEqualTo(RetryDelay.of(duration));
+      void shouldReturnDurationToBeWithinBounds() {
+        assertThat(RetryDelay.trySaturatedFromObject(duration))
+          .hasValueSatisfying(v -> assertThat(v).isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE));
       }
 
       @Test
-      void shouldDefaultToParseAsSecondsOnSaturatedParse() {
-        long durationSeconds = duration.toSeconds();
-        String durationAsString = Long.toString(durationSeconds);
-        assertThat(RetryDelay.saturatedParse(durationAsString))
-          .isEqualTo(RetryDelay.of(duration));
-      }
-
-      @Test
-      void shouldDefaultToParseAsSecondsOnTrySaturatedParse() {
-        long durationSeconds = duration.toSeconds();
-        String durationAsString = Long.toString(durationSeconds);
-        assertThat(RetryDelay.trySaturatedParse(durationAsString))
-          .hasValue(RetryDelay.of(duration));
+      void shouldReturnNumberAsSecondsWithinBounds() {
+        assertThat(RetryDelay.trySaturatedFromObject(duration.toSeconds()))
+          .hasValueSatisfying(v -> assertThat(v).isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE));
       }
     }
 
@@ -252,20 +261,8 @@ class RetryDelayTest {
       }
 
       @Test
-      void shouldDenyInvalidDurationStringOnParse() {
-        assertThatThrownBy(() -> RetryDelay.parse(invalidDurationString))
-          .isInstanceOf(IllegalArgumentException.class);
-      }
-
-      @Test
-      void shouldDenyInvalidDurationStringOnSaturatedParse() {
-        assertThatThrownBy(() -> RetryDelay.saturatedParse(invalidDurationString))
-          .isInstanceOf(IllegalArgumentException.class);
-      }
-
-      @Test
       void shouldReturnEmptyOnInvalidDurationStringOnTrySaturatedParse() {
-        assertThat(RetryDelay.trySaturatedParse(invalidDurationString))
+        assertThat(RetryDelay.trySaturatedFromObject(invalidDurationString))
           .isEmpty();
       }
     }
