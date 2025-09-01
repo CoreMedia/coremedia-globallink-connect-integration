@@ -296,7 +296,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       // call subclass implementation and store the result as result.extendedResult
       Consumer<R> resultConsumer = r -> result.extendedResult = Optional.of(r);
       doExecuteGlobalLinkAction(parameters.extendedParameters, resultConsumer, gccSession, issues);
-
     } catch (GCFacadeCommunicationException e) {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
@@ -333,9 +332,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       return getResultForCMSConnectionError(settings, e, result);
     }
 
-    // set retry delay for continuation of non-completed GlobalLink task, e.g., download of translations that are
-    // still missing
-    result.retryDelaySeconds = adaptDelayForGeneralRetry(retryDelay, settings).toSecondsInt();
+    // set retry delay for continuation of non-completed GlobalLink task, e.g.,
+    // download of translations that are still missing
+    result.retryDelaySeconds = adaptDelayForGeneralRetry(retryDelay, settings, parameters.extendedParameters, result.extendedResult, issues).toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
     return result;
   }
@@ -363,15 +362,27 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * relevant information like the project director ID have been retrieved.
    * <p>
    * Returns the delay unmodified by default.
+   * <p>
+   * This method gets a bunch of information passed, that is meant to assist to
+   * decide if and how to adapt the retry delay.
    *
    * @param originalRetryDelay original (default/general) retry delay
    * @param settings           settings, like where to read an alternative delay from
+   * @param extendedParameters your action specific parameters
+   * @param extendedResult     your action specific result
+   * @param issues             a (mutable) map of issues; may be used to determine a
+   *                           different behavior when issues exist as well as to add more
+   *                           issues when problems arise adapting the retry delay
    * @return adapted (or unchanged) retry delay
    * @see #getRetryDelay(Settings, String)
    */
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   @NonNull
   protected RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
-                                                 @NonNull Settings settings) {
+                                                 @NonNull Settings settings,
+                                                 P extendedParameters,
+                                                 @NonNull Optional<R> extendedResult,
+                                                 @NonNull Map<String, List<Content>> issues) {
     return originalRetryDelay;
   }
 
