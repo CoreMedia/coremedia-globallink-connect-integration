@@ -251,7 +251,15 @@ class RetryDelayTest {
 
     @Nested
     @ParameterizedClass
-    @ValueSource(strings = {"", "lorem", "ipsum"})
+    @ValueSource(strings = {
+      // Empty string behavior most important here, as we expect it to trigger
+      // using a default delay instead.
+      "",
+      // Test for accidental left-over space(s).
+      " ",
+      "lorem",
+      "ipsum"
+    })
     class InvalidDurationStringBehavior {
       @NonNull
       private final String invalidDurationString;
@@ -261,7 +269,7 @@ class RetryDelayTest {
       }
 
       @Test
-      void shouldReturnEmptyOnInvalidDurationStringOnTrySaturatedParse() {
+      void shouldReturnEmptyOnInvalidDurationString() {
         assertThat(RetryDelay.trySaturatedFromObject(invalidDurationString))
           .isEmpty();
       }
