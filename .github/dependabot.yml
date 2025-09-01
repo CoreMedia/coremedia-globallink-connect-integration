@@ -1,0 +1,47 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Java (Maven) dependencies
+  - package-ecosystem: "maven"
+    directory: "/" # Root folder for Maven projects (pom.xml)
+    ignore:
+      - dependency-name: "com.coremedia*:*"
+    commit-message:
+      prefix: 'build(maven):'
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "maven"
+      - "build"
+    open-pull-requests-limit: 5
+
+  # Frontend dependencies managed by PNPM
+  - package-ecosystem: "npm"
+    directory: "/website" # Location of pnpm-lock.yaml
+    commit-message:
+      prefix: 'build(pnpm):'
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "pnpm"
+      - "build"
+    open-pull-requests-limit: 5
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/.github/workflows" # Location of workflow files
+    commit-message:
+      prefix: 'ci(actions):'
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci"
+    open-pull-requests-limit: 5
