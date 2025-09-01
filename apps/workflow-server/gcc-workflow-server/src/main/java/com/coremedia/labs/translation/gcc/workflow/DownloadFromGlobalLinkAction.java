@@ -182,6 +182,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   @Override
+  @NonNull
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
 
