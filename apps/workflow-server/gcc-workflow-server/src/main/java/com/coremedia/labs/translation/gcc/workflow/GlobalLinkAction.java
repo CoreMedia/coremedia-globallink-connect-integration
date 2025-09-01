@@ -246,9 +246,17 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     return DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
+  /**
+   * Utility method to retrieve a retry delay at a given key from settings.
+   *
+   * @param settings settings
+   * @param key      settings key where to expect the delay to read and parse
+   * @return parsed delay; a default when not available or failed parsing
+   * the delay.
+   */
   @NonNull
-  private static RetryDelay getRetryDelay(@NonNull Settings config, @NonNull String key) {
-    return config.at(key)
+  protected static RetryDelay getRetryDelay(@NonNull Settings settings, @NonNull String key) {
+    return settings.at(key)
       .flatMap(v -> {
         if (v instanceof Duration) {
           return Optional.of(RetryDelay.saturatedOf((Duration) v));
@@ -280,7 +288,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       settings = withGlobalSettings(settings, getConnection().getContentRepository());
       Site masterSite = getMasterSite(parameters.masterContentObjects);
       settings = withSiteSettings(settings, masterSite);
-      retryDelay = getRetryDelay(settings, getGCCRetryDelaySettingsKey());
+      retryDelay = getDefaultRetryDelay(settings);
       maxAutomaticRetries = maxAutomaticRetries(settings);
 
       GCExchangeFacade gccSession = openSession(settings);
@@ -292,7 +300,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     } catch (GCFacadeCommunicationException e) {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
-      return getResultForGCCConnectionError(e, result, issues, parameters, retryDelay.toSecondsInt(), maxAutomaticRetries);
+      return getResultForGCCConnectionError(e, result, issues, parameters, retryDelay, maxAutomaticRetries);
     } catch (GCFacadeSubmissionNotFoundException e) {
       LOG.warn("{}: Failed to find submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, Collections.emptyList());
@@ -322,19 +330,48 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       issues.put(e.getErrorCode(), Collections.emptyList());
     } catch (RuntimeException e) {
       // automatically retry upon CMS connection errors
-      return getResultForCMSConnectionError(e, result);
+      return getResultForCMSConnectionError(settings, e, result);
     }
 
     // set retry delay for continuation of non-completed GlobalLink task, e.g., download of translations that are
     // still missing
-    result.retryDelaySeconds = delayForRetry(retryDelay, settings).toSecondsInt();
+    result.retryDelaySeconds = adaptDelayForGeneralRetry(retryDelay, settings).toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
     return result;
   }
 
+  /**
+   * Gets the default (general) retry delay to use.
+   *
+   * @param settings settings to read the delay from
+   * @return delay to use
+   */
+  // Since approvals around 2406.2.0-1 and 2506.0.0-1, keeping the pre-existing
+  // state. We may later decide to just let the actions provide the delay
+  // directly.
   @NonNull
-  protected RetryDelay delayForRetry(@NonNull RetryDelay originalRetryDelay,
-                                     @NonNull Settings settings) {
+  private RetryDelay getDefaultRetryDelay(@NonNull Settings settings) {
+    return getRetryDelay(settings, getGCCRetryDelaySettingsKey());
+  }
+
+  /**
+   * Implementing actions may intervene here, if they detect a state, where
+   * the general retry delay should be adapted. Like, the action may detect that
+   * it is in a state where the polling interval should be decreased, thus,
+   * polling per time should be increased. Prominent example here is the
+   * download action, where you may want to decrease the polling interval until
+   * relevant information like the project director ID have been retrieved.
+   * <p>
+   * Returns the delay unmodified by default.
+   *
+   * @param originalRetryDelay original (default/general) retry delay
+   * @param settings           settings, like where to read an alternative delay from
+   * @return adapted (or unchanged) retry delay
+   * @see #getRetryDelay(Settings, String)
+   */
+  @NonNull
+  protected RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
+                                                 @NonNull Settings settings) {
     return originalRetryDelay;
   }
 
@@ -511,7 +548,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       .build();
   }
 
-  @VisibleForTesting
   @NonNull
   private static GCExchangeFacade openSession(@NonNull Settings settings) {
     return openSession(settings.properties());
@@ -527,17 +563,19 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * Returns a {@link Result} object to trigger a retry in case of (temporary) CMS connection errors. Re-throws the
    * given exception, if another error.
    *
+   * @param settings  settings to consider; typically only considers retry delay
+   *                  configuration available from the Spring context
    * @param exception the exception to handle.
    * @param result    the execution result so far.
    */
-  private Result<R> getResultForCMSConnectionError(@NonNull RuntimeException exception, Result<R> result) {
+  private Result<R> getResultForCMSConnectionError(@NonNull Settings settings,
+                                                   @NonNull RuntimeException exception,
+                                                   @NonNull Result<R> result) {
     // if exception is not indicating a curable CMS connection error situation, re-throw it without configuring a retry
     if (!isRepositoryUnavailableException(exception)) {
       throw exception;
     }
     // get delay for retries on CMS connection error *just* from properties
-    BeanFactory springContext = getSpringContext();
-    Settings settings = withContextSettings(Settings.EMPTY, springContext);
     int cmsRetryDelaySeconds = getRetryDelay(settings, CMS_RETRY_DELAY_SETTINGS_KEY).toSecondsInt();
     LOG.info("{}: Failed to connect to CMS. Will retry after {} seconds.", getName(), cmsRetryDelaySeconds, exception);
     result.remainingAutomaticRetries = Integer.MAX_VALUE;
@@ -572,31 +610,31 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   /**
    * Returns a {@link Result} object to trigger a retry in case of GCC connection errors.
    *
-   * @param exception            the GlobalLink exception to handle.
-   * @param result               the execution result so far.
-   * @param issues               issues in execution so far.
-   * @param parameters           action parameters.
-   * @param gccRetryDelaySeconds seconds to wait before retrying the GlobalLink action.
-   * @param maxAutomaticRetries  maximum number of retries for the current GlobalLink action.
+   * @param exception           the GlobalLink exception to handle.
+   * @param result              the execution result so far.
+   * @param issues              issues in execution so far.
+   * @param parameters          action parameters.
+   * @param retryDelay          time to wait before retrying the GlobalLink action.
+   * @param maxAutomaticRetries maximum number of retries for the current GlobalLink action.
    */
   private Result<R> getResultForGCCConnectionError(GCFacadeCommunicationException exception, Result<R> result,
                                                    Map<String, List<Content>> issues, Parameters<P> parameters,
-                                                   int gccRetryDelaySeconds, int maxAutomaticRetries) {
+                                                   RetryDelay retryDelay, int maxAutomaticRetries) {
     if (issues.isEmpty()) {
       boolean isInRetryLoop =
-              parameters.remainingAutomaticRetries > 0 && parameters.remainingAutomaticRetries != Integer.MAX_VALUE;
+        parameters.remainingAutomaticRetries > 0 && parameters.remainingAutomaticRetries != Integer.MAX_VALUE;
       result.remainingAutomaticRetries = isInRetryLoop
-              ? parameters.remainingAutomaticRetries - 1
-              : maxAutomaticRetries;
+        ? parameters.remainingAutomaticRetries - 1
+        : maxAutomaticRetries;
     }
     if (result.remainingAutomaticRetries > 0) {
-      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} seconds delay.", getName(),
-              GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries,
-              gccRetryDelaySeconds, exception);
+      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} delay.", getName(),
+        GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries,
+        retryDelay.humanReadable(), exception);
     } else {
       LOG.warn("{}: Failed to connect to GCC ({}).", getName(), GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, exception);
     }
-    result.retryDelaySeconds = gccRetryDelaySeconds;
+    result.retryDelaySeconds = retryDelay.toSecondsInt();
     issues.put(GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, Collections.emptyList());
     result.issues = issuesAsJsonBlob(issues);
     return result;
