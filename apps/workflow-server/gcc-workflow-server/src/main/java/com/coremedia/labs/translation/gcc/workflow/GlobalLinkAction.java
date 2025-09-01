@@ -51,7 +51,6 @@ import org.springframework.beans.factory.BeanFactory;
 import java.io.Serial;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -256,15 +255,23 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * the delay.
    */
   @NonNull
-  protected static RetryDelay getRetryDelay(@NonNull Settings settings, @NonNull String key) {
+  private static RetryDelay getRetryDelay(@NonNull Settings settings,
+                                            @NonNull String key) {
+    return findRetryDelay(settings, key).orElse(RetryDelay.DEFAULT);
+  }
+
+  /**
+   * Utility method to retrieve a retry delay at a given key from settings.
+   *
+   * @param settings settings
+   * @param key      settings key where to expect the delay to read and parse
+   * @return delay if found and valid; empty otherwise
+   */
+  @NonNull
+  protected static Optional<RetryDelay> findRetryDelay(@NonNull Settings settings,
+                                                       @NonNull String key) {
     return settings.at(key)
-      .flatMap(v -> {
-        if (v instanceof Duration) {
-          return Optional.of(RetryDelay.saturatedOf((Duration) v));
-        }
-        return RetryDelay.trySaturatedParse(String.valueOf(v));
-      })
-      .orElse(RetryDelay.DEFAULT);
+      .flatMap(RetryDelay::trySaturatedFromObject);
   }
 
   @Override
@@ -283,7 +290,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     RetryDelay retryDelay = RetryDelay.DEFAULT;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
-    Settings settings = withContextSettings(Settings.EMPTY, getSpringContext());
+    Settings settings = withContextSettings(getSpringContext());
 
     try {
       settings = withGlobalSettings(settings, getConnection().getContentRepository());
@@ -335,7 +342,13 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     // set retry delay for continuation of non-completed GlobalLink task, e.g.,
     // download of translations that are still missing
-    result.retryDelaySeconds = adaptDelayForGeneralRetry(retryDelay, settings, parameters.extendedParameters, result.extendedResult, issues).toSecondsInt();
+    result.retryDelaySeconds = adaptDelayForGeneralRetry(
+      retryDelay,
+      settings,
+      parameters.extendedParameters,
+      result.extendedResult,
+      issues)
+      .toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
     return result;
   }
@@ -381,11 +394,11 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    */
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   @NonNull
-  protected RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
-                                                 @NonNull Settings settings,
-                                                 @UnknownNullness P extendedParameters,
-                                                 @NonNull Optional<R> extendedResult,
-                                                 @NonNull Map<String, List<Content>> issues) {
+  RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
+                                       @NonNull Settings settings,
+                                       @UnknownNullness P extendedParameters,
+                                       @NonNull Optional<R> extendedResult,
+                                       @NonNull Map<String, List<Content>> issues) {
     return originalRetryDelay;
   }
 
@@ -540,10 +553,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @NonNull
-  private static Settings withContextSettings(@NonNull Settings base,
-                                              @NonNull BeanFactory springContext) {
+  private static Settings withContextSettings(@NonNull BeanFactory springContext) {
     return Settings.builder()
-      .source(base)
       .beanSource(springContext)
       .build();
   }
