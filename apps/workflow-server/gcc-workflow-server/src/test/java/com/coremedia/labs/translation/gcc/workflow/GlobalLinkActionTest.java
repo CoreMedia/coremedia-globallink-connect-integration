@@ -11,11 +11,15 @@ import com.coremedia.cap.content.PathHelper;
 import com.coremedia.cap.errorcodes.CapErrorCodes;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import com.coremedia.cap.struct.Struct;
+import com.coremedia.cap.struct.StructService;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
+import com.coremedia.labs.translation.gcc.util.Settings;
+import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -25,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
@@ -67,13 +72,17 @@ class GlobalLinkActionTest {
   private final ObjectProvider<Site> siteProvider;
   @NonNull
   private final ContentRepository repository;
+  @NonNull
+  private final StructService structService;
 
   GlobalLinkActionTest(@Autowired @NonNull MockedGlobalLinkAction globalLinkAction,
                        @Autowired @NonNull ObjectProvider<Site> siteProvider,
+                       @Autowired @NonNull CapConnection connection,
                        @Autowired @NonNull ContentRepository repository) {
     this.globalLinkAction = globalLinkAction;
     this.siteProvider = siteProvider;
     this.repository = repository;
+    structService = connection.getStructService();
   }
 
   @Nested
@@ -98,29 +107,76 @@ class GlobalLinkActionTest {
       masterSite = siteProvider.getObject();
     }
 
-    @Test
-    void shouldAlwaysTriggerRetryOnTemporaryCmsOutages() {
-      GlobalLinkAction.Parameters<Object> params =
-        new GlobalLinkAction.Parameters<>(
-          null,
-          List.of(masterSite.getSiteIndicator()),
-          0
-        );
-      globalLinkAction.onDoExecuteGlobalLinkAction(() -> {
-        throw new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null);
-      });
-      GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(params);
+    @Nested
+    class CmsOutageBehavior {
+      @ParameterizedTest(name = "[{index}] {arguments}")
+      @CsvSource(useHeadersInDisplayName = true, textBlock = """
+        retryDelaySource
+        context
+        global
+        site
+        """)
+      void shouldAlwaysTriggerRetryOnTemporaryCmsOutages(@NonNull String retryDelaySource) {
+        int expectedRetryDelay;
 
-      assertThat(result)
-        .satisfies(
-          r -> assertThat(r.issues)
-            .extracting(String::valueOf, InstanceOfAssertFactories.STRING)
-            .contains(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR),
-          r -> assertThat(r.remainingAutomaticRetries)
-            .as("Should signal extraordinary state, thus, that we are not waiting for GCC but for the CMS.")
-            .isEqualTo(Integer.MAX_VALUE),
-          r -> assertThat(r.retryDelaySeconds).isGreaterThanOrEqualTo(60)
-        );
+        switch (retryDelaySource) {
+          case "context":
+            // From gcc-workflow.properties
+            expectedRetryDelay = 60;
+            break;
+          case "global":
+            expectedRetryDelay = 120;
+            Struct globalConfig = structService.createStructBuilder()
+              .enter("globalLink")
+              .declareInteger("cms-retry-delay", expectedRetryDelay)
+              .build();
+            repository.createContentBuilder()
+              .type("SimpleStruct")
+              .name(Settings.GLOBAL_CONFIGURATION_PATH)
+              .property("value", globalConfig)
+              .checkedIn()
+              .create();
+            break;
+          case "site":
+            expectedRetryDelay = 180;
+            Struct siteConfig = structService.createStructBuilder()
+              .enter("globalLink")
+              .declareInteger("cms-retry-delay", expectedRetryDelay)
+              .build();
+            repository.createContentBuilder()
+              .type(SimpleMultiSiteConfiguration.CT_SITE_CONTENT)
+              .parent(masterSite.getSiteRootFolder())
+              .name(Settings.SITE_CONFIGURATION_PATH)
+              .property("struct", siteConfig)
+              .checkedIn()
+              .create();
+            break;
+          default:
+            throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
+        }
+
+        GlobalLinkAction.Parameters<Object> params =
+          new GlobalLinkAction.Parameters<>(
+            null,
+            List.of(masterSite.getSiteIndicator()),
+            0
+          );
+        globalLinkAction.onDoExecuteGlobalLinkAction(() -> {
+          throw new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null);
+        });
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(params);
+
+        assertThat(result)
+          .satisfies(
+            r -> assertThat(r.issues)
+              .extracting(String::valueOf, InstanceOfAssertFactories.STRING)
+              .contains(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR),
+            r -> assertThat(r.remainingAutomaticRetries)
+              .as("Should signal extraordinary state, thus, that we are not waiting for GCC but for the CMS.")
+              .isEqualTo(Integer.MAX_VALUE),
+            r -> assertThat(r.retryDelaySeconds).isGreaterThanOrEqualTo(expectedRetryDelay)
+          );
+      }
     }
   }
 
@@ -294,6 +350,32 @@ class GlobalLinkActionTest {
     @NonNull
     GCExchangeFacade superOpenSession(@NonNull Map<String, Object> settings) {
       return super.openSession(settings);
+    }
+
+    @NonNull
+    @Override
+    Settings withGlobalSettings(@NonNull Settings base, @NonNull ContentRepository repository) {
+      Settings.Builder builder = Settings.builder().source(base);
+      // Allow to also use our test-content-types.
+      SettingsSource.allAt(
+          repository,
+          Settings.GLOBAL_CONFIGURATION_PATH,
+          "SimpleStruct", "value")
+        .forEach(builder::source);
+      return builder.build();
+    }
+
+    @NonNull
+    @Override
+    Settings withSiteSettings(@NonNull Settings base, @NonNull Site site) {
+      Settings.Builder builder = Settings.builder().source(base);
+      // Allow to also use our test-content-types.
+      SettingsSource.allAt(
+          site,
+          Settings.SITE_CONFIGURATION_PATH,
+          SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct")
+        .forEach(builder::source);
+      return builder.build();
     }
 
     @Nullable
