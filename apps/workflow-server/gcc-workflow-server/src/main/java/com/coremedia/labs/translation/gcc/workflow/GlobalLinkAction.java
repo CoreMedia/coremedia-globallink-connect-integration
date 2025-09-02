@@ -578,13 +578,13 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @NonNull
-  private static GCExchangeFacade openSession(@NonNull Settings settings) {
+  private GCExchangeFacade openSession(@NonNull Settings settings) {
     return openSession(settings.properties());
   }
 
   @VisibleForTesting
   @NonNull
-  static GCExchangeFacade openSession(@NonNull Map<String, Object> settings) {
+  GCExchangeFacade openSession(@NonNull Map<String, Object> settings) {
     return defaultFactory().openSession(settings);
   }
 
