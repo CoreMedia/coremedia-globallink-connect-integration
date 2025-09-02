@@ -22,7 +22,6 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
@@ -38,8 +37,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
@@ -58,10 +56,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(
-  classes = GlobalLinkActionTest.LocalConfig.class
-)
+@SpringJUnitConfig(GlobalLinkActionTest.LocalConfig.class)
 @DirtiesContext(classMode = AFTER_CLASS)
 class GlobalLinkActionTest {
 
@@ -85,7 +80,7 @@ class GlobalLinkActionTest {
     closeable.close();
   }
 
-  @Configuration
+  @Configuration(proxyBeanMethods = false)
   @Import(XmlRepoConfiguration.class)
   @ImportResource(reader = ResourceAwareXmlBeanDefinitionReader.class)
   @PropertySource("classpath:META-INF/coremedia/gcc-workflow.properties")
