@@ -9,7 +9,6 @@ import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
 import com.coremedia.cap.test.xmlrepo.XmlUapiConfig;
 import com.coremedia.translate.TranslatablePredicate;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -89,7 +88,7 @@ public class SimpleMultiSiteConfiguration {
   public static final String IGNORE_UPDATES_PROPERTY = "ignoreUpdates";
 
   @Bean
-  @Scope(BeanDefinition.SCOPE_SINGLETON)
+  @Scope(SCOPE_SINGLETON)
   public static XmlUapiConfig xmlUapiConfig() {
     return XmlUapiConfig.builder()
       .build();
@@ -97,13 +96,13 @@ public class SimpleMultiSiteConfiguration {
 
   @Bean
   @Scope(SCOPE_SINGLETON)
-  public TranslatablePredicate translatablePredicate() {
+  public TranslatablePredicate byDescriptorNamePredicate() {
     return descriptors -> descriptors.stream()
       .anyMatch(descriptor -> TRANSLATABLE_PROPERTIES.contains(descriptor.getName()));
   }
 
   @Bean
-  @Scope(BeanDefinition.SCOPE_SINGLETON)
+  @Scope(SCOPE_SINGLETON)
   public SiteModel siteModel(@NonNull ContentRepository contentRepository) {
     DefaultSiteModel siteModel = new DefaultSiteModel();
 
