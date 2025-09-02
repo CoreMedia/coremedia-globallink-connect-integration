@@ -16,11 +16,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -29,8 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.Resource;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +42,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.coremedia.labs.translation.gcc.workflow.SimpleMultiSiteConfiguration.CT_SITE_CONTENT;
+import static com.coremedia.labs.translation.gcc.workflow.SimpleMultiSiteConfiguration.LOCALE_PROPERTY;
+import static com.coremedia.labs.translation.gcc.workflow.SimpleMultiSiteConfiguration.MASTER_PROPERTY;
+import static com.coremedia.labs.translation.gcc.workflow.SimpleMultiSiteConfiguration.MASTER_VERSION_PROPERTY;
+import static com.coremedia.labs.translation.gcc.workflow.SimpleMultiSiteConfiguration.TRANSLATABLE_STRING_PROPERTY;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,9 +62,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 /**
  * Tests {@link SendToGlobalLinkAction}.
  */
-@ExtendWith(SpringExtension.class)
-@ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = SendToGlobalLinkActionTest.LocalConfig.class)
+@SpringJUnitConfig(SendToGlobalLinkActionTest.LocalConfig.class)
 @DirtiesContext(classMode = AFTER_CLASS)
 class SendToGlobalLinkActionTest {
 
@@ -73,7 +73,7 @@ class SendToGlobalLinkActionTest {
                            @Autowired GCExchangeFacade gcExchangeFacade,
                            @Autowired CapConnection connection,
                            @Autowired User user) {
-    ContentType contentType = requireNonNull(connection.getContentRepository().getContentType(ActionTestBaseConfiguration.CONTENT_TYPE_NAME), "Required content type not available.");
+    ContentType contentType = requireNonNull(connection.getContentRepository().getContentType(CT_SITE_CONTENT), "Required content type not available.");
 
     long expectedSubmissionId = 42L;
     Locale masterLocale = Locale.US;
@@ -81,16 +81,16 @@ class SendToGlobalLinkActionTest {
 
     String displayName = testInfo.getDisplayName();
     Content masterContent = contentType.createByTemplate("/", displayName, "{3} ({1})", ImmutableMap.<String,Object>builder()
-            .put(ActionTestBaseConfiguration.LOCALE_PROPERTY, masterLocale.toLanguageTag())
-            .put(ActionTestBaseConfiguration.TRANSLATABLE_STRING_PROPERTY, "Lorem Ipsum")
+            .put(LOCALE_PROPERTY, masterLocale.toLanguageTag())
+            .put(TRANSLATABLE_STRING_PROPERTY, "Lorem Ipsum")
             .build()
     );
     Version masterVersion = masterContent.checkIn();
     List<ContentObject> masterContents = singletonList(masterContent);
     Content targetContent = contentType.createByTemplate("/", displayName, "{3} ({1})", ImmutableMap.<String, Object>builder()
-      .put(ActionTestBaseConfiguration.LOCALE_PROPERTY, derivedLocale.toLanguageTag())
-      .put(ActionTestBaseConfiguration.MASTER_PROPERTY, masterContents)
-      .put(ActionTestBaseConfiguration.MASTER_VERSION_PROPERTY, IdHelper.parseVersionId(masterVersion.getId()))
+      .put(LOCALE_PROPERTY, derivedLocale.toLanguageTag())
+      .put(MASTER_PROPERTY, masterContents)
+      .put(MASTER_VERSION_PROPERTY, IdHelper.parseVersionId(masterVersion.getId()))
       .build()
     );
     targetContent.checkIn();
@@ -151,8 +151,13 @@ class SendToGlobalLinkActionTest {
   }
 
   @Configuration
-  @Import({ActionTestBaseConfiguration.class, XliffExporterConfiguration.class, TranslateItemConfiguration.class})
-  static class LocalConfig extends ActionTestBaseConfiguration {
+  @Import({
+    GCExchangeFacadeConfiguration.class,
+    SimpleMultiSiteConfiguration.class,
+    XliffExporterConfiguration.class,
+    TranslateItemConfiguration.class
+  })
+  static class LocalConfig {
     @Scope(SCOPE_SINGLETON)
     @Bean
     public SendToGlobalLinkAction sendToGlobalLinkAction(ApplicationContext context) {
