@@ -11,8 +11,6 @@ import com.coremedia.cap.content.PathHelper;
 import com.coremedia.cap.errorcodes.CapErrorCodes;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
-import com.coremedia.cap.struct.Struct;
-import com.coremedia.cap.struct.StructService;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
@@ -28,9 +26,11 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
 import org.springframework.beans.InvalidPropertyException;
@@ -50,6 +50,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,29 +61,30 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkAction.DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @SpringJUnitConfig(GlobalLinkActionTest.LocalConfig.class)
-@DirtiesContext(classMode = AFTER_CLASS)
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 class GlobalLinkActionTest {
   @NonNull
   private final MockedGlobalLinkAction globalLinkAction;
   @NonNull
   private final ObjectProvider<Site> siteProvider;
   @NonNull
-  private final ContentRepository repository;
+  private final ObjectProvider<GlobalLinkConfigBuilder> globalLinkConfigBuilderProvider;
   @NonNull
-  private final StructService structService;
+  private final ContentRepository repository;
 
   GlobalLinkActionTest(@Autowired @NonNull MockedGlobalLinkAction globalLinkAction,
                        @Autowired @NonNull ObjectProvider<Site> siteProvider,
-                       @Autowired @NonNull CapConnection connection,
+                       @Autowired @NonNull ObjectProvider<GlobalLinkConfigBuilder> globalLinkConfigBuilderProvider,
                        @Autowired @NonNull ContentRepository repository) {
     this.globalLinkAction = globalLinkAction;
     this.siteProvider = siteProvider;
+    this.globalLinkConfigBuilderProvider = globalLinkConfigBuilderProvider;
     this.repository = repository;
-    structService = connection.getStructService();
   }
 
   @Nested
@@ -126,30 +128,17 @@ class GlobalLinkActionTest {
             break;
           case "global":
             expectedRetryDelay = 120;
-            Struct globalConfig = structService.createStructBuilder()
-              .enter("globalLink")
-              .declareInteger("cms-retry-delay", expectedRetryDelay)
+            globalLinkConfigBuilderProvider.getObject()
+              .atGlobal()
+              .withRetryDelay("cms-retry-delay", Duration.ofSeconds(expectedRetryDelay))
               .build();
-            repository.createContentBuilder()
-              .type("SimpleStruct")
-              .name(Settings.GLOBAL_CONFIGURATION_PATH)
-              .property("value", globalConfig)
-              .checkedIn()
-              .create();
             break;
           case "site":
             expectedRetryDelay = 180;
-            Struct siteConfig = structService.createStructBuilder()
-              .enter("globalLink")
-              .declareInteger("cms-retry-delay", expectedRetryDelay)
+            globalLinkConfigBuilderProvider.getObject()
+              .atSite(masterSite)
+              .withRetryDelay("cms-retry-delay", Duration.ofSeconds(expectedRetryDelay))
               .build();
-            repository.createContentBuilder()
-              .type(SimpleMultiSiteConfiguration.CT_SITE_CONTENT)
-              .parent(masterSite.getSiteRootFolder())
-              .name(Settings.SITE_CONFIGURATION_PATH)
-              .property("struct", siteConfig)
-              .checkedIn()
-              .create();
             break;
           default:
             throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
@@ -175,6 +164,55 @@ class GlobalLinkActionTest {
               .as("Should signal extraordinary state, thus, that we are not waiting for GCC but for the CMS.")
               .isEqualTo(Integer.MAX_VALUE),
             r -> assertThat(r.retryDelaySeconds).isGreaterThanOrEqualTo(expectedRetryDelay)
+          );
+      }
+    }
+
+    @Nested
+    @ParameterizedClass
+    @EnumSource(GlobalLinkConfigBuilder.RetryDelayMode.class)
+    class RetryDelayBehavior {
+      @NonNull
+      private final GlobalLinkConfigBuilder.RetryDelayMode retryDelayMode;
+
+      public RetryDelayBehavior(@NonNull GlobalLinkConfigBuilder.RetryDelayMode retryDelayMode) {
+        this.retryDelayMode = retryDelayMode;
+      }
+
+      @ParameterizedTest(name = "[{index}] Retry Delay Key Overridden = {0}")
+      @ValueSource(booleans = {true, false})
+      void shouldUseExpectedRetryDelayKey(boolean overridden) {
+        int expectedRetryDelay = 424;
+        String retryDelayKey = overridden ? "retry-delay-key-overridden" : DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelayMode(retryDelayMode)
+          .withRetryDelay(retryDelayKey, Duration.ofSeconds(expectedRetryDelay))
+          .build();
+
+        int remainingAutomaticRetries = 3;
+
+        GlobalLinkAction.Parameters<Object> params =
+          new GlobalLinkAction.Parameters<>(
+            null,
+            List.of(masterSite.getSiteIndicator()),
+            remainingAutomaticRetries
+          );
+
+        if (overridden) {
+          globalLinkAction.setOverrideGccRetryDelaySettingsKey(retryDelayKey);
+        }
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(params);
+
+        assertThat(result)
+          .satisfies(
+            r -> assertThat(r.remainingAutomaticRetries)
+              .as("As we had no issues, remaining automatic retries should be (re)set to 0.")
+              .isEqualTo(0),
+            r -> assertThat(r.retryDelaySeconds)
+              .as("Should use expected retry delay key %s (overridden: %s)", retryDelayKey, overridden)
+              .isEqualTo(expectedRetryDelay)
           );
       }
     }
@@ -232,6 +270,12 @@ class GlobalLinkActionTest {
         .isFalse();
     }
   }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * Test Fixtures
+   * ---------------------------------------------------------------------------
+   */
 
   enum RepositoryUnavailableFixture {
     REPOSITORY_NOT_AVAILABLE_EXCEPTION(createRepositoryNotAvailableException()),
@@ -312,6 +356,8 @@ class GlobalLinkActionTest {
     private Runnable onDoExecuteGlobalLinkAction = () -> {
       // No operation.
     };
+    @Nullable
+    private String overrideGccRetryDelaySettingsKey;
 
     private MockedGlobalLinkAction(ApplicationContext applicationContext, GCExchangeFacade gcExchangeFacade) {
       super(true);
@@ -378,6 +424,18 @@ class GlobalLinkActionTest {
       return builder.build();
     }
 
+    public void setOverrideGccRetryDelaySettingsKey(@Nullable String overrideGccRetryDelaySettingsKey) {
+      this.overrideGccRetryDelaySettingsKey = overrideGccRetryDelaySettingsKey;
+    }
+
+    @Override
+    protected String getGCCRetryDelaySettingsKey() {
+      if (overrideGccRetryDelaySettingsKey == null) {
+        return super.getGCCRetryDelaySettingsKey();
+      }
+      return overrideGccRetryDelaySettingsKey;
+    }
+
     @Nullable
     @Override
     Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
@@ -416,6 +474,12 @@ class GlobalLinkActionTest {
     @Bean
     public Map<String, Object> gccConfigurationProperties() {
       return new HashMap<>();
+    }
+
+    @Bean
+    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
+    public GlobalLinkConfigBuilder globalLinkConfigBuilder(@NonNull CapConnection connection) {
+      return new GlobalLinkConfigBuilder(connection.getContentRepository(), connection.getStructService());
     }
 
     @Bean
