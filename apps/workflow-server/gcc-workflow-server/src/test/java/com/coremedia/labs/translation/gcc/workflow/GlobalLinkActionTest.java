@@ -8,7 +8,6 @@ import com.coremedia.cap.common.RepositoryNotAvailableException;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.errorcodes.CapErrorCodes;
-import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
@@ -19,11 +18,7 @@ import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,23 +57,8 @@ class GlobalLinkActionTest {
 
   private static final Blob CMS_ISSUES_BLOB = mock(Blob.class);
 
-  @Mock
-  private Site site;
-
   @Autowired
   private GlobalLinkAction<Void, Void> globalLinkAction;
-
-  AutoCloseable closeable;
-
-  @BeforeEach
-  void setUp() {
-    closeable = MockitoAnnotations.openMocks(this);
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    closeable.close();
-  }
 
   @Configuration(proxyBeanMethods = false)
   @Import(XmlRepoConfiguration.class)
@@ -105,7 +85,7 @@ class GlobalLinkActionTest {
   @Test
   void testOpenSession() {
     GCExchangeFacade facade = GlobalLinkAction.openSession(ImmutableMap.of(
-      GCConfigProperty.KEY_URL, "http://lorem.ipsum.fun/",
+      GCConfigProperty.KEY_URL, "https://lorem.ipsum.fun/",
       GCConfigProperty.KEY_API_KEY, "abcd",
       GCConfigProperty.KEY_KEY, "012345",
       GCConfigProperty.KEY_TYPE, "mock"));
@@ -116,7 +96,7 @@ class GlobalLinkActionTest {
   @Test
   void testRepositoryException() {
     GlobalLinkAction.Parameters<Object> params =
-      new GlobalLinkAction.Parameters<>(null, null, 0);
+      new GlobalLinkAction.Parameters<>(null, List.of(), 0);
     GlobalLinkAction<Void, Void> exceptingGlobalLinkAction = spy(globalLinkAction);
     doThrow(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null))
       .when(exceptingGlobalLinkAction).getSitesService();
