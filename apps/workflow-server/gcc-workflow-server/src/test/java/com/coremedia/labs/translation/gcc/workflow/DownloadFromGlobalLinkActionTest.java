@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -71,9 +71,8 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 /**
  * Tests {@link DownloadFromGlobalLinkAction}.
  */
-@ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = DownloadFromGlobalLinkActionTest.LocalConfig.class)
+@SpringJUnitConfig(classes = DownloadFromGlobalLinkActionTest.LocalConfig.class)
 @DirtiesContext(classMode = AFTER_CLASS)
 class DownloadFromGlobalLinkActionTest {
 
