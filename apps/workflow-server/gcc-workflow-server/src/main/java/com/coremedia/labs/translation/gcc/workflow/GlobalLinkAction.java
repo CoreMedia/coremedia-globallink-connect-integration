@@ -123,7 +123,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * This value cannot be overwritten by the corresponding settings in the
    * content repository.
    */
-  private static final String CMS_RETRY_DELAY_SETTINGS_KEY = "cms-retry-delay";
+  @VisibleForTesting
+  static final String CMS_RETRY_DELAY_SETTINGS_KEY = "cms-retry-delay";
 
   /**
    * Property for specification of delay in seconds before retrying GlobalLink
@@ -559,8 +560,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       .build();
   }
 
+  @VisibleForTesting
   @NonNull
-  private static Settings withGlobalSettings(@NonNull Settings base,
+  Settings withGlobalSettings(@NonNull Settings base,
                                              @NonNull ContentRepository repository) {
     return Settings.builder()
       .source(base)
@@ -568,8 +570,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       .build();
   }
 
+  @VisibleForTesting
   @NonNull
-  private static Settings withSiteSettings(@NonNull Settings base,
+  Settings withSiteSettings(@NonNull Settings base,
                                            @NonNull Site site) {
     return Settings.builder()
       .source(base)
