@@ -137,7 +137,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * unique retry delay by overwriting method
    * {@link #getGCCRetryDelaySettingsKey()}.
    */
-  private static final String DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY = "gcc-retry-delay";
+  @VisibleForTesting
+  static final String DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY = "gcc-retry-delay";
 
   private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = Set.of(
           CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
