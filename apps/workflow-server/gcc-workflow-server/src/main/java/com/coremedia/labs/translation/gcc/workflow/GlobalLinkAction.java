@@ -719,7 +719,11 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
      */
     Blob issues;
     /**
-     * Number of remaining automatic retries, if there are issues
+     * Number of remaining automatic retries, if there are issues.
+     * A value of {@link Integer#MAX_VALUE} signals, that the current
+     * GlobalLink Connection Retry is or was interrupted by a CMS connection
+     * error. Once this is fixed, the remaining retries should be set to their
+     * initial value again.
      */
     int remainingAutomaticRetries;
     /**

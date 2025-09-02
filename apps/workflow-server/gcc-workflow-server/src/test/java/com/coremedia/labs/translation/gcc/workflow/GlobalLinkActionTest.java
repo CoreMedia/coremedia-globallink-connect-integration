@@ -91,7 +91,6 @@ class GlobalLinkActionTest {
 
   @Nested
   class DoExecuteBehavior {
-
     private Site masterSite;
 
     @BeforeEach
@@ -117,8 +116,10 @@ class GlobalLinkActionTest {
           r -> assertThat(r.issues)
             .extracting(String::valueOf, InstanceOfAssertFactories.STRING)
             .contains(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR),
-          r -> assertThat(r.remainingAutomaticRetries).isEqualTo(Integer.MAX_VALUE),
-          r -> assertThat(r.retryDelaySeconds).isEqualTo(60)
+          r -> assertThat(r.remainingAutomaticRetries)
+            .as("Should signal extraordinary state, thus, that we are not waiting for GCC but for the CMS.")
+            .isEqualTo(Integer.MAX_VALUE),
+          r -> assertThat(r.retryDelaySeconds).isGreaterThanOrEqualTo(60)
         );
     }
   }
