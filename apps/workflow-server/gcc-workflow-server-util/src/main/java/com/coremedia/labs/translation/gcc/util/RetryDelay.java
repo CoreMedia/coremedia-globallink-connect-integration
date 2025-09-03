@@ -8,6 +8,7 @@ import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Objects.requireNonNull;
@@ -69,6 +70,18 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
     if (MAX_DELAY_DURATION.compareTo(value) < 0) {
       throw new IllegalArgumentException("value must be less than or equal to %s".formatted(pretty(MAX_DELAY_DURATION)));
     }
+  }
+
+  /**
+   * Applies the given operator on the retry delay and returns its newly
+   * created saturated result.
+   *
+   * @param operator operator to apply
+   * @return new saturated instance of {@code RetryDelay}
+   */
+  @NonNull
+  public RetryDelay saturatedAdapt(UnaryOperator<Duration> operator) {
+    return saturatedOf(operator.apply(value));
   }
 
   /**

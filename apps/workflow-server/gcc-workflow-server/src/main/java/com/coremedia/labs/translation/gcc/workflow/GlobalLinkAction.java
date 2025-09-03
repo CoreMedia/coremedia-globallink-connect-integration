@@ -109,9 +109,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   private static final MimeType MIME_TYPE_JSON = mimeType("application/json");
   private static final Gson contentObjectReturnsIdGson = new GsonBuilder()
-          .enableComplexMapKeySerialization()
-          .registerTypeHierarchyAdapter(Content.class, new ContentObjectSerializer())
-          .create();
+    .enableComplexMapKeySerialization()
+    .registerTypeHierarchyAdapter(Content.class, new ContentObjectSerializer())
+    .create();
 
   /**
    * Property for specification of delay in seconds before retrying Content
@@ -141,9 +141,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   static final String DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY = "gcc-retry-delay";
 
   private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = Set.of(
-          CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
-          CapErrorCodes.USER_REPOSITORY_UNAVAILABLE,
-          CapErrorCodes.REPOSITORY_NOT_AVAILABLE
+    CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
+    CapErrorCodes.USER_REPOSITORY_UNAVAILABLE,
+    CapErrorCodes.REPOSITORY_NOT_AVAILABLE
   );
 
   private String skipVariable;
@@ -258,7 +258,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    */
   @NonNull
   private static RetryDelay getRetryDelay(@NonNull Settings settings,
-                                            @NonNull String key) {
+                                          @NonNull String key) {
     return findRetryDelay(settings, key).orElse(RetryDelay.DEFAULT);
   }
 
@@ -346,10 +346,13 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     // download of translations that are still missing
     result.retryDelaySeconds = adaptDelayForGeneralRetry(
       retryDelay,
-      settings,
-      parameters.extendedParameters,
-      result.extendedResult,
-      issues)
+      new AdaptDelayForGeneralRetryContext<>(
+        settings,
+        parameters.extendedParameters,
+        result.extendedResult,
+        issues
+      )
+    )
       .toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
     return result;
@@ -383,6 +386,20 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * decide if and how to adapt the retry delay.
    *
    * @param originalRetryDelay original (default/general) retry delay
+   * @param context            some context you may want to respect for
+   *                           adapting the delay
+   * @return adapted (or unchanged) retry delay
+   * @see #getRetryDelay(Settings, String)
+   */
+  @NonNull
+  RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
+                                       @NonNull AdaptDelayForGeneralRetryContext<P, R> context) {
+    return originalRetryDelay;
+  }
+
+  /**
+   * Context information for {@link #adaptDelayForGeneralRetry(RetryDelay, AdaptDelayForGeneralRetryContext)}.
+   *
    * @param settings           settings, like where to read an alternative delay from
    * @param extendedParameters your action specific parameters; result of
    *                           {@link #doExtractParameters(Task)}, thus,
@@ -391,17 +408,15 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param issues             a (mutable) map of issues; may be used to determine a
    *                           different behavior when issues exist as well as to add more
    *                           issues when problems arise adapting the retry delay
-   * @return adapted (or unchanged) retry delay
-   * @see #getRetryDelay(Settings, String)
+   * @param <P>                type of extended parameters
+   * @param <R>                type of extended result
    */
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  @NonNull
-  RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
-                                       @NonNull Settings settings,
-                                       @UnknownNullness P extendedParameters,
-                                       @NonNull Optional<R> extendedResult,
-                                       @NonNull Map<String, List<Content>> issues) {
-    return originalRetryDelay;
+  record AdaptDelayForGeneralRetryContext<P, R>(
+    @NonNull Settings settings,
+    @UnknownNullness P extendedParameters,
+    @NonNull Optional<R> extendedResult,
+    @NonNull Map<String, List<Content>> issues
+  ) {
   }
 
   @Override
@@ -427,8 +442,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     process.set(issuesVariable, r.issues);
 
     Object resultValue = r.extendedResult
-            .map(extendedResult -> doStoreResult(task, extendedResult))
-            .orElse(null);
+      .map(extendedResult -> doStoreResult(task, extendedResult))
+      .orElse(null);
     return super.storeResult(task, resultValue);
   }
 
@@ -517,7 +532,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       return Long.parseLong(submissionId);
     } catch (NumberFormatException e) {
       throw new GlobalLinkWorkflowException(GlobalLinkWorkflowErrorCodes.ILLEGAL_SUBMISSION_ID_ERROR, "GlobalLink submission id malformed. Long value expected",
-              wfTaskId, submissionId);
+        wfTaskId, submissionId);
     }
   }
 
@@ -534,11 +549,11 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   private Site getMasterSite(@NonNull Collection<? extends ContentObject> masterContents) {
     SitesService sitesService = getSitesService();
     return masterContents.stream()
-            .map(sitesService::getSiteAspect)
-            .map(ContentObjectSiteAspect::getSite)
-            .filter(Objects::nonNull)
-            .findAny()
-            .orElseThrow(() -> new IllegalStateException("No master site found"));
+      .map(sitesService::getSiteAspect)
+      .map(ContentObjectSiteAspect::getSite)
+      .filter(Objects::nonNull)
+      .findAny()
+      .orElseThrow(() -> new IllegalStateException("No master site found"));
   }
 
   private static int maxAutomaticRetries(@NonNull Settings settings) {
@@ -564,7 +579,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @VisibleForTesting
   @NonNull
   Settings withGlobalSettings(@NonNull Settings base,
-                                             @NonNull ContentRepository repository) {
+                              @NonNull ContentRepository repository) {
     return Settings.builder()
       .source(base)
       .repositorySource(repository)
@@ -574,7 +589,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @VisibleForTesting
   @NonNull
   Settings withSiteSettings(@NonNull Settings base,
-                                           @NonNull Site site) {
+                            @NonNull Site site) {
     return Settings.builder()
       .source(base)
       .siteSource(site)
@@ -625,8 +640,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     Throwable cause = exception;
     while (cause != null) {
       if (cause instanceof RepositoryNotAvailableException
-              || cause instanceof SystemException
-              || isCapExceptionWithMatchingErrorCode(cause)) {
+        || cause instanceof SystemException
+        || isCapExceptionWithMatchingErrorCode(cause)) {
         return true;
       }
       cause = cause.getCause();
@@ -636,8 +651,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   static boolean isCapExceptionWithMatchingErrorCode(Throwable throwable) {
     return throwable instanceof CapException
-            && ((CapException) throwable).getErrorCode() != null
-            && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(((CapException) throwable).getErrorCode());
+      && ((CapException) throwable).getErrorCode() != null
+      && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(((CapException) throwable).getErrorCode());
   }
 
   /**
@@ -717,7 +732,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
      * Holds the result from {@link #doExecuteGlobalLinkAction}, empty for no result
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // suppress warning for non-typical usage of Optional
-            Optional<R> extendedResult = Optional.empty();
+      Optional<R> extendedResult = Optional.empty();
     /**
      * JSON with a map from studio severity to a map of error codes to possibly empty list of affected contents
      */

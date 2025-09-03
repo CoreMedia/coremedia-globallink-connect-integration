@@ -16,6 +16,7 @@ import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
+import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
 import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
@@ -57,6 +58,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -179,11 +181,11 @@ class GlobalLinkActionTest {
         this.retryDelayMode = retryDelayMode;
       }
 
-      @ParameterizedTest(name = "[{index}] Retry Delay Key Overridden = {0}")
+      @ParameterizedTest(name = "[{index}] Retry Delay Key With Overridden Name = {0}")
       @ValueSource(booleans = {true, false})
-      void shouldUseExpectedRetryDelayKey(boolean overridden) {
+      void shouldUseExpectedRetryDelayKey(boolean overrideName) {
         int expectedRetryDelay = 424;
-        String retryDelayKey = overridden ? "retry-delay-key-overridden" : DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
+        String retryDelayKey = overrideName ? "retry-delay-key-overridden" : DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
         globalLinkConfigBuilderProvider.getObject()
           .atGlobal()
           .withRetryDelayMode(retryDelayMode)
@@ -199,7 +201,7 @@ class GlobalLinkActionTest {
             remainingAutomaticRetries
           );
 
-        if (overridden) {
+        if (overrideName) {
           globalLinkAction.setOverrideGccRetryDelaySettingsKey(retryDelayKey);
         }
 
@@ -211,9 +213,39 @@ class GlobalLinkActionTest {
               .as("As we had no issues, remaining automatic retries should be (re)set to 0.")
               .isEqualTo(0),
             r -> assertThat(r.retryDelaySeconds)
-              .as("Should use expected retry delay key %s (overridden: %s)", retryDelayKey, overridden)
+              .as("Should use expected retry delay key %s (overridden: %s)", retryDelayKey, overrideName)
               .isEqualTo(expectedRetryDelay)
           );
+      }
+
+      @Test
+      void shouldRespectAdaptedRetryDelayForGeneralOperation() {
+        int retryDelayBase = 1234;
+        long delayDivisor = 2L;
+        RetryDelay expectedRetryDelay = RetryDelay.of(Duration.ofSeconds(retryDelayBase).dividedBy(2L));
+
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelayMode(retryDelayMode)
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(retryDelayBase))
+          .build();
+
+        globalLinkAction.adaptDelayForGeneralRetryBy(
+          (rd, c) -> rd.saturatedAdapt(d -> d.dividedBy(delayDivisor))
+        );
+
+        GlobalLinkAction.Parameters<Object> params =
+          new GlobalLinkAction.Parameters<>(
+            null,
+            List.of(masterSite.getSiteIndicator()),
+            0
+          );
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(params);
+
+        assertThat(result.retryDelaySeconds)
+          .as("Should use expected adapted retry delay key (%d divided by %d)", retryDelayBase, delayDivisor)
+          .isEqualTo(expectedRetryDelay.toSecondsInt());
       }
     }
   }
@@ -358,6 +390,8 @@ class GlobalLinkActionTest {
     };
     @Nullable
     private String overrideGccRetryDelaySettingsKey;
+    @Nullable
+    private BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator;
 
     private MockedGlobalLinkAction(ApplicationContext applicationContext, GCExchangeFacade gcExchangeFacade) {
       super(true);
@@ -367,6 +401,10 @@ class GlobalLinkActionTest {
 
     public void onDoExecuteGlobalLinkAction(@NonNull Runnable onDoExecuteGlobalLinkAction) {
       this.onDoExecuteGlobalLinkAction = onDoExecuteGlobalLinkAction;
+    }
+
+    public void adaptDelayForGeneralRetryBy(@NonNull BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator) {
+      this.retryDelayOperator = retryDelayOperator;
     }
 
     @Override
@@ -385,6 +423,16 @@ class GlobalLinkActionTest {
     @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
+    }
+
+    @NonNull
+    @Override
+    RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
+                                         @NonNull AdaptDelayForGeneralRetryContext<Void, Void> context) {
+      if (retryDelayOperator == null) {
+        return super.adaptDelayForGeneralRetry(originalRetryDelay, context);
+      }
+      return retryDelayOperator.apply(originalRetryDelay, context);
     }
 
     @NonNull

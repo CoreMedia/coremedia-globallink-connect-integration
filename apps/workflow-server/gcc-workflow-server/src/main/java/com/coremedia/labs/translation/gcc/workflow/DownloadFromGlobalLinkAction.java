@@ -14,13 +14,11 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
-import com.coremedia.labs.translation.gcc.util.Settings;
 import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import jakarta.activation.MimeType;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -298,21 +296,18 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   @NonNull
   @Override
   RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
-                                       @NonNull Settings settings,
-                                       @UnknownNullness Parameters extendedParameters,
-                                       @NonNull Optional<Result> extendedResult,
-                                       @NonNull Map<String, List<Content>> issues) {
-    Optional<RetryDelay> initialRetryDelay = findRetryDelay(settings, GCC_EARLY_RETRY_DELAY_SETTINGS_KEY);
+                                       @NonNull AdaptDelayForGeneralRetryContext<Parameters, Result> context) {
+    Optional<RetryDelay> initialRetryDelay = findRetryDelay(context.settings(), GCC_EARLY_RETRY_DELAY_SETTINGS_KEY);
     // When to return the original delay at this early check phase:
     //   - If there is no extra retry delay, we return the original one
     //     unmodified.
     //   - If there are any issues, we assume, that we should stick to the
     //     default delay.
-    if (initialRetryDelay.isEmpty() || !issues.isEmpty()) {
+    if (initialRetryDelay.isEmpty() || !context.issues().isEmpty()) {
       return originalRetryDelay;
     }
 
-    boolean increasedPollingFrequency = extendedResult
+    boolean increasedPollingFrequency = context.extendedResult()
       .map(result -> {
         if (EARLY_PRE_TRANSLATE_STATES.contains(result.globalLinkStatus)) {
           // Even if we already have (some) PD Submission IDs, more may be added
