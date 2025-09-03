@@ -52,7 +52,6 @@ import java.io.Serial;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -312,31 +311,31 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       return getResultForGCCConnectionError(e, result, issues, parameters, retryDelay, maxAutomaticRetries);
     } catch (GCFacadeSubmissionNotFoundException e) {
       LOG.warn("{}: Failed to find submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, List.of());
     } catch (GCFacadeSubmissionException e) {
       LOG.warn("{}: Failed to handle submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR, List.of());
     } catch (GCFacadeIOException e) {
       LOG.warn("{}: Local I/O error ({}).", getName(), GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.LOCAL_IO_ERROR, List.of());
     } catch (GCFacadeFileTypeConfigException e) {
       LOG.warn("{}: Communication failed because of unsupported configured file type ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_FILE_TYPE_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_FILE_TYPE_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_FILE_TYPE_ERROR, List.of());
     } catch (GCFacadeConnectorKeyConfigException e) {
       LOG.warn("{}: Connector key is unavailable ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_CONNECTOR_KEY_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_CONNECTOR_KEY_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_CONNECTOR_KEY_ERROR, List.of());
     } catch (GCFacadeConfigException e) {
       LOG.warn("{}: Communication failed because of invalid/missing settings ({})", getName(), GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.SETTINGS_ERROR, List.of());
     } catch (GCFacadeAccessException e) {
       LOG.warn("{}: Authentication with API key failed ({})", getName(), GlobalLinkWorkflowErrorCodes.INVALID_KEY_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.INVALID_KEY_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.INVALID_KEY_ERROR, List.of());
     } catch (GCFacadeException e) {
       LOG.warn("{}: Unknown error occurred ({})", getName(), GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, e);
-      issues.put(GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, Collections.emptyList());
+      issues.put(GlobalLinkWorkflowErrorCodes.UNKNOWN_ERROR, List.of());
     } catch (GlobalLinkWorkflowException e) {
       LOG.warn("{}: {} ({})", getName(), e.getMessage(), e.getErrorCode(), e);
-      issues.put(e.getErrorCode(), Collections.emptyList());
+      issues.put(e.getErrorCode(), List.of());
     } catch (RuntimeException e) {
       // automatically retry upon CMS connection errors
       return getResultForCMSConnectionError(settings, e, result);
@@ -630,7 +629,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     result.retryDelaySeconds = cmsRetryDelaySeconds;
     // issue type is irrelevant, it's just required to have *some* issue
     Map<String, List<Content>> issues = new HashMap<>();
-    issues.put(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR, Collections.emptyList());
+    issues.put(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR, List.of());
     result.issues = issuesAsJsonBlob(issues);
     return result;
   }
@@ -683,7 +682,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       LOG.warn("{}: Failed to connect to GCC ({}).", getName(), GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, exception);
     }
     result.retryDelaySeconds = retryDelay.toSecondsInt();
-    issues.put(GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, Collections.emptyList());
+    issues.put(GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, List.of());
     result.issues = issuesAsJsonBlob(issues);
     return result;
   }
@@ -696,7 +695,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     }
 
     // all issues should have the severity ERROR when displayed in Studio
-    Map<Severity, Map<String, List<Content>>> studioIssues = Collections.singletonMap(Severity.ERROR, issues);
+    Map<Severity, Map<String, List<Content>>> studioIssues = Map.of(Severity.ERROR, issues);
 
     byte[] bytes = issuesAsJsonString(studioIssues).getBytes(StandardCharsets.UTF_8);
     return getConnection().getBlobService().fromBytes(bytes, MIME_TYPE_JSON);
