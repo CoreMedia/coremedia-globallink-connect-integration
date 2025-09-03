@@ -4,7 +4,6 @@ import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
@@ -55,10 +54,14 @@ public record Settings(@NonNull Map<String, Object> properties) {
 
   /**
    * Maximum allowed nesting depth for map structures to prevent stack overflow.
-   * This limit protects against maliciously crafted or accidentally deeply nested data.
+   * This limit protects against maliciously crafted or accidentally deeply
+   * nested data.
+   * <p>
+   * The limit is very conservative, as even settings with a depth greater
+   * than two are rather unexpected. We allow at maximum a depth of 10.
    */
   @VisibleForTesting
-  public static final int MAX_DEPTH = 100;
+  public static final int MAX_DEPTH = 10;
 
   /**
    * Retrieves a value at the specified path within the settings properties.
@@ -81,6 +84,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
       if (value instanceof Map<?, ?>) {
         Map<?, ?> map = (Map<?, ?>) value;
         value = map.get(pathElement);
+      } else {
+        value = null;
       }
     }
     return Optional.ofNullable(value);
@@ -112,7 +117,10 @@ public record Settings(@NonNull Map<String, Object> properties) {
 
   @NonNull
   public static Settings of(@NonNull Map<String, Object> properties) {
-    return new Settings(properties);
+    // Use Builder for sanitizing entries.
+    return builder()
+      .source(() -> properties)
+      .build();
   }
 
   /**
@@ -148,24 +156,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
     }
 
     @NonNull
-    public Builder optionalSiteSource(@Nullable Site site) {
-      if (site != null) {
-        return siteSource(site);
-      }
-      return this;
-    }
-
-    @NonNull
     public Builder siteSource(@NonNull Site site) {
       SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).forEach(this::source);
-      return this;
-    }
-
-    @NonNull
-    public Builder optionalRepositorySource(@Nullable ContentRepository repository) {
-      if (repository != null) {
-        return repositorySource(repository);
-      }
       return this;
     }
 
@@ -186,12 +178,12 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * Multiple calls to this method append additional sources, which will
      * override previously added sources for specific values at any given path.
      *
-     * @param source source to add for merging
+     * @param settings source to add for merging
      * @return self-reference for method chaining
      */
     @NonNull
     public Builder source(@NonNull Settings settings) {
-      sources.add(() -> settings.properties());
+      sources.add(settings::properties);
       return this;
     }
 
@@ -264,7 +256,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
      */
     @NonNull
     public Settings build() {
-      return Settings.of(mergedSources(sources));
+      // Must not use `of` as `of` uses the builder for sanitizing.
+      return new Settings(mergedSources(sources));
     }
   }
 
@@ -276,7 +269,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * Map nesting is limited to {@value #MAX_DEPTH} levels to prevent stack overflow.
    *
    * @param sources list of sources to merge
-   * @return merged map containing all valid properties
+   * @return a merged map containing all valid properties
    */
   @NonNull
   private static Map<String, Object> mergedSources(@NonNull List<SettingsSource> sources) {
@@ -284,7 +277,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
       .map(SettingsSource::get)
       .flatMap(map -> map.entrySet().stream())
       .filter(Settings::considerEntry)
-      .map(e -> sanitzeEntryValue(e, 0))
+      .map(e -> sanitizeEntryValue(e, 0))
       .filter(Settings::considerEntry)
       .collect(
         Collectors.toMap(
@@ -345,7 +338,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
                                                    int depth) {
     return replacementMap.entrySet().stream()
       .filter(Settings::considerEntry)
-      .map(e -> sanitzeEntryValue(e, depth + 1))
+      .map(e -> sanitizeEntryValue(e, depth + 1))
       .filter(Settings::considerEntry)
       .collect(Collectors.toMap(
         Map.Entry::getKey,
@@ -378,12 +371,12 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * included. Non-map values are returned unchanged. Nesting depth is limited
    * to prevent stack overflow from malicious data.
    *
-   * @param entry the entry to sanitze the value of
+   * @param entry the entry to sanitize the value of
    * @param depth current nesting depth
    * @return entry with sanitized value with filtered entries if it's a map
    */
   @NonNull
-  private static <K, V> Map.Entry<K, Object> sanitzeEntryValue(@NonNull Map.Entry<K, V> entry, int depth) {
+  private static <K, V> Map.Entry<K, Object> sanitizeEntryValue(@NonNull Map.Entry<K, V> entry, int depth) {
     return Map.entry(entry.getKey(), sanitizeValue(entry.getValue(), depth));
   }
 
@@ -409,7 +402,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
       Map<?, ?> map = (Map<?, ?>) value;
       return map.entrySet().stream()
         .filter(Settings::considerEntry)
-        .map(e -> sanitzeEntryValue(e, depth + 1))
+        .map(e -> sanitizeEntryValue(e, depth + 1))
         .filter(Settings::considerEntry)
         .collect(Collectors.toMap(
           Map.Entry::getKey,
@@ -435,11 +428,11 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * An entry is considered valid if both its key and value pass their
    * respective validation checks.
    * <p>
-   * Typically called twice in a stream, once before sanitzing the entry, once
+   * Typically called twice in a stream, once before sanitizing the entry, once
    * after sanitizing the entry. While the first call should especially prevent
    * keys or values being {@code null} (which is prohibited in further
    * processing), the second call is meant as final guard not to take irrelevant
-   * data into account. For simplification we apply the thorough check for
+   * data into account. For simplification, we apply the thorough check for
    * both calls, while the first one may consider to let more entries pass.
    *
    * @param entry the map entry to evaluate
