@@ -44,8 +44,16 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @SpringJUnitConfig(SettingsSourceTest.LocalConfig.class)
 class SettingsSourceTest {
-  @Autowired
-  private ContentRepository contentRepository;
+  @NonNull
+  private final ContentRepository repository;
+  @NonNull
+  private final StructService structService;
+
+  SettingsSourceTest(@Autowired @NonNull CapConnection connection,
+                     @Autowired @NonNull ContentRepository repository) {
+    this.repository = repository;
+    structService = connection.getStructService();
+  }
 
   @Nested
   class FromContextBehavior {
@@ -264,17 +272,7 @@ class SettingsSourceTest {
 
   @Nested
   class AllAtContentBehavior {
-    @NonNull
-    private final ContentRepository repository;
-    @NonNull
-    private final StructService structService;
     private Content parent;
-
-    AllAtContentBehavior(@Autowired @NonNull ContentRepository repository,
-                         @Autowired @NonNull CapConnection connection) {
-      this.repository = repository;
-      structService = connection.getStructService();
-    }
 
     @BeforeEach
     void setUp() {
@@ -370,7 +368,7 @@ class SettingsSourceTest {
     class RobustnessBehavior {
       @Test
       void shouldProvideEmptySourcesForEmptySettingsPath() {
-        List<SettingsSource> settingsSources = SettingsSource.allAt(contentRepository.getRoot(), "parent");
+        List<SettingsSource> settingsSources = SettingsSource.allAt(repository.getRoot(), "parent");
         assertThat(settingsSources).isEmpty();
       }
 
