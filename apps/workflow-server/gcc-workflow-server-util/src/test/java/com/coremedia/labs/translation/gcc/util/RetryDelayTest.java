@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DurationFormat;
 import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -19,6 +20,59 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 class RetryDelayTest {
+  /**
+   * Tests providing an overview of the RetryDelay feature.
+   */
+  @Nested
+  class UseCases {
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      retryDelay | expectedSeconds | comment
+      60         | 60              | Should allow unit-less (and parse as seconds).
+      60s        | 60              | Should accept unit for seconds
+      1m         | 60              | Should accept unit for minutes
+      30s        | 60              | Should adjust to minimal retry delay
+      365d       | 86_400          | Should adjust to maximum retry delay
+      """)
+      // Resolving parameter RetryDelay from String requires only one static
+      // factory method to exist, that returns RetryDelay and accepts String.
+      // If this changes, a parameter parser must be added explicitly.
+    void shouldParseAndAdaptAsExpected(RetryDelay actual,
+                                       long expectedSeconds) {
+      assertThat(actual.toSeconds()).isEqualTo(expectedSeconds);
+    }
+
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      retryDelay | addSeconds | expectedSeconds | comment
+      60         | -1         | 60              | Should not get lower than allowed.
+      1d         | +1         | 86_400          | Should not get higher than allowed.
+      """)
+    void shouldApplySaturatedOperationAsExpected(RetryDelay base,
+                                                 long addSeconds,
+                                                 long expectedSeconds) {
+      RetryDelay actual = base.saturatedAdapt(d -> d.plusSeconds(addSeconds));
+      assertThat(actual.toSeconds()).isEqualTo(expectedSeconds);
+    }
+
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, nullValues = "null", delimiter = '|', textBlock = """
+      configValue | expectedSeconds | comment
+      60          | 60              | Should parse as seconds (lower bound).
+      1d          | 86_400          | Should parse with units (upper bound).
+      lorem       | null            | Should be empty for not-parseable.
+      """)
+    void shouldProvideFailureSafeParsing(String input,
+                                         Long expectedSeconds) {
+      Optional<RetryDelay> actual = RetryDelay.trySaturatedFromObject(input);
+      if (expectedSeconds != null) {
+        assertThat(actual).hasValueSatisfying(v -> assertThat(v.toSeconds()).isEqualTo(expectedSeconds));
+      } else {
+        assertThat(actual).isEmpty();
+      }
+    }
+  }
+
   @Nested
   class ConstructorBehavior {
     @ParameterizedTest
@@ -153,9 +207,9 @@ class RetryDelayTest {
       86398s     | 23h59m58s
       1d         | 1d
       """)
-    // Resolving parameter RetryDelay from String requires only one static
-    // factory method to exist, that returns RetryDelay and accepts String.
-    // If this changes, a parameter parser must be added explicitly.
+      // Resolving parameter RetryDelay from String requires only one static
+      // factory method to exist, that returns RetryDelay and accepts String.
+      // If this changes, a parameter parser must be added explicitly.
     void shouldProvideSomeHumanReadableDurationRepresentation(@NonNull RetryDelay fixture,
                                                               @NonNull String expectedString) {
       assertThat(fixture.humanReadable())
