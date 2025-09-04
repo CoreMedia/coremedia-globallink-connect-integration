@@ -1,3 +1,7 @@
+---
+applyTo: "**/*.java"
+---
+
 # GitHub Copilot Instructions: Java
 
 These instructions are dedicated to the Java code in this repository, thus,
@@ -11,43 +15,90 @@ security risks.
 
 ## Language Specification Level
 
-The actual Java specification level can be found in the repositories
-[root POM](../../pom.xml). See the corresponding property value of
-`maven.compiler.release`.
+**Detect the Java specification level** from the repository's
+[root POM](../../pom.xml) by checking the `maven.compiler.release` property
+value.
 
-If in doubt, consider Java 17 as the current specification level.
+**Apply version-specific rules** based on the detected Java version:
 
-### Copilot Instructions
+- Only suggest language features available in the detected version
+- Warn about features from newer Java versions
+- If the Java version cannot be determined, **assume Java 17** as the baseline
 
-* **Warn on unsupported language features.**
+**Auto-adapt validation rules** to match the project's actual Java version
+rather than hardcoded assumptions.
 
-  All more modern language features should not be used. For example, if
-  the current language level is 17, 
-  [Pattern Matching for instanceof (JEP 394)](https://openjdk.org/jeps/394)
-  must not be used. Adapt these checks to the detected Java version.
+**Exceptions to Java language features:** We decided that some language
+features should not be used, even if they are available in the detected Java
+version. For example, we decided to not use `var` (see below). Here is a list
+of such exceptions:
 
-* **Hint on new language features.**
+- Do not use `var`.
 
-  Report hints in more modern language features to use. Like, for example,
-  since Java 9 (as part of [JEP 213](https://openjdk.org/jeps/213)) complex
-  multi-resource assignments can be simplified using final or even effectively
-  final variables:
+  We decided that for clarity
+  [Local-Variable Type Inference (JEP 286)](https://openjdk.org/jeps/286)
+  should not be used. For this repository, that also serves as example for
+  others, consider using `var` in Java code is not allowed.
+
+### **Validation Rules**
+
+* **Warn on unsupported language features**:
+  Flag usage of features from newer Java versions. For example, if the current 
+  language level is 17, Pattern Matching for switch (JEP 441, available in Java 21+) 
+  must not be used:
 
   ```java
-  final Scanner scanner = new Scanner(new File("testRead.txt"));
-  PrintWriter writer = new PrintWriter(new File("testWrite.txt"))
-  try (scanner;writer) {
-    // omitted
-  }
+  // NOT supported in Java 17, available in Java 21+
+  return switch (obj) {
+      case String s -> "String: " + s;
+      case Integer i -> "Integer: " + i;
+      default -> "Unknown type";
+  };
   ```
 
-  (Example from [Baeldung](https://www.baeldung.com/java-try-with-resources))
+* **Suggest available language features**:
+  Recommend modern features available in the detected Java version. For Java 17,
+  suggest text blocks, switch expressions, records, and sealed classes when appropriate.
 
-  There are exceptions to this rule, though:
+### **Code Quality & Style**
 
-  * Do not use `var`.
+* **Prefer immutable objects**:
+  Use `final` fields, immutable collections (`List.of()`, `Map.of()`), and
+  record classes when appropriate.
+* **Use Optional correctly**:
+  Never use `Optional.get()` without checking, prefer `orElse()`,
+  `orElseThrow()`, or `ifPresent()`.
+* **Avoid raw types**:
+  Always use parameterized types for generics (e.g., `List<String>` not `List`).
 
-    We decided that for clarity
-    [Local-Variable Type Inference (JEP 286)](https://openjdk.org/jeps/286)
-    should not be used. For this repository, that also serves as example for
-    others, consider using `var` in Java code is not allowed.
+### **Modern Java Features (Java 17)**
+
+* **Use text blocks**:
+  For multi-line strings, prefer text blocks over string concatenation.
+* **Use switch expressions**:
+  Replace traditional switch statements with switch expressions when returning
+  values.
+* **Use records**:
+  For data-only classes, prefer `record` over traditional classes with
+  getters/setters.
+
+### **Security & Best Practices**
+
+* **Validate input parameters**:
+  Always check method parameters for `null` and invalid values.
+* **Use try-with-resources**:
+  For `AutoCloseable` resources, always use try-with-resources syntax.
+* **Avoid string concatenation in loops**:
+  Use `StringBuilder` or `StringJoiner` for repeated string operations.
+* **Prefer composition over inheritance**:
+  Favor composition and interfaces over class inheritance.
+
+### **Documentation & Naming**
+
+* **Use meaningful names**:
+  Variables, methods, and classes should clearly express their purpose.
+* **Write complete Javadoc**:
+  Include `@param`, `@return`, `@throws` for public methods.
+* **Follow naming conventions**:
+  Use camelCase for methods/variables, PascalCase for classes, UPPER_CASE for
+  constants.
