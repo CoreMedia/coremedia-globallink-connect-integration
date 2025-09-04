@@ -126,5 +126,36 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>strict-checks</id>
+      <activation>
+        <property>
+          <name>!skipChecks</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+              <showDeprecation>true</showDeprecation>
+              <showWarnings>true</showWarnings>
+              <compilerArgs>
+                <!-- Disable annotation processing to avoid version compatibility warnings -->
+                <!--
+                     Suppresses failure on:
+                     Supported source version 'RELEASE_8' from annotation processor
+                     'org.glassfish.corba.annotation.processing.ExceptionWrapperProcessor'
+                     less than -source '17'
+                -->
+                <arg>-proc:none</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
