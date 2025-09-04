@@ -59,7 +59,7 @@ const Since = (config: SinceConfig) => {
   // Example: https://img.shields.io/static/v1?message=2412.0&label=CoreMedia%20Content%20Cloud&style=for-the-badge&color=672779
   const imgUrl = `${staticBadgeBaseUrl}/${badgeContent}?logo=${logo}`;
   return (
-    <img class="badge badge-version badge-since" alt={alt} src={imgUrl} />
+    <img className="badge badge-version badge-since" alt={alt} src={imgUrl} />
   );
 };
 
