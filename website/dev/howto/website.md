@@ -78,6 +78,22 @@ documentation:
 The advantage of using this badge is, that it can read the required version
 information as provided by `src/ts/context.ts`.
 
+### Deprecated
+
+Used to render a [Shields.io](https://shields.io/) badge within this
+documentation to signal deprecations:
+
+```jsx
+<Deprecated
+  value="2506.0.0-1"
+/>
+```
+
+:::note Example
+<Deprecated value="2506.0.0-1"/>
+Don't use this API anymore, it is deprecated without replacement.
+:::
+
 ### DocLink
 
 Used to render links to
@@ -119,3 +135,21 @@ In its short form, it will just render the path itself as text:
 ```jsx
 <RepositoryLink path=".github/workflows" />
 ```
+
+### Since
+
+Used to render a [Shields.io](https://shields.io/) badge within this
+documentation to signal a new API or feature:
+
+```jsx
+<Since
+  value="2506.0.0-1"
+/>
+```
+
+:::note Example
+<Since value="2506.0.0-1"/>
+You can now use duration strings instead of just integers interpreted as
+seconds.
+:::
+
