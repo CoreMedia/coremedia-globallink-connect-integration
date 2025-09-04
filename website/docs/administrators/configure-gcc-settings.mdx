@@ -112,6 +112,10 @@ without a unit.
 
 Unit's may be given as supported by Spring's
 [DurationFormatterUtils](https://docs.spring.io/spring-framework/docs/current/javadoc-api//org/springframework/format/datetime/standard/DurationFormatterUtils.html).
+
+<Since value="2506.0.0-1"/>
+
+Prior to 2506.0.0-1 only integer values were supported.
 :::
 
 * `sendTranslationRequestRetryDelay` The delay to wait, if the XLIFF could not
@@ -121,7 +125,8 @@ Unit's may be given as supported by Spring's
   submission's state and to eventually download the XLIFF once it contains
   the translations.
   (_optional_, default: `30m`, type: `Integer` or `String`)
-* `downloadTranslationEarlyRetryDelay` An alternative delay to
+* <Since value="2506.0.0-1"/>
+  `downloadTranslationEarlyRetryDelay` An alternative delay to
   `downloadTranslationRetryDelay` in early submission stages. Allows more
   frequent updates and especially faster feedback on assigned project
   director IDs, required by editors when communicating with translators.
