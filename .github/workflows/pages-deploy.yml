@@ -32,8 +32,11 @@ jobs:
       should-deploy: ${{ steps.check.outputs.should-deploy }}
     steps:
       - id: check
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
         run: |
-          if [[ "${{ github.event.pull_request.merged }}" == "true" && "${{ github.event.pull_request.head.ref }}" =~ ^maintenance/ ]]; then
+          if [[ "$PR_MERGED" == "true" && "$HEAD_REF" =~ ^maintenance/ ]]; then
             echo "should-deploy=true" >> $GITHUB_OUTPUT
           else
             echo "should-deploy=false" >> $GITHUB_OUTPUT
