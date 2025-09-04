@@ -15,9 +15,8 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "dependencies"
-      - "maven"
-      - "build"
+      - "scope/dependencies"
+      - "type/build"
     open-pull-requests-limit: 5
 
   # Frontend dependencies managed by PNPM
@@ -28,9 +27,9 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "dependencies"
-      - "pnpm"
-      - "build"
+      - "scope/dependencies"
+      - "scope/website"
+      - "type/build"
     open-pull-requests-limit: 5
 
   # GitHub Actions
@@ -41,7 +40,7 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "dependencies"
-      - "github-actions"
-      - "ci"
+      - "scope/dependencies"
+      - "scope/github-actions"
+      - "type/ci"
     open-pull-requests-limit: 5
