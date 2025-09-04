@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 
 import java.util.function.Function;
 import java.util.regex.MatchResult;
@@ -176,7 +177,8 @@ class CharacterReplacementStrategyTest {
 
   static class ConfigTestCaseFixtureProvider implements ArgumentsProvider {
     @Override
-    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ExtensionContext context) {
+    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ParameterDeclarations parameters,
+                                                                 @NonNull ExtensionContext context) {
       return EnumConfigValueFixture.provideArguments(CharacterReplacementStrategy.values());
     }
   }

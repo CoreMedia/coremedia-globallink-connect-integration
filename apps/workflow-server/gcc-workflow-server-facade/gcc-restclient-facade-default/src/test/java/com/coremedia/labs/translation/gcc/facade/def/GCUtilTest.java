@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Assertions;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
@@ -13,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -112,7 +114,8 @@ class GCUtilTest {
 
   private static final class InstantArgumentsProvider implements ArgumentsProvider {
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(@NonNull ParameterDeclarations parameters,
+                                                        @NonNull ExtensionContext context) {
       LocalDateTime someTime = LocalDateTime.of(2018, 7, 15, 13, 11, 30, 0);
       return Stream.concat(
           Stream.of(

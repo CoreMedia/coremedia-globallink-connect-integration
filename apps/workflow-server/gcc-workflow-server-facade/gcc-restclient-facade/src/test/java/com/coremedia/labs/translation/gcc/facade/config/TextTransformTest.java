@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 
 import java.util.stream.Stream;
 
@@ -93,7 +94,8 @@ class TextTransformTest {
 
   static class ConfigTestCaseFixtureProvider implements ArgumentsProvider {
     @Override
-    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ExtensionContext context) {
+    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ParameterDeclarations parameters,
+                                                                 @NonNull ExtensionContext context) {
       return EnumConfigValueFixture.provideArguments(TextTransform.values());
     }
   }
