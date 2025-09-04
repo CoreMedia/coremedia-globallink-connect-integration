@@ -1,5 +1,4 @@
 import DocLink from '../components/DocLink';
-import Badge from '../components/Badge';
 import Deprecated from '../components/Deprecated';
 import Since from '../components/Since';
 import RepositoryLink from '../components/RepositoryLink';
@@ -20,13 +19,6 @@ import OriginalMDXComponents from '@theme-original/MDXComponents';
  *   Workflow Manual / Workflow Variables
  * </DocLink>
  *
- * <Badge
- *   label="CoreMedia Content Cloud"
- *   style="for-the-badge"
- *   color="672779"
- *   message="2412.0"
- * />
- *
  * <Since value="2506.0.0-1"/>
  *
  * <Deprecated value="2506.0.0-1"/>
@@ -41,7 +33,6 @@ const MDXComponents = {
   ...OriginalMDXComponents, // Include original MDX components provided by Docusaurus
   // Make components globally available in all MDX files
   DocLink,
-  Badge,
   Deprecated,
   Since,
   RepositoryLink,

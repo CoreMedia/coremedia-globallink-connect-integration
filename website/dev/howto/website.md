@@ -61,23 +61,6 @@ Visual Studio Code Plugin:
 * [MDX - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
 :::
 
-### Badge
-
-Used to render a [Shields.io](https://shields.io/) badge within this
-documentation:
-
-```jsx
-<Badge
-  label="CoreMedia Content Cloud"
-  style="for-the-badge"
-  color="672779"
-  message="2412.0"
-/>
-```
-
-The advantage of using this badge is, that it can read the required version
-information as provided by `src/ts/context.ts`.
-
 ### Deprecated
 
 Used to render a [Shields.io](https://shields.io/) badge within this
