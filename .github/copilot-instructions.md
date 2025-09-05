@@ -1,26 +1,29 @@
 # GitHub Copilot Instructions
 
-This file contains instructions for GitHub Copilot (like for Copilot code
-review). It is split up into several subsections located in
-[instructions/](./instructions).
+This file contains instructions for GitHub Copilot. For better organization,
+detailed instructions are split into separate files in the `instructions/`
+directory.
 
-> **Note: May Not be Supported for You**
+> **Note: Tool Compatibility**
 >
-> Not all clients support instructions in `instructions/`. This central file
-> is a try, so that they may still detect relevant locations to look for
-> instructions. If it does not work, rely on those clients, that support
-> multiple instruction files.
->
-> For details see:
-> [Adding repository custom instructions for GitHub Copilot - GitHub Docs](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions)
+> Some tools only support this central file. If your tool doesn't automatically
+> read the linked instruction files below, you may need to manually reference
+> the specific instruction files in the `instructions/` directory.
 
-## Table of Contents
+## Instruction Files
 
-* [Documentation Instructions](instructions/documentation.instructions.md)
+The following instruction files contain detailed rules for different aspects
+of the codebase:
 
-  Instructions especially for `*.md` and `*.mdx` files in `website/` folder.
-  Also apply to Javadoc in `*.java` files.
+### [Documentation Instructions](instructions/documentation.instructions.md)
 
-* [Java Instructions](instructions/java.instructions.md)
+**Applies to:** `**/*.md`, `**/*.mdx`, Javadoc in `**/*.java`
 
-  Instructions for `*.java` code.
+Key rules: AP Stylebook compliance, Javadoc formatting, technical writing
+standards
+
+### [Java Instructions](instructions/java.instructions.md)
+
+**Applies to:** `**/*.java`
+
+Key rules: Java 21 language level, coding standards, best practices
