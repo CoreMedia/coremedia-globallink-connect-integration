@@ -65,12 +65,10 @@ serial (Oxford) comma for clarity in technical writing.
 
 ## Javadoc
 
-Follow the
-[Oracle Javadoc Style Guide](https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html)
-as the primary reference. For modern Java features not covered in the Oracle
-guide, refer to language specific Javadoc Guidelines, like:
-
-* [JavaDoc Guide, Release 21](https://docs.oracle.com/en/java/javase/21/javadoc/javadoc-guide.pdf)
+* **Primary Reference:**
+  [Oracle Javadoc Style Guide](https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html)
+* **Modern Features:**
+  [JavaDoc Guide, Release 21](https://docs.oracle.com/en/java/javase/21/javadoc/javadoc-guide.pdf)
 
 ### Javadoc Specific Rules
 
