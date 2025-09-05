@@ -21,13 +21,18 @@ import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * A source for settings, such as provided by Spring Context, settings
- * read from content items, etc.
+ * Provides settings from various origins, such as a Spring Context or
+ * CoreMedia content items.
+ * <p>
+ * As a {@link Supplier}, a settings source provides a
+ * {@code Map<String, Object>} that represents a configuration structure.
+ *
+ * @since 2506.0.0-1
  */
 @FunctionalInterface
 public interface SettingsSource extends Supplier<Map<String, Object>> {
   /**
-   * Default bean name that holds GlobalLink Configuration Properties.
+   * Default bean name that holds GlobalLink configuration properties.
    */
   String GCC_CONFIGURATION_PROPERTIES_NAME = "gccConfigurationProperties";
   /**
@@ -39,7 +44,7 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    */
   String P_SETTINGS = "settings";
   /**
-   * Root node for GCC Settings in Struct.
+   * Root node for GlobalLink Connect settings in a {@link Struct}.
    * <p>
    * <strong>Type</strong>: {@code Struct}
    */
@@ -48,9 +53,8 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   /**
    * Returns the logger for this class.
    * <p>
-   * Used as private static method to not expose a constant, that must be
-   * public. Internal caching in Logback ensures that we do not create a
-   * logger instance again and again.
+   * This private static method avoids exposing a public constant. Logback's
+   * internal caching prevents repeated logger instantiation.
    *
    * @return the logger for this class
    */
@@ -60,10 +64,13 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Creates a settings source from Spring bean factory (aka Spring context).
+   * Creates a settings source from a Spring bean factory.
+   * <p>
+   * This method uses the default bean name
+   * {@link #GCC_CONFIGURATION_PROPERTIES_NAME}.
    *
    * @param beanFactory the Spring bean factory
-   * @return settings source backed by Spring context
+   * @return a settings source backed by the Spring context
    */
   @NonNull
   static SettingsSource fromContext(@NonNull BeanFactory beanFactory) {
@@ -71,11 +78,12 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Creates a settings source from Spring bean factory (aka Spring context).
+   * Creates a settings source from a Spring bean factory.
    *
    * @param beanFactory the Spring bean factory
-   * @param beanName    name of the ({@code Map<String, Object>}) bean
-   * @return settings source backed by Spring context
+   * @param beanName    name of the bean, expected to be a
+   *                    {@code Map<String, Object>}
+   * @return a settings source backed by the Spring context
    */
   @SuppressWarnings("unchecked")
   @NonNull
@@ -92,10 +100,13 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
 
   /**
    * Retrieves all settings sources at the specified path within the site.
+   * <p>
+   * This method uses the default settings content type {@link #CT_SETTINGS} and
+   * property name {@link #P_SETTINGS}.
    *
    * @param site the site to search within
-   * @param path the relative path from site root
-   * @return list of settings sources found at the path
+   * @param path the relative path from the site root
+   * @return a list of settings sources found at the path
    */
   @NonNull
   static List<SettingsSource> allAt(@NonNull Site site, @NonNull String path) {
@@ -106,10 +117,10 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * Retrieves all settings sources at the specified path within the site.
    *
    * @param site                   the site to search within
-   * @param path                   the relative path from site root
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return list of settings sources found at the path
+   * @param path                   the relative path from the site root
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return a list of settings sources found at the path
    */
   @NonNull
   static List<SettingsSource> allAt(@NonNull Site site,
@@ -121,10 +132,13 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
 
   /**
    * Retrieves all settings sources at the specified path within the repository.
+   * <p>
+   * This method uses the default settings content type {@link #CT_SETTINGS} and
+   * property name {@link #P_SETTINGS}.
    *
    * @param repository the content repository to search within
-   * @param path       the relative path from repository root
-   * @return list of settings sources found at the path
+   * @param path       the relative path from the repository root
+   * @return a list of settings sources found at the path
    */
   @NonNull
   static List<SettingsSource> allAt(@NonNull ContentRepository repository,
@@ -136,10 +150,10 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * Retrieves all settings sources at the specified path within the repository.
    *
    * @param repository             the content repository to search within
-   * @param path                   the relative path from repository root
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return list of settings sources found at the path
+   * @param path                   the relative path from the repository root
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return a list of settings sources found at the path
    */
   @NonNull
   static List<SettingsSource> allAt(@NonNull ContentRepository repository,
@@ -150,11 +164,15 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Retrieves all settings sources at the specified path relative to a parent content.
+   * Retrieves all settings sources at a path relative to a parent content item.
+   * <p>
+   * This method uses the default settings content type {@link #CT_SETTINGS} and
+   * property name {@link #P_SETTINGS}.
    *
    * @param parent the parent content to search within
-   * @param path   the relative path from parent
-   * @return list of settings sources found at the path, empty if path not found
+   * @param path   the relative path from the parent
+   * @return a list of settings sources found at the path, or an empty list if
+   * the path is not found
    */
   @NonNull
   static List<SettingsSource> allAt(@NonNull Content parent,
@@ -163,13 +181,14 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Retrieves all settings sources at the specified path relative to a parent content.
+   * Retrieves all settings sources at a path relative to a parent content item.
    *
    * @param parent                 the parent content to search within
-   * @param path                   the relative path from parent
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return list of settings sources found at the path, empty if path not found
+   * @param path                   the relative path from the parent
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return a list of settings sources found at the path, or an empty list if
+   * the path is not found
    */
   @NonNull
   static List<SettingsSource> allAt(@NonNull Content parent,
@@ -190,12 +209,14 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Retrieves settings sources from content, handling both documents and folders.
+   * Retrieves settings sources from a content item, handling both documents and
+   * folders.
    *
    * @param content                the content to extract settings from
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return list containing a single document source or all child document sources
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return a list containing a single document source, or all child document
+   * sources if the content is a folder
    */
   @NonNull
   private static List<SettingsSource> allAt(@NonNull Content content,
@@ -208,21 +229,20 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Extracts settings sources from all child documents of the given parent folder.
+   * Extracts settings sources from all child documents of a given parent folder.
    *
    * @param parent                 the parent folder content
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return list of settings sources from child documents
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return a list of settings sources from child documents
    */
   @NonNull
   private static List<SettingsSource> allChildDocumentsAt(@NonNull Content parent,
                                                           @NonNull String settingsTypeName,
                                                           @NonNull String settingsDescriptorName) {
     try {
-      // It is ok to just access all child documents here, as the subsequent
-      // `fromDocument` is tolerant handling (thus, ignoring) irrelevant
-      // or unmatched documents.
+      // It is acceptable to access all child documents here, as `fromDocument`
+      // is tolerant and ignores irrelevant or unmatched documents.
       return parent.getChildDocuments().stream()
         .map(content -> fromDocument(content, settingsTypeName, settingsDescriptorName))
         .toList();
@@ -232,12 +252,12 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Creates a settings source from a document, with defensive error handling.
+   * Creates a settings source from a document with defensive error handling.
    *
-   * @param content                the document content, may be null
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return settings source that safely extracts configuration
+   * @param content                the document content, may be {@code null}
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return a settings source that safely extracts configuration
    */
   @NonNull
   private static SettingsSource fromDocument(@Nullable Content content,
@@ -249,10 +269,10 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   /**
    * Safely extracts GlobalLink configuration from a document's settings struct.
    *
-   * @param content                the content document to extract from, may be null
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return GlobalLink settings map, or an empty map if extraction fails
+   * @param content                the content document to extract from, may be {@code null}
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return a map of GlobalLink settings, or an empty map if extraction fails
    */
   @NonNull
   private static Map<String, Object> defensiveFromDocument(@Nullable Content content,
@@ -281,12 +301,14 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Validates that the given content is a proper settings document with the required structure.
+   * Validates that the given content is a proper settings document with the
+   * required structure.
    *
-   * @param content                the content to validate, may be null
-   * @param settingsTypeName       (parent) content-type that holds settings
-   * @param settingsDescriptorName descriptor that holds settings
-   * @return true if content is a valid settings document with a settings struct
+   * @param content                the content to validate, may be {@code null}
+   * @param settingsTypeName       the content type that holds settings
+   * @param settingsDescriptorName the property that holds the settings struct
+   * @return {@code true} if the content is a valid settings document with a
+   * settings struct, {@code false} otherwise
    */
   private static boolean isIsValidSettingsDocument(@Nullable Content content,
                                                    @NonNull String settingsTypeName,
@@ -305,28 +327,30 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
   }
 
   /**
-   * Retrieves the CMSettings content type from the content's repository.
+   * Retrieves the settings content type from the content's repository.
    *
    * @param content          the content whose repository to query
-   * @param settingsTypeName (parent) content-type that holds settings
+   * @param settingsTypeName the name of the content type that holds settings
    * @return the settings content type
    * @throws IllegalStateException if the settings type is not found
    */
   @NonNull
-  private static ContentType requireSettingsType(@NonNull Content content, @NonNull String settingsTypeName) {
+  private static ContentType requireSettingsType(@NonNull Content content,
+                                                 @NonNull String settingsTypeName) {
     return requireSettingsType(content.getRepository(), settingsTypeName);
   }
 
   /**
-   * Retrieves the CMSettings content type from the repository.
+   * Retrieves the settings content type from the repository.
    *
    * @param repository       the repository to query
-   * @param settingsTypeName (parent) content-type that holds settings
+   * @param settingsTypeName the name of the content type that holds settings
    * @return the settings content type
-   * @throws IllegalStateException if the CMSettings type is not found
+   * @throws IllegalStateException if the settings type is not found
    */
   @NonNull
-  private static ContentType requireSettingsType(@NonNull ContentRepository repository, @NonNull String settingsTypeName) {
+  private static ContentType requireSettingsType(@NonNull ContentRepository repository,
+                                                 @NonNull String settingsTypeName) {
     ContentType contentType = repository.getContentType(settingsTypeName);
     if (contentType == null) {
       throw new IllegalStateException("Required content type \"%s\". not found.".formatted(settingsTypeName));
