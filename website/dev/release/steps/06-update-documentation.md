@@ -21,7 +21,8 @@ by [Docusaurus](https://docusaurus.io/) and located within the `website/`
 folder of this repository.
 
 Deployment is done automatically from `main` branch, as soon as changes have
-been merged.
+been merged from a `maintenance/*` branch. You may always decide to run the
+deployment manually, of course.
 :::
 
 ## a) CoreMedia Documentation Links

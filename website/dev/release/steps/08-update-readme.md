@@ -18,20 +18,19 @@ visitors navigate to the repository at GitHub.
 Here is an example of the version badges:
 
 ````markdown
-![CoreMedia Content Cloud Version](https://img.shields.io/static/v1?message=2412.0&label=CoreMedia%20Content%20Cloud&style=for-the-badge&color=672779)
-![GCC Used](https://img.shields.io/static/v1?message=v3.1.3&label=GCC%20REST%20API%20%28Used%29&style=for-the-badge&color=green)
-[![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient.svg?label=GCC%20REST%20API%20%28Recent%29&style=for-the-badge)](https://central.sonatype.com/search?q=com.translations.globallink%3Agcc-restclient)
+![Latest Release Version](https://img.shields.io/github/v/release/CoreMedia/coremedia-globallink-connect-integration?style=for-the-badge&filter=v*&sort=semver&logo=semanticrelease&label=Latest&color=672779)
+![GCC Used](https://img.shields.io/badge/GCC_REST_API_(used)_-v3.1.3-198754?style=for-the-badge&logo=semanticrelease)
+![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient?label=GCC%20REST%20API%20(recent)&style=for-the-badge&logo=semanticrelease&color=0d6efd)
 ````
 
 Rendered as:
 
-![CoreMedia Content Cloud Version](https://img.shields.io/static/v1?message=2412.0&label=CoreMedia%20Content%20Cloud&style=for-the-badge&color=672779)
-![GCC Used](https://img.shields.io/static/v1?message=v3.1.3&label=GCC%20REST%20API%20%28Used%29&style=for-the-badge&color=green)
-[![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient.svg?label=GCC%20REST%20API%20%28Recent%29&style=for-the-badge)](https://central.sonatype.com/search?q=com.translations.globallink%3Agcc-restclient)
+![Latest Release Version](https://img.shields.io/github/v/release/CoreMedia/coremedia-globallink-connect-integration?style=for-the-badge&filter=v*&sort=semver&logo=semanticrelease&label=Latest&color=672779)
+![GCC Used](https://img.shields.io/badge/GCC_REST_API_(used)_-v3.1.3-198754?style=for-the-badge&logo=semanticrelease)
+![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient?label=GCC%20REST%20API%20(recent)&style=for-the-badge&logo=semanticrelease&color=0d6efd)
 
-Only the first two `message` values need to be validated, where the first is
-the latest approved CMCC version and the second is the latest used GCC
-REST API.
+Only the badge for _GCC Used_ is static and requires to be adapted. All other
+badges are dynamic and should not require to be updated.
 
 :::tip TIP: Shields.io
 For details on parameters and how to create badges, visit
