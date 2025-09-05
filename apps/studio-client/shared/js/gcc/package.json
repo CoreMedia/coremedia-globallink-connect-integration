@@ -20,7 +20,6 @@
     "@jangaroo/build": "^3.2.0",
     "@jangaroo/core": "^3.2.0",
     "@coremedia/eslint-config-studio-client-ext": "workspace:*",
-    "@jangaroo/publish": "^3.2.0",
     "eslint": "^8.57.0",
     "rimraf": "^5.0.7"
   },

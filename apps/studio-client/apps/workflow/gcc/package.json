@@ -10,7 +10,6 @@
   "devDependencies": {
     "@jangaroo/build": "^3.2.0",
     "@jangaroo/core": "^3.2.0",
-    "@jangaroo/publish": "^3.2.0",
     "rimraf": "^5.0.7"
   },
   "scripts": {
