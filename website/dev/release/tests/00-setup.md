@@ -41,8 +41,8 @@ globalLink:
   # find copy & paste ready values for the other settings in the
   # `additionalConfigurationOptions` Struct.
   sendTranslationRequestRetryDelay: 1m
-  downloadTranslationRetryDelay: 1m
-  downloadTranslationEarlyRetryDelay: 15s
+  downloadTranslationRetryDelay: 3m
+  downloadTranslationEarlyRetryDelay: 1m
   cancelTranslationRetryDelay: 1m
   retryCommunicationErrors: 1
   # Section: Submission Instruction Type Settings
