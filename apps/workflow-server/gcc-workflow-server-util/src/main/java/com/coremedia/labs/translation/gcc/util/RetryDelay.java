@@ -17,37 +17,68 @@ import static org.springframework.format.datetime.standard.DurationFormatterUtil
 
 /**
  * Represents a retry delay for GlobalLink actions.
+ * <p>
+ * This record enforces bounds checking to ensure retry delays are within
+ * acceptable limits, preventing both DoS attacks from too-frequent requests
+ * and excessively long delays that could stall workflow processes.
  *
- * @param value retry delay duration
+ * @param value retry delay duration, must be between {@link #MIN_VALUE} and
+ *              {@link #MAX_VALUE}
+ * @since 2506.0.0-1
  */
 public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDelay> {
+
+  /**
+   * Logger instance for this class.
+   */
   @NonNull
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
+  /**
+   * Minimum allowable delay duration.
+   * <p>
+   * Set to one minute to prevent DoS attacks on external systems.
+   */
   @VisibleForTesting
   @NonNull
   static final Duration MIN_DELAY_DURATION = Duration.ofMinutes(1L);
+
+  /**
+   * Maximum allowable delay duration.
+   * <p>
+   * Set to one day to prevent excessively long workflow delays.
+   */
   @VisibleForTesting
   @NonNull
   static final Duration MAX_DELAY_DURATION = Duration.ofDays(1L);
+
+  /**
+   * Default delay duration used as fallback for invalid values.
+   */
   @VisibleForTesting
   @NonNull
   static final Duration DEFAULT_DELAY_DURATION = Duration.ofMinutes(15L);
 
   /**
-   * Minimum delay between retrying communication with GlobalLink. Firing too
-   * many update requests on the external system could be considered a DoS
-   * attack.
+   * Minimum delay between retrying communication with GlobalLink.
+   * <p>
+   * Firing too many update requests on the external system could be
+   * considered a DoS attack.
    */
   @NonNull
   public static final RetryDelay MIN_VALUE = new RetryDelay(MIN_DELAY_DURATION);
+
   /**
-   * If the value is accidentally set to a very big delay, and the workflow process picks this value, you will have
-   * to wait very long until it checks again for an update.
-   * Changing this accidentally got also a lot more likely, since times can be changed in the content repository directly.
+   * Maximum delay between retrying communication with GlobalLink.
+   * <p>
+   * If the value is accidentally set to a very big delay, and the workflow
+   * process picks this value, you will have to wait very long until it checks
+   * again for an update. Changing this accidentally got also a lot more likely,
+   * since times can be changed in the content repository directly.
    */
   @NonNull
   public static final RetryDelay MAX_VALUE = new RetryDelay(MAX_DELAY_DURATION);
+
   /**
    * Fallback delay between retrying communication with GlobalLink for illegal
    * values.
@@ -57,10 +88,12 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
 
   /**
    * Compact Constructor.
+   * <p>
+   * Validates that the provided duration is within acceptable bounds.
    *
    * @param value retry delay duration
    * @throws NullPointerException     if value is {@code null}
-   * @throws IllegalArgumentException if value is out of permitted bounds
+   * @throws IllegalArgumentException if value is outside permitted bounds
    */
   public RetryDelay {
     requireNonNull(value, "value must not be null");
@@ -75,12 +108,15 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   /**
    * Applies the given operator on the retry delay and returns its newly
    * created saturated result.
+   * <p>
+   * The result is automatically bounded to valid retry delay limits.
    *
-   * @param operator operator to apply
+   * @param operator operator to apply to the current duration value
    * @return new saturated instance of {@code RetryDelay}
+   * @throws NullPointerException if operator is {@code null}
    */
   @NonNull
-  public RetryDelay saturatedAdapt(UnaryOperator<Duration> operator) {
+  public RetryDelay saturatedAdapt(@NonNull UnaryOperator<Duration> operator) {
     return saturatedOf(operator.apply(value));
   }
 
@@ -88,7 +124,7 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
    * Returns the value of the delay as seconds.
    *
    * @return number of seconds
-   * @throws ArithmeticException if value exceeds integer bounds
+   * @throws ArithmeticException if value exceeds {@code long} bounds
    */
   public long toSeconds() {
     return value.toSeconds();
@@ -96,15 +132,25 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
 
   /**
    * Returns the value of the delay as seconds.
+   * <p>
+   * This method should not throw {@code ArithmeticException} given our
+   * current min and max values.
    *
-   * @return number of seconds
+   * @return number of seconds as integer
+   * @throws ArithmeticException if value exceeds {@code int} bounds
    */
   public int toSecondsInt() {
-    // Should not throw ArithmeticException, unless we adjusted our min and
-    // max values.
     return Math.toIntExact(toSeconds());
   }
 
+  /**
+   * Compares this retry delay with another retry delay for order.
+   *
+   * @param o the retry delay to compare to
+   * @return negative integer, zero, or positive integer as this delay
+   * is less than, equal to, or greater than the specified delay
+   * @throws NullPointerException if the specified delay is {@code null}
+   */
   @Override
   public int compareTo(@NonNull RetryDelay o) {
     return value.compareTo(o.value);
@@ -124,8 +170,8 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   }
 
   /**
-   * Returns the result delay for the given duration unless it would overflow or
-   * underflow in which case {@link RetryDelay#MAX_VALUE} or {@link RetryDelay#MIN_VALUE}
+   * Returns the retry delay for the given duration unless it would overflow or
+   * underflow in which case {@link #MAX_VALUE} or {@link #MIN_VALUE}
    * is returned, respectively.
    *
    * @param duration retry delay duration
@@ -160,36 +206,41 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   }
 
   /**
-   * Provide a more human-readable representation of the given duration.
+   * Provides a more human-readable representation of the given duration.
+   * <p>
+   * Uses Spring's {@code DurationFormatterUtils} with composite style formatting.
+   * Falls back to {@code toString()} if composite formatting fails.
    *
    * @param duration duration to transform
    * @return human-readable representation
+   * @throws NullPointerException if duration is {@code null}
    */
   @NonNull
   private static String pretty(@NonNull Duration duration) {
     try {
       return DurationFormatterUtils.print(duration, DurationFormat.Style.COMPOSITE);
     } catch (ArithmeticException e) {
-      // Observed, that we cannot pretty-print, for example,
-      // Duration.ofSeconds(Long.MIN_VALUE) as composite representation.
       LOG.debug("Failed to pretty print as COMPOSITE: {}. Using default toString", duration, e);
       return duration.toString();
     }
   }
 
   /**
-   * Parses the retry delay from the given value. If the value represents a
-   * number its unit is expected to be seconds. Alternative units may be given
-   * like {@code 15m}, {@code 1h}. For details on duration parsing see
+   * Parses the retry delay from the given value.
+   * <p>
+   * If the value represents a number its unit is expected to be seconds.
+   * Alternative units may be given like {@code 15m}, {@code 1h}. For details
+   * on duration parsing see
    * {@link DurationFormatterUtils#detectAndParse(String, DurationFormat.Unit)}.
    * <p>
    * Returns the result of the parsed value unless it would overflow or
-   * underflow in which case {@link RetryDelay#MAX_VALUE} or {@link RetryDelay#MIN_VALUE}
+   * underflow in which case {@link #MAX_VALUE} or {@link #MIN_VALUE}
    * is returned, respectively.
    *
    * @param value duration value to parse
    * @return parsed duration
-   * @throws IllegalArgumentException if value cannot be parsed or is {@code null}
+   * @throws NullPointerException     if value is {@code null}
+   * @throws IllegalArgumentException if value cannot be parsed
    */
   @NonNull
   public static RetryDelay saturatedParse(@NonNull String value) {
@@ -197,15 +248,16 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   }
 
   /**
-   * Tries to determine the retry delay from the given value. If the value
-   * represents a number its unit is expected to be seconds. Alternative units
-   * may be given like {@code 15m}, {@code 1h}. For details on duration parsing
-   * see
+   * Tries to determine the retry delay from the given value.
+   * <p>
+   * If the value represents a number its unit is expected to be seconds.
+   * Alternative units may be given like {@code 15m}, {@code 1h}. For details
+   * on duration parsing see
    * {@link DurationFormatterUtils#detectAndParse(String, DurationFormat.Unit)}.
    * <p>
    * Returns the result of the detected, transformed or parsed value unless it
-   * would overflow or underflow in which case {@link RetryDelay#MAX_VALUE} or
-   * {@link RetryDelay#MIN_VALUE} is returned, respectively.
+   * would overflow or underflow in which case {@link #MAX_VALUE} or
+   * {@link #MIN_VALUE} is returned, respectively.
    * <p>
    * Supported types of value:
    * <ul>
@@ -216,8 +268,8 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
    * </ul>
    *
    * @param value duration value to detect, transform or parse
-   * @return retry delay with detected duration
-   * @throws IllegalArgumentException if value is invalid
+   * @return retry delay with detected duration, or empty if parsing fails
+   * @throws NullPointerException if value is {@code null}
    */
   @NonNull
   public static Optional<RetryDelay> trySaturatedFromObject(@NonNull Object value) {
@@ -230,8 +282,7 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
       if (value instanceof Duration) {
         return Optional.of(saturatedOf((Duration) value));
       }
-      if (value instanceof Number) {
-        Number number = (Number) value;
+      if (value instanceof Number number) {
         return Optional.of(saturatedOf(Duration.ofSeconds(number.longValue())));
       }
       return Optional.of(saturatedParse(String.valueOf(value)));
