@@ -7,8 +7,8 @@ import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.struct.Struct;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -30,7 +30,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @since 2506.0.0-1
  */
 @FunctionalInterface
-public interface SettingsSource extends Supplier<Map<String, Object>> {
+@NullMarked
+public interface SettingsSource extends Supplier<Map<String, @Nullable Object>> {
   /**
    * Default bean name that holds GlobalLink configuration properties.
    */
@@ -58,7 +59,6 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    *
    * @return the logger for this class
    */
-  @NonNull
   private static Logger log() {
     return getLogger(lookup().lookupClass());
   }
@@ -72,8 +72,7 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param beanFactory the Spring bean factory
    * @return a settings source backed by the Spring context
    */
-  @NonNull
-  static SettingsSource fromContext(@NonNull BeanFactory beanFactory) {
+  static SettingsSource fromContext(BeanFactory beanFactory) {
     return fromContext(beanFactory, GCC_CONFIGURATION_PROPERTIES_NAME);
   }
 
@@ -86,9 +85,8 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @return a settings source backed by the Spring context
    */
   @SuppressWarnings("unchecked")
-  @NonNull
-  static SettingsSource fromContext(@NonNull BeanFactory beanFactory,
-                                    @NonNull String beanName) {
+  static SettingsSource fromContext(BeanFactory beanFactory,
+                                    String beanName) {
     return () -> {
       if (!beanFactory.containsBean(beanName)) {
         log().warn("{} not found in bean context.", beanName);
@@ -108,8 +106,7 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param path the relative path from the site root
    * @return a list of settings sources found at the path
    */
-  @NonNull
-  static List<SettingsSource> allAt(@NonNull Site site, @NonNull String path) {
+  static List<SettingsSource> allAt(Site site, String path) {
     return allAt(site, path, CT_SETTINGS, P_SETTINGS);
   }
 
@@ -122,11 +119,10 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return a list of settings sources found at the path
    */
-  @NonNull
-  static List<SettingsSource> allAt(@NonNull Site site,
-                                    @NonNull String path,
-                                    @NonNull String settingsTypeName,
-                                    @NonNull String settingsDescriptorName) {
+  static List<SettingsSource> allAt(Site site,
+                                    String path,
+                                    String settingsTypeName,
+                                    String settingsDescriptorName) {
     return allAt(site.getSiteRootFolder(), path, settingsTypeName, settingsDescriptorName);
   }
 
@@ -140,9 +136,8 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param path       the relative path from the repository root
    * @return a list of settings sources found at the path
    */
-  @NonNull
-  static List<SettingsSource> allAt(@NonNull ContentRepository repository,
-                                    @NonNull String path) {
+  static List<SettingsSource> allAt(ContentRepository repository,
+                                    String path) {
     return allAt(repository, path, CT_SETTINGS, P_SETTINGS);
   }
 
@@ -155,11 +150,10 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return a list of settings sources found at the path
    */
-  @NonNull
-  static List<SettingsSource> allAt(@NonNull ContentRepository repository,
-                                    @NonNull String path,
-                                    @NonNull String settingsTypeName,
-                                    @NonNull String settingsDescriptorName) {
+  static List<SettingsSource> allAt(ContentRepository repository,
+                                    String path,
+                                    String settingsTypeName,
+                                    String settingsDescriptorName) {
     return allAt(repository.getRoot(), path, settingsTypeName, settingsDescriptorName);
   }
 
@@ -174,9 +168,8 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @return a list of settings sources found at the path, or an empty list if
    * the path is not found
    */
-  @NonNull
-  static List<SettingsSource> allAt(@NonNull Content parent,
-                                    @NonNull String path) {
+  static List<SettingsSource> allAt(Content parent,
+                                    String path) {
     return allAt(parent, path, CT_SETTINGS, P_SETTINGS);
   }
 
@@ -190,11 +183,10 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @return a list of settings sources found at the path, or an empty list if
    * the path is not found
    */
-  @NonNull
-  static List<SettingsSource> allAt(@NonNull Content parent,
-                                    @NonNull String path,
-                                    @NonNull String settingsTypeName,
-                                    @NonNull String settingsDescriptorName) {
+  static List<SettingsSource> allAt(Content parent,
+                                    String path,
+                                    String settingsTypeName,
+                                    String settingsDescriptorName) {
     try {
       Content content = parent.getChild(path);
       if (content == null) {
@@ -218,10 +210,9 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @return a list containing a single document source, or all child document
    * sources if the content is a folder
    */
-  @NonNull
-  private static List<SettingsSource> allAt(@NonNull Content content,
-                                            @NonNull String settingsTypeName,
-                                            @NonNull String settingsDescriptorName) {
+  private static List<SettingsSource> allAt(Content content,
+                                            String settingsTypeName,
+                                            String settingsDescriptorName) {
     if (content.isDocument()) {
       return List.of(fromDocument(content, settingsTypeName, settingsDescriptorName));
     }
@@ -236,10 +227,9 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return a list of settings sources from child documents
    */
-  @NonNull
-  private static List<SettingsSource> allChildDocumentsAt(@NonNull Content parent,
-                                                          @NonNull String settingsTypeName,
-                                                          @NonNull String settingsDescriptorName) {
+  private static List<SettingsSource> allChildDocumentsAt(Content parent,
+                                                          String settingsTypeName,
+                                                          String settingsDescriptorName) {
     try {
       // It is acceptable to access all child documents here, as `fromDocument`
       // is tolerant and ignores irrelevant or unmatched documents.
@@ -259,10 +249,9 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return a settings source that safely extracts configuration
    */
-  @NonNull
   private static SettingsSource fromDocument(@Nullable Content content,
-                                             @NonNull String settingsTypeName,
-                                             @NonNull String settingsDescriptorName) {
+                                             String settingsTypeName,
+                                             String settingsDescriptorName) {
     return () -> defensiveFromDocument(content, settingsTypeName, settingsDescriptorName);
   }
 
@@ -274,10 +263,9 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return a map of GlobalLink settings, or an empty map if extraction fails
    */
-  @NonNull
   private static Map<String, Object> defensiveFromDocument(@Nullable Content content,
-                                                           @NonNull String settingsTypeName,
-                                                           @NonNull String settingsDescriptorName) {
+                                                           String settingsTypeName,
+                                                           String settingsDescriptorName) {
     try {
       if (!isIsValidSettingsDocument(content, settingsTypeName, settingsDescriptorName)) {
         return Map.of();
@@ -311,8 +299,8 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * settings struct, {@code false} otherwise
    */
   private static boolean isIsValidSettingsDocument(@Nullable Content content,
-                                                   @NonNull String settingsTypeName,
-                                                   @NonNull String settingsDescriptorName) {
+                                                   String settingsTypeName,
+                                                   String settingsDescriptorName) {
     if (content == null || !content.isDocument() || content.isDestroyed()) {
       return false;
     }
@@ -334,9 +322,8 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @return the settings content type
    * @throws IllegalStateException if the settings type is not found
    */
-  @NonNull
-  private static ContentType requireSettingsType(@NonNull Content content,
-                                                 @NonNull String settingsTypeName) {
+  private static ContentType requireSettingsType(Content content,
+                                                 String settingsTypeName) {
     return requireSettingsType(content.getRepository(), settingsTypeName);
   }
 
@@ -348,9 +335,8 @@ public interface SettingsSource extends Supplier<Map<String, Object>> {
    * @return the settings content type
    * @throws IllegalStateException if the settings type is not found
    */
-  @NonNull
-  private static ContentType requireSettingsType(@NonNull ContentRepository repository,
-                                                 @NonNull String settingsTypeName) {
+  private static ContentType requireSettingsType(ContentRepository repository,
+                                                 String settingsTypeName) {
     ContentType contentType = repository.getContentType(settingsTypeName);
     if (contentType == null) {
       throw new IllegalStateException("Required content type \"%s\". not found.".formatted(settingsTypeName));
