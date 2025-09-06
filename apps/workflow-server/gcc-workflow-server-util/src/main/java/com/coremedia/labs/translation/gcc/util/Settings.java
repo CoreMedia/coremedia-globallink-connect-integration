@@ -3,8 +3,9 @@ package com.coremedia.labs.translation.gcc.util;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.google.common.annotations.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.UnknownNullness;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -31,17 +32,16 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @param properties merged properties from all sources
  * @since 2506.0.0-1
  */
-public record Settings(@NonNull Map<String, Object> properties) {
+@NullMarked
+public record Settings(Map<String, Object> properties) {
   /**
    * The logger for this class.
    */
-  @NonNull
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   /**
    * An empty settings instance with no properties.
    */
-  @NonNull
   public static final Settings EMPTY = new Settings(Map.of());
 
   /**
@@ -90,8 +90,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return an {@link Optional} containing the value at the specified path, or
    * empty if not found
    */
-  @NonNull
-  public Optional<Object> at(@NonNull List<String> path) {
+  public Optional<Object> at(List<String> path) {
     Object value = properties;
     for (int i = 0; i < path.size() && value != null; i++) {
       String pathElement = path.get(i);
@@ -121,8 +120,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return an {@link Optional} containing the value at the specified path, or
    * empty if not found
    */
-  @NonNull
-  public Optional<Object> at(@NonNull String firstElement, @NonNull String... otherElements) {
+  public Optional<Object> at(String firstElement, String... otherElements) {
     List<String> path = Stream.concat(
       Stream.of(firstElement),
       Stream.of(otherElements)
@@ -138,8 +136,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param properties the properties to create the settings from
    * @return a new, sanitized {@link Settings} instance
    */
-  @NonNull
-  public static Settings of(@NonNull Map<String, Object> properties) {
+  public static Settings of(Map<String, @Nullable Object> properties) {
     // Use Builder for sanitizing entries.
     return builder()
       .source(() -> properties)
@@ -151,7 +148,6 @@ public record Settings(@NonNull Map<String, Object> properties) {
    *
    * @return a new builder instance
    */
-  @NonNull
   public static Builder builder() {
     return new Builder();
   }
@@ -170,7 +166,6 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * A list of sources to merge properties from, in order of precedence
      * (highest precedence last).
      */
-    @NonNull
     private final List<SettingsSource> sources = new ArrayList<>();
 
     /**
@@ -179,8 +174,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @param beanFactory the bean factory to source settings from
      * @return this builder instance for method chaining
      */
-    @NonNull
-    public Builder beanSource(@NonNull BeanFactory beanFactory) {
+    public Builder beanSource(BeanFactory beanFactory) {
       sources.add(SettingsSource.fromContext(beanFactory));
       return this;
     }
@@ -191,8 +185,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @param site the site to source settings from
      * @return this builder instance for method chaining
      */
-    @NonNull
-    public Builder siteSource(@NonNull Site site) {
+    public Builder siteSource(Site site) {
       SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).forEach(this::source);
       return this;
     }
@@ -203,8 +196,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @param repository the repository to source settings from
      * @return this builder instance for method chaining
      */
-    @NonNull
-    public Builder repositorySource(@NonNull ContentRepository repository) {
+    public Builder repositorySource(ContentRepository repository) {
       SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).forEach(this::source);
       return this;
     }
@@ -224,8 +216,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @param settings the settings to add as a source for merging
      * @return this builder instance for method chaining
      */
-    @NonNull
-    public Builder source(@NonNull Settings settings) {
+    public Builder source(Settings settings) {
       sources.add(settings::properties);
       return this;
     }
@@ -245,8 +236,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @param source the source to add for merging
      * @return this builder instance for method chaining
      */
-    @NonNull
-    public Builder source(@NonNull SettingsSource source) {
+    public Builder source(SettingsSource source) {
       sources.add(source);
       return this;
     }
@@ -266,8 +256,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @param sources a list of sources to add for merging
      * @return this builder instance for method chaining
      */
-    @NonNull
-    public Builder sources(@NonNull List<SettingsSource> sources) {
+    public Builder sources(List<SettingsSource> sources) {
       this.sources.addAll(sources);
       return this;
     }
@@ -287,8 +276,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @param sources an array of sources to add for merging
      * @return this builder instance for method chaining
      */
-    @NonNull
-    public Builder sources(@NonNull SettingsSource... sources) {
+    public Builder sources(SettingsSource... sources) {
       return sources(Arrays.asList(sources));
     }
 
@@ -301,7 +289,6 @@ public record Settings(@NonNull Map<String, Object> properties) {
      * @return a merged {@link Settings} object containing properties from all
      * sources
      */
-    @NonNull
     public Settings build() {
       // Must not use `of` as `of` uses the builder for sanitizing.
       return new Settings(mergedSources(sources));
@@ -319,8 +306,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param sources a list of sources to merge
    * @return a merged map containing all valid properties
    */
-  @NonNull
-  private static Map<String, Object> mergedSources(@NonNull List<SettingsSource> sources) {
+  private static Map<String, Object> mergedSources(List<SettingsSource> sources) {
     return sources.stream()
       .map(SettingsSource::get)
       .flatMap(map -> map.entrySet().stream())
@@ -349,9 +335,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param depth       the current nesting depth
    * @return the merged result
    */
-  @NonNull
-  private static Object deepMerge(@NonNull Object existing,
-                                  @NonNull Object replacement,
+  private static Object deepMerge(Object existing,
+                                  Object replacement,
                                   int depth) {
     if (depth >= MAX_DEPTH) {
       LOG.warn("Depth limit ({}) exceeded during merge. Using replacement value.", MAX_DEPTH);
@@ -380,9 +365,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param depth          the current nesting depth
    * @return a new map containing the merged result
    */
-  @NonNull
-  private static Map<String, Object> deepMergeMaps(@NonNull Map<String, Object> existingMap,
-                                                   @NonNull Map<String, Object> replacementMap,
+  private static Map<String, Object> deepMergeMaps(Map<String, Object> existingMap,
+                                                   Map<String, Object> replacementMap,
                                                    int depth) {
     return replacementMap.entrySet().stream()
       .filter(Settings::considerEntry)
@@ -406,8 +390,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return the map cast to a string-keyed type
    */
   @SuppressWarnings("unchecked")
-  @NonNull
-  private static Map<String, Object> asStringKeyedMap(@NonNull Map<?, ?> rawMap) {
+  private static Map<String, Object> asStringKeyedMap(Map<?, ?> rawMap) {
     return (Map<String, Object>) rawMap;
   }
 
@@ -425,8 +408,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param <V>   the type of the value
    * @return an entry with a sanitized value
    */
-  @NonNull
-  private static <K, V> Map.Entry<K, Object> sanitizeEntryValue(@NonNull Map.Entry<K, V> entry, int depth) {
+  private static <K, V> Map.Entry<K, Object> sanitizeEntryValue(Map.Entry<K, V> entry, int depth) {
     return Map.entry(entry.getKey(), sanitizeValue(entry.getValue(), depth));
   }
 
@@ -442,15 +424,14 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param depth the current nesting depth
    * @return a sanitized value with filtered entries if it is a map
    */
-  @UnknownNullness
-  private static Object sanitizeValue(@UnknownNullness Object value, int depth) {
-    if (value instanceof Map<?, ?>) {
+  @NullUnmarked
+  private static Object sanitizeValue(Object value, int depth) {
+    if (value instanceof Map<?, ?> map) {
       if (depth >= MAX_DEPTH) {
         LOG.warn("Depth limit ({}) exceeded. Truncating nested structure.", MAX_DEPTH);
         return Map.of(); // Return empty map to maintain type consistency
       }
 
-      Map<?, ?> map = (Map<?, ?>) value;
       return map.entrySet().stream()
         .filter(Settings::considerEntry)
         .map(e -> sanitizeEntryValue(e, depth + 1))
@@ -489,7 +470,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param entry the map entry to evaluate
    * @return {@code true} if the entry should be included; {@code false} otherwise
    */
-  private static boolean considerEntry(@NonNull Map.Entry<?, ?> entry) {
+  private static boolean considerEntry(Map.Entry<?, ?> entry) {
     return considerKey(entry.getKey()) && considerValue(entry.getValue());
   }
 
@@ -503,7 +484,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return {@code true} if the key is a non-null string; {@code false}
    * otherwise
    */
-  private static boolean considerKey(@UnknownNullness Object value) {
+  @NullUnmarked
+  private static boolean considerKey(Object value) {
     return value instanceof String;
   }
 
@@ -517,7 +499,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param value the value to validate
    * @return {@code true} if the value should be included; {@code false} otherwise
    */
-  private static boolean considerValue(@UnknownNullness Object value) {
+  @NullUnmarked
+  private static boolean considerValue(Object value) {
     if (value == null) {
       return false;
     }
