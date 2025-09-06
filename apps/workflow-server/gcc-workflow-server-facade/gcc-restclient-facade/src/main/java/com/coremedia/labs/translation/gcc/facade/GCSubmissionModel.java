@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,13 +13,11 @@ import static java.lang.invoke.MethodHandles.lookup;
 /**
  * Model to store the data of a Submission returned by the GCC-Client.
  */
+@NullMarked
 public class GCSubmissionModel {
   private final long submissionId;
-  @NonNull
   private final List<String> pdSubmissionIds;
-  @NonNull
   private final String name;
-  @NonNull
   private final GCSubmissionState state;
   @Nullable
   private final String submitter;
@@ -47,7 +45,7 @@ public class GCSubmissionModel {
    * @deprecated Use {@link #builder(long)} instead.
    */
   @Deprecated(since = "2401.3")
-  public GCSubmissionModel(long submissionId, @NonNull Collection<String> pdSubmissionIds, @NonNull GCSubmissionState state) {
+  public GCSubmissionModel(long submissionId, Collection<String> pdSubmissionIds, GCSubmissionState state) {
     this(submissionId, pdSubmissionIds, "", state, null, false);
   }
 
@@ -62,9 +60,9 @@ public class GCSubmissionModel {
    * @param error           if the submission is in an error state
    */
   private GCSubmissionModel(long submissionId,
-                            @NonNull Collection<String> pdSubmissionIds,
-                            @NonNull String name,
-                            @NonNull GCSubmissionState state,
+                            Collection<String> pdSubmissionIds,
+                            String name,
+                            GCSubmissionState state,
                             @Nullable String submitter,
                             boolean error) {
     this.submissionId = submissionId;
@@ -79,22 +77,18 @@ public class GCSubmissionModel {
     return submissionId;
   }
 
-  @NonNull
   public List<String> getPdSubmissionIds() {
     return pdSubmissionIds;
   }
 
-  @NonNull
   public String getName() {
     return name;
   }
 
-  @NonNull
   public GCSubmissionState getState() {
     return state;
   }
 
-  @NonNull
   public Optional<String> findSubmitter() {
     return Optional.ofNullable(submitter);
   }
@@ -106,7 +100,6 @@ public class GCSubmissionModel {
     return error;
   }
 
-  @NonNull
   public String describe() {
     return "%s[error=%s, name=%s, pdSubmissionIds=%s, state=%s, submissionId=%s, submitter=%s]".formatted(
       lookup().lookupClass().getSimpleName(),
@@ -153,14 +146,11 @@ public class GCSubmissionModel {
    */
   public static final class Builder {
     private final long submissionId;
-    @NonNull
     private List<String> pdSubmissionIds = List.of();
-    @NonNull
     private GCSubmissionState state = GCSubmissionState.OTHER;
     @Nullable
     private String submitter;
     private boolean error;
-    @NonNull
     private String name = "";
 
     private Builder(long submissionId) {
@@ -173,8 +163,7 @@ public class GCSubmissionModel {
      * @param pdSubmissionIds Project-Director Submission IDs
      * @return self-reference
      */
-    @NonNull
-    public Builder pdSubmissionIds(@NonNull Collection<String> pdSubmissionIds) {
+    public Builder pdSubmissionIds(Collection<String> pdSubmissionIds) {
       this.pdSubmissionIds = List.copyOf(pdSubmissionIds);
       return this;
     }
@@ -185,8 +174,7 @@ public class GCSubmissionModel {
      * @param state submission state
      * @return self-reference
      */
-    @NonNull
-    public Builder state(@NonNull GCSubmissionState state) {
+    public Builder state(GCSubmissionState state) {
       this.state = Objects.requireNonNull(state);
       return this;
     }
@@ -197,7 +185,6 @@ public class GCSubmissionModel {
      * @param submitter name
      * @return self-reference
      */
-    @NonNull
     public Builder submitter(@Nullable String submitter) {
       this.submitter = submitter;
       return this;
@@ -209,7 +196,6 @@ public class GCSubmissionModel {
      * @param name name
      * @return self-reference
      */
-    @NonNull
     public Builder name(String name) {
       this.name = name;
       return this;
@@ -221,7 +207,6 @@ public class GCSubmissionModel {
      * @param error state
      * @return self-reference
      */
-    @NonNull
     public Builder error(boolean error) {
       this.error = error;
       return this;
@@ -232,7 +217,6 @@ public class GCSubmissionModel {
      *
      * @return model
      */
-    @NonNull
     public GCSubmissionModel build() {
       return new GCSubmissionModel(submissionId, pdSubmissionIds, name, state, submitter, error);
     }
