@@ -2,8 +2,7 @@ package com.coremedia.labs.translation.gcc.facade.mock;
 
 import com.coremedia.labs.translation.gcc.facade.GCFacadeIOException;
 import com.google.common.io.ByteSource;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.core.io.InputStreamSource;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.util.UUID;
  * Part of mocking the content API. It will remember contents to be translated
  * until they are used within a translation submission.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 final class ContentStore {
   private final Map<String, String> store = new HashMap<>();
 
@@ -34,7 +33,6 @@ final class ContentStore {
     try (InputStream is = resource.getInputStream()) {
       ByteSource source = new ByteSource() {
         @Override
-        @NonNull
         public InputStream openStream() {
           return is;
         }
