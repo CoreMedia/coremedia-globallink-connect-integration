@@ -3,8 +3,7 @@ package com.coremedia.labs.translation.gcc.facade.mock;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,12 +15,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * Part of mocking the submission API. It will remember submissions, so that
  * you can later query their state.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 final class SubmissionStore {
   private static final AtomicLong NEXT_SUBMISSION_ID = new AtomicLong();
   private final Map<Long, Submission> submissions = new HashMap<>();
 
-  @NonNull
   private MockSettings mockSettings = MockSettings.EMPTY;
 
   /**
@@ -53,7 +51,7 @@ final class SubmissionStore {
    * are to be expected to be applied to new submissions and tasks only.
    * @param mockSettings the settings to apply
    */
-  public void applySettings(@NonNull MockSettings mockSettings) {
+  public void applySettings(MockSettings mockSettings) {
     this.mockSettings = mockSettings;
   }
 
