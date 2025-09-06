@@ -14,9 +14,6 @@ import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.coremedia.labs.translation.gcc.facade.config.TextTransform;
 import com.google.common.io.ByteStreams;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.assertj.core.api.SoftAssertions;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.dto.MessageResponse;
@@ -32,6 +29,8 @@ import org.gs4tr.gcc.restclient.operation.Tasks;
 import org.gs4tr.gcc.restclient.request.SubmissionSubmitRequest;
 import org.gs4tr.gcc.restclient.request.TaskListRequest;
 import org.gs4tr.gcc.restclient.request.UploadFileRequest;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -84,7 +83,7 @@ import static org.mockito.Mockito.when;
  * Tests {@link DefaultGCExchangeFacade} by mocking the GCC REST Client API.
  */
 @ExtendWith(MockitoExtension.class)
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 class DefaultGCExchangeFacadeTest {
   private static final String LOREM_IPSUM = "Lorem Ipsum";
   private static final String MOCK_GCC_URL = "https://example.com";
@@ -259,7 +258,7 @@ class DefaultGCExchangeFacadeTest {
 
     @ParameterizedTest
     @EnumSource(IsSendSubmitterFixture.class)
-    void shouldRespectIsSendSubmitter(@NonNull IsSendSubmitterFixture fixture, @NonNull TestInfo testInfo) {
+    void shouldRespectIsSendSubmitter(IsSendSubmitterFixture fixture, TestInfo testInfo) {
       String id = testInfo.getTestMethod().map(Method::getName).orElse("unknown");
       Map<String, Object> config = new HashMap<>(requiredConfig);
       fixture.applyConfig(config);
@@ -331,7 +330,7 @@ class DefaultGCExchangeFacadeTest {
     @Nested
     class SubmissionNameUseCases {
       @Test
-      void shouldApplySourceTargetLocaleInformation(@NonNull TestInfo testInfo) {
+      void shouldApplySourceTargetLocaleInformation(TestInfo testInfo) {
         String subject = "Subject: %s".formatted(testInfo.getDisplayName());
         MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(requiredConfig, gcExchange);
         String fileId = "1234-5678";
@@ -628,7 +627,7 @@ class DefaultGCExchangeFacadeTest {
         when(gcExchange.confirmTask(eq(expectedTaskId))).thenReturn(true);
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-        String[] actualContentRead = {null};
+        @Nullable String[] actualContentRead = {null};
 
         facade.downloadCompletedTasks(expectedSubmissionId, new HappyPathTaskDataConsumer(actualContentRead));
 
@@ -997,10 +996,10 @@ class DefaultGCExchangeFacadeTest {
     STRING_ANY("anyString", false),
     ;
 
-    private final Object sendSubmitterConfig;
+    private final @Nullable Object sendSubmitterConfig;
     private final boolean expectedIsSendSubmitter;
 
-    IsSendSubmitterFixture(Object sendSubmitterConfig, boolean expectedIsSendSubmitter) {
+    IsSendSubmitterFixture(@Nullable Object sendSubmitterConfig, boolean expectedIsSendSubmitter) {
       this.sendSubmitterConfig = sendSubmitterConfig;
       this.expectedIsSendSubmitter = expectedIsSendSubmitter;
     }
@@ -1009,7 +1008,7 @@ class DefaultGCExchangeFacadeTest {
       return expectedIsSendSubmitter;
     }
 
-    public void applyConfig(@NonNull Map<String, Object> config) {
+    public void applyConfig(Map<String, @Nullable Object> config) {
       if ("unset".equals(sendSubmitterConfig)) {
         config.remove(GCConfigProperty.KEY_IS_SEND_SUBMITTER);
       } else {
@@ -1023,7 +1022,7 @@ class DefaultGCExchangeFacadeTest {
       super(delegate, "xliff");
     }
 
-    MockDefaultGCExchangeFacade(@NonNull Map<String, Object> config, @NonNull GCExchange delegate) {
+    MockDefaultGCExchangeFacade(Map<String, Object> config, GCExchange delegate) {
       super(config, cfg -> {
         lenient().when(delegate.getConfig()).thenReturn(cfg);
         Connector connector = Mockito.mock(Connector.class);
@@ -1033,14 +1032,13 @@ class DefaultGCExchangeFacadeTest {
       });
     }
 
-    @NonNull
     public ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
                                                                        @Nullable String comment,
-                                                                       @NonNull ZonedDateTime dueDate,
+                                                                       ZonedDateTime dueDate,
                                                                        @Nullable String workflow,
                                                                        @Nullable String submitter,
-                                                                       @NonNull Locale sourceLocale,
-                                                                       @NonNull Map<String, List<Locale>> contentMap) {
+                                                                       Locale sourceLocale,
+                                                                       Map<String, List<Locale>> contentMap) {
       SubmissionSubmit.SubmissionSubmitResponseData response = Mockito.mock(SubmissionSubmit.SubmissionSubmitResponseData.class);
       long expectedSubmissionId = 42L;
 
@@ -1052,8 +1050,7 @@ class DefaultGCExchangeFacadeTest {
       return submissionSubmitRequestCaptor;
     }
 
-    @NonNull
-    private GCSubmission prepareGetSubmissionMock(@NonNull SubmissionStatus status) {
+    private GCSubmission prepareGetSubmissionMock(SubmissionStatus status) {
       GCSubmission submission = Mockito.mock(GCSubmission.class);
       Status submissionStatus = Mockito.mock(Status.class);
       lenient().when(submission.getStatus()).thenReturn(submissionStatus);
@@ -1071,7 +1068,6 @@ class DefaultGCExchangeFacadeTest {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    @NonNull
     public GCSubmissionModel getNotExistingSubmission() {
       Submissions.SubmissionsResponseData response = Mockito.mock(Submissions.SubmissionsResponseData.class);
 
@@ -1080,14 +1076,12 @@ class DefaultGCExchangeFacadeTest {
       return getSubmission(42L);
     }
 
-    @NonNull
     public GCSubmissionModel getSuccessfulSubmission() {
       GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.Completed);
       when(submission.getIsError()).thenReturn(Boolean.FALSE);
       return getSubmission(42L);
     }
 
-    @NonNull
     public GCSubmissionModel getErredSubmission() {
       GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.PreProcess);
       when(submission.getIsError()).thenReturn(Boolean.TRUE);
