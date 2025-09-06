@@ -1,7 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Factory which, depending on given settings, will create either a
  * default communication channel to GCC, a mocked one or a disabled one.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeFacadeSessionProvider {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
