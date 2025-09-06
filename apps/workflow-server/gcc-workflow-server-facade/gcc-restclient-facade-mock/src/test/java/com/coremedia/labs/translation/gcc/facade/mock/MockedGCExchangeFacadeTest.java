@@ -7,9 +7,9 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
 import com.google.common.io.ByteSource;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
@@ -33,6 +33,7 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@NullMarked
 class MockedGCExchangeFacadeTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final long TRANSLATION_TIMEOUT_MINUTES = 3L;
@@ -86,7 +87,6 @@ class MockedGCExchangeFacadeTest {
     public boolean test(InputStream is, GCTaskModel task) {
       ByteSource byteSource = new ByteSource() {
         @Override
-        @NonNull
         public InputStream openStream() {
           return is;
         }
