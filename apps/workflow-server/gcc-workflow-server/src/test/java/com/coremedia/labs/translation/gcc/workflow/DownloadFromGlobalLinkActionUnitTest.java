@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -31,8 +31,9 @@ class DownloadFromGlobalLinkActionUnitTest {
   void setUp() {
     try {
       existingZipFile = Files.createTempFile("ccbwtgdfglaut", ".zip").toFile();
-      try (InputStream is = DownloadFromGlobalLinkActionUnitTest.class.getResourceAsStream("/com/coremedia/labs/translation/gcc/workflow/existing.zip");
-           OutputStream os = new FileOutputStream(existingZipFile)) {
+      InputStream is = requireNonNull(DownloadFromGlobalLinkActionUnitTest.class.getResourceAsStream("/com/coremedia/labs/translation/gcc/workflow/existing.zip"));
+      OutputStream os = new FileOutputStream(existingZipFile);
+      try (is; os) {
         IOUtils.copy(is, os);
       }
     } catch (IOException e) {
@@ -91,8 +92,8 @@ class DownloadFromGlobalLinkActionUnitTest {
           assertNotNull(files);
           assertEquals(2, files.length);
           // Check files by well known length, which is sufficiently unique in this test.
-          assertEquals(5L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
-          assertEquals(6L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
+          assertEquals(5L, requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
+          assertEquals(6L, requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
         } finally {
           deleteFile(extracted);
         }

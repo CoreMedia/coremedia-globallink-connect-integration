@@ -40,6 +40,7 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
@@ -459,8 +460,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @return the parameters for the actual computation or {@code null} if no
    * parameters are needed
    */
-  @Nullable
-  abstract P doExtractParameters(Task task);
+  @NullUnmarked
+  abstract P doExtractParameters(@NonNull Task task);
 
   /**
    * Executes the action and optionally sets a result value at the given {@code resultConsumer}.
@@ -712,8 +713,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  record Parameters<P>(@Nullable P extendedParameters,
-                       Collection<ContentObject> masterContentObjects,
+  @NullUnmarked
+  record Parameters<P>(P extendedParameters,
+                       @NonNull Collection<ContentObject> masterContentObjects,
                        int remainingAutomaticRetries) {
   }
 

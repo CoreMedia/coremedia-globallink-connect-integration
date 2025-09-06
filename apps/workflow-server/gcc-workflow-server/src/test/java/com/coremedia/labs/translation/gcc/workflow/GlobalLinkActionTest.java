@@ -143,7 +143,7 @@ class GlobalLinkActionTest {
             throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
         }
 
-        GlobalLinkAction.Parameters<Object> params =
+        GlobalLinkAction.Parameters<@Nullable Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -190,7 +190,7 @@ class GlobalLinkActionTest {
 
         int remainingAutomaticRetries = 3;
 
-        GlobalLinkAction.Parameters<Object> params =
+        GlobalLinkAction.Parameters<@Nullable Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -230,7 +230,7 @@ class GlobalLinkActionTest {
           (rd, c) -> rd.saturatedAdapt(d -> d.dividedBy(delayDivisor))
         );
 
-        GlobalLinkAction.Parameters<Object> params =
+        GlobalLinkAction.Parameters<@Nullable Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
