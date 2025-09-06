@@ -16,14 +16,10 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCConfig;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.dto.GCResponse;
@@ -41,6 +37,8 @@ import org.gs4tr.gcc.restclient.request.SubmissionSubmitRequest;
 import org.gs4tr.gcc.restclient.request.SubmissionsListRequest;
 import org.gs4tr.gcc.restclient.request.TaskListRequest;
 import org.gs4tr.gcc.restclient.request.UploadFileRequest;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
@@ -81,7 +79,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * To create an instance of this facade, use {@link GCExchangeFacadeSessionProvider}.
  * </p>
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final Integer HTTP_OK = 200;
@@ -93,9 +91,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private final Boolean isSendSubmitter;
   private final GCExchange delegate;
   private final Supplier<String> fileTypeSupplier;
-  @NonNull
   private final GCSubmissionName submissionName;
-  @NonNull
   private final GCSubmissionInstruction submissionInstruction;
 
   /**
@@ -105,13 +101,13 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @throws GCFacadeConfigException        if configuration is incomplete
    * @throws GCFacadeCommunicationException if connection to GCC failed.
    */
-  DefaultGCExchangeFacade(@NonNull Map<String, Object> config) {
+  DefaultGCExchangeFacade(Map<String, Object> config) {
     this(config, GCExchange::new);
   }
 
   @VisibleForTesting
-  DefaultGCExchangeFacade(@NonNull Map<String, Object> config,
-                          @NonNull Function<GCConfig, GCExchange> exchangeFactory) {
+  DefaultGCExchangeFacade(Map<String, Object> config,
+                          Function<GCConfig, GCExchange> exchangeFactory) {
     String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
     String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
     String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
@@ -136,8 +132,11 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     } catch (IllegalAccessError e) {
       throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
-    fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
-      String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
+    fileTypeSupplier = Suppliers.memoize(() -> {
+      Object value = config.get(GCConfigProperty.KEY_FILE_TYPE);
+      return getSupportedFileType(
+          value == null ? null : String.valueOf(value));
+      }
     );
   }
 
@@ -160,7 +159,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    *
    * @param gcExchange GCC exchange instance to validate
    */
-  private static void validateConnectorKey(@NonNull GCExchange gcExchange) {
+  private static void validateConnectorKey(GCExchange gcExchange) {
     String configuredKey = gcExchange.getConfig().getConnectorKey();
     List<String> availableConnectorKeys = gcExchange.getConnectors().stream().map(Connector::getConnectorKey).toList();
     if (!availableConnectorKeys.contains(configuredKey)) {
@@ -168,7 +167,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
   }
 
-  private static String requireNonNullConfig(@NonNull Map<String, Object> config, String key) {
+  private static String requireNonNullConfig(Map<String, Object> config, String key) {
     Object value = config.get(key);
     if (value == null) {
       throw new GCFacadeConfigException("Configuration for %s is missing. Configuration (values hidden): %s", key, config.entrySet().stream()
@@ -188,9 +187,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
     try {
       UploadFileRequest request = new UploadFileRequest(bytes, fileName, fileTypeSupplier.get());
-      if (sourceLocale != null) {
-        request.setSourceLocale(sourceLocale.toLanguageTag());
-      }
+      request.setSourceLocale(sourceLocale.toLanguageTag());
       return delegate.uploadContent(request);
     } catch (GCFacadeException e) {
       throw e;
@@ -279,8 +276,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return a descriptive string.
    */
   private String createSubmissionName(@Nullable String subject,
-                                      @NonNull Locale sourceLocale,
-                                      @NonNull Map<String, List<Locale>> contentMap) {
+                                      Locale sourceLocale,
+                                      Map<String, List<Locale>> contentMap) {
     String trimmedSubject = Objects.toString(subject, "").trim();
     String subjectWithDefault = trimmedSubject.isEmpty() ? Instant.now().toString() : trimmedSubject;
     String allTargetLocales = contentMap.entrySet().stream()
@@ -590,7 +587,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     return submissions.get(0);
   }
 
-  private String getSupportedFileType(String configuredFileType) {
+  private String getSupportedFileType(@Nullable String configuredFileType) {
     String apiUrl = delegate.getConfig().getApiUrl();
 
     List<String> supportedFileTypes;
