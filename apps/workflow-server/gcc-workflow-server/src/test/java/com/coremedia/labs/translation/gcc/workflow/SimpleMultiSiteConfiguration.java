@@ -8,7 +8,7 @@ import com.coremedia.cap.multisite.impl.MultiSiteConfiguration;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
 import com.coremedia.cap.test.xmlrepo.XmlUapiConfig;
 import com.coremedia.translate.TranslatablePredicate;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -25,6 +25,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SING
   XmlRepoConfiguration.class,
   MultiSiteConfiguration.class
 })
+@NullMarked
 public class SimpleMultiSiteConfiguration {
   /**
    * Content type recommended to be used within sites.
@@ -103,7 +104,7 @@ public class SimpleMultiSiteConfiguration {
 
   @Bean
   @Scope(SCOPE_SINGLETON)
-  public SiteModel siteModel(@NonNull ContentRepository contentRepository) {
+  public SiteModel siteModel(ContentRepository contentRepository) {
     DefaultSiteModel siteModel = new DefaultSiteModel();
 
     ContentType siteIndicatorType = requireNonNull(
