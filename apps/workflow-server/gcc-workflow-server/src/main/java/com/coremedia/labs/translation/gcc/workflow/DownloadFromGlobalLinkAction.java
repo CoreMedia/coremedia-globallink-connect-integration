@@ -229,9 +229,10 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   @Override
-  void doExecuteGlobalLinkAction(Parameters params,
+  void doExecuteGlobalLinkAction(@Nullable Parameters params,
                                  Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
+    requireNonNull(params, "Parameters must not be null.");
     long submissionId = params.submissionId;
 
     // We need to share xliff files between #doExecuteGlobalLinkAction and #doStoreResult.
