@@ -1,6 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,13 +21,14 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
 class CharacterReplacementStrategyTest {
   @Nested
   @DisplayName("replacer():Function<MatchResult,String>")
   class MethodReplacer {
     @ParameterizedTest
     @EnumSource(CharacterReplacementStrategy.class)
-    void shouldReturnReplacerFunction(@NonNull CharacterReplacementStrategy input) {
+    void shouldReturnReplacerFunction(CharacterReplacementStrategy input) {
       assertThat(input.replacer()).isNotNull();
     }
 
@@ -37,7 +38,7 @@ class CharacterReplacementStrategyTest {
       mode = EnumSource.Mode.EXCLUDE,
       names = {"NONE", "EMPTY"}
     )
-    void shouldReplaceSomething(@NonNull CharacterReplacementStrategy input) {
+    void shouldReplaceSomething(CharacterReplacementStrategy input) {
       Function<MatchResult, String> replacer = input.replacer();
       String originalString = "a";
       Matcher matcher = PatternFixture.ANY_CHAR.matcher(originalString);
@@ -53,7 +54,7 @@ class CharacterReplacementStrategyTest {
       mode = EnumSource.Mode.EXCLUDE,
       names = {"NONE", "EMPTY"}
     )
-    void shouldNotReplaceEmptyMatch(@NonNull CharacterReplacementStrategy input) {
+    void shouldNotReplaceEmptyMatch(CharacterReplacementStrategy input) {
       Function<MatchResult, String> replacer = input.replacer();
       String originalString = "";
       Matcher matcher = PatternFixture.ANY.matcher(originalString);
@@ -92,10 +93,10 @@ class CharacterReplacementStrategyTest {
       UNICODE_CODE_POINT | ANY_CHAR | 'a'                | 'U+0061'
       UNICODE_CODE_POINT | SMP      | 'a\uD83D\uDD4A'    | 'aU+1F54A'
       """)
-    void shouldApplyReplacementsAsExpected(@NonNull CharacterReplacementStrategy strategy,
-                                           @NonNull PatternFixture patternFixture,
-                                           @NonNull String input,
-                                           @NonNull String expected) {
+    void shouldApplyReplacementsAsExpected(CharacterReplacementStrategy strategy,
+                                           PatternFixture patternFixture,
+                                           String input,
+                                           String expected) {
       Function<MatchResult, String> replacer = strategy.replacer();
       Matcher matcher = patternFixture.matcher(input);
       String result = matcher.replaceAll(replacer);
@@ -110,7 +111,7 @@ class CharacterReplacementStrategyTest {
     class FromString {
       @ParameterizedTest
       @ArgumentsSource(ConfigTestCaseFixtureProvider.class)
-      void shouldParseValues(@NonNull CharacterReplacementStrategy expected, @NonNull String configValue) {
+      void shouldParseValues(CharacterReplacementStrategy expected, String configValue) {
         assertThat(CharacterReplacementStrategy.fromString(configValue)).hasValue(expected);
       }
 
@@ -129,7 +130,7 @@ class CharacterReplacementStrategyTest {
     class FromConfig {
       @ParameterizedTest
       @ArgumentsSource(ConfigTestCaseFixtureProvider.class)
-      void shouldParseValues(@NonNull CharacterReplacementStrategy expected, @NonNull String configValue) {
+      void shouldParseValues(CharacterReplacementStrategy expected, String configValue) {
         assertThat(CharacterReplacementStrategy.fromConfig(configValue)).hasValue(expected);
       }
 
@@ -145,7 +146,7 @@ class CharacterReplacementStrategyTest {
 
       @ParameterizedTest
       @EnumSource(CharacterReplacementStrategy.class)
-      void shouldReturnEnumAsIs(@NonNull CharacterReplacementStrategy input) {
+      void shouldReturnEnumAsIs(CharacterReplacementStrategy input) {
         CharacterReplacementStrategy actual = CharacterReplacementStrategy.fromConfig(input).orElse(null);
         assertThat(actual).isEqualTo(input);
       }
@@ -160,25 +161,19 @@ class CharacterReplacementStrategyTest {
 
     private final Pattern pattern;
 
-    PatternFixture(@NonNull Pattern pattern) {
+    PatternFixture(Pattern pattern) {
       this.pattern = pattern;
     }
 
-    @NonNull
-    public Pattern pattern() {
-      return pattern;
-    }
-
-    @NonNull
-    public Matcher matcher(@NonNull CharSequence input) {
+    public Matcher matcher(CharSequence input) {
       return pattern.matcher(input);
     }
   }
 
   static class ConfigTestCaseFixtureProvider implements ArgumentsProvider {
     @Override
-    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ParameterDeclarations parameters,
-                                                                 @NonNull ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters,
+                                                        ExtensionContext context) {
       return EnumConfigValueFixture.provideArguments(CharacterReplacementStrategy.values());
     }
   }
