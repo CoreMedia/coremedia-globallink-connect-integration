@@ -1,6 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.Locale;
@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+@NullMarked
 enum EnumConfigValueFixture {
   NAME(Enum::name),
   LOWER_CASE(en -> en.name().toLowerCase(Locale.ROOT)),
@@ -21,20 +22,17 @@ enum EnumConfigValueFixture {
   KEBAP_CASE(en -> en.name().toLowerCase(Locale.ROOT).replace('_', '-')),
   ;
 
-  @NonNull
   private final Function<Enum<?>, String> toConfigValue;
 
-  EnumConfigValueFixture(@NonNull Function<Enum<?>, String> toConfigValue) {
+  EnumConfigValueFixture(Function<Enum<?>, String> toConfigValue) {
     this.toConfigValue = toConfigValue;
   }
 
-  @NonNull
-  public String toConfigValue(@NonNull Enum<?> transform) {
+  public String toConfigValue(Enum<?> transform) {
     return toConfigValue.apply(transform);
   }
 
-  @NonNull
-  public static Stream<? extends Arguments> provideArguments(@NonNull Enum<?>[] enumType) {
+  public static Stream<? extends Arguments> provideArguments(Enum<?>[] enumType) {
     return java.util.stream.Stream.of(enumType)
       .flatMap(en -> java.util.stream.Stream.of(values())
         .map(testCaseFixture -> Arguments.of(en, testCaseFixture.toConfigValue(en))));
