@@ -6,8 +6,8 @@ import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +33,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Workflow action that cancels a GlobalLink submission.
  */
+@NullMarked
 public class CancelTranslationGlobalLinkAction extends
         GlobalLinkAction<CancelTranslationGlobalLinkAction.Parameters, CancelTranslationGlobalLinkAction.Result> {
   @Serial
@@ -44,11 +45,11 @@ public class CancelTranslationGlobalLinkAction extends
 
   private static final int HTTP_OK = 200;
 
-  private String globalLinkSubmissionIdVariable;
-  private String globalLinkPdSubmissionIdsVariable;
-  private String globalLinkSubmissionStatusVariable;
-  private String cancelledVariable;
-  private String completedLocalesVariable;
+  private @Nullable String globalLinkSubmissionIdVariable;
+  private @Nullable String globalLinkPdSubmissionIdsVariable;
+  private @Nullable String globalLinkSubmissionStatusVariable;
+  private @Nullable String cancelledVariable;
+  private @Nullable String completedLocalesVariable;
 
   // --- construct and configure ------------------------------------
 
@@ -116,13 +117,11 @@ public class CancelTranslationGlobalLinkAction extends
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
 
   @Override
-  @NonNull
   protected String getGCCRetryDelaySettingsKey() {
     return GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
   @Override
-  @NonNull
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
     String submissionId = process.getString(globalLinkSubmissionIdVariable);
