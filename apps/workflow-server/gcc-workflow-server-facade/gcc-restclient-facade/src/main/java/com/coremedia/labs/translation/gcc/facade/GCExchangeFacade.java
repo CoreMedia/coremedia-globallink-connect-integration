@@ -47,7 +47,7 @@ public interface GCExchangeFacade {
    * @throws GCFacadeIOException            if the resource cannot be read
    * @throws GCFacadeCommunicationException if the file cannot be uploaded
    */
-  String uploadContent(String fileName, Resource resource, Locale sourceLocale);
+  String uploadContent(String fileName, Resource resource, @Nullable Locale sourceLocale);
 
   /**
    * Submit submission for the given contents uploaded before.

@@ -50,7 +50,7 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
+  public String uploadContent(String fileName, Resource resource, @Nullable Locale sourceLocale) {
     throw createDisabledException();
   }
 
