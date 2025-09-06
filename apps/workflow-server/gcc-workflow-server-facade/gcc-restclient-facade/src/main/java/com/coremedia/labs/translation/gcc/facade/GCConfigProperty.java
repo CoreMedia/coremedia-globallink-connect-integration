@@ -1,13 +1,12 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Properties to be used in {@code GlobalLink} settings document.
  */
 @SuppressWarnings("UtilityClassCanBeEnum")
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public final class GCConfigProperty {
   /**
    * Root node for GCC Settings in Struct.
