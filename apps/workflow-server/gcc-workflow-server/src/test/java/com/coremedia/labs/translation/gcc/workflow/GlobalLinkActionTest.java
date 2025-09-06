@@ -21,9 +21,9 @@ import com.coremedia.labs.translation.gcc.util.Settings;
 import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -69,20 +69,17 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 
 @SpringJUnitConfig(GlobalLinkActionTest.LocalConfig.class)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
+@NullMarked
 class GlobalLinkActionTest {
-  @NonNull
   private final MockedGlobalLinkAction globalLinkAction;
-  @NonNull
   private final ObjectProvider<Site> siteProvider;
-  @NonNull
   private final ObjectProvider<GlobalLinkConfigBuilder> globalLinkConfigBuilderProvider;
-  @NonNull
   private final ContentRepository repository;
 
-  GlobalLinkActionTest(@Autowired @NonNull MockedGlobalLinkAction globalLinkAction,
-                       @Autowired @NonNull ObjectProvider<Site> siteProvider,
-                       @Autowired @NonNull ObjectProvider<GlobalLinkConfigBuilder> globalLinkConfigBuilderProvider,
-                       @Autowired @NonNull ContentRepository repository) {
+  GlobalLinkActionTest(@Autowired MockedGlobalLinkAction globalLinkAction,
+                       @Autowired ObjectProvider<Site> siteProvider,
+                       @Autowired ObjectProvider<GlobalLinkConfigBuilder> globalLinkConfigBuilderProvider,
+                       @Autowired ContentRepository repository) {
     this.globalLinkAction = globalLinkAction;
     this.siteProvider = siteProvider;
     this.globalLinkConfigBuilderProvider = globalLinkConfigBuilderProvider;
@@ -120,7 +117,7 @@ class GlobalLinkActionTest {
         global
         site
         """)
-      void shouldAlwaysTriggerRetryOnTemporaryCmsOutages(@NonNull String retryDelaySource) {
+      void shouldAlwaysTriggerRetryOnTemporaryCmsOutages(String retryDelaySource) {
         int expectedRetryDelay;
 
         switch (retryDelaySource) {
@@ -174,10 +171,9 @@ class GlobalLinkActionTest {
     @ParameterizedClass
     @EnumSource(GlobalLinkConfigBuilder.RetryDelayMode.class)
     class RetryDelayBehavior {
-      @NonNull
       private final GlobalLinkConfigBuilder.RetryDelayMode retryDelayMode;
 
-      public RetryDelayBehavior(@NonNull GlobalLinkConfigBuilder.RetryDelayMode retryDelayMode) {
+      public RetryDelayBehavior(GlobalLinkConfigBuilder.RetryDelayMode retryDelayMode) {
         this.retryDelayMode = retryDelayMode;
       }
 
@@ -243,6 +239,7 @@ class GlobalLinkActionTest {
 
         GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(params);
 
+        assertThat(result).isNotNull();
         assertThat(result.retryDelaySeconds)
           .as("Should use expected adapted retry delay key (%d divided by %d)", retryDelayBase, delayDivisor)
           .isEqualTo(expectedRetryDelay.toSecondsInt());
@@ -286,7 +283,7 @@ class GlobalLinkActionTest {
   class IsRepositoryUnavailableExceptionBehavior {
     @ParameterizedTest
     @EnumSource(RepositoryUnavailableFixture.class)
-    void shouldSignalAMatchOnRepositoryNotAvailableVariant(@NonNull RepositoryUnavailableFixture fixture) {
+    void shouldSignalAMatchOnRepositoryNotAvailableVariant(RepositoryUnavailableFixture fixture) {
       Exception exception = fixture.exception();
       assertThat(GlobalLinkAction.isRepositoryUnavailableException(exception))
         .as("Should signal a match for: %s".formatted(exception))
@@ -295,7 +292,7 @@ class GlobalLinkActionTest {
 
     @ParameterizedTest
     @EnumSource(NoRepositoryUnavailableFixture.class)
-    void shouldSignalNoMatchOnIrrelevantException(@NonNull NoRepositoryUnavailableFixture fixture) {
+    void shouldSignalNoMatchOnIrrelevantException(NoRepositoryUnavailableFixture fixture) {
       Exception exception = fixture.exception();
       assertThat(GlobalLinkAction.isRepositoryUnavailableException(exception))
         .as("Should signal no match for: %s".formatted(exception))
@@ -330,23 +327,20 @@ class GlobalLinkActionTest {
      */
     CORBA_OBJECT_NOT_EXIST_ISSUE_EXCEPTION(new CapException("content", CapErrorCodes.UNEXPECTED_RUNTIME_EXCEPTION, null, new OBJECT_NOT_EXIST()));
 
-    @NonNull
     private final Exception exception;
 
-    RepositoryUnavailableFixture(@NonNull Function<RepositoryNotAvailableException, Exception> exceptionFunction) {
+    RepositoryUnavailableFixture(Function<RepositoryNotAvailableException, Exception> exceptionFunction) {
       exception = exceptionFunction.apply(createRepositoryNotAvailableException());
     }
 
-    RepositoryUnavailableFixture(@NonNull Exception exception) {
+    RepositoryUnavailableFixture(Exception exception) {
       this.exception = exception;
     }
 
-    @NonNull
     public Exception exception() {
       return exception;
     }
 
-    @NonNull
     public static RepositoryNotAvailableException createRepositoryNotAvailableException() {
       return new RepositoryNotAvailableException("foo", null, null);
     }
@@ -360,14 +354,12 @@ class GlobalLinkActionTest {
     CAP_EXCEPTION_WITH_IRRELEVANT_ERROR_CODE(new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null)),
     ;
 
-    @NonNull
     private final Exception exception;
 
-    NoRepositoryUnavailableFixture(@NonNull Exception exception) {
+    NoRepositoryUnavailableFixture(Exception exception) {
       this.exception = exception;
     }
 
-    @NonNull
     public Exception exception() {
       return exception;
     }
@@ -384,7 +376,6 @@ class GlobalLinkActionTest {
     private static final long serialVersionUID = -288745610618179168L;
     private final ApplicationContext applicationContext;
     private final GCExchangeFacade gcExchangeFacade;
-    @NonNull
     private Runnable onDoExecuteGlobalLinkAction = () -> {
       // No operation.
     };
@@ -399,11 +390,11 @@ class GlobalLinkActionTest {
       this.gcExchangeFacade = gcExchangeFacade;
     }
 
-    public void onDoExecuteGlobalLinkAction(@NonNull Runnable onDoExecuteGlobalLinkAction) {
+    public void onDoExecuteGlobalLinkAction(Runnable onDoExecuteGlobalLinkAction) {
       this.onDoExecuteGlobalLinkAction = onDoExecuteGlobalLinkAction;
     }
 
-    public void adaptDelayForGeneralRetryBy(@NonNull BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator) {
+    public void adaptDelayForGeneralRetryBy(BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator) {
       this.retryDelayOperator = retryDelayOperator;
     }
 
@@ -414,41 +405,36 @@ class GlobalLinkActionTest {
     }
 
     @Override
-    void doExecuteGlobalLinkAction(Void params, Consumer<? super Void> resultConsumer,
+    void doExecuteGlobalLinkAction(@Nullable Void params, Consumer<? super Void> resultConsumer,
                                    GCExchangeFacade facade, Map<String, List<Content>> issues) {
       onDoExecuteGlobalLinkAction.run();
     }
 
     @Override
-    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }
 
-    @NonNull
     @Override
-    RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
-                                         @NonNull AdaptDelayForGeneralRetryContext<Void, Void> context) {
+    RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
+                                         AdaptDelayForGeneralRetryContext<Void, Void> context) {
       if (retryDelayOperator == null) {
         return super.adaptDelayForGeneralRetry(originalRetryDelay, context);
       }
       return retryDelayOperator.apply(originalRetryDelay, context);
     }
 
-    @NonNull
     @Override
-    GCExchangeFacade openSession(@NonNull Map<String, Object> settings) {
+    GCExchangeFacade openSession(Map<String, Object> settings) {
       return gcExchangeFacade;
     }
 
-    @NonNull
-    GCExchangeFacade superOpenSession(@NonNull Map<String, Object> settings) {
+    GCExchangeFacade superOpenSession(Map<String, Object> settings) {
       return super.openSession(settings);
     }
 
-    @NonNull
     @Override
-    Settings withGlobalSettings(@NonNull Settings base, @NonNull ContentRepository repository) {
+    Settings withGlobalSettings(Settings base, ContentRepository repository) {
       Settings.Builder builder = Settings.builder().source(base);
       // Allow to also use our test-content-types.
       SettingsSource.allAt(
@@ -459,9 +445,8 @@ class GlobalLinkActionTest {
       return builder.build();
     }
 
-    @NonNull
     @Override
-    Settings withSiteSettings(@NonNull Settings base, @NonNull Site site) {
+    Settings withSiteSettings(Settings base, Site site) {
       Settings.Builder builder = Settings.builder().source(base);
       // Allow to also use our test-content-types.
       SettingsSource.allAt(
@@ -478,13 +463,9 @@ class GlobalLinkActionTest {
 
     @Override
     protected String getGCCRetryDelaySettingsKey() {
-      if (overrideGccRetryDelaySettingsKey == null) {
-        return super.getGCCRetryDelaySettingsKey();
-      }
-      return overrideGccRetryDelaySettingsKey;
+      return Objects.requireNonNullElseGet(overrideGccRetryDelaySettingsKey, super::getGCCRetryDelaySettingsKey);
     }
 
-    @Nullable
     @Override
     Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
       return Mockito.mock(Blob.class, "issuesAsJsonBlob(%d): %s".formatted(
@@ -510,9 +491,9 @@ class GlobalLinkActionTest {
   static class LocalConfig {
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     @Bean
-    MockedGlobalLinkAction globalLinkAction(@NonNull ApplicationContext context,
-                                            @NonNull CapConnection connection,
-                                            @NonNull GCExchangeFacade gcExchangeFacade) {
+    MockedGlobalLinkAction globalLinkAction(ApplicationContext context,
+                                            CapConnection connection,
+                                            GCExchangeFacade gcExchangeFacade) {
       MockedGlobalLinkAction action = new MockedGlobalLinkAction(context, gcExchangeFacade);
       action.setConnection(connection);
       return action;
@@ -526,13 +507,13 @@ class GlobalLinkActionTest {
 
     @Bean
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public GlobalLinkConfigBuilder globalLinkConfigBuilder(@NonNull CapConnection connection) {
+    public GlobalLinkConfigBuilder globalLinkConfigBuilder(CapConnection connection) {
       return new GlobalLinkConfigBuilder(connection.getContentRepository(), connection.getStructService());
     }
 
     @Bean
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public Site site(@NonNull ContentRepository repository, @NonNull SitesService sitesService) {
+    public Site site(ContentRepository repository, SitesService sitesService) {
       String randomId = UUID.randomUUID().toString();
       repository.createContentBuilder()
         .type("SimpleSite")
