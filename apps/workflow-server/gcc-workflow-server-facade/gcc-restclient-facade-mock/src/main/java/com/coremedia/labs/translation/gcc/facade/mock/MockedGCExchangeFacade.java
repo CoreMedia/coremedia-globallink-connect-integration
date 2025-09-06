@@ -8,10 +8,9 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockError;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
@@ -38,7 +37,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * <p>
  * To get an instance of this facade, use {@link GCExchangeFacadeSessionProvider}.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public final class MockedGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
@@ -50,10 +49,9 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
    * submissions across multiple facade instances.
    */
   private static final SubmissionStore submissionStore = SubmissionStore.getInstance();
-  @NonNull
   private final MockSettings mockSettings;
 
-  MockedGCExchangeFacade(@NonNull MockSettings mockSettings) {
+  MockedGCExchangeFacade(MockSettings mockSettings) {
     this.mockSettings = mockSettings;
     // By intention may adapt the settings also within the submission store
     // on each new instance creation of the facade. While this is not meant
