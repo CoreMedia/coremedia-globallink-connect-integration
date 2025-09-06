@@ -3,8 +3,8 @@ package com.coremedia.labs.translation.gcc.util;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.google.common.annotations.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -423,8 +423,8 @@ public record Settings(Map<String, Object> properties) {
    * @param depth the current nesting depth
    * @return a sanitized value with filtered entries if it is a map
    */
-  @UnknownNullness
-  private static Object sanitizeValue(@UnknownNullness Object value, int depth) {
+  @NullUnmarked
+  private static Object sanitizeValue(Object value, int depth) {
     if (value instanceof Map<?, ?> map) {
       if (depth >= MAX_DEPTH) {
         LOG.warn("Depth limit ({}) exceeded. Truncating nested structure.", MAX_DEPTH);
@@ -483,7 +483,8 @@ public record Settings(Map<String, Object> properties) {
    * @return {@code true} if the key is a non-null string; {@code false}
    * otherwise
    */
-  private static boolean considerKey(@UnknownNullness Object value) {
+  @NullUnmarked
+  private static boolean considerKey(Object value) {
     return value instanceof String;
   }
 
@@ -497,7 +498,8 @@ public record Settings(Map<String, Object> properties) {
    * @param value the value to validate
    * @return {@code true} if the value should be included; {@code false} otherwise
    */
-  private static boolean considerValue(@UnknownNullness Object value) {
+  @NullUnmarked
+  private static boolean considerValue(Object value) {
     if (value == null) {
       return false;
     }
