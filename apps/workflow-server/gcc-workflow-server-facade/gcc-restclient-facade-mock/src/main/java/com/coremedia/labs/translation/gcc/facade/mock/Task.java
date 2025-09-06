@@ -1,15 +1,16 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
+import java.security.SecureRandom;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.random.RandomGenerator;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -28,11 +29,11 @@ import static org.slf4j.LoggerFactory.getLogger;
  * according to all contained tasks.
  * </p>
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 final class Task {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
-  private static final Random RANDOM = new Random();
+  private static final RandomGenerator RANDOM = new SecureRandom();
   private static final AtomicLong ID_FACTORY = new AtomicLong(System.currentTimeMillis());
 
   private final long id = ID_FACTORY.incrementAndGet();
@@ -66,7 +67,7 @@ final class Task {
    * @param targetLocale          targetLocale for the Task
    * @param taskStates            task states to reach based on timing; defaults to {@link TaskState#COMPLETED} if not set
    */
-  Task(String content, long delayBaseSeconds, int delayOffsetPercentage, Locale targetLocale, TaskState... taskStates) {
+  Task(String content, long delayBaseSeconds, int delayOffsetPercentage, Locale targetLocale, TaskState @Nullable... taskStates) {
     this.content = content;
     this.targetLocale = targetLocale;
     long currentTimeMillis = System.currentTimeMillis();
