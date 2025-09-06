@@ -12,8 +12,9 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.translate.item.TranslateItemConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Condition;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.mockito.ArgumentCaptor;
@@ -64,6 +65,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
  */
 @SpringJUnitConfig(SendToGlobalLinkActionTest.LocalConfig.class)
 @DirtiesContext(classMode = AFTER_CLASS)
+@NullMarked
 class SendToGlobalLinkActionTest {
 
   @SuppressWarnings("unchecked")
@@ -96,7 +98,7 @@ class SendToGlobalLinkActionTest {
     targetContent.checkIn();
 
     String expectedFileId = targetContent.getId();
-    String[] uploadedXliff = {null};
+    @Nullable String[] uploadedXliff = {null};
 
     Mockito.doAnswer(invocation -> readXliff(invocation, expectedFileId, uploadedXliff))
             .when(gcExchangeFacade)
@@ -109,7 +111,7 @@ class SendToGlobalLinkActionTest {
     ZonedDateTime dueDate = ZonedDateTime.of(LocalDateTime.now().plusDays(30L), ZoneId.systemDefault());
     String workflow = "pseudo translation";
     SendToGlobalLinkAction.Parameters params = new SendToGlobalLinkAction.Parameters(displayName, comment, derivedContents, masterContents, dueDate, workflow, user);
-    AtomicReference<String> resultHolder = new AtomicReference<>();
+    AtomicReference<@Nullable String> resultHolder = new AtomicReference<>();
     action.doExecuteGlobalLinkAction(params, resultHolder::set, gcExchangeFacade, new HashMap<>());
     String submissionId = resultHolder.get();
 
@@ -140,7 +142,7 @@ class SendToGlobalLinkActionTest {
     assertThat(submitterCaptor.getValue()).isEqualTo("admin");
   }
 
-  private static Object readXliff(InvocationOnMock invocation, String expectedFileId, String[] uploadedXliff) throws IOException {
+  private static Object readXliff(InvocationOnMock invocation, String expectedFileId, @Nullable String[] uploadedXliff) throws IOException {
     Resource resource = invocation.getArgument(1);
     byte[] bytes;
     try (InputStream stream = resource.getInputStream()) {
@@ -183,7 +185,6 @@ class SendToGlobalLinkActionTest {
     }
 
     @Override
-    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }
