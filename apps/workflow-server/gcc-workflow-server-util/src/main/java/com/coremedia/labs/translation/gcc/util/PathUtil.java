@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.base.Splitter;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import java.util.stream.StreamSupport;
  * Unix file system path, or the path part of a URL. PathUtil does NOT
  * cover special syntaxes like Windows file system paths.
  */
+@NullMarked
 final class PathUtil {
   private static final char PATH_SEPARATOR = '/';
   private static final String PATH_SEPARATOR_STR = "/";
