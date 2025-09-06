@@ -1,10 +1,9 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
+import org.jspecify.annotations.NullMarked;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -16,7 +15,7 @@ import static java.time.ZoneOffset.UTC;
 /**
  * Utility class for GCC Facade.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 final class GCUtil {
 
   private GCUtil() {
