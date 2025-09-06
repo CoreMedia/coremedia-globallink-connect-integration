@@ -1,6 +1,6 @@
 package com.coremedia.labs.translation.gcc.util;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -18,19 +18,20 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+@NullMarked
 class RetryDelayTest {
   @Nested
   class ConstructorBehavior {
     @ParameterizedTest
     @EnumSource(ValidDuration.class)
-    void shouldAcceptDurationsInRange(@NonNull ValidDuration fixture) {
+    void shouldAcceptDurationsInRange(ValidDuration fixture) {
       assertThatCode(() -> new RetryDelay(fixture.duration()))
         .doesNotThrowAnyException();
     }
 
     @ParameterizedTest
     @EnumSource(InvalidDuration.class)
-    void shouldDenyDurationOutOfBounds(@NonNull InvalidDuration fixture) {
+    void shouldDenyDurationOutOfBounds(InvalidDuration fixture) {
       assertThatThrownBy(() -> new RetryDelay(fixture.duration()))
         .hasMessageContainingAll("value", "than or equal to")
         .isInstanceOf(IllegalArgumentException.class);
@@ -41,14 +42,14 @@ class RetryDelayTest {
   class OfBehavior {
     @ParameterizedTest
     @EnumSource(ValidDuration.class)
-    void shouldAcceptDurationsInRange(@NonNull ValidDuration fixture) {
+    void shouldAcceptDurationsInRange(ValidDuration fixture) {
       assertThatCode(() -> RetryDelay.of(fixture.duration()))
         .doesNotThrowAnyException();
     }
 
     @ParameterizedTest
     @EnumSource(InvalidDuration.class)
-    void shouldDenyDurationOutOfBounds(@NonNull InvalidDuration fixture) {
+    void shouldDenyDurationOutOfBounds(InvalidDuration fixture) {
       assertThatThrownBy(() -> RetryDelay.of(fixture.duration()))
         .isInstanceOf(IllegalArgumentException.class);
     }
@@ -58,7 +59,7 @@ class RetryDelayTest {
   class SaturatedOfBehavior {
     @ParameterizedTest
     @EnumSource(ValidDuration.class)
-    void shouldAcceptDurationsInRange(@NonNull ValidDuration fixture) {
+    void shouldAcceptDurationsInRange(ValidDuration fixture) {
       assertThatCode(() -> RetryDelay.saturatedOf(fixture.duration()))
         .doesNotThrowAnyException();
     }
@@ -67,10 +68,9 @@ class RetryDelayTest {
     @ParameterizedClass
     @EnumSource(InvalidDuration.class)
     class OutOfBoundsBehavior {
-      @NonNull
       private final Duration durationFixture;
 
-      OutOfBoundsBehavior(@NonNull InvalidDuration invalidDuration) {
+      OutOfBoundsBehavior(InvalidDuration invalidDuration) {
         durationFixture = invalidDuration.duration();
       }
 
@@ -92,12 +92,10 @@ class RetryDelayTest {
   @ParameterizedClass
   @EnumSource(ValidDuration.class)
   class ToSecondsBehavior {
-    @NonNull
     private final RetryDelay delayFixture;
-    @NonNull
     private final Duration durationFixture;
 
-    ToSecondsBehavior(@NonNull ValidDuration fixture) {
+    ToSecondsBehavior(ValidDuration fixture) {
       durationFixture = fixture.duration();
       delayFixture = RetryDelay.of(fixture.duration());
     }
@@ -123,10 +121,9 @@ class RetryDelayTest {
     names = {"MILLI_ABOVE_MIN_DELAY", "MILLI_BELOW_MAX_DELAY"}
   )
   class AsSecondsBehavior {
-    @NonNull
     private final Duration duration;
 
-    AsSecondsBehavior(@NonNull ValidDuration validDuration) {
+    AsSecondsBehavior(ValidDuration validDuration) {
       duration = validDuration.duration();
     }
 
@@ -156,8 +153,8 @@ class RetryDelayTest {
     // Resolving parameter RetryDelay from String requires only one static
     // factory method to exist, that returns RetryDelay and accepts String.
     // If this changes, a parameter parser must be added explicitly.
-    void shouldProvideSomeHumanReadableDurationRepresentation(@NonNull RetryDelay fixture,
-                                                              @NonNull String expectedString) {
+    void shouldProvideSomeHumanReadableDurationRepresentation(RetryDelay fixture,
+                                                              String expectedString) {
       assertThat(fixture.humanReadable())
         .isEqualTo(expectedString);
     }
@@ -169,16 +166,15 @@ class RetryDelayTest {
     @ParameterizedClass
     @EnumSource(ValidDuration.class)
     class ValidDurationBehavior {
-      @NonNull
       private final Duration duration;
 
-      ValidDurationBehavior(@NonNull ValidDuration validDuration) {
+      ValidDurationBehavior(ValidDuration validDuration) {
         duration = validDuration.duration();
       }
 
       @ParameterizedTest
       @EnumSource(DurationFormat.Style.class)
-      void shouldParseValidDurationStringToExpectedDelay(@NonNull DurationFormat.Style durationFormatStyle) {
+      void shouldParseValidDurationStringToExpectedDelay(DurationFormat.Style durationFormatStyle) {
         String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
         assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
           .hasValue(RetryDelay.of(duration));
@@ -210,19 +206,17 @@ class RetryDelayTest {
     @ParameterizedClass
     @EnumSource(InvalidDuration.class)
     class InvalidDurationBehavior {
-      @NonNull
       private final Duration duration;
-      @NonNull
       private final InvalidDuration invalidDuration;
 
-      InvalidDurationBehavior(@NonNull InvalidDuration invalidDuration) {
+      InvalidDurationBehavior(InvalidDuration invalidDuration) {
         this.invalidDuration = invalidDuration;
         duration = invalidDuration.duration();
       }
 
       @ParameterizedTest
       @EnumSource(DurationFormat.Style.class)
-      void shouldParseDurationStringToBeWithinBounds(@NonNull DurationFormat.Style durationFormatStyle) {
+      void shouldParseDurationStringToBeWithinBounds(DurationFormat.Style durationFormatStyle) {
         // Excluding MIN, MAX, as they have issues in the String representation
         // for SIMPLE and COMPOSITE formatting, causing irrelevant failures.
         assumeThat(invalidDuration)
@@ -261,10 +255,9 @@ class RetryDelayTest {
       "ipsum"
     })
     class InvalidDurationStringBehavior {
-      @NonNull
       private final String invalidDurationString;
 
-      InvalidDurationStringBehavior(@NonNull String invalidDurationString) {
+      InvalidDurationStringBehavior(String invalidDurationString) {
         this.invalidDurationString = invalidDurationString;
       }
 
@@ -294,14 +287,12 @@ class RetryDelayTest {
     MAX_DELAY(RetryDelay.MAX_DELAY_DURATION),
     ;
 
-    @NonNull
     private final Duration duration;
 
-    ValidDuration(@NonNull Duration duration) {
+    ValidDuration(Duration duration) {
       this.duration = duration;
     }
 
-    @NonNull
     public Duration duration() {
       return duration;
     }
@@ -315,14 +306,12 @@ class RetryDelayTest {
     MAX(Duration.ofSeconds(Long.MAX_VALUE).plus(Duration.ofSeconds(1L).minus(Duration.ofNanos(1L)))),
     ;
 
-    @NonNull
     private final Duration duration;
 
-    InvalidDuration(@NonNull Duration duration) {
+    InvalidDuration(Duration duration) {
       this.duration = duration;
     }
 
-    @NonNull
     public Duration duration() {
       return duration;
     }
