@@ -38,10 +38,10 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
-import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
@@ -410,7 +410,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    */
   record AdaptDelayForGeneralRetryContext<P, R>(
     Settings settings,
-    @UnknownNullness P extendedParameters,
+    @NullUnmarked P extendedParameters,
     Optional<R> extendedResult,
     Map<String, List<Content>> issues
   ) {
