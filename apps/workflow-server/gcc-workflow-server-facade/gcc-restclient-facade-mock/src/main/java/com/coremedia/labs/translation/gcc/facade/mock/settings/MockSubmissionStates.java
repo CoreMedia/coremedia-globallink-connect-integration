@@ -1,8 +1,8 @@
 package com.coremedia.labs.translation.gcc.facade.mock.settings;
 
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -96,12 +96,11 @@ import static org.slf4j.LoggerFactory.getLogger;
  *         override: DELIVERED
  * }</pre>
  */
+@NullMarked
 public final class MockSubmissionStates {
   private static final Logger LOG = getLogger(lookup().lookupClass());
-  @NonNull
   public static final MockSubmissionStates EMPTY = new MockSubmissionStates(Map.of());
 
-  @NonNull
   private final Map<GCSubmissionState, StatePointcutConfig> statePointcutConfigs;
 
   /**
@@ -109,7 +108,7 @@ public final class MockSubmissionStates {
    *
    * @param statePointcutConfigs map of state pointcut configurations
    */
-  private MockSubmissionStates(@NonNull Map<GCSubmissionState, StatePointcutConfig> statePointcutConfigs) {
+  private MockSubmissionStates(Map<GCSubmissionState, StatePointcutConfig> statePointcutConfigs) {
     this.statePointcutConfigs = Map.copyOf(statePointcutConfigs);
   }
 
@@ -119,7 +118,7 @@ public final class MockSubmissionStates {
    * @param config configuration to parse
    * @return mock submission state behavior
    */
-  public static MockSubmissionStates fromConfig(@NonNull Map<?, ?> config) {
+  public static MockSubmissionStates fromConfig(Map<?, ?> config) {
     Map<GCSubmissionState, StatePointcutConfig> parsedConfig = parseConfig(config);
     if (parsedConfig.isEmpty()) {
       return EMPTY;
@@ -135,8 +134,7 @@ public final class MockSubmissionStates {
    * @return map of state pointcut configurations; on invalid or not existing
    * configuration an empty map will be returned
    */
-  @NonNull
-  private static Map<GCSubmissionState, StatePointcutConfig> parseConfig(@NonNull Map<?, ?> config) {
+  private static Map<GCSubmissionState, StatePointcutConfig> parseConfig(Map<?, ?> config) {
     Map<GCSubmissionState, StatePointcutConfig> result = new EnumMap<>(GCSubmissionState.class);
     for (Map.Entry<?, ?> entry : config.entrySet()) {
       if (!(entry.getKey() instanceof String stateName)) {
@@ -166,7 +164,7 @@ public final class MockSubmissionStates {
    * @return replay scenario; {@code null} if no replay scenario is available
    */
   @Nullable
-  public ReplayScenario getReplayScenario(@NonNull GCSubmissionState state) {
+  public ReplayScenario getReplayScenario(GCSubmissionState state) {
     StatePointcutConfig config = statePointcutConfigs.get(state);
     if (config == null) {
       LOG.trace("No mock submission state configuration for state: {}", state);
@@ -206,7 +204,7 @@ public final class MockSubmissionStates {
      * @param states     states to replay
      * @param finalState whether the last state is considered final
      */
-    private ReplayScenario(@NonNull Collection<GCSubmissionState> states,
+    private ReplayScenario(Collection<GCSubmissionState> states,
                            boolean finalState) {
       this.states = new LinkedList<>(states);
       this.finalState = finalState;
@@ -226,7 +224,6 @@ public final class MockSubmissionStates {
      *
      * @return next state to replay; empty if no more states are available
      */
-    @NonNull
     public Optional<GCSubmissionState> next() {
       if (states.isEmpty()) {
         LOG.trace("No more states available in replay scenario.");
@@ -240,7 +237,7 @@ public final class MockSubmissionStates {
         state = states.poll();
       }
       LOG.trace("State to replay: {}", state);
-      return Optional.ofNullable(state);
+      return Optional.of(state);
     }
   }
 
@@ -253,9 +250,9 @@ public final class MockSubmissionStates {
    * @param override   states to replace the original state
    */
   public record StatePointcutConfig(boolean finalState,
-                                    @NonNull List<GCSubmissionState> before,
-                                    @NonNull List<GCSubmissionState> after,
-                                    @NonNull List<GCSubmissionState> override
+                                    List<GCSubmissionState> before,
+                                    List<GCSubmissionState> after,
+                                    List<GCSubmissionState> override
   ) {
     /**
      * Checks if the state configuration is considered empty.
@@ -278,7 +275,6 @@ public final class MockSubmissionStates {
      * @param object configuration to parse
      * @return state pointcut configuration
      */
-    @NonNull
     public static Optional<StatePointcutConfig> fromConfig(@Nullable Object object) {
       if (!(object instanceof Map<?, ?> config) || config.isEmpty()) {
         return Optional.empty();
@@ -296,8 +292,7 @@ public final class MockSubmissionStates {
      * @param config configuration to parse
      * @return state pointcut configuration
      */
-    @NonNull
-    private static StatePointcutConfig parseStateConfig(@NonNull Map<?, ?> config) {
+    private static StatePointcutConfig parseStateConfig(Map<?, ?> config) {
       List<GCSubmissionState> before = parseStateList(config.get("before"));
       List<GCSubmissionState> after = parseStateList(config.get("after"));
       List<GCSubmissionState> override = parseStateList(config.get("override"));
@@ -315,7 +310,6 @@ public final class MockSubmissionStates {
      * @param config configuration to parse
      * @return list of submission states
      */
-    @NonNull
     private static List<GCSubmissionState> parseStateList(@Nullable Object config) {
       if (config instanceof String stateName) {
         Optional<GCSubmissionState> state = findSubmissionStateByName(stateName);
