@@ -65,22 +65,17 @@ import static org.awaitility.Awaitility.await;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * <p>
  * Contract test for GCC RestClient.
- * </p>
  * <p>
  * This is a test which should run on demand for example if you extended
  * the facade or if either the GCC Java API got updated, or the corresponding
  * GCC REST Backend.
- * </p>
  * <p>
  * It is a so-called contract test and thus tests the contract between
  * the consumer (this facade) and the producer (the GCC Java API).
- * </p>
  * <p>
  * In order to run the test, you need to add a file {@code .gcc.properties}
  * to your user home folder:
- * </p>
  * <pre>{@code
  * apiKey=ab12cd34
  * url=https://connect-dev.translations.com/api/v3/
