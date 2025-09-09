@@ -511,8 +511,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param result result value that was passed to the consumer in {@link #doExecuteGlobalLinkAction}
    * @return value to store in the {@code resultVariable} or null to store nothing in that variable
    */
-  @Nullable
-  Object doStoreResult(Task task, R result) {
+  @Nullable Object doStoreResult(Task task, R result) {
     return result;
   }
 
@@ -682,8 +681,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  @Nullable
-  Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+  @Nullable Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
     if (issues.isEmpty()) {
       return null;
     }
@@ -729,8 +727,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     /**
      * JSON with a map from studio severity to a map of error codes to possibly empty list of affected contents
      */
-    @Nullable
-    Blob issues;
+    @Nullable Blob issues;
     /**
      * Number of remaining automatic retries, if there are issues.
      * A value of {@link Integer#MAX_VALUE} signals, that the current

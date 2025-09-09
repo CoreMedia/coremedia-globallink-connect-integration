@@ -19,8 +19,7 @@ public class GCSubmissionModel {
   private final List<String> pdSubmissionIds;
   private final String name;
   private final GCSubmissionState state;
-  @Nullable
-  private final String submitter;
+  private final @Nullable String submitter;
   private final boolean error;
 
   /**
@@ -148,8 +147,7 @@ public class GCSubmissionModel {
     private final long submissionId;
     private List<String> pdSubmissionIds = List.of();
     private GCSubmissionState state = GCSubmissionState.OTHER;
-    @Nullable
-    private String submitter;
+    private @Nullable String submitter;
     private boolean error;
     private String name = "";
 

@@ -95,8 +95,7 @@ public enum GCSubmissionState {
 
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
-  @Nullable
-  private final String submissionStatusText;
+  private final @Nullable String submissionStatusText;
 
   GCSubmissionState() {
     submissionStatusText = null;

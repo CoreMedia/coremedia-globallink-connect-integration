@@ -163,8 +163,7 @@ public final class MockSubmissionStates {
    * @param state submission state to get a replay scenario for
    * @return replay scenario; {@code null} if no replay scenario is available
    */
-  @Nullable
-  public ReplayScenario getReplayScenario(GCSubmissionState state) {
+  public @Nullable ReplayScenario getReplayScenario(GCSubmissionState state) {
     StatePointcutConfig config = statePointcutConfigs.get(state);
     if (config == null) {
       LOG.trace("No mock submission state configuration for state: {}", state);
