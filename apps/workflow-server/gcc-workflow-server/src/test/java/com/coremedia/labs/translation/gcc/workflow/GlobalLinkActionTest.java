@@ -379,10 +379,8 @@ class GlobalLinkActionTest {
     private Runnable onDoExecuteGlobalLinkAction = () -> {
       // No operation.
     };
-    @Nullable
-    private String overrideGccRetryDelaySettingsKey;
-    @Nullable
-    private BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator;
+    private @Nullable String overrideGccRetryDelaySettingsKey;
+    private @Nullable BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator;
 
     private MockedGlobalLinkAction(ApplicationContext applicationContext, GCExchangeFacade gcExchangeFacade) {
       super(true);
@@ -399,8 +397,7 @@ class GlobalLinkActionTest {
     }
 
     @Override
-    @Nullable
-    Void doExtractParameters(Task task) {
+    @Nullable Void doExtractParameters(Task task) {
       return null;
     }
 

@@ -28,8 +28,7 @@ public class GlobalLinkConfigBuilder {
   private final StructService structService;
   private final ContentRepository repository;
   private RetryDelayMode retryDelayMode = RetryDelayMode.INTEGER;
-  @Nullable
-  private Site site;
+  private @Nullable Site site;
   private final Map<String, Duration> retryDelays = new HashMap<>();
 
   public GlobalLinkConfigBuilder(ContentRepository repository,

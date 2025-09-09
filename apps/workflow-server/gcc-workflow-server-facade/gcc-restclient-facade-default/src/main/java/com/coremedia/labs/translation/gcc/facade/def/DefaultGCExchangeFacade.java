@@ -563,8 +563,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return submission found; {@code null} if not found
    * @throws GCFacadeCommunicationException if unable to retrieve.
    */
-  @Nullable
-  private GCSubmission getSubmissionById(long submissionId) {
+  private @Nullable GCSubmission getSubmissionById(long submissionId) {
     SubmissionsListRequest request = new SubmissionsListRequest();
     request.setSubmissionId(submissionId);
     request.setPageSize(1L);

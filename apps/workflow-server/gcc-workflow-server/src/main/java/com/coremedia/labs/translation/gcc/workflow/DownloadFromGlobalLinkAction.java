@@ -361,8 +361,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
   // --- Internal ----------------------------------------------------------------------
 
-  @Nullable
-  private Blob updateXliffsZip(Result result) {
+  private @Nullable Blob updateXliffsZip(Result result) {
     try {
       File newXliffsZipFile = zipXliffs(result);
       if (newXliffsZipFile == null) {
@@ -378,8 +377,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   @VisibleForTesting
-  @Nullable
-  static File zipXliffs(Result result) throws IOException {
+  static @Nullable File zipXliffs(Result result) throws IOException {
 
     //noinspection StringConcatenationMissingWhitespace
     File xliffResultDir = new File(result.workingDir, "result" + System.currentTimeMillis());
@@ -409,8 +407,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     }
   }
 
-  @Nullable
-  private static File zipIfNotEmpty(File zipFile, File srcDir) {
+  private static @Nullable File zipIfNotEmpty(File zipFile, File srcDir) {
     String[] files = srcDir.list();
     if (files == null || files.length == 0) {
       return null;
@@ -557,10 +554,8 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     // Set during xliff import callback
     final Map<Long, List<XliffImportResultItem>> resultItems = new HashMap<>();
 
-    @Nullable
-    private GCSubmissionState globalLinkStatus;
-    @Nullable
-    private List<String> pdSubmissionIds;
+    private @Nullable GCSubmissionState globalLinkStatus;
+    private @Nullable List<String> pdSubmissionIds;
     private Set<Locale> completedLocales = Set.of();
     private boolean cancellationAllowed;
 

@@ -792,15 +792,13 @@ class DefaultGCExchangeFacadeContractTest {
     NO(false),
     DEFAULT(null);
 
-    @Nullable
-    private final Boolean isSendSubmitter;
+    private final @Nullable Boolean isSendSubmitter;
 
     SendSubmitter(@Nullable Boolean isSendSubmitter) {
       this.isSendSubmitter = isSendSubmitter;
     }
 
-    @Nullable
-    public Boolean getSendSubmitter() {
+    public @Nullable Boolean getSendSubmitter() {
       return isSendSubmitter;
     }
   }

@@ -189,9 +189,8 @@ public class CancelTranslationGlobalLinkAction extends
     }
   }
 
-  @Nullable
   @Override
-  Void doStoreResult(Task task, Result result) {
+  @Nullable Void doStoreResult(Task task, Result result) {
     Process process = task.getContainingProcess();
     process.set(globalLinkSubmissionStatusVariable, result.submissionState.toString());
     process.set(cancelledVariable, result.cancelled);
