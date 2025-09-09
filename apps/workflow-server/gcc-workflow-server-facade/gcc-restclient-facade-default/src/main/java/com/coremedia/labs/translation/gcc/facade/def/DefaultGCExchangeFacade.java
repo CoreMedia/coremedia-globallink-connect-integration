@@ -30,6 +30,7 @@ import org.gs4tr.gcc.restclient.model.ContentLocales;
 import org.gs4tr.gcc.restclient.model.GCSubmission;
 import org.gs4tr.gcc.restclient.model.GCTask;
 import org.gs4tr.gcc.restclient.model.TaskStatus;
+import org.gs4tr.gcc.restclient.operation.ConnectorsConfig;
 import org.gs4tr.gcc.restclient.operation.SubmissionSubmit;
 import org.gs4tr.gcc.restclient.operation.Submissions;
 import org.gs4tr.gcc.restclient.operation.Tasks;
@@ -186,7 +187,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       throw new GCFacadeIOException(e, "Failed to read resource: fileName=%s, resourceFileName=%s", fileName, resource.getFilename());
     }
     try {
-      UploadFileRequest request = new UploadFileRequest(bytes, fileName, fileTypeSupplier.get());
+      UploadFileRequest request = new UploadFileRequest(bytes, fileName, fileType());
       if (sourceLocale != null) {
         request.setSourceLocale(sourceLocale.toLanguageTag());
       }
@@ -196,6 +197,16 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to upload content: %s", fileName);
     }
+  }
+
+  /**
+   * Get the configured file type of the connector.
+   *
+   * @return file type
+   */
+  @VisibleForTesting
+  protected String fileType() {
+    return fileTypeSupplier.get();
   }
 
   @Override
@@ -593,7 +604,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
     List<String> supportedFileTypes;
     try {
-      supportedFileTypes = delegate.getConnectorsConfig().getFileTypes();
+      supportedFileTypes = connectorsConfig().getFileTypes();
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to get GlobalLink connector configuration from %s.", apiUrl);
     }
@@ -616,6 +627,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
     LOG.info("Using file type '{}' for uploading data to GlobalLink at {}", result, apiUrl);
     return result;
+  }
+
+  protected ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig() {
+    return delegate.getConnectorsConfig();
   }
 
   @Override
