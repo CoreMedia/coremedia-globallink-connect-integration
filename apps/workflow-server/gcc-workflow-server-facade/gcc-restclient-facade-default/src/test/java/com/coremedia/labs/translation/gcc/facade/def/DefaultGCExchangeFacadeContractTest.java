@@ -56,11 +56,13 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static com.coremedia.labs.translation.gcc.facade.GCConfigProperty.KEY_FILE_TYPE;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -167,29 +169,28 @@ class DefaultGCExchangeFacadeContractTest {
   @Nested
   @DisplayName("Tests for available File Types")
   class FileTypes {
-    @ParameterizedTest(name = "[{index}] Optional File Type {0} should be available.")
-    @ValueSource(strings = "xml")
-    @DisplayName("Ensure that optional file types are available.")
-    void optionalFileTypesAvailable(String type, Map<String, Object> gccProperties) {
-      // These file types are optional. They may be required for testing, but they are not
-      // important for production usage.
-      assertFileTypeAvailable(type, gccProperties);
+    @Test
+    void shouldHaveAnyFileType(Map<String, Object> gccProperties) {
+      assertThat(retrieveFileTypes(gccProperties)).isNotEmpty();
     }
 
-    @ParameterizedTest(name = "[{index}] Required File Type {0} should be available.")
-    @ValueSource(strings = "xliff")
-    @DisplayName("Ensure that required file types are available.")
-    void requiredFileTypesAvailable(String type, Map<String, Object> gccProperties) {
-      // These file types are crucial for this GCC client.
-      assertFileTypeAvailable(type, gccProperties);
+    @Test
+    void shouldHaveExpectedFileTypeFromProperties(Map<String, Object> gccProperties) {
+      Object propertyValue = gccProperties.get(KEY_FILE_TYPE);
+      assumeThat(propertyValue)
+        .as("Should have configured expected file type as String at %s, but is: %s".formatted(KEY_FILE_TYPE, propertyValue))
+        .isInstanceOf(String.class);
+      assertThat(retrieveFileTypes(gccProperties))
+        .contains(propertyValue.toString());
     }
 
-    private static void assertFileTypeAvailable(String type, Map<String, Object> gccProperties) {
+    private static List<String> retrieveFileTypes(Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       GCExchange delegate = facade.getDelegate();
       ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
-      List<String> availableTypes = connectorsConfig.getFileTypes();
-      assertThat(type).isIn(availableTypes);
+      List<String> fileTypes = connectorsConfig.getFileTypes();
+      LOG.debug("Available file types: {}", fileTypes);
+      return fileTypes;
     }
   }
 
