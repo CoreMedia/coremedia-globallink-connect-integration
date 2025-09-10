@@ -42,7 +42,7 @@ public record XliffFixture(
   private static final String XLIFF_CONTENT_PATTERN = """
     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-      <file original="someId" source-language="{0}" datatype="xml" target-language="{1}}">
+      <file original="someId" source-language="{0}" datatype="xml" target-language="{1}">
         <body>
           <trans-unit id="1" datatype="plaintext">
             <source>Lorem Ipsum: {2}</source>
