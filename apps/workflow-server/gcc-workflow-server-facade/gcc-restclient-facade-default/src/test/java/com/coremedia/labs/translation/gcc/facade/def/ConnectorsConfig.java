@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.facade.def;
 
 import org.gs4tr.gcc.restclient.model.LanguageDirection;
 import org.gs4tr.gcc.restclient.model.LocaleConfig;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@NullMarked
 public record ConnectorsConfig(String name,
                                String type,
                                List<String> fileTypes,
