@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.nio.charset.StandardCharsets;
@@ -14,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@NullMarked
 public record XliffFixture(
   String ownerId,
   String filename,
