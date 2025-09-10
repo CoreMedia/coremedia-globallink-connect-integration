@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.facade.def;
 
 import org.gs4tr.gcc.restclient.model.LanguageDirection;
 import org.gs4tr.gcc.restclient.model.LocaleConfig;
+import org.gs4tr.gcc.restclient.operation.ConnectorsConfig.ConnectorsConfigResponseData;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
@@ -12,6 +13,12 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * GlobalLink Connector Configuration Wrapper. Provides information for
+ * debugging purpose, as well as supporting dynamically adapted tests to
+ * your configured connector (like choosing relevant source and target
+ * locales).
+ */
 @NullMarked
 public record ConnectorsConfig(String name,
                                String type,
@@ -24,6 +31,14 @@ public record ConnectorsConfig(String name,
                                List<String> jobStates,
                                List<String> taskStates,
                                List<String> submissionStates) {
+  /**
+   * For testing purpose, select any valid pair of source and target
+   * language for a translation submission.
+   *
+   * @return the key denotes the source, the value the target language
+   * @throws java.util.NoSuchElementException if no suitable language
+   *                                          direction could be found
+   */
   public Map.Entry<Locale, Locale> anyLanguageDirectionPair() {
     return languageDirections.entrySet()
       .stream()
@@ -83,7 +98,14 @@ public record ConnectorsConfig(String name,
     return result;
   }
 
-  public static ConnectorsConfig of(org.gs4tr.gcc.restclient.operation.ConnectorsConfig.ConnectorsConfigResponseData data) {
+  /**
+   * Create a wrapper from connector configuration response data as provided
+   * by the GlobalLink Connector.
+   *
+   * @param data GlobalLink Connector response data for connector configuration
+   * @return wrapper object
+   */
+  public static ConnectorsConfig of(ConnectorsConfigResponseData data) {
     List<Locale> sourceLocales = supportedLocales(data, LocaleConfig::getIsSource);
     List<Locale> targetLocales = supportedLocales(data, c -> !c.getIsSource());
     Map<Locale, List<Locale>> languageDirections = languageDirections(data);
@@ -102,7 +124,14 @@ public record ConnectorsConfig(String name,
     );
   }
 
-  private static List<Locale> supportedLocales(org.gs4tr.gcc.restclient.operation.ConnectorsConfig.ConnectorsConfigResponseData data,
+  /**
+   * Get all supported locales matching the given predicate.
+   *
+   * @param data                  connector response data to use
+   * @param localeConfigPredicate predicate to apply
+   * @return list of matching locales
+   */
+  private static List<Locale> supportedLocales(ConnectorsConfigResponseData data,
                                                Predicate<LocaleConfig> localeConfigPredicate) {
     return data.getSupportedLocales().stream()
       .filter(localeConfigPredicate)
@@ -111,7 +140,14 @@ public record ConnectorsConfig(String name,
       .toList();
   }
 
-  private static Map<Locale, List<Locale>> languageDirections(org.gs4tr.gcc.restclient.operation.ConnectorsConfig.ConnectorsConfigResponseData data) {
+  /**
+   * Get all language directions as a map from source locale to applicable
+   * target locales.
+   *
+   * @param data connector response data to use
+   * @return map of source to single target locale or multiple target locales
+   */
+  private static Map<Locale, List<Locale>> languageDirections(ConnectorsConfigResponseData data) {
     Map<Locale, List<Locale>> result = new HashMap<>();
     List<LanguageDirection> languageDirections = data.getLanguageDirections();
     for (LanguageDirection languageDirection : languageDirections) {
@@ -122,8 +158,15 @@ public record ConnectorsConfig(String name,
     return result;
   }
 
+  /**
+   * Transforms a locale string from GCC backend to a representation as a
+   * {@link Locale}. Applies a workaround for an observed issue, where
+   * configured locales contained additional spaces, that break parsing.
+   *
+   * @param languageTag language tag from GCC backend
+   * @return locale representation
+   */
   private static Locale toLocale(String languageTag) {
-    // GCC REST Backend Bug Workaround: Locale contains/may contain trailing space.
     return Locale.forLanguageTag(languageTag.trim());
   }
 }
