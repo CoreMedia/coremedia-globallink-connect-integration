@@ -41,10 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 
 import static com.coremedia.labs.translation.gcc.facade.GCConfigProperty.KEY_FILE_TYPE;
@@ -161,7 +158,7 @@ class DefaultGCExchangeFacadeContractTest {
 
     @Test
     void shouldHaveAnyFileType() {
-      assertThat(facade.fileTypes()).isNotEmpty();
+      assertThat(facade.connectorsConfig().fileTypes()).isNotEmpty();
     }
 
     @Test
@@ -170,25 +167,25 @@ class DefaultGCExchangeFacadeContractTest {
       assumeThat(propertyValue)
         .as("Should have configured expected file type as String at %s, but is: %s".formatted(KEY_FILE_TYPE, propertyValue))
         .isInstanceOf(String.class);
-      assertThat(facade.fileTypes())
+      assertThat(facade.connectorsConfig().fileTypes())
         .contains(propertyValue.toString());
     }
 
     @Test
     void shouldHaveAnySourceLocaleAvailable(Map<String, Object> gccProperties) {
-      assertThat(connect(gccProperties).supportedSourceLocales())
+      assertThat(connect(gccProperties).connectorsConfig().sourceLocales())
         .isNotEmpty();
     }
 
     @Test
     void shouldHaveAnyTargetLocaleAvailable(Map<String, Object> gccProperties) {
-      assertThat(connect(gccProperties).supportedTargetLocales())
+      assertThat(ExtendedDefaultGCExchangeFacade.connect(gccProperties).connectorsConfig().targetLocales())
         .isNotEmpty();
     }
 
     @Test
-    void shouldHaveAnyTranslationDirectionsConfigured(Map<String, Object> gccProperties) {
-      assertThat(connect(gccProperties).translationDirections())
+    void shouldHaveAnyLanguageDirectionsConfigured(Map<String, Object> gccProperties) {
+      assertThat(connect(gccProperties).connectorsConfig().languageDirections())
         .isNotEmpty();
     }
   }
@@ -211,10 +208,7 @@ class DefaultGCExchangeFacadeContractTest {
 
       long contentCountBefore = facade.totalRecordsCount();
 
-      XliffFixture fixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       String fileId = fixture.upload(facade).fileId();
 
@@ -249,10 +243,7 @@ class DefaultGCExchangeFacadeContractTest {
     @Test
     @DisplayName("Be aware of submission/task cancellation.")
     void shouldBeCancellationAware() {
-      XliffFixture fixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       long submissionId = fixture.uploadAndSubmit(
         facade,
@@ -316,11 +307,8 @@ class DefaultGCExchangeFacadeContractTest {
     @Test
     @DisplayName("Test simple submission")
     void shouldPerformSimpleSubmissionSuccessfully(Map<String, Object> gccProperties) {
-      ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
-      XliffFixture fixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       long submissionId = fixture.uploadAndSubmit(
         facade,
@@ -359,11 +347,8 @@ class DefaultGCExchangeFacadeContractTest {
         case NO -> "Ignore submitter-name (use credentials user instead)";
         case DEFAULT -> "Default: Ignore submitter-name (use credentials user instead)";
       };
-      ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
-      XliffFixture fixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       long submissionId = fixture.uploadAndSubmit(
         facade,
@@ -398,12 +383,9 @@ class DefaultGCExchangeFacadeContractTest {
                                             Map<String, Object> originalGccProperties) {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, true);
-      ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
       String submitterName = "%s(%s)".formatted(testName, challenge.getChallenge());
-      XliffFixture fixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       long submissionId = fixture.uploadAndSubmit(
         facade,
@@ -458,11 +440,8 @@ class DefaultGCExchangeFacadeContractTest {
       gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
       String unicodeDove = "\uD83D\uDD4A";
       String comment = "Instruction to break GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(unicodeDove);
-      ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
-      XliffFixture fixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       long submissionId = fixture.uploadAndSubmit(
         facade,
@@ -495,11 +474,8 @@ class DefaultGCExchangeFacadeContractTest {
     @EnumSource(CommentFixture.class)
     void shouldRespectInstructions(CommentFixture commentFixture,
                                    Map<String, Object> gccProperties) {
-      ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
-      XliffFixture xliffFixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture xliffFixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       long submissionId = xliffFixture.uploadAndSubmit(
         facade,
@@ -531,11 +507,8 @@ class DefaultGCExchangeFacadeContractTest {
     @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
     void shouldPreemptivelyReplaceProblematicCharactersInSubmissionNames(SupplementaryMultilingualPlaneChallenge challenge,
                                                                          Map<String, Object> gccProperties) {
-      ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
-      XliffFixture xliffFixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture xliffFixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       String submissionNameChallenge = "%s(%s)".formatted(submissionName, challenge.getChallenge());
       long submissionId = xliffFixture.uploadAndSubmit(
@@ -576,11 +549,8 @@ class DefaultGCExchangeFacadeContractTest {
     @EnumSource(SubmissionNameLengthFixture.class)
     void shouldPreemptivelyTruncateLongSubmissionNames(SubmissionNameLengthFixture fixture,
                                                        Map<String, Object> gccProperties) {
-      ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
-      XliffFixture xliffFixture = facade.translationDirectionsStream()
-        .map(d -> XliffFixture.of(testName, d))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("Missing translation direction to create relevant testcase."));
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture xliffFixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       String paddedSubmissionName = fixture.pad(submissionName);
       // Unmet Failure Scenario: If the length of the submission name eventually
@@ -629,25 +599,11 @@ class DefaultGCExchangeFacadeContractTest {
   @Tag("full")
   @DisplayName("Translate XLIFF and receive results (takes about 10 Minutes)")
   void translateXliff(Map<String, Object> gccProperties) {
-    ExtendedDefaultGCExchangeFacade facade = ExtendedDefaultGCExchangeFacade.connect(gccProperties);
-    // Ensure, that we have one source locale only.
-    AtomicReference<@Nullable Locale> firstMasterLocale = new AtomicReference<>();
-    List<XliffFixture> xliffFixtures = facade.translationDirectionsStream()
-      .filter(td -> {
-        Locale currentSource = td.source();
-        Locale firstSource = firstMasterLocale.get();
-        if (firstSource == null) {
-          firstMasterLocale.set(currentSource);
-          return true;
-        }
-        return currentSource.equals(firstSource);
-      })
-      .map(d -> XliffFixture.of(testName, d))
+    ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+    Map.Entry<Locale, List<Locale>> anyLanguageDirection = facade.connectorsConfig().anyLanguageDirection();
+    List<XliffFixture> xliffFixtures = anyLanguageDirection.getValue().stream()
+      .map(target -> XliffFixture.of(testName, anyLanguageDirection.getKey(), target))
       .toList();
-
-    if (xliffFixtures.isEmpty()) {
-      throw new IllegalStateException("At least relevant translation direction must be available.");
-    }
 
     long submissionId =
       XliffFixture.uploadAndSubmitAll(
@@ -655,7 +611,7 @@ class DefaultGCExchangeFacadeContractTest {
         submissionName,
         "Full translation workflow test from submission to retrieving results.",
         testName,
-        Objects.requireNonNull(firstMasterLocale.get()),
+        anyLanguageDirection.getKey(),
         xliffFixtures
       );
 

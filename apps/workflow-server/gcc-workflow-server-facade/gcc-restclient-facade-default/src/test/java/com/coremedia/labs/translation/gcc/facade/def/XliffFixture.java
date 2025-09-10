@@ -118,8 +118,8 @@ public record XliffFixture(
     );
   }
 
-  public static XliffFixture of(String ownerId, TranslationDirection direction) {
-    return of(ownerId, direction.source(), direction.target());
+  public static XliffFixture of(String ownerId, Map.Entry<Locale, Locale> direction) {
+    return of(ownerId, direction.getKey(), direction.getValue());
   }
 
   public record UploadResult(
