@@ -15,6 +15,22 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Test fixture for creating and managing XLIFF files in GlobalLink Connect
+ * (GCC) integration tests.
+ * <p>
+ * This record encapsulates the necessary data for generating XLIFF 1.2
+ * compliant translation files and provides convenient methods for uploading and
+ * submitting them to the GCC facade. The fixture generates standardized XLIFF
+ * content with Lorem Ipsum text for consistent testing scenarios.
+ *
+ * @param ownerId      the unique identifier for the content owner
+ * @param filename     the generated filename following the pattern
+ *                     {@code <ownerId>_<sourceLocale>2<targetLocale>.xliff}
+ * @param content      the complete XLIFF document content as UTF-8 string
+ * @param sourceLocale the source language locale for translation
+ * @param targetLocale the target language locale for translation
+ */
 @NullMarked
 public record XliffFixture(
   String ownerId,
@@ -38,6 +54,14 @@ public record XliffFixture(
     """;
   private static final String FILENAME_PATTERN = "{2}_{0}2{1}.xliff";
 
+  /**
+   * Uploads the XLIFF content to the GCC facade without submitting for
+   * translation.
+   *
+   * @param facade the GCC exchange facade for content operations
+   * @return upload result containing file ID and locale information
+   * @throws RuntimeException if upload fails due to network or API errors
+   */
   public UploadResult upload(GCExchangeFacade facade) {
     String fileId = facade.uploadContent(
       filename,
@@ -47,6 +71,22 @@ public record XliffFixture(
     return new UploadResult(fileId, sourceLocale, targetLocale);
   }
 
+  /**
+   * Uploads the XLIFF content and immediately submits it for translation
+   * processing.
+   * <p>
+   * This method combines upload and submission operations in a single call,
+   * setting a due date two days from the current system time to accommodate
+   * GCC API timezone handling limitations.
+   *
+   * @param facade         the GCC exchange facade for content operations
+   * @param submissionName the human-readable name for the translation
+   *                       submission
+   * @param comment        optional comment describing the submission purpose
+   * @param submitterName  the name of the user initiating the submission
+   * @return the unique submission ID for tracking translation progress
+   * @throws RuntimeException if upload or submission fails
+   */
   public long uploadAndSubmit(GCExchangeFacade facade,
                               String submissionName,
                               String comment,
@@ -63,6 +103,26 @@ public record XliffFixture(
     );
   }
 
+  /**
+   * Batch uploads multiple XLIFF fixtures and submits them as a single
+   * translation job.
+   * <p>
+   * This static method enables efficient processing of multiple translation
+   * files within a single submission, reducing API overhead and providing
+   * atomic submission semantics for related content.
+   *
+   * @param facade         the GCC exchange facade for content operations
+   * @param submissionName the human-readable name for the batch submission
+   * @param comment        optional comment describing the batch submission
+   *                       purpose
+   * @param submitterName  the name of the user initiating the batch submission
+   * @param sourceLocale   the common source locale for all fixtures in the
+   *                       batch
+   * @param fixtures       the collection of XLIFF fixtures to upload and submit
+   * @return the unique submission ID for tracking the batch translation
+   * progress
+   * @throws RuntimeException if any upload or the submission fails
+   */
   public static long uploadAndSubmitAll(
     GCExchangeFacade facade,
     String submissionName,
@@ -99,6 +159,21 @@ public record XliffFixture(
     return ZonedDateTime.of(LocalDateTime.now().plusDays(2L), ZoneId.systemDefault());
   }
 
+  /**
+   * Factory method for creating an XLIFF fixture with generated content and
+   * filename.
+   * <p>
+   * This method generates standardized XLIFF 1.2 content using the provided
+   * locale information and owner ID. The resulting fixture contains properly
+   * formatted language tags and consistent Lorem Ipsum text for predictable
+   * test scenarios.
+   *
+   * @param ownerId      the unique identifier to embed in the XLIFF content and
+   *                     filename
+   * @param sourceLocale the source language locale for the translation pair
+   * @param targetLocale the target language locale for the translation pair
+   * @return a new XLIFF fixture with generated content and filename
+   */
   public static XliffFixture of(String ownerId, Locale sourceLocale, Locale targetLocale) {
     String xliffContent = MessageFormat.format(
       XLIFF_CONTENT_PATTERN,
@@ -120,10 +195,34 @@ public record XliffFixture(
     );
   }
 
+  /**
+   * Convenience factory method for creating an XLIFF fixture from a locale
+   * direction entry.
+   * <p>
+   * This overload accepts a {@link Map.Entry} representing a translation
+   * direction, where the key is the source locale and the value is the target
+   * locale.
+   *
+   * @param ownerId   the unique identifier to embed in the XLIFF content and
+   *                  filename
+   * @param direction the translation direction as a key-value pair of locales
+   * @return a new XLIFF fixture with generated content and filename
+   */
   public static XliffFixture of(String ownerId, Map.Entry<Locale, Locale> direction) {
     return of(ownerId, direction.getKey(), direction.getValue());
   }
 
+  /**
+   * Result record capturing the outcome of an XLIFF file upload operation.
+   * <p>
+   * This record provides the necessary information for subsequent submission
+   * operations and locale tracking within the GCC workflow.
+   *
+   * @param fileId       the unique identifier assigned by GCC for the uploaded
+   *                     file
+   * @param sourceLocale the source language locale from the original fixture
+   * @param targetLocale the target language locale from the original fixture
+   */
   public record UploadResult(
     String fileId,
     Locale sourceLocale,
