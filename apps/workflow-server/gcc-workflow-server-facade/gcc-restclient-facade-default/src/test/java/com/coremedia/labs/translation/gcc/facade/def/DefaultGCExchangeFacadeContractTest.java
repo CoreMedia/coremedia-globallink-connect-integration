@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.slf4j.Logger;
@@ -73,8 +72,23 @@ import static org.slf4j.LoggerFactory.getLogger;
  * key=0e...abc
  * fileType=xliff
  * }</pre>
+ * <p>
+ * <strong>Configuration Profiles:</strong>
+ * <p>
+ * Some tests may require adapted settings (like a different connector key
+ * to test cancellation). If a corresponding profile has been set for a given
+ * test, you may override the settings from {@code .gcc.properties} selectively
+ * in {@code .gcc.<profile>.properties}.
+ * <p>
+ * Currently supported profiles:
+ * <ul>
+ * <li>{@code cancellation}: If your standard (most likely automatic,
+ * pseudo-translated) connector is too fast or does now allow cancellation,
+ * you may set, for example, an alternative connector key here (like a
+ * connector for manual submission transitions).</li>
+ * </ul>
  */
-@ExtendWith(GccCredentialsExtension.class)
+@GccCredentials
 @NullMarked
 class DefaultGCExchangeFacadeContractTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
@@ -231,6 +245,9 @@ class DefaultGCExchangeFacadeContractTest {
 
   @Nested
   @DisplayName("Tests for cancellation")
+  // We may need a different connector configuration for testing cancellation
+  // support.
+  @GccCredentials("cancellation")
   @NullUnmarked
   class Cancellation {
     private static ExtendedDefaultGCExchangeFacade facade;
