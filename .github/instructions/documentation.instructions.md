@@ -65,15 +65,49 @@ serial (Oxford) comma for clarity in technical writing.
 
 ## Javadoc
 
-In general, ensure to use Javadoc best-practices aligned with the current
-Java version (see [Java Instructions](./java.instructions.md) for details).
+* **Primary Reference:**
+  [Oracle Javadoc Style Guide](https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html)
+* **Modern Features:**
+  [JavaDoc Guide, Release 21](https://docs.oracle.com/en/java/javase/21/javadoc/javadoc-guide.pdf)
 
 ### Javadoc Specific Rules
 
 * **Document all public methods**: Include `@param`, `@return`, `@throws` for
   public APIs
 * **Use `{@link}` for cross-references**: Link to related classes and methods
-* **Write complete sentences**: Start with capital letter, end with period
-* **Use present tense**: "Returns the user name" not "Will return the user name"
+* **Write complete sentences**: Start with a capital letter, end with period
+* **Use present tense**: "Returns the username" not "Will return the username"
+* **Target advanced programmers**: Be concise and avoid explaining basic Java
+  concepts
+* **Document runtime exceptions**: Include `@throws` for `RuntimeException`
+  subclasses that may be thrown
+
+### Code Examples and Formatting
+
 * **Prefer `{@code}` over `<code>`**: Use `{@code}` for inline code examples
-* **Include examples**: Use `{@code}` or `<pre>` blocks to show usage patterns
+* **Use `{@snippet}` for code blocks**: For Java 21+, use `{@snippet}` instead
+  of `<pre>{@code}` blocks for multi-line examples
+* **Limit line length**: Prefer 80 characters, maximum 120 characters, exceed
+  only for long URLs, for example.
+
+### HTML and Structure
+
+* **Use `<p>` sparingly**: Place `<p>` on empty lines to separate paragraphs,
+  don't use XHTML-style `<p></p>` tags
+* **Maintain consistent indentation**: Align asterisks vertically
+
+```java
+/**
+ * Returns the user's display name formatted for the current locale.
+ * <p>
+ * This method handles null values by returning a default placeholder.
+ * The formatting follows RFC 2822 conventions for display names.
+ *
+ * @param userId the unique identifier for the user
+ * @param locale the target locale for formatting
+ * @return the formatted display name, never {@code null}
+ * @throws IllegalArgumentException if userId is negative
+ * @throws UserNotFoundException if no user exists with the given ID
+ * @since 2.1
+ */
+```
