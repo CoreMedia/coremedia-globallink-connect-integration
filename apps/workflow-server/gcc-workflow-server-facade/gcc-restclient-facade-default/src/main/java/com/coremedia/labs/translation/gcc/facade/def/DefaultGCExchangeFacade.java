@@ -604,7 +604,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
     List<String> supportedFileTypes;
     try {
-      supportedFileTypes = connectorsConfig().getFileTypes();
+      supportedFileTypes = delegate.getConnectorsConfig().getFileTypes();
     } catch (RuntimeException e) {
       throw new GCFacadeCommunicationException(e, "Failed to get GlobalLink connector configuration from %s.", apiUrl);
     }
@@ -627,10 +627,6 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
 
     LOG.info("Using file type '{}' for uploading data to GlobalLink at {}", result, apiUrl);
     return result;
-  }
-
-  protected ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig() {
-    return delegate.getConnectorsConfig();
   }
 
   @Override
