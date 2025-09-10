@@ -1,9 +1,11 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import org.gs4tr.gcc.restclient.model.GCFile;
+import org.jspecify.annotations.NullMarked;
 
 import java.time.Instant;
 
+@NullMarked
 public record UploadedFile(
   String id,
   String contentId,
