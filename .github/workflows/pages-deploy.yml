@@ -3,7 +3,9 @@ name: Deploy Website to GitHub Pages
 on:
   workflow_dispatch: {}
   workflow_call: {}
-  push:
+  # Only run when merging closed pull-requests.
+  pull_request:
+    types: [closed]
     branches:
       - main
     paths:
@@ -20,13 +22,36 @@ env:
   PNPM_VERSION: 10.9
 
 jobs:
+  # Only run, when merging from `maintenance/*` branches. This matches the
+  # development flow as introduced in August 2025 and may require to be adapted,
+  # if we decide differently. Goal: Only publish the "latest approved version"
+  # rather than an intermediate state while preparing the next release.
+  check-source-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+    steps:
+      - id: check
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+        run: |
+          if [[ "$PR_MERGED" == "true" && "$HEAD_REF" =~ ^maintenance/ ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          fi
   env:
+    needs: check-source-branch
+    if: needs.check-source-branch.outputs.should-deploy == 'true'
     uses: "./.github/workflows/env.yml"
   build:
     name: Build Docusaurus
     runs-on: ubuntu-latest
     needs:
       - env
+      - check-source-branch
+    if: needs.check-source-branch.outputs.should-deploy == 'true'
     env:
       NPM_HOST: ${{ needs.env.outputs.npm-host }}
       NPM_URL: ${{ needs.env.outputs.npm-url }}
@@ -85,7 +110,10 @@ jobs:
 
   deploy:
     name: Deploy to GitHub Pages
-    needs: build
+    needs:
+      - build
+      - check-source-branch
+    if: needs.check-source-branch.outputs.should-deploy == 'true'
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
