@@ -33,9 +33,10 @@
               <StringProperty
                 Name="apiKey"><![CDATA[Your API Key; for security reasons should be set at system-level in production use.]]></StringProperty>
               <BooleanProperty Name="isSendSubmitter">true</BooleanProperty>
-              <IntProperty Name="sendTranslationRequestRetryDelay">60</IntProperty>
-              <IntProperty Name="downloadTranslationRetryDelay">60</IntProperty>
-              <IntProperty Name="cancelTranslationRetryDelay">60</IntProperty>
+              <StringProperty Name="sendTranslationRequestRetryDelay">1m</StringProperty>
+              <StringProperty Name="downloadTranslationRetryDelay">3m</StringProperty>
+              <StringProperty Name="downloadTranslationEarlyRetryDelay">1m</StringProperty>
+              <StringProperty Name="cancelTranslationRetryDelay">1m</StringProperty>
               <StructProperty Name="submissionInstruction">
                 <Struct>
                   <StringProperty

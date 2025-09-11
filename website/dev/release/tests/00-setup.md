@@ -40,9 +40,10 @@ globalLink:
   # Despite `retryCommunicationErrors`, which just needs to be adjusted,
   # find copy & paste ready values for the other settings in the
   # `additionalConfigurationOptions` Struct.
-  sendTranslationRequestRetryDelay: 60
-  downloadTranslationRetryDelay: 60
-  cancelTranslationRetryDelay: 60
+  sendTranslationRequestRetryDelay: 1m
+  downloadTranslationRetryDelay: 3m
+  downloadTranslationEarlyRetryDelay: 1m
+  cancelTranslationRetryDelay: 1m
   retryCommunicationErrors: 1
   # Section: Submission Instruction Type Settings
   submissionInstruction:

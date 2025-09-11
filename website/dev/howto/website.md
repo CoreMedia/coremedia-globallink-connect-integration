@@ -61,22 +61,21 @@ Visual Studio Code Plugin:
 * [MDX - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
 :::
 
-### Badge
+### Deprecated
 
 Used to render a [Shields.io](https://shields.io/) badge within this
-documentation:
+documentation to signal deprecations:
 
 ```jsx
-<Badge
-  label="CoreMedia Content Cloud"
-  style="for-the-badge"
-  color="672779"
-  message="2412.0"
+<Deprecated
+  value="2506.0.0-1"
 />
 ```
 
-The advantage of using this badge is, that it can read the required version
-information as provided by `src/ts/context.ts`.
+:::note Example
+<Deprecated value="2506.0.0-1"/>
+Don't use this API anymore, it is deprecated without replacement.
+:::
 
 ### DocLink
 
@@ -119,3 +118,21 @@ In its short form, it will just render the path itself as text:
 ```jsx
 <RepositoryLink path=".github/workflows" />
 ```
+
+### Since
+
+Used to render a [Shields.io](https://shields.io/) badge within this
+documentation to signal a new API or feature:
+
+```jsx
+<Since
+  value="2506.0.0-1"
+/>
+```
+
+:::note Example
+<Since value="2506.0.0-1"/>
+You can now use duration strings instead of just integers interpreted as
+seconds.
+:::
+
