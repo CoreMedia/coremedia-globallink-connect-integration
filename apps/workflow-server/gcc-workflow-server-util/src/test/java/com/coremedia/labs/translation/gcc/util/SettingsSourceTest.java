@@ -9,7 +9,6 @@ import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.struct.Struct;
 import com.coremedia.cap.struct.StructService;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import static com.coremedia.labs.translation.gcc.util.SettingsSource.KEY_GLOBALLINK_ROOT;
 import static com.coremedia.labs.translation.gcc.util.SimpleMultiSiteConfiguration.CT_SITE_CONTENT;
@@ -67,17 +65,13 @@ class SettingsSourceTest {
     @Test
     void shouldProvideDefaultPropertiesBeanFromContext() {
       SettingsSource source = SettingsSource.fromContext(context);
-      assertThat(source)
-        .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-        .containsEntry("key1", "value1");
+      assertThat(source.get()).containsEntry("key1", "value1");
     }
 
     @Test
     void shouldProvideGivenPropertiesBeanFromContext() {
       SettingsSource source = SettingsSource.fromContext(context, "gccConfigurationProperties2");
-      assertThat(source)
-        .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-        .containsEntry("key2", "value2");
+      assertThat(source.get()).containsEntry("key2", "value2");
     }
   }
 
@@ -130,11 +124,7 @@ class SettingsSourceTest {
 
       assertThat(settingsSources)
         .hasSize(1)
-        .allSatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key", "value")
-        );
+        .allSatisfy(source -> assertThat(source.get()).containsEntry("key", "value"));
     }
 
     @Test
@@ -169,16 +159,8 @@ class SettingsSourceTest {
 
       assertThat(settingsSources)
         .hasSize(2)
-        .anySatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key1", "value1")
-        )
-        .anySatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key2", "value2")
-        )
+        .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
+        .anySatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
       ;
     }
   }
@@ -221,9 +203,7 @@ class SettingsSourceTest {
       assertThat(settingsSources)
         .hasSize(1)
         .allSatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key", "value")
+          source -> assertThat(source.get()).containsEntry("key", "value")
         );
     }
 
@@ -256,16 +236,8 @@ class SettingsSourceTest {
 
       assertThat(settingsSources)
         .hasSize(2)
-        .anySatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key1", "value1")
-        )
-        .anySatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key2", "value2")
-        )
+        .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
+        .anySatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
       ;
     }
   }
@@ -308,11 +280,7 @@ class SettingsSourceTest {
 
       assertThat(settingsSources)
         .hasSize(1)
-        .allSatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key", "value")
-        );
+        .allSatisfy(source -> assertThat(source.get()).containsEntry("key", "value"));
     }
 
     @Test
@@ -346,16 +314,8 @@ class SettingsSourceTest {
 
       assertThat(settingsSources)
         .hasSize(2)
-        .anySatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key1", "value1")
-        )
-        .anySatisfy(
-          source -> assertThat(source)
-            .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-            .containsEntry("key2", "value2")
-        )
+        .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
+        .anySatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
       ;
     }
 
@@ -388,11 +348,7 @@ class SettingsSourceTest {
 
         assertThat(settingsSources)
           .hasSize(1)
-          .allSatisfy(
-            source -> assertThat(source)
-              .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-              .isEmpty()
-          );
+          .allSatisfy(source -> assertThat(source.get()).isEmpty());
       }
 
       @Test
@@ -408,11 +364,7 @@ class SettingsSourceTest {
 
         assertThat(settingsSources)
           .hasSize(1)
-          .allSatisfy(
-            source -> assertThat(source)
-              .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-              .isEmpty()
-          );
+          .allSatisfy(source -> assertThat(source.get()).isEmpty());
       }
 
       @Test
@@ -428,11 +380,7 @@ class SettingsSourceTest {
 
         assertThat(settingsSources)
           .hasSize(1)
-          .allSatisfy(
-            source -> assertThat(source)
-              .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-              .isEmpty()
-          );
+          .allSatisfy(source -> assertThat(source.get()).isEmpty());
       }
 
       @Test
@@ -448,11 +396,7 @@ class SettingsSourceTest {
 
         assertThat(settingsSources)
           .hasSize(1)
-          .allSatisfy(
-            source -> assertThat(source)
-              .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-              .isEmpty()
-          );
+          .allSatisfy(source -> assertThat(source.get()).isEmpty());
       }
 
       @Test
@@ -489,21 +433,9 @@ class SettingsSourceTest {
 
         assertThat(settingsSources)
           .hasSize(2)
-          .anySatisfy(
-            source -> assertThat(source)
-              .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-              .containsEntry("key1", "value1")
-          )
-          .anySatisfy(
-            source -> assertThat(source)
-              .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-              .isEmpty()
-          )
-          .noneSatisfy(
-            source -> assertThat(source)
-              .extracting(Supplier::get, InstanceOfAssertFactories.map(String.class, Object.class))
-              .containsEntry("key2", "value2")
-          )
+          .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
+          .anySatisfy(source -> assertThat(source.get()).isEmpty())
+          .noneSatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
         ;
       }
     }
