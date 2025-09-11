@@ -8,7 +8,7 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.cap.struct.Struct;
 import com.coremedia.cap.struct.StructService;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,24 +41,22 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 // collisions.
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @SpringJUnitConfig(SettingsSourceTest.LocalConfig.class)
+@NullMarked
 class SettingsSourceTest {
-  @NonNull
   private final ContentRepository repository;
-  @NonNull
   private final StructService structService;
 
-  SettingsSourceTest(@Autowired @NonNull CapConnection connection,
-                     @Autowired @NonNull ContentRepository repository) {
+  SettingsSourceTest(@Autowired CapConnection connection,
+                     @Autowired ContentRepository repository) {
     this.repository = repository;
     structService = connection.getStructService();
   }
 
   @Nested
   class FromContextBehavior {
-    @NonNull
     private final ApplicationContext context;
 
-    public FromContextBehavior(@Autowired @NonNull ApplicationContext context) {
+    public FromContextBehavior(@Autowired ApplicationContext context) {
       this.context = context;
     }
 
@@ -77,17 +75,14 @@ class SettingsSourceTest {
 
   @Nested
   class AllAtSiteBehavior {
-    @NonNull
     private final ObjectProvider<Site> siteProvider;
-    @NonNull
     private final ContentRepository repository;
-    @NonNull
     private final StructService structService;
     private Site site;
 
-    AllAtSiteBehavior(@Autowired @NonNull ObjectProvider<Site> siteProvider,
-                      @Autowired @NonNull ContentRepository repository,
-                      @Autowired @NonNull CapConnection connection) {
+    AllAtSiteBehavior(@Autowired ObjectProvider<Site> siteProvider,
+                      @Autowired ContentRepository repository,
+                      @Autowired CapConnection connection) {
       this.siteProvider = siteProvider;
       this.repository = repository;
       structService = connection.getStructService();
@@ -167,13 +162,11 @@ class SettingsSourceTest {
 
   @Nested
   class AllAtRepositoryBehavior {
-    @NonNull
     private final ContentRepository repository;
-    @NonNull
     private final StructService structService;
 
-    AllAtRepositoryBehavior(@Autowired @NonNull ContentRepository repository,
-                            @Autowired @NonNull CapConnection connection) {
+    AllAtRepositoryBehavior(@Autowired ContentRepository repository,
+                            @Autowired CapConnection connection) {
       this.repository = repository;
       structService = connection.getStructService();
     }
@@ -456,7 +449,7 @@ class SettingsSourceTest {
 
     @Bean
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public Site site(@NonNull ContentRepository repository, @NonNull SitesService sitesService) {
+    public Site site(ContentRepository repository, SitesService sitesService) {
       String randomId = UUID.randomUUID().toString();
       repository.createContentBuilder()
         .type("SimpleSite")

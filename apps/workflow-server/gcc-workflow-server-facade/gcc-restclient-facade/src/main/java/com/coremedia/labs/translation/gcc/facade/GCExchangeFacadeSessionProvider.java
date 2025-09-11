@@ -1,7 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 
@@ -11,8 +10,8 @@ import java.util.Map;
  * do real communication, some may provide mock answers for testing
  * purpose and others just may signal a disabled communication state.
  */
-@DefaultAnnotation(NonNull.class)
 @FunctionalInterface
+@NullMarked
 public interface GCExchangeFacadeSessionProvider {
   /**
    * <p>

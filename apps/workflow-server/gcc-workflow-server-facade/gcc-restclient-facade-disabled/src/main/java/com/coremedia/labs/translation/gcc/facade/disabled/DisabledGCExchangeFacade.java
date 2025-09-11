@@ -5,10 +5,9 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider
 import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
@@ -30,7 +29,7 @@ import java.util.function.BiPredicate;
  * To get an instance of this facade, use {@link GCExchangeFacadeSessionProvider}.
  * </p>
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public final class DisabledGCExchangeFacade implements GCExchangeFacade {
   private static final GCExchangeFacade INSTANCE = new DisabledGCExchangeFacade();
 
@@ -51,7 +50,7 @@ public final class DisabledGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
+  public String uploadContent(String fileName, Resource resource, @Nullable Locale sourceLocale) {
     throw createDisabledException();
   }
 

@@ -1,9 +1,8 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
@@ -22,7 +21,7 @@ import java.util.function.BiPredicate;
  * @implSpec Implementations of this interface must be stateless, as they are
  * recreated several times during the lifecycle of the translation workflow.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public interface GCExchangeFacade {
   /**
    * This is a convenience access to the embedded delegate. It should not be
@@ -48,7 +47,7 @@ public interface GCExchangeFacade {
    * @throws GCFacadeIOException            if the resource cannot be read
    * @throws GCFacadeCommunicationException if the file cannot be uploaded
    */
-  String uploadContent(String fileName, Resource resource, Locale sourceLocale);
+  String uploadContent(String fileName, Resource resource, @Nullable Locale sourceLocale);
 
   /**
    * Submit submission for the given contents uploaded before.

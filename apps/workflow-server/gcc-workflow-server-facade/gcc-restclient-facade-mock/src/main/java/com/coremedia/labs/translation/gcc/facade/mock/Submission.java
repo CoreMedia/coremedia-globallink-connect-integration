@@ -4,9 +4,8 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSubmissionStates;
 import com.google.common.collect.ImmutableList;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -34,13 +33,11 @@ import static org.slf4j.LoggerFactory.getLogger;
  * does not need to know of jobs but just of submissions and tasks.
  * </p>
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 final class Submission {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
-  @NonNull
   private final MockSettings mockSettings;
-  @NonNull
   private final ImmutableList<Task> tasks;
 
   /**
@@ -66,8 +63,7 @@ final class Submission {
    *   </li>
    * </ul>
    */
-  @Nullable
-  private MockSubmissionStates.ReplayScenario activeReplayScenario;
+  private MockSubmissionStates.@Nullable ReplayScenario activeReplayScenario;
 
   /**
    * <p>
@@ -92,9 +88,9 @@ final class Submission {
    * @param submissionContents contents which shall be part of the submission
    * @param mockSettings       settings to control the behavior of the submission
    */
-  Submission(@NonNull String subject,
-             @NonNull List<SubmissionContent> submissionContents,
-             @NonNull MockSettings mockSettings) {
+  Submission(String subject,
+             List<SubmissionContent> submissionContents,
+             MockSettings mockSettings) {
     this.mockSettings = mockSettings;
     ImmutableList.Builder<Task> builder = ImmutableList.builder();
     for (SubmissionContent c : submissionContents) {
@@ -135,7 +131,6 @@ final class Submission {
     return possiblyOverrideByMockSubmissionState(result);
   }
 
-  @NonNull
   private Optional<GCSubmissionState> getSubmissionStateFromReplayScenario() {
     MockSubmissionStates.ReplayScenario scenario = activeReplayScenario;
     if (scenario == null) {
@@ -152,8 +147,7 @@ final class Submission {
     return nextState;
   }
 
-  @NonNull
-  private GCSubmissionState possiblyOverrideByMockSubmissionState(@NonNull GCSubmissionState originalSubmissionState) {
+  private GCSubmissionState possiblyOverrideByMockSubmissionState(GCSubmissionState originalSubmissionState) {
     if (activeReplayScenario != null) {
       // Prefer states from the replay scenario over the actual state.
       LOG.debug("Query existing replay scenario for state override of {}.", originalSubmissionState);

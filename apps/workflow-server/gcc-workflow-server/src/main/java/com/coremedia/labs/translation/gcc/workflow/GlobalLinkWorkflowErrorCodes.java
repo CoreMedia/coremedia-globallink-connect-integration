@@ -1,9 +1,8 @@
 package com.coremedia.labs.translation.gcc.workflow;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 final class GlobalLinkWorkflowErrorCodes {
 
   // ==== 10###: General/Unknown Problems
