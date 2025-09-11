@@ -2,7 +2,6 @@ package com.coremedia.labs.translation.gcc.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -45,72 +44,48 @@ class SettingsTest {
     @EnumSource(EmptyFixture.class)
     void shouldHaveEmptyProperties(@NonNull EmptyFixture emptyFixture) {
       Settings settings = emptyFixture.get();
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEmpty();
+      assertThat(settings.properties()).isEmpty();
     }
 
+    /**
+     * Represents various ways to achieve an empty state.
+     */
     enum EmptyFixture implements Supplier<Settings> {
-      CONSTANT {
-        @Override
-        @NonNull
-        public Settings get() {
-          return Settings.EMPTY;
-        }
-      },
-      OF_EMPTY_MAP {
-        @Override
-        @NonNull
-        public Settings get() {
-          return Settings.of(Map.of());
-        }
-      },
-      BUILDER_WITHOUT_SOURCES {
-        @Override
-        @NonNull
-        public Settings get() {
-          return Settings.builder().build();
-        }
-      },
-      BUILDER_WITH_EMPTY_SETTINGS_SOURCE {
-        @Override
-        @NonNull
-        public Settings get() {
-          return Settings.builder()
-            .source(Settings.EMPTY)
-            .build();
-        }
-      },
-      BUILDER_WITH_EMPTY_MAP_SOURCE {
-        @Override
-        @NonNull
-        public Settings get() {
-          return Settings.builder()
-            .source(Map::of)
-            .build();
-        }
-      },
-      BUILDER_WITH_EMPTY_SOURCES_LIST {
-        @Override
-        @NonNull
-        public Settings get() {
-          return Settings.builder()
-            .sources(List.of())
-            .build();
-        }
-      },
-      BUILDER_WITH_EMPTY_SOURCES_ARRAY {
-        @Override
-        @NonNull
-        public Settings get() {
-          return Settings.builder()
-            .sources()
-            .build();
-        }
-      },
+      CONSTANT(Settings.EMPTY),
+      OF_EMPTY_MAP(Settings.of(Map.of())),
+      BUILDER_WITHOUT_SOURCES(Settings.builder().build()),
+      BUILDER_WITH_EMPTY_SETTINGS_SOURCE(Settings.builder()
+        .source(Settings.EMPTY)
+        .build()),
+      BUILDER_WITH_EMPTY_MAP_SOURCE(Settings.builder()
+        .source(Map::of)
+        .build()),
+      BUILDER_WITH_EMPTY_SOURCES_LIST(Settings.builder()
+        .sources(List.of())
+        .build()),
+      BUILDER_WITH_EMPTY_SOURCES_ARRAY(Settings.builder()
+        .sources()
+        .build());
+
+      @NonNull
+      private final Settings settings;
+
+      EmptyFixture(@NonNull Settings settings) {
+        this.settings = settings;
+      }
+
+      @Override
+      @NonNull
+      public Settings get() {
+        return settings;
+      }
     }
   }
 
+  /**
+   * Test for only a single source to be added, thus, merging does not play
+   * a role here.
+   */
   @Nested
   @ParameterizedClass
   @EnumSource(SingleSourceBehavior.SingleSourceFixture.class)
@@ -126,9 +101,7 @@ class SettingsTest {
     void shouldHaveExpectedProperties() {
       Map<String, Object> properties = Map.of("key", "value");
       Settings settings = fixture.apply(properties);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(properties);
+      assertThat(settings.properties()).isEqualTo(properties);
     }
 
     @ParameterizedTest
@@ -146,9 +119,7 @@ class SettingsTest {
 
       Settings settings = fixture.apply(input);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @ParameterizedTest
@@ -159,9 +130,7 @@ class SettingsTest {
       properties.put("empty", emptyValueFixture.get());
       Map<String, Object> expected = Map.of("non-empty", "value");
       Settings settings = fixture.apply(properties);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @ParameterizedTest
@@ -188,9 +157,7 @@ class SettingsTest {
 
       Settings settings = fixture.apply(properties);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @Test
@@ -207,9 +174,7 @@ class SettingsTest {
 
       Settings settings = fixture.apply(properties);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(properties);
+      assertThat(settings.properties()).isEqualTo(properties);
     }
 
     @Test
@@ -231,9 +196,7 @@ class SettingsTest {
 
       Settings settings = fixture.apply(properties);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(properties);
+      assertThat(settings.properties()).isEqualTo(properties);
     }
 
     @Test
@@ -261,9 +224,7 @@ class SettingsTest {
 
       Settings settings = fixture.apply(properties);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @Test
@@ -294,58 +255,52 @@ class SettingsTest {
 
       Settings settings = fixture.apply(properties);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
+    /**
+     * Represents different strategies for applying sources:
+     * <ul>
+     * <li>{@link Settings#of(Map)}</li>
+     * <li>{@link Settings.Builder#source(SettingsSource)}</li>
+     * <li>{@link Settings.Builder#source(Settings)}</li>
+     * <li>{@link Settings.Builder#sources(List)}</li>
+     * <li>{@link Settings.Builder#sources(SettingsSource...)}</li>
+     * </ul>
+     */
     enum SingleSourceFixture implements Function<Map<String, Object>, Settings> {
-      OF {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> map) {
-          return Settings.of(map);
-        }
-      },
-      BUILDER_WITH_MAP_SOURCE {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> map) {
-          return Settings.builder()
-            .source(() -> map)
-            .build();
-        }
-      },
-      BUILDER_WITH_SETTINGS_SOURCE {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> map) {
-          return Settings.builder()
-            .source(Settings.of(map))
-            .build();
-        }
-      },
-      BUILDER_WITH_SOURCES_SINGLETON_LIST {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> map) {
-          return Settings.builder()
-            .sources(List.of(() -> map))
-            .build();
-        }
-      },
-      BUILDER_WITH_SOURCES_SINGLETON_ARRAY {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> map) {
-          return Settings.builder()
-            .sources(() -> map)
-            .build();
-        }
-      },
+      OF(Settings::of),
+      BUILDER_WITH_MAP_SOURCE(map -> Settings.builder()
+        .source(() -> map)
+        .build()),
+      BUILDER_WITH_SETTINGS_SOURCE(map -> Settings.builder()
+        .source(Settings.of(map))
+        .build()),
+      BUILDER_WITH_SOURCES_SINGLETON_LIST(map -> Settings.builder()
+        .sources(List.of(() -> map))
+        .build()),
+      BUILDER_WITH_SOURCES_SINGLETON_ARRAY(map -> Settings.builder()
+        .sources(() -> map)
+        .build());
+
+      @NonNull
+      private final Function<Map<String, Object>, Settings> delegate;
+
+      SingleSourceFixture(@NonNull Function<Map<String, Object>, Settings> delegate) {
+        this.delegate = delegate;
+      }
+
+      @Override
+      @NonNull
+      public Settings apply(@NonNull Map<String, Object> map) {
+        return delegate.apply(map);
+      }
     }
   }
 
+  /**
+   * Tests merging multiple sources and respecting their order.
+   */
   @ParameterizedClass
   @Nested
   @EnumSource(MultiSourceBehavior.MultiSource.class)
@@ -364,9 +319,7 @@ class SettingsTest {
       Map<String, Object> expected = Map.of("key1", "value1", "key2", "value2");
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @Test
@@ -376,9 +329,7 @@ class SettingsTest {
       Map<String, Object> expected = Map.of("parent", Map.of("key1", "value1", "key2", "value2"));
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @Test
@@ -388,9 +339,7 @@ class SettingsTest {
       Map<String, Object> expected = Map.of("key1", "value1", "key2", "value2", "to-override", "overridden");
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @ParameterizedTest
@@ -402,9 +351,7 @@ class SettingsTest {
       Map<String, Object> expected = Map.of("key1", "value1", "key2", "value2", "to-override", "original");
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @Test
@@ -414,9 +361,7 @@ class SettingsTest {
       Map<String, Object> expected = Map.of("parent", Map.of("to-override", "overridden"));
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @ParameterizedTest
@@ -429,9 +374,7 @@ class SettingsTest {
       Map<String, Object> expected = Map.of("parent", Map.of("to-override", "original"));
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @Test
@@ -457,9 +400,7 @@ class SettingsTest {
 
       Settings settings = fixture.apply(first, second);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
     @Test
@@ -489,11 +430,17 @@ class SettingsTest {
 
       Settings settings = fixture.apply(first, second);
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
-        .isEqualTo(expected);
+      assertThat(settings.properties()).isEqualTo(expected);
     }
 
+    /**
+     * Represents different strategies for applying multiple sources:
+     * <ul>
+     * <li>{@link Settings.Builder#source(SettingsSource)}</li>
+     * <li>{@link Settings.Builder#sources(List)}</li>
+     * <li>{@link Settings.Builder#sources(SettingsSource...)}</li>
+     * </ul>
+     */
     enum MultiSource implements BiFunction<Map<String, Object>, Map<String, Object>, Settings> {
       BUILDER_WITH_MAP_SOURCES {
         @Override
@@ -538,12 +485,14 @@ class SettingsTest {
     void shouldAddPropertiesFromContext() {
       Settings settings = Settings.builder().beanSource(context).build();
 
-      assertThat(settings)
-        .extracting(Settings::properties, InstanceOfAssertFactories.map(String.class, Object.class))
+      assertThat(settings.properties())
         .containsExactly(Map.entry("source", "context"));
     }
   }
 
+  /**
+   * Tests {@link Settings#at(List)} and {@link Settings#at(String, String...)}.
+   */
   @Nested
   @ParameterizedClass
   @EnumSource(AtBehavior.AtVariant.class)
@@ -593,21 +542,30 @@ class SettingsTest {
     }
 
     enum SettingsFixture implements Supplier<Settings> {
-      EMPTY {
-        @Override
-        public Settings get() {
-          return Settings.EMPTY;
-        }
-      },
-      SINGLETON_ENTRY {
-        @Override
-        public Settings get() {
-          return Settings.of(Map.of("key", "value"));
-        }
-      },
+      EMPTY(Settings.EMPTY),
+      SINGLETON_ENTRY(Settings.of(Map.of("key", "value")));
+
+      @NonNull
+      private final Settings settings;
+
+      SettingsFixture(@NonNull Settings settings) {
+        this.settings = settings;
+      }
+
+      @Override
+      @NonNull
+      public Settings get() {
+        return settings;
+      }
     }
 
+    /**
+     * Use different implementations of {@code Settings.at(...)}.
+     */
     enum AtVariant implements BiFunction<Settings, List<String>, Optional<Object>> {
+      /**
+       * Strategy using {@link Settings#at(String, String...)}.
+       */
       ARRAY_PARAMETER {
         @Override
         public Optional<Object> apply(Settings settings, List<String> strings) {
@@ -616,6 +574,9 @@ class SettingsTest {
           return settings.at(first, others);
         }
       },
+      /**
+       * Strategy using {@link Settings#at(List)}
+       */
       LIST_PARAMETER {
         @Override
         public Optional<Object> apply(Settings settings, List<String> strings) {
@@ -625,37 +586,29 @@ class SettingsTest {
     }
   }
 
+  /**
+   * Some representations of empty values that shall be ignored for the
+   * resulting properties.
+   */
   enum EmptyValueFixture implements Supplier<Object> {
-    NULL {
-      @Override
-      public Object get() {
-        return null;
-      }
-    },
-    EMPTY_STRING {
-      @Override
-      public Object get() {
-        return "";
-      }
-    },
-    EMPTY_SET {
-      @Override
-      public Object get() {
-        return Set.of();
-      }
-    },
-    EMPTY_LIST {
-      @Override
-      public Object get() {
-        return List.of();
-      }
-    },
-    EMPTY_MAP {
-      @Override
-      public Object get() {
-        return Map.of();
-      }
-    },
+    NULL(null),
+    EMPTY_STRING(""),
+    EMPTY_SET(Set.of()),
+    EMPTY_LIST(List.of()),
+    EMPTY_MAP(Map.of());
+
+    @Nullable
+    private final Object value;
+
+    EmptyValueFixture(@Nullable Object value) {
+      this.value = value;
+    }
+
+    @Override
+    @Nullable
+    public Object get() {
+      return value;
+    }
   }
 
   @Configuration(proxyBeanMethods = false)
