@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -64,19 +63,19 @@ class SettingsSourceTest {
 
     @Test
     void shouldProvideDefaultPropertiesBeanFromContext() {
-      SettingsSource source = SettingsSource.fromContext(context);
-      assertThat(source.get()).containsEntry("key1", "value1");
+      Settings settings = SettingsSource.fromContext(context);
+      assertThat(settings.properties()).containsEntry("key1", "value1");
     }
 
     @Test
     void shouldProvideGivenPropertiesBeanFromContext() {
-      SettingsSource source = SettingsSource.fromContext(context, "gccConfigurationProperties2");
-      assertThat(source.get()).containsEntry("key2", "value2");
+      Settings settings = SettingsSource.fromContext(context, "gccConfigurationProperties2");
+      assertThat(settings.properties()).containsEntry("key2", "value2");
     }
   }
 
   @Nested
-  class AllAtSiteBehavior {
+  class FromPathAtSiteBehavior {
     @NonNull
     private final ObjectProvider<Site> siteProvider;
     @NonNull
@@ -85,9 +84,9 @@ class SettingsSourceTest {
     private final StructService structService;
     private Site site;
 
-    AllAtSiteBehavior(@Autowired @NonNull ObjectProvider<Site> siteProvider,
-                      @Autowired @NonNull ContentRepository repository,
-                      @Autowired @NonNull CapConnection connection) {
+    FromPathAtSiteBehavior(@Autowired @NonNull ObjectProvider<Site> siteProvider,
+                           @Autowired @NonNull ContentRepository repository,
+                           @Autowired @NonNull CapConnection connection) {
       this.siteProvider = siteProvider;
       this.repository = repository;
       structService = connection.getStructService();
@@ -99,13 +98,13 @@ class SettingsSourceTest {
     }
 
     @Test
-    void shouldProvideEmptySourcesForUnavailableSettingsPath() {
-      List<SettingsSource> settingsSources = SettingsSource.allAt(site, "settings");
-      assertThat(settingsSources).isEmpty();
+    void shouldProvideEmptyForUnavailableSettingsPath() {
+      Settings settings = SettingsSource.fromPathAtSite(site, "settings");
+      assertThat(settings.properties()).isEmpty();
     }
 
     @Test
-    void shouldProvideSingletonSourceForSettingsPathIsDocument() {
+    void shouldProvideSettingsFromSiteDocument() {
       Struct settingsStruct = structService.createStructBuilder()
         .at(KEY_GLOBALLINK_ROOT)
         .declareString("key", Integer.MAX_VALUE, "value")
@@ -120,15 +119,13 @@ class SettingsSourceTest {
         .checkedIn()
         .create();
 
-      List<SettingsSource> settingsSources = SettingsSource.allAt(site, "settings", CT_SITE_CONTENT, "struct");
+      Settings settings = SettingsSource.fromPathAtSite(site, "settings", CT_SITE_CONTENT, "struct");
 
-      assertThat(settingsSources)
-        .hasSize(1)
-        .allSatisfy(source -> assertThat(source.get()).containsEntry("key", "value"));
+      assertThat(settings.properties()).containsEntry("key", "value");
     }
 
     @Test
-    void shouldProvideMultipleSourcesForSettingsPathIsFolder() {
+    void shouldProvideSettingsFromSiteFolderContents() {
       Struct settingsStruct1 = structService.createStructBuilder()
         .at(KEY_GLOBALLINK_ROOT)
         .declareString("key1", Integer.MAX_VALUE, "value1")
@@ -155,37 +152,36 @@ class SettingsSourceTest {
         .checkedIn()
         .create();
 
-      List<SettingsSource> settingsSources = SettingsSource.allAt(site, "settings", CT_SITE_CONTENT, "struct");
+      Settings settings = SettingsSource.fromPathAtSite(site, "settings", CT_SITE_CONTENT, "struct");
 
-      assertThat(settingsSources)
+      assertThat(settings.properties())
         .hasSize(2)
-        .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
-        .anySatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
-      ;
+        .containsEntry("key1", "value1")
+        .containsEntry("key2", "value2");
     }
   }
 
   @Nested
-  class AllAtRepositoryBehavior {
+  class FromPathAtRepositoryBehavior {
     @NonNull
     private final ContentRepository repository;
     @NonNull
     private final StructService structService;
 
-    AllAtRepositoryBehavior(@Autowired @NonNull ContentRepository repository,
-                            @Autowired @NonNull CapConnection connection) {
+    FromPathAtRepositoryBehavior(@Autowired @NonNull ContentRepository repository,
+                                 @Autowired @NonNull CapConnection connection) {
       this.repository = repository;
       structService = connection.getStructService();
     }
 
     @Test
-    void shouldProvideEmptySourcesForUnavailableSettingsPath() {
-      List<SettingsSource> settingsSources = SettingsSource.allAt(repository, "settings");
-      assertThat(settingsSources).isEmpty();
+    void shouldProvideEmptyForUnavailableSettingsPath() {
+      Settings settings = SettingsSource.fromPath(repository, "settings");
+      assertThat(settings.properties()).isEmpty();
     }
 
     @Test
-    void shouldProvideSingletonSourceForSettingsPathIsDocument() {
+    void shouldProvideSettingsFromDocument() {
       Struct settingsStruct = structService.createStructBuilder()
         .at(KEY_GLOBALLINK_ROOT)
         .declareString("key", Integer.MAX_VALUE, "value")
@@ -198,17 +194,15 @@ class SettingsSourceTest {
         .checkedIn()
         .create();
 
-      List<SettingsSource> settingsSources = SettingsSource.allAt(repository, "settings", CT_SITE_CONTENT, "struct");
+      Settings settings = SettingsSource.fromPath(repository, "settings", CT_SITE_CONTENT, "struct");
 
-      assertThat(settingsSources)
+      assertThat(settings.properties())
         .hasSize(1)
-        .allSatisfy(
-          source -> assertThat(source.get()).containsEntry("key", "value")
-        );
+        .containsEntry("key", "value");
     }
 
     @Test
-    void shouldProvideMultipleSourcesForSettingsPathIsFolder() {
+    void shouldProvideSettingsFromFolderContents() {
       Struct settingsStruct1 = structService.createStructBuilder()
         .at(KEY_GLOBALLINK_ROOT)
         .declareString("key1", Integer.MAX_VALUE, "value1")
@@ -232,18 +226,17 @@ class SettingsSourceTest {
         .checkedIn()
         .create();
 
-      List<SettingsSource> settingsSources = SettingsSource.allAt(repository, "settings", CT_SITE_CONTENT, "struct");
+      Settings settings = SettingsSource.fromPath(repository, "settings", CT_SITE_CONTENT, "struct");
 
-      assertThat(settingsSources)
+      assertThat(settings.properties())
         .hasSize(2)
-        .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
-        .anySatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
-      ;
+        .containsEntry("key1", "value1")
+        .containsEntry("key2", "value2");
     }
   }
 
   @Nested
-  class AllAtContentBehavior {
+  class FromPathAtParentBehavior {
     private Content parent;
 
     @BeforeEach
@@ -256,13 +249,17 @@ class SettingsSourceTest {
     }
 
     @Test
-    void shouldProvideEmptySourcesForUnavailableSettingsPath() {
-      List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings");
-      assertThat(settingsSources).isEmpty();
+    void shouldProvideEmptyForUnavailableSettingsPath() {
+      Settings settings = SettingsSource.fromPath(
+        parent,
+        "settings",
+        CT_SITE_CONTENT,
+        "struct");
+      assertThat(settings.properties()).isEmpty();
     }
 
     @Test
-    void shouldProvideSingletonSourceForSettingsPathIsDocument() {
+    void shouldProvideSettingsFromDocument() {
       Struct settingsStruct = structService.createStructBuilder()
         .at(KEY_GLOBALLINK_ROOT)
         .declareString("key", Integer.MAX_VALUE, "value")
@@ -276,15 +273,15 @@ class SettingsSourceTest {
         .checkedIn()
         .create();
 
-      List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings", CT_SITE_CONTENT, "struct");
+      Settings settings = SettingsSource.fromPath(parent, "settings", CT_SITE_CONTENT, "struct");
 
-      assertThat(settingsSources)
+      assertThat(settings.properties())
         .hasSize(1)
-        .allSatisfy(source -> assertThat(source.get()).containsEntry("key", "value"));
+        .containsEntry("key", "value");
     }
 
     @Test
-    void shouldProvideMultipleSourcesForSettingsPathIsFolder() {
+    void ShouldProvideSettingsFromFolderContents() {
       Struct settingsStruct1 = structService.createStructBuilder()
         .at(KEY_GLOBALLINK_ROOT)
         .declareString("key1", Integer.MAX_VALUE, "value1")
@@ -310,13 +307,12 @@ class SettingsSourceTest {
         .checkedIn()
         .create();
 
-      List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings", CT_SITE_CONTENT, "struct");
+      Settings settings = SettingsSource.fromPath(parent, "settings", CT_SITE_CONTENT, "struct");
 
-      assertThat(settingsSources)
+      assertThat(settings.properties())
         .hasSize(2)
-        .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
-        .anySatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
-      ;
+        .containsEntry("key1", "value1")
+        .containsEntry("key2", "value2");
     }
 
     /**
@@ -327,13 +323,18 @@ class SettingsSourceTest {
     @Nested
     class RobustnessBehavior {
       @Test
-      void shouldProvideEmptySourcesForEmptySettingsPath() {
-        List<SettingsSource> settingsSources = SettingsSource.allAt(repository.getRoot(), "parent");
-        assertThat(settingsSources).isEmpty();
+      void shouldProvideEmptyForEmptySettingsPath() {
+        Settings settings = SettingsSource.fromPath(
+          repository.getRoot(),
+          "parent",
+          CT_SITE_CONTENT,
+          "struct"
+        );
+        assertThat(settings.properties()).isEmpty();
       }
 
       @Test
-      void shouldProvideSingletonSourceProvidingEmptyForUnavailableGlobalLinkSettings() {
+      void shouldProvideEmptyForUnavailableGlobalLinkSettings() {
         Struct settingsStruct = structService.emptyStruct();
 
         repository.createContentBuilder()
@@ -344,15 +345,13 @@ class SettingsSourceTest {
           .checkedIn()
           .create();
 
-        List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings", CT_SITE_CONTENT, "struct");
+        Settings settings = SettingsSource.fromPath(parent, "settings", CT_SITE_CONTENT, "struct");
 
-        assertThat(settingsSources)
-          .hasSize(1)
-          .allSatisfy(source -> assertThat(source.get()).isEmpty());
+        assertThat(settings.properties()).isEmpty();
       }
 
       @Test
-      void shouldProvideSingletonSourceProvidingEmptyForUnavailableStructProperty() {
+      void shouldProvideEmptyForUnavailableStructProperty() {
         repository.createContentBuilder()
           .parent(parent)
           .type(CT_SITE_CONTENT)
@@ -360,15 +359,13 @@ class SettingsSourceTest {
           .checkedIn()
           .create();
 
-        List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings", CT_SITE_CONTENT, "doesNotExist");
+        Settings settings = SettingsSource.fromPath(parent, "settings", CT_SITE_CONTENT, "doesNotExist");
 
-        assertThat(settingsSources)
-          .hasSize(1)
-          .allSatisfy(source -> assertThat(source.get()).isEmpty());
+        assertThat(settings.properties()).isEmpty();
       }
 
       @Test
-      void shouldProvideSingletonSourceProvidingEmptyForNotStructProperty() {
+      void shouldProvideEmptyForNotStructProperty() {
         repository.createContentBuilder()
           .parent(parent)
           .type(CT_SITE_CONTENT)
@@ -376,15 +373,13 @@ class SettingsSourceTest {
           .checkedIn()
           .create();
 
-        List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings", CT_SITE_CONTENT, "string");
+        Settings settings = SettingsSource.fromPath(parent, "settings", CT_SITE_CONTENT, "string");
 
-        assertThat(settingsSources)
-          .hasSize(1)
-          .allSatisfy(source -> assertThat(source.get()).isEmpty());
+        assertThat(settings.properties()).isEmpty();
       }
 
       @Test
-      void shouldProvideSingletonSourceProvidingEmptyForUnmatchedContentType() {
+      void shouldProvideEmptyForUnmatchedContentType() {
         repository.createContentBuilder()
           .parent(parent)
           .type(CT_SITE_CONTENT)
@@ -392,51 +387,9 @@ class SettingsSourceTest {
           .checkedIn()
           .create();
 
-        List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings", "SimpleEmpty", "irrelevant");
+        Settings settings = SettingsSource.fromPath(parent, "settings", "SimpleEmpty", "irrelevant");
 
-        assertThat(settingsSources)
-          .hasSize(1)
-          .allSatisfy(source -> assertThat(source.get()).isEmpty());
-      }
-
-      @Test
-      void shouldIgnoreMeanwhileDestroyDocumentInFolder() {
-        Struct settingsStruct1 = structService.createStructBuilder()
-          .at(KEY_GLOBALLINK_ROOT)
-          .declareString("key1", Integer.MAX_VALUE, "value1")
-          .build();
-        Struct settingsStruct2 = structService.createStructBuilder()
-          .at(KEY_GLOBALLINK_ROOT)
-          .declareString("key2", Integer.MAX_VALUE, "value2")
-          .build();
-
-        repository.createContentBuilder()
-          .parent(parent)
-          .type(CT_SITE_CONTENT)
-          .name("settings/1")
-          .property("struct", settingsStruct1)
-          .checkedIn()
-          .create();
-
-        Content destroyedContent = repository.createContentBuilder()
-          .parent(parent)
-          .type(CT_SITE_CONTENT)
-          .name("settings/2")
-          .property("struct", settingsStruct2)
-          .checkedIn()
-          .create();
-
-        List<SettingsSource> settingsSources = SettingsSource.allAt(parent, "settings", CT_SITE_CONTENT, "struct");
-
-        // Challenge our sources.
-        destroyedContent.destroy();
-
-        assertThat(settingsSources)
-          .hasSize(2)
-          .anySatisfy(source -> assertThat(source.get()).containsEntry("key1", "value1"))
-          .anySatisfy(source -> assertThat(source.get()).isEmpty())
-          .noneSatisfy(source -> assertThat(source.get()).containsEntry("key2", "value2"))
-        ;
+        assertThat(settings.properties()).isEmpty();
       }
     }
   }

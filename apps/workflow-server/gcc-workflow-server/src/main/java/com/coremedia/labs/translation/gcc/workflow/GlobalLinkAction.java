@@ -27,7 +27,6 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
-import com.coremedia.labs.translation.gcc.util.SettingsCollectors;
 import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
@@ -48,7 +47,6 @@ import jakarta.activation.MimeTypeParseException;
 import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
 
 import java.io.Serial;
 import java.lang.reflect.Type;
@@ -295,7 +293,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     RetryDelay retryDelay = RetryDelay.DEFAULT;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
-    Settings settings = withContextSettings(getSpringContext());
+    Settings settings = SettingsSource.fromContext(getSpringContext());
 
     try {
       settings = withGlobalSettings(settings, getConnection().getContentRepository());
@@ -572,29 +570,18 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       .orElse(DEFAULT_RETRY_COMMUNICATION_ERRORS);
   }
 
-  @NonNull
-  private static Settings withContextSettings(@NonNull BeanFactory springContext) {
-    return new Settings(SettingsSource.fromContext(springContext).get());
-  }
-
   @VisibleForTesting
   @NonNull
   Settings withGlobalSettings(@NonNull Settings base,
                               @NonNull ContentRepository repository) {
-    return SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).stream()
-      .map(SettingsSource::get)
-      .map(Settings::new)
-      .collect(SettingsCollectors.merging(base));
+    return base.putAll(SettingsSource.fromPath(repository, GLOBAL_CONFIGURATION_PATH));
   }
 
   @VisibleForTesting
   @NonNull
   Settings withSiteSettings(@NonNull Settings base,
                             @NonNull Site site) {
-    return SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).stream()
-      .map(SettingsSource::get)
-      .map(Settings::new)
-      .collect(SettingsCollectors.merging(base));
+    return base.putAll(SettingsSource.fromPathAtSite(site, SITE_CONFIGURATION_PATH));
   }
 
   @NonNull
