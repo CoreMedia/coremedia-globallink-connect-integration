@@ -237,11 +237,11 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
     requireNonNull(value);
 
     try {
-      if (value instanceof RetryDelay) {
-        return Optional.of((RetryDelay) value);
+      if (value instanceof RetryDelay retryDelay) {
+        return Optional.of(retryDelay);
       }
-      if (value instanceof Duration) {
-        return Optional.of(saturatedOf((Duration) value));
+      if (value instanceof Duration duration) {
+        return Optional.of(saturatedOf(duration));
       }
       if (value instanceof Number number) {
         return Optional.of(saturatedOf(Duration.ofSeconds(number.longValue())));
