@@ -38,6 +38,22 @@ class SettingsTest {
     this.context = context;
   }
 
+  /**
+   * Creates a new {@link Settings} instance from the given properties.
+   * <p>
+   * The provided map will be sanitized to remove empty or invalid entries.
+   *
+   * @param properties the properties to create the settings from
+   * @return a new, sanitized {@link Settings} instance
+   */
+  @NonNull
+  public static Settings buildSettingsFromMap(@NonNull Map<String, Object> properties) {
+    // Use Builder for sanitizing entries.
+    return Settings.builder()
+      .source(() -> properties)
+      .build();
+  }
+
   @Nested
   class EmptyBehavior {
     @ParameterizedTest
@@ -52,7 +68,6 @@ class SettingsTest {
      */
     enum EmptyFixture implements Supplier<Settings> {
       CONSTANT(Settings.EMPTY),
-      OF_EMPTY_MAP(Settings.of(Map.of())),
       BUILDER_WITHOUT_SOURCES(Settings.builder().build()),
       BUILDER_WITH_EMPTY_SETTINGS_SOURCE(Settings.builder()
         .source(Settings.EMPTY)
@@ -261,7 +276,6 @@ class SettingsTest {
     /**
      * Represents different strategies for applying sources:
      * <ul>
-     * <li>{@link Settings#of(Map)}</li>
      * <li>{@link Settings.Builder#source(SettingsSource)}</li>
      * <li>{@link Settings.Builder#source(Settings)}</li>
      * <li>{@link Settings.Builder#sources(List)}</li>
@@ -269,12 +283,11 @@ class SettingsTest {
      * </ul>
      */
     enum SingleSourceFixture implements Function<Map<String, Object>, Settings> {
-      OF(Settings::of),
       BUILDER_WITH_MAP_SOURCE(map -> Settings.builder()
         .source(() -> map)
         .build()),
       BUILDER_WITH_SETTINGS_SOURCE(map -> Settings.builder()
-        .source(Settings.of(map))
+        .source(buildSettingsFromMap(map))
         .build()),
       BUILDER_WITH_SOURCES_SINGLETON_LIST(map -> Settings.builder()
         .sources(List.of(() -> map))
@@ -522,28 +535,28 @@ class SettingsTest {
 
     @Test
     void shouldReturnExistingDirectProperty() {
-      Settings settings = Settings.of(Map.of("key", "value"));
+      Settings settings = buildSettingsFromMap(Map.of("key", "value"));
       Optional<Object> result = atVariant.apply(settings, List.of("key"));
       assertThat(result).hasValue("value");
     }
 
     @Test
     void shouldReturnExistingNestedProperty() {
-      Settings settings = Settings.of(Map.of("parent", Map.of("key", "value")));
+      Settings settings = buildSettingsFromMap(Map.of("parent", Map.of("key", "value")));
       Optional<Object> result = atVariant.apply(settings, List.of("parent", "key"));
       assertThat(result).hasValue("value");
     }
 
     @Test
     void shouldReturnExistingDeeperNestedProperty() {
-      Settings settings = Settings.of(Map.of("grandparent", Map.of("parent", Map.of("key", "value"))));
+      Settings settings = buildSettingsFromMap(Map.of("grandparent", Map.of("parent", Map.of("key", "value"))));
       Optional<Object> result = atVariant.apply(settings, List.of("grandparent", "parent", "key"));
       assertThat(result).hasValue("value");
     }
 
     enum SettingsFixture implements Supplier<Settings> {
       EMPTY(Settings.EMPTY),
-      SINGLETON_ENTRY(Settings.of(Map.of("key", "value")));
+      SINGLETON_ENTRY(buildSettingsFromMap(Map.of("key", "value")));
 
       @NonNull
       private final Settings settings;

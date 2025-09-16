@@ -131,22 +131,6 @@ public record Settings(@NonNull Map<String, Object> properties) {
   }
 
   /**
-   * Creates a new {@link Settings} instance from the given properties.
-   * <p>
-   * The provided map will be sanitized to remove empty or invalid entries.
-   *
-   * @param properties the properties to create the settings from
-   * @return a new, sanitized {@link Settings} instance
-   */
-  @NonNull
-  public static Settings of(@NonNull Map<String, Object> properties) {
-    // Use Builder for sanitizing entries.
-    return builder()
-      .source(() -> properties)
-      .build();
-  }
-
-  /**
    * Creates a new builder instance for constructing settings.
    *
    * @return a new builder instance
