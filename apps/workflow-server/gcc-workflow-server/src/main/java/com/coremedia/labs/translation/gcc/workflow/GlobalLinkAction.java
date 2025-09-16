@@ -675,9 +675,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
         : maxAutomaticRetries;
     }
     if (result.remainingAutomaticRetries > 0) {
-      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} delay.", getName(),
+      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} seconds delay.", getName(),
         GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries,
-        retryDelay.humanReadable(), exception);
+        retryDelay.toSeconds(), exception);
     } else {
       LOG.warn("{}: Failed to connect to GCC ({}).", getName(), GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, exception);
     }

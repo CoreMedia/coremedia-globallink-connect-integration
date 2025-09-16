@@ -181,30 +181,6 @@ class RetryDelayTest {
   }
 
   @Nested
-  class HumanReadableBehavior {
-    @ParameterizedTest(name = "[{index}] {arguments}")
-    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
-      retryDelay | expected
-      60s        | 1m
-      61s        | 1m1s
-      1m         | 1m
-      60m        | 1h
-      61m        | 1h1m
-      3601s      | 1h1s
-      86398s     | 23h59m58s
-      1d         | 1d
-      """)
-      // Resolving parameter RetryDelay from String requires only one static
-      // factory method to exist, that returns RetryDelay and accepts String.
-      // If this changes, a parameter parser must be added explicitly.
-    void shouldProvideSomeHumanReadableDurationRepresentation(@NonNull RetryDelay fixture,
-                                                              @NonNull String expectedString) {
-      assertThat(fixture.humanReadable())
-        .isEqualTo(expectedString);
-    }
-  }
-
-  @Nested
   class TrySaturatedFromObjectBehavior {
     @Nested
     @ParameterizedClass

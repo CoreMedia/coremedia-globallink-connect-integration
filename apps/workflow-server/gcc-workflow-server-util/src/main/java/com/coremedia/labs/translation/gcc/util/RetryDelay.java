@@ -180,16 +180,6 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   }
 
   /**
-   * A representation of the retry delay duration meant to be human-readable.
-   *
-   * @return retry delay duration representation
-   */
-  @NonNull
-  public String humanReadable() {
-    return pretty(value);
-  }
-
-  /**
    * Provides a more human-readable representation of the given duration.
    * <p>
    * Uses Spring's {@code DurationFormatterUtils} with composite style formatting.
