@@ -27,6 +27,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
+import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
@@ -61,6 +62,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.coremedia.labs.translation.gcc.facade.DefaultGCExchangeFacadeSessionProvider.defaultFactory;
+import static com.coremedia.labs.translation.gcc.util.Settings.GLOBAL_CONFIGURATION_PATH;
+import static com.coremedia.labs.translation.gcc.util.Settings.SITE_CONFIGURATION_PATH;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -570,29 +573,23 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
   @NonNull
   private static Settings withContextSettings(@NonNull BeanFactory springContext) {
-    return Settings.builder()
-      .beanSource(springContext)
-      .build();
+    return new Settings(SettingsSource.fromContext(springContext).get());
   }
 
   @VisibleForTesting
   @NonNull
   Settings withGlobalSettings(@NonNull Settings base,
                               @NonNull ContentRepository repository) {
-    return Settings.builder()
-      .source(base)
-      .repositorySource(repository)
-      .build();
+    List<Map<String, Object>> rawMaps = SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).stream().map(SettingsSource::get).toList();
+    return base.putAll(rawMaps);
   }
 
   @VisibleForTesting
   @NonNull
   Settings withSiteSettings(@NonNull Settings base,
                             @NonNull Site site) {
-    return Settings.builder()
-      .source(base)
-      .siteSource(site)
-      .build();
+    List<Map<String, Object>> rawMaps = SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).stream().map(SettingsSource::get).toList();
+    return base.putAll(rawMaps);
   }
 
   @NonNull

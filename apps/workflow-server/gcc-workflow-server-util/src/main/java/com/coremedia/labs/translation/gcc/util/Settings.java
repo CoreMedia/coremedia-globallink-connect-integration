@@ -112,6 +112,28 @@ public record Settings(@NonNull Map<String, Object> properties) {
   }
 
   /**
+   * Returns a new {@code Settings} instance with the given maps merged in
+   * given order using deep merge semantics. The maps are sanitized before
+   * merging.
+   *
+   * @param others additional raw properties
+   * @return a new merged {@code Settings}
+   */
+  @NonNull
+  public Settings putAll(@NonNull List<Map<String, Object>> others) {
+    requireNonNull(others, "others");
+    if (others.isEmpty()) {
+      return this;
+    }
+    Map<String, Object> merged = new HashMap<>(properties);
+    others.forEach(other -> {
+      Map<String, Object> sanitized = sanitizeMap(other);
+      sanitized.forEach((k, v) -> merged.merge(k, v, (existing, replacement) -> deepMerge(existing, replacement, 0)));
+    });
+    return new Settings(merged);
+  }
+
+  /**
    * Returns a new {@code Settings} instance with all properties from the given
    * settings merged in using deep merge semantics.
    *
