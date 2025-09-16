@@ -203,8 +203,10 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
    * @throws NullPointerException     if value is {@code null}
    * @throws IllegalArgumentException if value cannot be parsed
    */
+  // Indirectly used from tests as parameter resolver.
+  @VisibleForTesting
   @NonNull
-  public static RetryDelay saturatedParse(@NonNull String value) {
+  static RetryDelay saturatedParse(@NonNull String value) {
     return saturatedOf(detectAndParse(value, DurationFormat.Unit.SECONDS));
   }
 
