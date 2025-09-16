@@ -405,7 +405,8 @@ class SettingsTest {
         public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
           return Stream.of(first, second)
             .map(Settings::new)
-            .collect(SettingsCollectors.merging());
+            .reduce(Settings::putAll)
+            .orElse(Settings.EMPTY);
         }
       }
     }
