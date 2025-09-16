@@ -51,7 +51,7 @@ class RetryDelayTest {
       """)
     void shouldProvideFailureSafeParsing(String input,
                                          Long expectedSeconds) {
-      Optional<RetryDelay> actual = RetryDelay.trySaturatedFromObject(input);
+      Optional<RetryDelay> actual = RetryDelay.findRetryDelay(input);
       if (expectedSeconds != null) {
         assertThat(actual).hasValueSatisfying(v -> assertThat(v.toSeconds()).isEqualTo(expectedSeconds));
       } else {
@@ -155,16 +155,16 @@ class RetryDelayTest {
     }
 
     @Test
-    void shouldDefaultToParseAsSecondsOnTrySaturatedParse() {
+    void shouldDefaultToParseAsSecondsOnFindRetryDelay() {
       long durationSeconds = duration.toSeconds();
       String durationAsString = Long.toString(durationSeconds);
-      assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
+      assertThat(RetryDelay.findRetryDelay(durationAsString))
         .hasValue(new RetryDelay(duration));
     }
   }
 
   @Nested
-  class TrySaturatedFromObjectBehavior {
+  class FindRetryDelayBehavior {
     @Nested
     @ParameterizedClass
     @EnumSource(ValidDuration.class)
@@ -180,20 +180,20 @@ class RetryDelayTest {
       @EnumSource(DurationFormat.Style.class)
       void shouldParseValidDurationStringToExpectedDelay(@NonNull DurationFormat.Style durationFormatStyle) {
         String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-        assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
+        assertThat(RetryDelay.findRetryDelay(durationAsString))
           .hasValue(new RetryDelay(duration));
       }
 
       @Test
       void shouldReturnRetryDelayAsIs() {
         RetryDelay retryDelay = new RetryDelay(duration);
-        assertThat(RetryDelay.trySaturatedFromObject(retryDelay))
+        assertThat(RetryDelay.findRetryDelay(retryDelay))
           .containsSame(retryDelay);
       }
 
       @Test
       void shouldReturnDurationWrappedInRetryDelay() {
-        assertThat(RetryDelay.trySaturatedFromObject(duration))
+        assertThat(RetryDelay.findRetryDelay(duration))
           .hasValue(new RetryDelay(duration));
       }
 
@@ -201,7 +201,7 @@ class RetryDelayTest {
       void shouldReturnNumberAsRetryDelayInSeconds() {
         long seconds = duration.toSeconds();
         RetryDelay expected = new RetryDelay(Duration.ofSeconds(seconds));
-        assertThat(RetryDelay.trySaturatedFromObject(seconds))
+        assertThat(RetryDelay.findRetryDelay(seconds))
           .hasValue(expected);
       }
     }
@@ -232,19 +232,19 @@ class RetryDelayTest {
             id -> assertThat(durationFormatStyle).isNotIn(DurationFormat.Style.COMPOSITE, DurationFormat.Style.SIMPLE)
           );
         String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
-        assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
+        assertThat(RetryDelay.findRetryDelay(durationAsString))
           .hasValueSatisfying(v -> assertThat(v).isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE));
       }
 
       @Test
       void shouldReturnDurationToBeWithinBounds() {
-        assertThat(RetryDelay.trySaturatedFromObject(duration))
+        assertThat(RetryDelay.findRetryDelay(duration))
           .hasValueSatisfying(v -> assertThat(v).isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE));
       }
 
       @Test
       void shouldReturnNumberAsSecondsWithinBounds() {
-        assertThat(RetryDelay.trySaturatedFromObject(duration.toSeconds()))
+        assertThat(RetryDelay.findRetryDelay(duration.toSeconds()))
           .hasValueSatisfying(v -> assertThat(v).isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE));
       }
     }
@@ -270,7 +270,7 @@ class RetryDelayTest {
 
       @Test
       void shouldReturnEmptyOnInvalidDurationString() {
-        assertThat(RetryDelay.trySaturatedFromObject(invalidDurationString))
+        assertThat(RetryDelay.findRetryDelay(invalidDurationString))
           .isEmpty();
       }
     }

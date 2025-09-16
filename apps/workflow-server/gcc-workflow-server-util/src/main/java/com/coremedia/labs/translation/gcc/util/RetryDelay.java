@@ -233,7 +233,7 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
    * @throws NullPointerException if value is {@code null}
    */
   @NonNull
-  public static Optional<RetryDelay> trySaturatedFromObject(@NonNull Object value) {
+  public static Optional<RetryDelay> findRetryDelay(@NonNull Object value) {
     requireNonNull(value);
 
     try {

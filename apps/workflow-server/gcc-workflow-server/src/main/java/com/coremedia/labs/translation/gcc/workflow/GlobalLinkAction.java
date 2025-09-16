@@ -272,7 +272,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   protected static Optional<RetryDelay> findRetryDelay(@NonNull Settings settings,
                                                        @NonNull String key) {
     return settings.at(key)
-      .flatMap(RetryDelay::trySaturatedFromObject);
+      .flatMap(RetryDelay::findRetryDelay);
   }
 
   @Override
