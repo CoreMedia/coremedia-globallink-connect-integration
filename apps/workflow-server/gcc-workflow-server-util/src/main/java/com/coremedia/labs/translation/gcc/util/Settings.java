@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.invoke.MethodHandles.lookup;
+import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -74,6 +75,19 @@ public record Settings(@NonNull Map<String, Object> properties) {
    */
   @VisibleForTesting
   public static final int MAX_DEPTH = 10;
+
+  /**
+   * The canonical constructor that sanitizes the provided properties map.
+   * <p>
+   * Removes invalid entries (null keys/values, empty collections/maps/strings),
+   * recursively sanitizes nested maps/collections, and enforces depth limits.
+   *
+   * @param properties raw properties (will be defensively sanitized)
+   */
+  public Settings {
+    requireNonNull(properties, "properties");
+    properties = sanitizeMap(properties);
+  }
 
   /**
    * Retrieves a value at the specified path within the settings properties.
@@ -287,7 +301,6 @@ public record Settings(@NonNull Map<String, Object> properties) {
      */
     @NonNull
     public Settings build() {
-      // Must not use `of` as `of` uses the builder for sanitizing.
       return new Settings(mergedSources(sources));
     }
   }
@@ -318,6 +331,21 @@ public record Settings(@NonNull Map<String, Object> properties) {
           (existing, replacement) -> deepMerge(existing, replacement, 0)
         )
       );
+  }
+
+  /**
+   * Sanitizes a single raw source map.
+   *
+   * @param source raw input map
+   * @return sanitized, potentially modified map
+   */
+  @NonNull
+  private static Map<String, Object> sanitizeMap(@NonNull Map<String, Object> source) {
+    return source.entrySet().stream()
+      .filter(Settings::considerEntry)
+      .map(e -> sanitizeEntryValue(e, 0))
+      .filter(Settings::considerEntry)
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   /**
