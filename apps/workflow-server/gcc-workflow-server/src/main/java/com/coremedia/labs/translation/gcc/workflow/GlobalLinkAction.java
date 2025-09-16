@@ -371,14 +371,13 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   /**
-   * Implementing actions may intervene here, if they detect a state, where
-   * the general retry delay should be adapted. Like, the action may detect that
-   * it is in a state where the polling interval should be decreased, thus,
-   * polling per time should be increased. Prominent example here is the
-   * download action, where you may want to decrease the polling interval until
-   * relevant information like the project director ID have been retrieved.
-   * <p>
-   * Returns the delay unmodified by default.
+   * Implementing actions may override this method, if they detect a state,
+   * where the general retry delay should be adapted. Like, the action may
+   * detect that it is in a state where the polling interval should be
+   * decreased, thus, polling per time should be increased. Prominent example
+   * here is the download action, where you may want to decrease the polling
+   * interval until relevant information like the project director ID have been
+   * retrieved.
    * <p>
    * This method gets a bunch of information passed, that is meant to assist to
    * decide if and how to adapt the retry delay.
@@ -387,6 +386,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param context            some context you may want to respect for
    *                           adapting the delay
    * @return adapted (or unchanged) retry delay
+   * @implSpec The default implementation returns the given delay as is.
    * @see #getRetryDelay(Settings, String)
    */
   @NonNull
