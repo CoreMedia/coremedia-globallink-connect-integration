@@ -1,15 +1,11 @@
 package com.coremedia.labs.translation.gcc.util;
 
-import com.coremedia.cap.content.ContentRepository;
-import com.coremedia.cap.multisite.Site;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.BeanFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -90,47 +86,12 @@ public record Settings(@NonNull Map<String, Object> properties) {
   }
 
   /**
-   * Returns a new {@code Settings} instance with the given map merged in
-   * using deep merge semantics. The argument is sanitized before merging.
+   * Signals, if these settings are empty.
    *
-   * @param other additional raw properties
-   * @return a new merged {@code Settings}
+   * @return {@code true} if settings are empty; {@code false} if not
    */
-  @NonNull
-  public Settings putAll(@NonNull Map<String, Object> other) {
-    requireNonNull(other, "other");
-    if (other.isEmpty()) {
-      return this;
-    }
-    Map<String, Object> sanitized = sanitizeMap(other);
-    if (sanitized.isEmpty()) {
-      return this;
-    }
-    Map<String, Object> merged = new HashMap<>(properties);
-    sanitized.forEach((k, v) -> merged.merge(k, v, (existing, replacement) -> deepMerge(existing, replacement, 0)));
-    return new Settings(merged);
-  }
-
-  /**
-   * Returns a new {@code Settings} instance with the given maps merged in
-   * given order using deep merge semantics. The maps are sanitized before
-   * merging.
-   *
-   * @param others additional raw properties
-   * @return a new merged {@code Settings}
-   */
-  @NonNull
-  public Settings putAll(@NonNull List<Map<String, Object>> others) {
-    requireNonNull(others, "others");
-    if (others.isEmpty()) {
-      return this;
-    }
-    Map<String, Object> merged = new HashMap<>(properties);
-    others.forEach(other -> {
-      Map<String, Object> sanitized = sanitizeMap(other);
-      sanitized.forEach((k, v) -> merged.merge(k, v, (existing, replacement) -> deepMerge(existing, replacement, 0)));
-    });
-    return new Settings(merged);
+  public boolean isEmpty() {
+    return properties.isEmpty();
   }
 
   /**
@@ -143,11 +104,11 @@ public record Settings(@NonNull Map<String, Object> properties) {
   @NonNull
   public Settings putAll(@NonNull Settings other) {
     requireNonNull(other, "other");
-    if (other.properties.isEmpty()) {
+    if (other.isEmpty()) {
       return this;
     }
     Map<String, Object> merged = new HashMap<>(properties);
-    other.properties.forEach((k, v) -> merged.merge(k, v, (existing, replacement) -> deepMerge(existing, replacement, 0)));
+    other.properties.forEach((k, v) -> merged.merge(k, v, Settings::deepMerge));
     return new Settings(merged);
   }
 
@@ -207,195 +168,6 @@ public record Settings(@NonNull Map<String, Object> properties) {
   }
 
   /**
-   * Creates a new builder instance for constructing settings.
-   *
-   * @return a new builder instance
-   */
-  @NonNull
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * A builder that combines different sources to create a settings
-   * representation.
-   * <p>
-   * Sources added later overwrite sources added earlier using deep merge
-   * semantics. When merging maps, existing keys are preserved unless explicitly
-   * overwritten by later sources.
-   */
-  public static class Builder {
-
-    /**
-     * A list of sources to merge properties from, in order of precedence
-     * (highest precedence last).
-     */
-    @NonNull
-    private final List<SettingsSource> sources = new ArrayList<>();
-
-    /**
-     * Adds a source that provides settings from Spring beans.
-     *
-     * @param beanFactory the bean factory to source settings from
-     * @return this builder instance for method chaining
-     */
-    @NonNull
-    public Builder beanSource(@NonNull BeanFactory beanFactory) {
-      sources.add(SettingsSource.fromContext(beanFactory));
-      return this;
-    }
-
-    /**
-     * Adds a source that provides settings from the given site.
-     *
-     * @param site the site to source settings from
-     * @return this builder instance for method chaining
-     */
-    @NonNull
-    public Builder siteSource(@NonNull Site site) {
-      SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).forEach(this::source);
-      return this;
-    }
-
-    /**
-     * Adds a source that provides settings from the content repository.
-     *
-     * @param repository the repository to source settings from
-     * @return this builder instance for method chaining
-     */
-    @NonNull
-    public Builder repositorySource(@NonNull ContentRepository repository) {
-      SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).forEach(this::source);
-      return this;
-    }
-
-    /**
-     * Adds the given settings as a source to be merged.
-     * <p>
-     * Sources are processed in the order they are added, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param settings the settings to add as a source for merging
-     * @return this builder instance for method chaining
-     */
-    @NonNull
-    public Builder source(@NonNull Settings settings) {
-      sources.add(settings::properties);
-      return this;
-    }
-
-    /**
-     * Adds the given source to be merged.
-     * <p>
-     * Sources are processed in the order they are added, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param source the source to add for merging
-     * @return this builder instance for method chaining
-     */
-    @NonNull
-    public Builder source(@NonNull SettingsSource source) {
-      sources.add(source);
-      return this;
-    }
-
-    /**
-     * Adds the given sources to be merged.
-     * <p>
-     * Sources are processed in the order they are given, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param sources a list of sources to add for merging
-     * @return this builder instance for method chaining
-     */
-    @NonNull
-    public Builder sources(@NonNull List<SettingsSource> sources) {
-      this.sources.addAll(sources);
-      return this;
-    }
-
-    /**
-     * Adds the given sources to be merged.
-     * <p>
-     * Sources are processed in the order they are given, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param sources an array of sources to add for merging
-     * @return this builder instance for method chaining
-     */
-    @NonNull
-    public Builder sources(@NonNull SettingsSource... sources) {
-      return sources(Arrays.asList(sources));
-    }
-
-    /**
-     * Creates the {@link Settings} object by merging all configured sources.
-     * <p>
-     * The merge process validates that all map keys are strings and filters
-     * out {@code null} or empty values according to the configured rules.
-     *
-     * @return a merged {@link Settings} object containing properties from all
-     * sources
-     */
-    @NonNull
-    public Settings build() {
-      return new Settings(mergedSources(sources));
-    }
-  }
-
-  /**
-   * Merges all sources into a single map of properties.
-   * <p>
-   * Sources are processed in order, with later sources taking precedence.
-   * Only entries with valid keys and values are included in the result.
-   * Map nesting is limited to {@value #MAX_DEPTH} levels to prevent stack
-   * overflow.
-   *
-   * @param sources a list of sources to merge
-   * @return a merged map containing all valid properties
-   */
-  @NonNull
-  private static Map<String, Object> mergedSources(@NonNull List<SettingsSource> sources) {
-    return sources.stream()
-      .map(SettingsSource::get)
-      .flatMap(map -> map.entrySet().stream())
-      .filter(Settings::considerEntry)
-      .map(e -> sanitizeEntryValue(e, 0))
-      .filter(Settings::considerEntry)
-      .collect(
-        Collectors.toMap(
-          Map.Entry::getKey,
-          Map.Entry::getValue,
-          (existing, replacement) -> deepMerge(existing, replacement, 0)
-        )
-      );
-  }
-
-  /**
    * Sanitizes a single raw source map.
    *
    * @param source raw input map
@@ -404,68 +176,52 @@ public record Settings(@NonNull Map<String, Object> properties) {
   @NonNull
   private static Map<String, Object> sanitizeMap(@NonNull Map<String, Object> source) {
     return source.entrySet().stream()
-      .filter(Settings::considerEntry)
+      .filter(Settings::isValidEntry)
       .map(e -> sanitizeEntryValue(e, 0))
-      .filter(Settings::considerEntry)
+      .filter(Settings::isValidEntry)
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   /**
-   * Merges two values using deep merge semantics for maps.
+   * Merges two values using deep merge semantics for maps. Expects both
+   * maps to originate from already sanitized sources.
    * <p>
    * If both values are maps, they are merged recursively with the replacement
    * map's values taking precedence. For non-map values, the replacement value
-   * completely overwrites the existing value. Nesting depth is limited to
-   * prevent stack overflow.
+   * completely overwrites the existing value.
    *
    * @param existing    the original value
    * @param replacement the new value to merge or overwrite with
-   * @param depth       the current nesting depth
    * @return the merged result
    */
   @NonNull
   private static Object deepMerge(@NonNull Object existing,
-                                  @NonNull Object replacement,
-                                  int depth) {
-    if (depth >= MAX_DEPTH) {
-      LOG.warn("Depth limit ({}) exceeded during merge. Using replacement value.", MAX_DEPTH);
-      return sanitizeValue(replacement, depth);
-    }
-
+                                  @NonNull Object replacement) {
     if (existing instanceof Map<?, ?> && replacement instanceof Map<?, ?>) {
       // We know from previous processing that map keys are guaranteed to be strings
       Map<String, Object> existingMap = asStringKeyedMap((Map<?, ?>) existing);
       Map<String, Object> replacementMap = asStringKeyedMap((Map<?, ?>) replacement);
 
-      return deepMergeMaps(existingMap, replacementMap, depth);
+      return deepMergeMaps(existingMap, replacementMap);
     }
-    return sanitizeValue(replacement, depth);
+    return replacement;
   }
 
   /**
    * Performs a deep merge of two maps with string keys.
-   * <p>
-   * The replacement map's entries are merged into the existing map. Null values
-   * in the replacement map are ignored to preserve existing values. Nested maps
-   * are merged recursively up to the maximum allowed depth.
    *
    * @param existingMap    the existing map to merge into
    * @param replacementMap the new map whose values take precedence
-   * @param depth          the current nesting depth
    * @return a new map containing the merged result
    */
   @NonNull
   private static Map<String, Object> deepMergeMaps(@NonNull Map<String, Object> existingMap,
-                                                   @NonNull Map<String, Object> replacementMap,
-                                                   int depth) {
+                                                   @NonNull Map<String, Object> replacementMap) {
     return replacementMap.entrySet().stream()
-      .filter(Settings::considerEntry)
-      .map(e -> sanitizeEntryValue(e, depth + 1))
-      .filter(Settings::considerEntry)
       .collect(Collectors.toMap(
         Map.Entry::getKey,
         Map.Entry::getValue,
-        (existing, replacement) -> deepMerge(existing, replacement, depth + 1),
+        Settings::deepMerge,
         () -> new HashMap<>(existingMap)
       ));
   }
@@ -525,9 +281,9 @@ public record Settings(@NonNull Map<String, Object> properties) {
       }
 
       return mapValue.entrySet().stream()
-        .filter(Settings::considerEntry)
+        .filter(Settings::isValidEntry)
         .map(e -> sanitizeEntryValue(e, depth + 1))
-        .filter(Settings::considerEntry)
+        .filter(Settings::isValidEntry)
         .collect(Collectors.toMap(
           Map.Entry::getKey,
           Map.Entry::getValue
@@ -540,7 +296,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
       }
       return ((Collection<?>) value).stream()
         .map(e -> sanitizeValue(e, depth + 1))
-        .filter(Settings::considerValue)
+        .filter(Settings::isValidValue)
         .toList();
     }
     return value;
@@ -562,22 +318,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param entry the map entry to evaluate
    * @return {@code true} if the entry should be included; {@code false} otherwise
    */
-  private static boolean considerEntry(@NonNull Map.Entry<?, ?> entry) {
-    return considerKey(entry.getKey()) && considerValue(entry.getValue());
-  }
-
-  /**
-   * Validates whether a key is acceptable for inclusion in the settings.
-   * <p>
-   * Only string keys are accepted to ensure type safety and consistent
-   * property access patterns.
-   *
-   * @param value the key to validate
-   * @return {@code true} if the key is a non-null string; {@code false}
-   * otherwise
-   */
-  private static boolean considerKey(@UnknownNullness Object value) {
-    return value instanceof String;
+  private static boolean isValidEntry(@NonNull Map.Entry<?, ?> entry) {
+    return entry.getKey() instanceof String && isValidValue(entry.getValue());
   }
 
   /**
@@ -590,7 +332,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param value the value to validate
    * @return {@code true} if the value should be included; {@code false} otherwise
    */
-  private static boolean considerValue(@UnknownNullness Object value) {
+  private static boolean isValidValue(@Nullable Object value) {
     if (value == null) {
       return false;
     }

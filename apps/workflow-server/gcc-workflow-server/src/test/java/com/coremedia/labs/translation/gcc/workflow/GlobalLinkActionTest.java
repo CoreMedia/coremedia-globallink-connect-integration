@@ -18,6 +18,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
+import com.coremedia.labs.translation.gcc.util.SettingsCollectors;
 import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
@@ -450,27 +451,29 @@ class GlobalLinkActionTest {
     @NonNull
     @Override
     Settings withGlobalSettings(@NonNull Settings base, @NonNull ContentRepository repository) {
-      Settings.Builder builder = Settings.builder().source(base);
       // Allow to also use our test-content-types.
-      SettingsSource.allAt(
+      return SettingsSource.allAt(
           repository,
           Settings.GLOBAL_CONFIGURATION_PATH,
           "SimpleStruct", "value")
-        .forEach(builder::source);
-      return builder.build();
+        .stream()
+        .map(SettingsSource::get)
+        .map(Settings::new)
+        .collect(SettingsCollectors.merging(base));
     }
 
     @NonNull
     @Override
     Settings withSiteSettings(@NonNull Settings base, @NonNull Site site) {
-      Settings.Builder builder = Settings.builder().source(base);
       // Allow to also use our test-content-types.
-      SettingsSource.allAt(
+      return SettingsSource.allAt(
           site,
           Settings.SITE_CONFIGURATION_PATH,
           SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct")
-        .forEach(builder::source);
-      return builder.build();
+        .stream()
+        .map(SettingsSource::get)
+        .map(Settings::new)
+        .collect(SettingsCollectors.merging(base));
     }
 
     public void setOverrideGccRetryDelaySettingsKey(@Nullable String overrideGccRetryDelaySettingsKey) {

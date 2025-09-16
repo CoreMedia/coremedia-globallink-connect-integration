@@ -27,6 +27,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
+import com.coremedia.labs.translation.gcc.util.SettingsCollectors;
 import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
@@ -580,16 +581,20 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @NonNull
   Settings withGlobalSettings(@NonNull Settings base,
                               @NonNull ContentRepository repository) {
-    List<Map<String, Object>> rawMaps = SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).stream().map(SettingsSource::get).toList();
-    return base.putAll(rawMaps);
+    return SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).stream()
+      .map(SettingsSource::get)
+      .map(Settings::new)
+      .collect(SettingsCollectors.merging(base));
   }
 
   @VisibleForTesting
   @NonNull
   Settings withSiteSettings(@NonNull Settings base,
                             @NonNull Site site) {
-    List<Map<String, Object>> rawMaps = SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).stream().map(SettingsSource::get).toList();
-    return base.putAll(rawMaps);
+    return SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).stream()
+      .map(SettingsSource::get)
+      .map(Settings::new)
+      .collect(SettingsCollectors.merging(base));
   }
 
   @NonNull

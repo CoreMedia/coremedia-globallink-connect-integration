@@ -9,12 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,35 +19,11 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringJUnitConfig(SettingsTest.LocalConfig.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SettingsTest {
-  @NonNull
-  private final ApplicationContext context;
-
-  SettingsTest(@Autowired @NonNull ApplicationContext context) {
-    this.context = context;
-  }
-
-  /**
-   * Creates a new {@link Settings} instance from the given properties.
-   * <p>
-   * The provided map will be sanitized to remove empty or invalid entries.
-   *
-   * @param properties the properties to create the settings from
-   * @return a new, sanitized {@link Settings} instance
-   */
-  @NonNull
-  public static Settings buildSettingsFromMap(@NonNull Map<String, Object> properties) {
-    // Use Builder for sanitizing entries.
-    return Settings.builder()
-      .source(() -> properties)
-      .build();
-  }
-
   @Nested
   class EmptyBehavior {
     @ParameterizedTest
@@ -68,19 +38,7 @@ class SettingsTest {
      */
     enum EmptyFixture implements Supplier<Settings> {
       CONSTANT(Settings.EMPTY),
-      BUILDER_WITHOUT_SOURCES(Settings.builder().build()),
-      BUILDER_WITH_EMPTY_SETTINGS_SOURCE(Settings.builder()
-        .source(Settings.EMPTY)
-        .build()),
-      BUILDER_WITH_EMPTY_MAP_SOURCE(Settings.builder()
-        .source(Map::of)
-        .build()),
-      BUILDER_WITH_EMPTY_SOURCES_LIST(Settings.builder()
-        .sources(List.of())
-        .build()),
-      BUILDER_WITH_EMPTY_SOURCES_ARRAY(Settings.builder()
-        .sources()
-        .build());
+      FROM_EMPTY_MAP(new Settings(Map.of()));
 
       @NonNull
       private final Settings settings;
@@ -274,30 +232,11 @@ class SettingsTest {
     }
 
     /**
-     * Represents different strategies for applying sources:
-     * <ul>
-     * <li>{@link Settings.Builder#source(SettingsSource)}</li>
-     * <li>{@link Settings.Builder#source(Settings)}</li>
-     * <li>{@link Settings.Builder#sources(List)}</li>
-     * <li>{@link Settings.Builder#sources(SettingsSource...)}</li>
-     * </ul>
+     * Represents different strategies for applying sources.
      */
     enum SingleSourceFixture implements Function<Map<String, Object>, Settings> {
       CONSTRUCTOR(Settings::new),
-      EMPTY_PUT_ALL_MAP(Settings.EMPTY::putAll),
-      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.putAll(new Settings(other))),
-      BUILDER_WITH_MAP_SOURCE(map -> Settings.builder()
-        .source(() -> map)
-        .build()),
-      BUILDER_WITH_SETTINGS_SOURCE(map -> Settings.builder()
-        .source(buildSettingsFromMap(map))
-        .build()),
-      BUILDER_WITH_SOURCES_SINGLETON_LIST(map -> Settings.builder()
-        .sources(List.of(() -> map))
-        .build()),
-      BUILDER_WITH_SOURCES_SINGLETON_ARRAY(map -> Settings.builder()
-        .sources(() -> map)
-        .build());
+      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.putAll(new Settings(other)));
 
       @NonNull
       private final Function<Map<String, Object>, Settings> delegate;
@@ -450,21 +389,9 @@ class SettingsTest {
     }
 
     /**
-     * Represents different strategies for applying multiple sources:
-     * <ul>
-     * <li>{@link Settings.Builder#source(SettingsSource)}</li>
-     * <li>{@link Settings.Builder#sources(List)}</li>
-     * <li>{@link Settings.Builder#sources(SettingsSource...)}</li>
-     * </ul>
+     * Represents different strategies for applying multiple sources.
      */
     enum MultiSource implements BiFunction<Map<String, Object>, Map<String, Object>, Settings> {
-      PUT_ALL_MAP {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
-          return new Settings(first).putAll(second);
-        }
-      },
       PUT_ALL_SETTINGS {
         @Override
         @NonNull
@@ -472,51 +399,15 @@ class SettingsTest {
           return new Settings(first).putAll(new Settings(second));
         }
       },
-      BUILDER_WITH_MAP_SOURCES {
+      USING_COLLECTOR {
         @Override
         @NonNull
         public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
-          return Settings.builder()
-            .source(() -> first)
-            .source(() -> second)
-            .build();
+          return Stream.of(first, second)
+            .map(Settings::new)
+            .collect(SettingsCollectors.merging());
         }
-      },
-      BUILDER_WITH_SOURCES_LIST {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
-          return Settings.builder()
-            .sources(List.of(() -> first, () -> second))
-            .build();
-        }
-      },
-      BUILDER_WITH_SOURCES_SINGLETON_ARRAY {
-        @Override
-        @NonNull
-        public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
-          return Settings.builder()
-            .sources(() -> first, () -> second)
-            .build();
-        }
-      },
-    }
-  }
-
-  /**
-   * Just testing the context source. This is because the other convenience
-   * methods require the {@code CMSettings} Blueprint content-type, that is
-   * unavailable in this test scenario. Expectation is, that this behavior
-   * is sufficiently covered by tests for {@link SettingsSource}.
-   */
-  @Nested
-  class ConvenienceSourceBehavior {
-    @Test
-    void shouldAddPropertiesFromContext() {
-      Settings settings = Settings.builder().beanSource(context).build();
-
-      assertThat(settings.properties())
-        .containsExactly(Map.entry("source", "context"));
+      }
     }
   }
 
@@ -552,28 +443,28 @@ class SettingsTest {
 
     @Test
     void shouldReturnExistingDirectProperty() {
-      Settings settings = buildSettingsFromMap(Map.of("key", "value"));
+      Settings settings = new Settings(Map.of("key", "value"));
       Optional<Object> result = atVariant.apply(settings, List.of("key"));
       assertThat(result).hasValue("value");
     }
 
     @Test
     void shouldReturnExistingNestedProperty() {
-      Settings settings = buildSettingsFromMap(Map.of("parent", Map.of("key", "value")));
+      Settings settings = new Settings(Map.of("parent", Map.of("key", "value")));
       Optional<Object> result = atVariant.apply(settings, List.of("parent", "key"));
       assertThat(result).hasValue("value");
     }
 
     @Test
     void shouldReturnExistingDeeperNestedProperty() {
-      Settings settings = buildSettingsFromMap(Map.of("grandparent", Map.of("parent", Map.of("key", "value"))));
+      Settings settings = new Settings(Map.of("grandparent", Map.of("parent", Map.of("key", "value"))));
       Optional<Object> result = atVariant.apply(settings, List.of("grandparent", "parent", "key"));
       assertThat(result).hasValue("value");
     }
 
     enum SettingsFixture implements Supplier<Settings> {
       EMPTY(Settings.EMPTY),
-      SINGLETON_ENTRY(buildSettingsFromMap(Map.of("key", "value")));
+      SINGLETON_ENTRY(new Settings(Map.of("key", "value")));
 
       @NonNull
       private final Settings settings;
@@ -638,14 +529,6 @@ class SettingsTest {
     @Nullable
     public Object get() {
       return value;
-    }
-  }
-
-  @Configuration(proxyBeanMethods = false)
-  static class LocalConfig {
-    @Bean
-    public Map<String, Object> gccConfigurationProperties() {
-      return Map.of("source", "context");
     }
   }
 }
