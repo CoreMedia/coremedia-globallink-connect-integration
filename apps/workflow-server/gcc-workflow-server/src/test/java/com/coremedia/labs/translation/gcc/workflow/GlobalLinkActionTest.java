@@ -61,8 +61,10 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import static com.coremedia.labs.translation.gcc.util.RetryDelay.saturatedOf;
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkAction.DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
@@ -231,7 +233,7 @@ class GlobalLinkActionTest {
           .build();
 
         globalLinkAction.adaptDelayForGeneralRetryBy(
-          (rd, c) -> rd.saturatedAdapt(d -> d.dividedBy(delayDivisor))
+          (rd, c) -> saturatedOf(rd.value().dividedBy(delayDivisor))
         );
 
         GlobalLinkAction.Parameters<Object> params =

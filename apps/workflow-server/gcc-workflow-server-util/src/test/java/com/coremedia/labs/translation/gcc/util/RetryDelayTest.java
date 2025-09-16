@@ -43,19 +43,6 @@ class RetryDelayTest {
     }
 
     @ParameterizedTest(name = "[{index}] {arguments}")
-    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
-      retryDelay | addSeconds | expectedSeconds | comment
-      60         | -1         | 60              | Should not get lower than allowed.
-      1d         | +1         | 86_400          | Should not get higher than allowed.
-      """)
-    void shouldApplySaturatedOperationAsExpected(RetryDelay base,
-                                                 long addSeconds,
-                                                 long expectedSeconds) {
-      RetryDelay actual = base.saturatedAdapt(d -> d.plusSeconds(addSeconds));
-      assertThat(actual.toSeconds()).isEqualTo(expectedSeconds);
-    }
-
-    @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvSource(useHeadersInDisplayName = true, nullValues = "null", delimiter = '|', textBlock = """
       configValue | expectedSeconds | comment
       60          | 60              | Should parse as seconds (lower bound).
