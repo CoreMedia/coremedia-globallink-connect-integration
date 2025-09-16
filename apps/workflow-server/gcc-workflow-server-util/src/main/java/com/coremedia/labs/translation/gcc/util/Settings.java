@@ -444,14 +444,13 @@ public record Settings(@NonNull Map<String, Object> properties) {
    */
   @UnknownNullness
   private static Object sanitizeValue(@UnknownNullness Object value, int depth) {
-    if (value instanceof Map<?, ?>) {
+    if (value instanceof Map<?, ?> mapValue) {
       if (depth >= MAX_DEPTH) {
         LOG.warn("Depth limit ({}) exceeded. Truncating nested structure.", MAX_DEPTH);
         return Map.of(); // Return empty map to maintain type consistency
       }
 
-      Map<?, ?> map = (Map<?, ?>) value;
-      return map.entrySet().stream()
+      return mapValue.entrySet().stream()
         .filter(Settings::considerEntry)
         .map(e -> sanitizeEntryValue(e, depth + 1))
         .filter(Settings::considerEntry)
