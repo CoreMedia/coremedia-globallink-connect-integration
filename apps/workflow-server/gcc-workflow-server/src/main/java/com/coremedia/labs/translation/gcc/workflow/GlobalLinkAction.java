@@ -365,9 +365,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param settings settings to read the delay from
    * @return delay to use
    */
-  // Since approvals around 2406.2.0-1 and 2506.0.0-1, keeping the pre-existing
-  // state. We may later decide to just let the actions provide the delay
-  // directly.
   @NonNull
   private RetryDelay getDefaultRetryDelay(@NonNull Settings settings) {
     return getRetryDelay(settings, getGCCRetryDelaySettingsKey());
