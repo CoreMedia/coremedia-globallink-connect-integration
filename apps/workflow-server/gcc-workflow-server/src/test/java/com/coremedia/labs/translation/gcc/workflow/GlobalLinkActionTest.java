@@ -61,7 +61,6 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static com.coremedia.labs.translation.gcc.util.RetryDelay.saturatedOf;
@@ -224,7 +223,7 @@ class GlobalLinkActionTest {
       void shouldRespectAdaptedRetryDelayForGeneralOperation() {
         int retryDelayBase = 1234;
         long delayDivisor = 2L;
-        RetryDelay expectedRetryDelay = RetryDelay.of(Duration.ofSeconds(retryDelayBase).dividedBy(2L));
+        RetryDelay expectedRetryDelay = new RetryDelay(Duration.ofSeconds(retryDelayBase).dividedBy(2L));
 
         globalLinkConfigBuilderProvider.getObject()
           .atGlobal()

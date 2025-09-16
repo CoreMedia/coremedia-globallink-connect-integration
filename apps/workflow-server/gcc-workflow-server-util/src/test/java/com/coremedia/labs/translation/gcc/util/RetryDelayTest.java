@@ -79,23 +79,6 @@ class RetryDelayTest {
   }
 
   @Nested
-  class OfBehavior {
-    @ParameterizedTest
-    @EnumSource(ValidDuration.class)
-    void shouldAcceptDurationsInRange(@NonNull ValidDuration fixture) {
-      assertThatCode(() -> RetryDelay.of(fixture.duration()))
-        .doesNotThrowAnyException();
-    }
-
-    @ParameterizedTest
-    @EnumSource(InvalidDuration.class)
-    void shouldDenyDurationOutOfBounds(@NonNull InvalidDuration fixture) {
-      assertThatThrownBy(() -> RetryDelay.of(fixture.duration()))
-        .isInstanceOf(IllegalArgumentException.class);
-    }
-  }
-
-  @Nested
   class SaturatedOfBehavior {
     @ParameterizedTest
     @EnumSource(ValidDuration.class)
@@ -140,7 +123,7 @@ class RetryDelayTest {
 
     ToSecondsBehavior(@NonNull ValidDuration fixture) {
       durationFixture = fixture.duration();
-      delayFixture = RetryDelay.of(fixture.duration());
+      delayFixture = new RetryDelay(fixture.duration());
     }
 
     @Test
@@ -176,7 +159,7 @@ class RetryDelayTest {
       long durationSeconds = duration.toSeconds();
       String durationAsString = Long.toString(durationSeconds);
       assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
-        .hasValue(RetryDelay.of(duration));
+        .hasValue(new RetryDelay(duration));
     }
   }
 
@@ -198,12 +181,12 @@ class RetryDelayTest {
       void shouldParseValidDurationStringToExpectedDelay(@NonNull DurationFormat.Style durationFormatStyle) {
         String durationAsString = DurationFormatterUtils.print(duration, durationFormatStyle);
         assertThat(RetryDelay.trySaturatedFromObject(durationAsString))
-          .hasValue(RetryDelay.of(duration));
+          .hasValue(new RetryDelay(duration));
       }
 
       @Test
       void shouldReturnRetryDelayAsIs() {
-        RetryDelay retryDelay = RetryDelay.of(duration);
+        RetryDelay retryDelay = new RetryDelay(duration);
         assertThat(RetryDelay.trySaturatedFromObject(retryDelay))
           .containsSame(retryDelay);
       }
@@ -211,13 +194,13 @@ class RetryDelayTest {
       @Test
       void shouldReturnDurationWrappedInRetryDelay() {
         assertThat(RetryDelay.trySaturatedFromObject(duration))
-          .hasValue(RetryDelay.of(duration));
+          .hasValue(new RetryDelay(duration));
       }
 
       @Test
       void shouldReturnNumberAsRetryDelayInSeconds() {
         long seconds = duration.toSeconds();
-        RetryDelay expected = RetryDelay.of(Duration.ofSeconds(seconds));
+        RetryDelay expected = new RetryDelay(Duration.ofSeconds(seconds));
         assertThat(RetryDelay.trySaturatedFromObject(seconds))
           .hasValue(expected);
       }

@@ -141,19 +141,6 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
   }
 
   /**
-   * Returns the retry delay for the given duration.
-   *
-   * @param duration retry delay duration
-   * @return retry delay
-   * @throws NullPointerException     if duration is {@code null}
-   * @throws IllegalArgumentException if duration is not within bounds
-   */
-  @NonNull
-  public static RetryDelay of(@NonNull Duration duration) {
-    return new RetryDelay(duration);
-  }
-
-  /**
    * Returns the retry delay for the given duration unless it would overflow or
    * underflow in which case {@link #MAX_VALUE} or {@link #MIN_VALUE}
    * is returned, respectively.
@@ -176,7 +163,7 @@ public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDel
       }
       return MAX_VALUE;
     }
-    return of(duration);
+    return new RetryDelay(duration);
   }
 
   /**
