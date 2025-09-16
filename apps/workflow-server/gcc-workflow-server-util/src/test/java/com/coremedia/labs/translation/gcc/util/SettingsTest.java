@@ -283,6 +283,9 @@ class SettingsTest {
      * </ul>
      */
     enum SingleSourceFixture implements Function<Map<String, Object>, Settings> {
+      CONSTRUCTOR(Settings::new),
+      EMPTY_PUT_ALL_MAP(Settings.EMPTY::putAll),
+      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.putAll(new Settings(other))),
       BUILDER_WITH_MAP_SOURCE(map -> Settings.builder()
         .source(() -> map)
         .build()),
@@ -455,6 +458,20 @@ class SettingsTest {
      * </ul>
      */
     enum MultiSource implements BiFunction<Map<String, Object>, Map<String, Object>, Settings> {
+      PUT_ALL_MAP {
+        @Override
+        @NonNull
+        public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
+          return new Settings(first).putAll(second);
+        }
+      },
+      PUT_ALL_SETTINGS {
+        @Override
+        @NonNull
+        public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
+          return new Settings(first).putAll(new Settings(second));
+        }
+      },
       BUILDER_WITH_MAP_SOURCES {
         @Override
         @NonNull

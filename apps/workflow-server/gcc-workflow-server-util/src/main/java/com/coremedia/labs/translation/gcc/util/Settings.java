@@ -90,6 +90,46 @@ public record Settings(@NonNull Map<String, Object> properties) {
   }
 
   /**
+   * Returns a new {@code Settings} instance with the given map merged in
+   * using deep merge semantics. The argument is sanitized before merging.
+   *
+   * @param other additional raw properties
+   * @return a new merged {@code Settings}
+   */
+  @NonNull
+  public Settings putAll(@NonNull Map<String, Object> other) {
+    requireNonNull(other, "other");
+    if (other.isEmpty()) {
+      return this;
+    }
+    Map<String, Object> sanitized = sanitizeMap(other);
+    if (sanitized.isEmpty()) {
+      return this;
+    }
+    Map<String, Object> merged = new HashMap<>(properties);
+    sanitized.forEach((k, v) -> merged.merge(k, v, (existing, replacement) -> deepMerge(existing, replacement, 0)));
+    return new Settings(merged);
+  }
+
+  /**
+   * Returns a new {@code Settings} instance with all properties from the given
+   * settings merged in using deep merge semantics.
+   *
+   * @param other another settings instance
+   * @return a new merged {@code Settings}
+   */
+  @NonNull
+  public Settings putAll(@NonNull Settings other) {
+    requireNonNull(other, "other");
+    if (other.properties.isEmpty()) {
+      return this;
+    }
+    Map<String, Object> merged = new HashMap<>(properties);
+    other.properties.forEach((k, v) -> merged.merge(k, v, (existing, replacement) -> deepMerge(existing, replacement, 0)));
+    return new Settings(merged);
+  }
+
+  /**
    * Retrieves a value at the specified path within the settings properties.
    * <p>
    * This method navigates through nested maps using the provided path elements
