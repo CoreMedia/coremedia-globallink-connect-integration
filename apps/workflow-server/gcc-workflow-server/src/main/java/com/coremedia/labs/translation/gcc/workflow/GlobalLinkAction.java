@@ -442,7 +442,6 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @return the parameters for the actual computation or {@code null} if no
    * parameters are needed
    */
-  @Nullable
   abstract P doExtractParameters(Task task);
 
   /**
