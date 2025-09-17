@@ -39,10 +39,10 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
-import org.jspecify.annotations.Nullable;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -440,7 +440,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @return the parameters for the actual computation or {@code null} if no
    * parameters are needed
    */
-  abstract P doExtractParameters(Task task);
+  abstract @Nullable P doExtractParameters(Task task);
 
   /**
    * Executes the action and optionally sets a result value at the given {@code resultConsumer}.
@@ -468,7 +468,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @throws GCFacadeException           if an error was raised by the given facade
    * @throws GlobalLinkWorkflowException if some other error occurred
    */
-  abstract void doExecuteGlobalLinkAction(P params,
+  abstract void doExecuteGlobalLinkAction(@Nullable P params,
                                           Consumer<? super R> resultConsumer,
                                           GCExchangeFacade facade,
                                           Map<String, List<Content>> issues);
@@ -490,7 +490,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param result result value that was passed to the consumer in {@link #doExecuteGlobalLinkAction}
    * @return value to store in the {@code resultVariable} or null to store nothing in that variable
    */
-  @Nullable Object doStoreResult(Task task, R result) {
+  @Nullable
+  Object doStoreResult(Task task, R result) {
     return result;
   }
 
@@ -648,7 +649,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  @Nullable Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+  @Nullable
+  Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
     if (issues.isEmpty()) {
       return null;
     }
@@ -678,7 +680,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  record Parameters<P>(P extendedParameters,
+  record Parameters<P>(@Nullable P extendedParameters,
                        Collection<ContentObject> masterContentObjects,
                        int remainingAutomaticRetries) {
   }
@@ -693,7 +695,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     /**
      * JSON with a map from studio severity to a map of error codes to possibly empty list of affected contents
      */
-    @Nullable Blob issues;
+    @Nullable
+    Blob issues;
     /**
      * Number of remaining automatic retries, if there are issues.
      * <p>
