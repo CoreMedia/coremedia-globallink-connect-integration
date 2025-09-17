@@ -57,10 +57,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static com.coremedia.labs.translation.gcc.util.RetryDelay.saturatedOf;
@@ -232,7 +233,7 @@ class GlobalLinkActionTest {
           .build();
 
         globalLinkAction.adaptDelayForGeneralRetryBy(
-          (rd, c) -> saturatedOf(rd.value().dividedBy(delayDivisor))
+          rd -> saturatedOf(rd.value().dividedBy(delayDivisor))
         );
 
         GlobalLinkAction.Parameters<Object> params =
@@ -392,7 +393,7 @@ class GlobalLinkActionTest {
     @Nullable
     private String overrideGccRetryDelaySettingsKey;
     @Nullable
-    private BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator;
+    private UnaryOperator<RetryDelay> retryDelayOperator;
 
     private MockedGlobalLinkAction(ApplicationContext applicationContext, GCExchangeFacade gcExchangeFacade) {
       super(true);
@@ -404,7 +405,7 @@ class GlobalLinkActionTest {
       this.onDoExecuteGlobalLinkAction = onDoExecuteGlobalLinkAction;
     }
 
-    public void adaptDelayForGeneralRetryBy(@NonNull BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator) {
+    public void adaptDelayForGeneralRetryBy(@NonNull UnaryOperator<RetryDelay> retryDelayOperator) {
       this.retryDelayOperator = retryDelayOperator;
     }
 
@@ -426,14 +427,16 @@ class GlobalLinkActionTest {
       return applicationContext;
     }
 
-    @NonNull
     @Override
+    @NonNull
     RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
-                                         @NonNull AdaptDelayForGeneralRetryContext<Void, Void> context) {
+                                         @NonNull Settings settings,
+                                         @NonNull Optional<Void> extendedResult,
+                                         @NonNull Map<String, List<Content>> issues) {
       if (retryDelayOperator == null) {
-        return super.adaptDelayForGeneralRetry(originalRetryDelay, context);
+        return super.adaptDelayForGeneralRetry(originalRetryDelay, settings, extendedResult, issues);
       }
-      return retryDelayOperator.apply(originalRetryDelay, context);
+      return retryDelayOperator.apply(originalRetryDelay);
     }
 
     @NonNull

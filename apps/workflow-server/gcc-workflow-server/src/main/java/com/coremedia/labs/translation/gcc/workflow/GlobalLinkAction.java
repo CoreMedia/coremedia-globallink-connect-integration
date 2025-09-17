@@ -41,7 +41,6 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
 import org.omg.CORBA.SystemException;
@@ -347,12 +346,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     // download of translations that are still missing
     result.retryDelaySeconds = adaptDelayForGeneralRetry(
       retryDelay,
-      new AdaptDelayForGeneralRetryContext<>(
-        settings,
-        parameters.extendedParameters,
-        result.extendedResult,
-        issues
-      )
+      settings,
+      result.extendedResult,
+      issues
     )
       .toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
@@ -383,38 +379,24 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * decide if and how to adapt the retry delay.
    *
    * @param originalRetryDelay original (default/general) retry delay
-   * @param context            some context you may want to respect for
-   *                           adapting the delay
+   * @param settings           settings, like where to read an alternative delay
+   *                           from
+   * @param extendedResult     your action specific result
+   * @param issues             a (mutable) map of issues; may be used to
+   *                           determine a different behavior when issues exist
+   *                           as well as to add more issues when problems arise
+   *                           adapting the retry delay
    * @return adapted (or unchanged) retry delay
    * @implSpec The default implementation returns the given delay as is.
    * @see #getRetryDelay(Settings, String)
    */
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   @NonNull
   RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
-                                       @NonNull AdaptDelayForGeneralRetryContext<P, R> context) {
+                                       @NonNull Settings settings,
+                                       @NonNull Optional<R> extendedResult,
+                                       @NonNull Map<String, List<Content>> issues) {
     return originalRetryDelay;
-  }
-
-  /**
-   * Context information for {@link #adaptDelayForGeneralRetry(RetryDelay, AdaptDelayForGeneralRetryContext)}.
-   *
-   * @param settings           settings, like where to read an alternative delay from
-   * @param extendedParameters your action specific parameters; result of
-   *                           {@link #doExtractParameters(Task)}, thus,
-   *                           the nullability state depends on the implementation
-   * @param extendedResult     your action specific result
-   * @param issues             a (mutable) map of issues; may be used to determine a
-   *                           different behavior when issues exist as well as to add more
-   *                           issues when problems arise adapting the retry delay
-   * @param <P>                type of extended parameters
-   * @param <R>                type of extended result
-   */
-  record AdaptDelayForGeneralRetryContext<P, R>(
-    @NonNull Settings settings,
-    @UnknownNullness P extendedParameters,
-    @NonNull Optional<R> extendedResult,
-    @NonNull Map<String, List<Content>> issues
-  ) {
   }
 
   @Override
