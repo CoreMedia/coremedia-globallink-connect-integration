@@ -193,8 +193,8 @@ public record Settings(Map<String, Object> properties) {
                                   Object replacement) {
     if (existing instanceof Map<?, ?> && replacement instanceof Map<?, ?>) {
       // We know from previous processing that map keys are guaranteed to be strings
-      Map<String, Object> existingMap = asStringKeyedMap((Map<?, ?>) existing);
-      Map<String, Object> replacementMap = asStringKeyedMap((Map<?, ?>) replacement);
+      @SuppressWarnings("unchecked") Map<String, Object> existingMap = (Map<String, Object>) existing;
+      @SuppressWarnings("unchecked") Map<String, Object> replacementMap = (Map<String, Object>) replacement;
 
       return deepMergeMaps(existingMap, replacementMap);
     }
@@ -217,20 +217,6 @@ public record Settings(Map<String, Object> properties) {
         Settings::deepMerge,
         () -> new HashMap<>(existingMap)
       ));
-  }
-
-  /**
-   * Performs an unchecked cast of a raw map to a string-keyed map.
-   * <p>
-   * This cast is safe because all maps have been validated to contain only
-   * string keys during the filtering process.
-   *
-   * @param rawMap the raw map to cast
-   * @return the map cast to a string-keyed type
-   */
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> asStringKeyedMap(Map<?, ?> rawMap) {
-    return (Map<String, Object>) rawMap;
   }
 
   /**
