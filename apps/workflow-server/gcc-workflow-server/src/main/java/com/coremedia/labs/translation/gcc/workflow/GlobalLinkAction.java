@@ -695,8 +695,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     /**
      * JSON with a map from studio severity to a map of error codes to possibly empty list of affected contents
      */
-    @Nullable
-    Blob issues;
+    @Nullable Blob issues;
     /**
      * Number of remaining automatic retries, if there are issues.
      * <p>
