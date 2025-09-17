@@ -571,14 +571,14 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   @NonNull
   Settings withGlobalSettings(@NonNull Settings base,
                               @NonNull ContentRepository repository) {
-    return base.putAll(SettingsSource.fromPath(repository, GLOBAL_CONFIGURATION_PATH));
+    return base.mergedWith(SettingsSource.fromPath(repository, GLOBAL_CONFIGURATION_PATH));
   }
 
   @VisibleForTesting
   @NonNull
   Settings withSiteSettings(@NonNull Settings base,
                             @NonNull Site site) {
-    return base.putAll(SettingsSource.fromPathAtSite(site, SITE_CONFIGURATION_PATH));
+    return base.mergedWith(SettingsSource.fromPathAtSite(site, SITE_CONFIGURATION_PATH));
   }
 
   @NonNull

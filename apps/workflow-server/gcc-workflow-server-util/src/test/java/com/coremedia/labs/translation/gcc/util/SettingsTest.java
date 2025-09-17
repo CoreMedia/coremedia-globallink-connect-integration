@@ -236,7 +236,7 @@ class SettingsTest {
      */
     enum SingleSourceFixture implements Function<Map<String, Object>, Settings> {
       CONSTRUCTOR(Settings::new),
-      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.putAll(new Settings(other)));
+      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.mergedWith(new Settings(other)));
 
       @NonNull
       private final Function<Map<String, Object>, Settings> delegate;
@@ -396,7 +396,7 @@ class SettingsTest {
         @Override
         @NonNull
         public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
-          return new Settings(first).putAll(new Settings(second));
+          return new Settings(first).mergedWith(new Settings(second));
         }
       },
       USING_COLLECTOR {
@@ -405,7 +405,7 @@ class SettingsTest {
         public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
           return Stream.of(first, second)
             .map(Settings::new)
-            .reduce(Settings::putAll)
+            .reduce(Settings::mergedWith)
             .orElse(Settings.EMPTY);
         }
       }

@@ -102,7 +102,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return a new merged {@code Settings}
    */
   @NonNull
-  public Settings putAll(@NonNull Settings other) {
+  public Settings mergedWith(@NonNull Settings other) {
     requireNonNull(other, "other");
     if (other.isEmpty()) {
       return this;

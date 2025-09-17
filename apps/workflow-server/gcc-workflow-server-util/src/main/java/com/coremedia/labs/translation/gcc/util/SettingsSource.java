@@ -209,7 +209,7 @@ public enum SettingsSource {
     return content.getChildrenWithType(settingsTypeName)
       .stream()
       .map(document -> fromDocument(document, settingsTypeName, settingsDescriptorName))
-      .reduce(Settings::putAll)
+      .reduce(Settings::mergedWith)
       .orElse(Settings.EMPTY);
   }
 

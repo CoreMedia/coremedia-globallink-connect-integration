@@ -451,7 +451,7 @@ class GlobalLinkActionTest {
     @Override
     Settings withGlobalSettings(@NonNull Settings base, @NonNull ContentRepository repository) {
       // Allow to also use our test-content-types.
-      return base.putAll(SettingsSource.fromPath(
+      return base.mergedWith(SettingsSource.fromPath(
         repository,
         Settings.GLOBAL_CONFIGURATION_PATH,
         "SimpleStruct", "value"));
@@ -461,7 +461,7 @@ class GlobalLinkActionTest {
     @Override
     Settings withSiteSettings(@NonNull Settings base, @NonNull Site site) {
       // Allow to also use our test-content-types.
-      return base.putAll(SettingsSource.fromPathAtSite(
+      return base.mergedWith(SettingsSource.fromPathAtSite(
         site,
         Settings.SITE_CONFIGURATION_PATH,
         SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct"));
