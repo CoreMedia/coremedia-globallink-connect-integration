@@ -1,14 +1,13 @@
 package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.jspecify.annotations.NullMarked;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.springframework.format.annotation.DurationFormat;
 import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Objects.requireNonNull;
@@ -26,12 +25,12 @@ import static org.springframework.format.datetime.standard.DurationFormatterUtil
  *              {@link #MAX_VALUE}
  * @since 2506.0.0-1
  */
-@NullMarked
-public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
+public record RetryDelay(@NonNull Duration value) implements Comparable<RetryDelay> {
 
   /**
    * Logger instance for this class.
    */
+  @NonNull
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   /**
@@ -40,6 +39,7 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * Set to one minute to prevent DoS attacks on external systems.
    */
   @VisibleForTesting
+  @NonNull
   static final Duration MIN_DELAY_DURATION = Duration.ofMinutes(1L);
 
   /**
@@ -48,12 +48,14 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * Set to one day to prevent excessively long workflow delays.
    */
   @VisibleForTesting
+  @NonNull
   static final Duration MAX_DELAY_DURATION = Duration.ofDays(1L);
 
   /**
    * Default delay duration used as fallback for invalid values.
    */
   @VisibleForTesting
+  @NonNull
   static final Duration DEFAULT_DELAY_DURATION = Duration.ofMinutes(15L);
 
   /**
@@ -62,6 +64,7 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * Firing too many update requests on the external system could be
    * considered a DoS attack.
    */
+  @NonNull
   public static final RetryDelay MIN_VALUE = new RetryDelay(MIN_DELAY_DURATION);
 
   /**
@@ -72,12 +75,14 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * again for an update. Changing this accidentally got also a lot more likely,
    * since times can be changed in the content repository directly.
    */
+  @NonNull
   public static final RetryDelay MAX_VALUE = new RetryDelay(MAX_DELAY_DURATION);
 
   /**
    * Fallback delay between retrying communication with GlobalLink for illegal
    * values.
    */
+  @NonNull
   public static final RetryDelay DEFAULT = new RetryDelay(DEFAULT_DELAY_DURATION);
 
   /**
@@ -97,20 +102,6 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
     if (MAX_DELAY_DURATION.compareTo(value) < 0) {
       throw new IllegalArgumentException("value must be less than or equal to %s".formatted(pretty(MAX_DELAY_DURATION)));
     }
-  }
-
-  /**
-   * Applies the given operator on the retry delay and returns its newly
-   * created saturated result.
-   * <p>
-   * The result is automatically bounded to valid retry delay limits.
-   *
-   * @param operator operator to apply to the current duration value
-   * @return new saturated instance of {@code RetryDelay}
-   * @throws NullPointerException if operator is {@code null}
-   */
-  public RetryDelay saturatedAdapt(UnaryOperator<Duration> operator) {
-    return saturatedOf(operator.apply(value));
   }
 
   /**
@@ -145,20 +136,8 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * @throws NullPointerException if the specified delay is {@code null}
    */
   @Override
-  public int compareTo(RetryDelay o) {
+  public int compareTo(@NonNull RetryDelay o) {
     return value.compareTo(o.value);
-  }
-
-  /**
-   * Returns the retry delay for the given duration.
-   *
-   * @param duration retry delay duration
-   * @return retry delay
-   * @throws NullPointerException     if duration is {@code null}
-   * @throws IllegalArgumentException if duration is not within bounds
-   */
-  public static RetryDelay of(Duration duration) {
-    return new RetryDelay(duration);
   }
 
   /**
@@ -170,7 +149,8 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * @return retry delay; ensured to be within allowed bounds
    * @throws NullPointerException if duration is {@code null}
    */
-  public static RetryDelay saturatedOf(Duration duration) {
+  @NonNull
+  public static RetryDelay saturatedOf(@NonNull Duration duration) {
     if (MIN_DELAY_DURATION.compareTo(duration) > 0) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Underflow of minimum retry delay duration: {}. Fallback to minimum retry delay.", pretty(duration));
@@ -183,16 +163,7 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
       }
       return MAX_VALUE;
     }
-    return of(duration);
-  }
-
-  /**
-   * A representation of the retry delay duration meant to be human-readable.
-   *
-   * @return retry delay duration representation
-   */
-  public String humanReadable() {
-    return pretty(value);
+    return new RetryDelay(duration);
   }
 
   /**
@@ -205,7 +176,8 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * @return human-readable representation
    * @throws NullPointerException if duration is {@code null}
    */
-  private static String pretty(Duration duration) {
+  @NonNull
+  private static String pretty(@NonNull Duration duration) {
     try {
       return DurationFormatterUtils.print(duration, DurationFormat.Style.COMPOSITE);
     } catch (ArithmeticException e) {
@@ -231,7 +203,10 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * @throws NullPointerException     if value is {@code null}
    * @throws IllegalArgumentException if value cannot be parsed
    */
-  public static RetryDelay saturatedParse(String value) {
+  // Indirectly used from tests as parameter resolver.
+  @VisibleForTesting
+  @NonNull
+  static RetryDelay saturatedParse(@NonNull String value) {
     return saturatedOf(detectAndParse(value, DurationFormat.Unit.SECONDS));
   }
 
@@ -259,15 +234,16 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
    * @return retry delay with detected duration, or empty if parsing fails
    * @throws NullPointerException if value is {@code null}
    */
-  public static Optional<RetryDelay> trySaturatedFromObject(Object value) {
+  @NonNull
+  public static Optional<RetryDelay> findRetryDelay(@NonNull Object value) {
     requireNonNull(value);
 
     try {
-      if (value instanceof RetryDelay) {
-        return Optional.of((RetryDelay) value);
+      if (value instanceof RetryDelay retryDelay) {
+        return Optional.of(retryDelay);
       }
-      if (value instanceof Duration) {
-        return Optional.of(saturatedOf((Duration) value));
+      if (value instanceof Duration duration) {
+        return Optional.of(saturatedOf(duration));
       }
       if (value instanceof Number number) {
         return Optional.of(saturatedOf(Duration.ofSeconds(number.longValue())));

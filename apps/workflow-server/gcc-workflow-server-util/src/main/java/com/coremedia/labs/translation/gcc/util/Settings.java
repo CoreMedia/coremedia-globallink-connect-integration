@@ -1,16 +1,11 @@
 package com.coremedia.labs.translation.gcc.util;
 
-import com.coremedia.cap.content.ContentRepository;
-import com.coremedia.cap.multisite.Site;
 import com.google.common.annotations.VisibleForTesting;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.NullUnmarked;
-import org.jspecify.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.UnknownNullness;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.BeanFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.invoke.MethodHandles.lookup;
+import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -32,16 +28,17 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @param properties merged properties from all sources
  * @since 2506.0.0-1
  */
-@NullMarked
-public record Settings(Map<String, Object> properties) {
+public record Settings(@NonNull Map<String, Object> properties) {
   /**
    * The logger for this class.
    */
+  @NonNull
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   /**
    * An empty settings instance with no properties.
    */
+  @NonNull
   public static final Settings EMPTY = new Settings(Map.of());
 
   /**
@@ -76,6 +73,46 @@ public record Settings(Map<String, Object> properties) {
   public static final int MAX_DEPTH = 10;
 
   /**
+   * The canonical constructor that sanitizes the provided properties map.
+   * <p>
+   * Removes invalid entries (null keys/values, empty collections/maps/strings),
+   * recursively sanitizes nested maps/collections, and enforces depth limits.
+   *
+   * @param properties raw properties (will be defensively sanitized)
+   */
+  public Settings {
+    requireNonNull(properties, "properties");
+    properties = sanitizeMap(properties);
+  }
+
+  /**
+   * Signals, if these settings are empty.
+   *
+   * @return {@code true} if settings are empty; {@code false} if not
+   */
+  public boolean isEmpty() {
+    return properties.isEmpty();
+  }
+
+  /**
+   * Returns a new {@code Settings} instance with all properties from the given
+   * settings merged in using deep merge semantics.
+   *
+   * @param other another settings instance
+   * @return a new merged {@code Settings}
+   */
+  @NonNull
+  public Settings mergedWith(@NonNull Settings other) {
+    requireNonNull(other, "other");
+    if (other.isEmpty()) {
+      return this;
+    }
+    Map<String, Object> merged = new HashMap<>(properties);
+    other.properties.forEach((k, v) -> merged.merge(k, v, Settings::deepMerge));
+    return new Settings(merged);
+  }
+
+  /**
    * Retrieves a value at the specified path within the settings properties.
    * <p>
    * This method navigates through nested maps using the provided path elements
@@ -90,7 +127,8 @@ public record Settings(Map<String, Object> properties) {
    * @return an {@link Optional} containing the value at the specified path, or
    * empty if not found
    */
-  public Optional<Object> at(List<String> path) {
+  @NonNull
+  public Optional<Object> at(@NonNull List<String> path) {
     Object value = properties;
     for (int i = 0; i < path.size() && value != null; i++) {
       String pathElement = path.get(i);
@@ -120,7 +158,8 @@ public record Settings(Map<String, Object> properties) {
    * @return an {@link Optional} containing the value at the specified path, or
    * empty if not found
    */
-  public Optional<Object> at(String firstElement, String... otherElements) {
+  @NonNull
+  public Optional<Object> at(@NonNull String firstElement, @NonNull String... otherElements) {
     List<String> path = Stream.concat(
       Stream.of(firstElement),
       Stream.of(otherElements)
@@ -129,253 +168,60 @@ public record Settings(Map<String, Object> properties) {
   }
 
   /**
-   * Creates a new {@link Settings} instance from the given properties.
-   * <p>
-   * The provided map will be sanitized to remove empty or invalid entries.
+   * Sanitizes a single raw source map.
    *
-   * @param properties the properties to create the settings from
-   * @return a new, sanitized {@link Settings} instance
+   * @param source raw input map
+   * @return sanitized, potentially modified map
    */
-  public static Settings of(Map<String, @Nullable Object> properties) {
-    // Use Builder for sanitizing entries.
-    return builder()
-      .source(() -> properties)
-      .build();
-  }
-
-  /**
-   * Creates a new builder instance for constructing settings.
-   *
-   * @return a new builder instance
-   */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * A builder that combines different sources to create a settings
-   * representation.
-   * <p>
-   * Sources added later overwrite sources added earlier using deep merge
-   * semantics. When merging maps, existing keys are preserved unless explicitly
-   * overwritten by later sources.
-   */
-  public static class Builder {
-
-    /**
-     * A list of sources to merge properties from, in order of precedence
-     * (highest precedence last).
-     */
-    private final List<SettingsSource> sources = new ArrayList<>();
-
-    /**
-     * Adds a source that provides settings from Spring beans.
-     *
-     * @param beanFactory the bean factory to source settings from
-     * @return this builder instance for method chaining
-     */
-    public Builder beanSource(BeanFactory beanFactory) {
-      sources.add(SettingsSource.fromContext(beanFactory));
-      return this;
-    }
-
-    /**
-     * Adds a source that provides settings from the given site.
-     *
-     * @param site the site to source settings from
-     * @return this builder instance for method chaining
-     */
-    public Builder siteSource(Site site) {
-      SettingsSource.allAt(site, SITE_CONFIGURATION_PATH).forEach(this::source);
-      return this;
-    }
-
-    /**
-     * Adds a source that provides settings from the content repository.
-     *
-     * @param repository the repository to source settings from
-     * @return this builder instance for method chaining
-     */
-    public Builder repositorySource(ContentRepository repository) {
-      SettingsSource.allAt(repository, GLOBAL_CONFIGURATION_PATH).forEach(this::source);
-      return this;
-    }
-
-    /**
-     * Adds the given settings as a source to be merged.
-     * <p>
-     * Sources are processed in the order they are added, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param settings the settings to add as a source for merging
-     * @return this builder instance for method chaining
-     */
-    public Builder source(Settings settings) {
-      sources.add(settings::properties);
-      return this;
-    }
-
-    /**
-     * Adds the given source to be merged.
-     * <p>
-     * Sources are processed in the order they are added, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param source the source to add for merging
-     * @return this builder instance for method chaining
-     */
-    public Builder source(SettingsSource source) {
-      sources.add(source);
-      return this;
-    }
-
-    /**
-     * Adds the given sources to be merged.
-     * <p>
-     * Sources are processed in the order they are given, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param sources a list of sources to add for merging
-     * @return this builder instance for method chaining
-     */
-    public Builder sources(List<SettingsSource> sources) {
-      this.sources.addAll(sources);
-      return this;
-    }
-
-    /**
-     * Adds the given sources to be merged.
-     * <p>
-     * Sources are processed in the order they are given, where later sources
-     * take precedence for conflicting values. Sources are merged deeply,
-     * meaning that if a value is a map, the same merge pattern is applied
-     * recursively to nested maps. This allows for granular overriding of
-     * specific nested properties.
-     * <p>
-     * Multiple calls to this method append additional sources, which will
-     * override previously added sources for specific values at any given path.
-     *
-     * @param sources an array of sources to add for merging
-     * @return this builder instance for method chaining
-     */
-    public Builder sources(SettingsSource... sources) {
-      return sources(Arrays.asList(sources));
-    }
-
-    /**
-     * Creates the {@link Settings} object by merging all configured sources.
-     * <p>
-     * The merge process validates that all map keys are strings and filters
-     * out {@code null} or empty values according to the configured rules.
-     *
-     * @return a merged {@link Settings} object containing properties from all
-     * sources
-     */
-    public Settings build() {
-      // Must not use `of` as `of` uses the builder for sanitizing.
-      return new Settings(mergedSources(sources));
-    }
-  }
-
-  /**
-   * Merges all sources into a single map of properties.
-   * <p>
-   * Sources are processed in order, with later sources taking precedence.
-   * Only entries with valid keys and values are included in the result.
-   * Map nesting is limited to {@value #MAX_DEPTH} levels to prevent stack
-   * overflow.
-   *
-   * @param sources a list of sources to merge
-   * @return a merged map containing all valid properties
-   */
-  private static Map<String, Object> mergedSources(List<SettingsSource> sources) {
-    return sources.stream()
-      .map(SettingsSource::get)
-      .flatMap(map -> map.entrySet().stream())
-      .filter(Settings::considerEntry)
+  @NonNull
+  private static Map<String, Object> sanitizeMap(@NonNull Map<String, Object> source) {
+    return source.entrySet().stream()
+      .filter(Settings::isValidEntry)
       .map(e -> sanitizeEntryValue(e, 0))
-      .filter(Settings::considerEntry)
-      .collect(
-        Collectors.toMap(
-          Map.Entry::getKey,
-          Map.Entry::getValue,
-          (existing, replacement) -> deepMerge(existing, replacement, 0)
-        )
-      );
+      .filter(Settings::isValidEntry)
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   /**
-   * Merges two values using deep merge semantics for maps.
+   * Merges two values using deep merge semantics for maps. Expects both
+   * maps to originate from already sanitized sources.
    * <p>
    * If both values are maps, they are merged recursively with the replacement
    * map's values taking precedence. For non-map values, the replacement value
-   * completely overwrites the existing value. Nesting depth is limited to
-   * prevent stack overflow.
+   * completely overwrites the existing value.
    *
    * @param existing    the original value
    * @param replacement the new value to merge or overwrite with
-   * @param depth       the current nesting depth
    * @return the merged result
    */
-  private static Object deepMerge(Object existing,
-                                  Object replacement,
-                                  int depth) {
-    if (depth >= MAX_DEPTH) {
-      LOG.warn("Depth limit ({}) exceeded during merge. Using replacement value.", MAX_DEPTH);
-      return sanitizeValue(replacement, depth);
-    }
-
+  @NonNull
+  private static Object deepMerge(@NonNull Object existing,
+                                  @NonNull Object replacement) {
     if (existing instanceof Map<?, ?> && replacement instanceof Map<?, ?>) {
       // We know from previous processing that map keys are guaranteed to be strings
       Map<String, Object> existingMap = asStringKeyedMap((Map<?, ?>) existing);
       Map<String, Object> replacementMap = asStringKeyedMap((Map<?, ?>) replacement);
 
-      return deepMergeMaps(existingMap, replacementMap, depth);
+      return deepMergeMaps(existingMap, replacementMap);
     }
-    return sanitizeValue(replacement, depth);
+    return replacement;
   }
 
   /**
    * Performs a deep merge of two maps with string keys.
-   * <p>
-   * The replacement map's entries are merged into the existing map. Null values
-   * in the replacement map are ignored to preserve existing values. Nested maps
-   * are merged recursively up to the maximum allowed depth.
    *
    * @param existingMap    the existing map to merge into
    * @param replacementMap the new map whose values take precedence
-   * @param depth          the current nesting depth
    * @return a new map containing the merged result
    */
-  private static Map<String, Object> deepMergeMaps(Map<String, Object> existingMap,
-                                                   Map<String, Object> replacementMap,
-                                                   int depth) {
+  @NonNull
+  private static Map<String, Object> deepMergeMaps(@NonNull Map<String, Object> existingMap,
+                                                   @NonNull Map<String, Object> replacementMap) {
     return replacementMap.entrySet().stream()
-      .filter(Settings::considerEntry)
-      .map(e -> sanitizeEntryValue(e, depth + 1))
-      .filter(Settings::considerEntry)
       .collect(Collectors.toMap(
         Map.Entry::getKey,
         Map.Entry::getValue,
-        (existing, replacement) -> deepMerge(existing, replacement, depth + 1),
+        Settings::deepMerge,
         () -> new HashMap<>(existingMap)
       ));
   }
@@ -390,7 +236,8 @@ public record Settings(Map<String, Object> properties) {
    * @return the map cast to a string-keyed type
    */
   @SuppressWarnings("unchecked")
-  private static Map<String, Object> asStringKeyedMap(Map<?, ?> rawMap) {
+  @NonNull
+  private static Map<String, Object> asStringKeyedMap(@NonNull Map<?, ?> rawMap) {
     return (Map<String, Object>) rawMap;
   }
 
@@ -408,7 +255,8 @@ public record Settings(Map<String, Object> properties) {
    * @param <V>   the type of the value
    * @return an entry with a sanitized value
    */
-  private static <K, V> Map.Entry<K, Object> sanitizeEntryValue(Map.Entry<K, V> entry, int depth) {
+  @NonNull
+  private static <K, V> Map.Entry<K, Object> sanitizeEntryValue(@NonNull Map.Entry<K, V> entry, int depth) {
     return Map.entry(entry.getKey(), sanitizeValue(entry.getValue(), depth));
   }
 
@@ -424,18 +272,18 @@ public record Settings(Map<String, Object> properties) {
    * @param depth the current nesting depth
    * @return a sanitized value with filtered entries if it is a map
    */
-  @NullUnmarked
-  private static Object sanitizeValue(Object value, int depth) {
-    if (value instanceof Map<?, ?> map) {
+  @UnknownNullness
+  private static Object sanitizeValue(@UnknownNullness Object value, int depth) {
+    if (value instanceof Map<?, ?> mapValue) {
       if (depth >= MAX_DEPTH) {
         LOG.warn("Depth limit ({}) exceeded. Truncating nested structure.", MAX_DEPTH);
         return Map.of(); // Return empty map to maintain type consistency
       }
 
-      return map.entrySet().stream()
-        .filter(Settings::considerEntry)
+      return mapValue.entrySet().stream()
+        .filter(Settings::isValidEntry)
         .map(e -> sanitizeEntryValue(e, depth + 1))
-        .filter(Settings::considerEntry)
+        .filter(Settings::isValidEntry)
         .collect(Collectors.toMap(
           Map.Entry::getKey,
           Map.Entry::getValue
@@ -448,7 +296,7 @@ public record Settings(Map<String, Object> properties) {
       }
       return ((Collection<?>) value).stream()
         .map(e -> sanitizeValue(e, depth + 1))
-        .filter(Settings::considerValue)
+        .filter(Settings::isValidValue)
         .toList();
     }
     return value;
@@ -470,23 +318,8 @@ public record Settings(Map<String, Object> properties) {
    * @param entry the map entry to evaluate
    * @return {@code true} if the entry should be included; {@code false} otherwise
    */
-  private static boolean considerEntry(Map.Entry<?, ?> entry) {
-    return considerKey(entry.getKey()) && considerValue(entry.getValue());
-  }
-
-  /**
-   * Validates whether a key is acceptable for inclusion in the settings.
-   * <p>
-   * Only string keys are accepted to ensure type safety and consistent
-   * property access patterns.
-   *
-   * @param value the key to validate
-   * @return {@code true} if the key is a non-null string; {@code false}
-   * otherwise
-   */
-  @NullUnmarked
-  private static boolean considerKey(Object value) {
-    return value instanceof String;
+  private static boolean isValidEntry(@NonNull Map.Entry<?, ?> entry) {
+    return entry.getKey() instanceof String && isValidValue(entry.getValue());
   }
 
   /**
@@ -499,8 +332,7 @@ public record Settings(Map<String, Object> properties) {
    * @param value the value to validate
    * @return {@code true} if the value should be included; {@code false} otherwise
    */
-  @NullUnmarked
-  private static boolean considerValue(Object value) {
+  private static boolean isValidValue(@Nullable Object value) {
     if (value == null) {
       return false;
     }

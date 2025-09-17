@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.util;
 
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -9,12 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,24 +19,16 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringJUnitConfig(SettingsTest.LocalConfig.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@NullMarked
 class SettingsTest {
-  private final ApplicationContext context;
-
-  SettingsTest(@Autowired ApplicationContext context) {
-    this.context = context;
-  }
-
   @Nested
   class EmptyBehavior {
     @ParameterizedTest
     @EnumSource(EmptyFixture.class)
-    void shouldHaveEmptyProperties(EmptyFixture emptyFixture) {
+    void shouldHaveEmptyProperties(@NonNull EmptyFixture emptyFixture) {
       Settings settings = emptyFixture.get();
       assertThat(settings.properties()).isEmpty();
     }
@@ -52,28 +38,17 @@ class SettingsTest {
      */
     enum EmptyFixture implements Supplier<Settings> {
       CONSTANT(Settings.EMPTY),
-      OF_EMPTY_MAP(Settings.of(Map.of())),
-      BUILDER_WITHOUT_SOURCES(Settings.builder().build()),
-      BUILDER_WITH_EMPTY_SETTINGS_SOURCE(Settings.builder()
-        .source(Settings.EMPTY)
-        .build()),
-      BUILDER_WITH_EMPTY_MAP_SOURCE(Settings.builder()
-        .source(Map::of)
-        .build()),
-      BUILDER_WITH_EMPTY_SOURCES_LIST(Settings.builder()
-        .sources(List.of())
-        .build()),
-      BUILDER_WITH_EMPTY_SOURCES_ARRAY(Settings.builder()
-        .sources()
-        .build());
+      FROM_EMPTY_MAP(new Settings(Map.of()));
 
+      @NonNull
       private final Settings settings;
 
-      EmptyFixture(Settings settings) {
+      EmptyFixture(@NonNull Settings settings) {
         this.settings = settings;
       }
 
       @Override
+      @NonNull
       public Settings get() {
         return settings;
       }
@@ -88,9 +63,10 @@ class SettingsTest {
   @ParameterizedClass
   @EnumSource(SingleSourceBehavior.SingleSourceFixture.class)
   class SingleSourceBehavior {
+    @NonNull
     private final SingleSourceFixture fixture;
 
-    SingleSourceBehavior(SingleSourceFixture fixture) {
+    SingleSourceBehavior(@NonNull SingleSourceFixture fixture) {
       this.fixture = fixture;
     }
 
@@ -108,7 +84,7 @@ class SettingsTest {
     @ValueSource(longs = {Long.MIN_VALUE, Long.MAX_VALUE})
     @NullSource
     void shouldFilterOutMapsWithNonStringKeys(@Nullable Object key) {
-      Map<@Nullable Object, Object> nestedInvalidMap = new HashMap<>();
+      Map<Object, Object> nestedInvalidMap = new HashMap<>();
       nestedInvalidMap.put("valid_key", "value1");
       nestedInvalidMap.put(key, "value2");
       Map<String, Object> input = Map.of("containsInvalid", nestedInvalidMap);
@@ -121,8 +97,8 @@ class SettingsTest {
 
     @ParameterizedTest
     @EnumSource(EmptyValueFixture.class)
-    void shouldFilterEmptyValues(EmptyValueFixture emptyValueFixture) {
-      Map<String, @Nullable Object> properties = new HashMap<>();
+    void shouldFilterEmptyValues(@NonNull EmptyValueFixture emptyValueFixture) {
+      Map<String, Object> properties = new HashMap<>();
       properties.put("non-empty", "value");
       properties.put("empty", emptyValueFixture.get());
       Map<String, Object> expected = Map.of("non-empty", "value");
@@ -132,9 +108,9 @@ class SettingsTest {
 
     @ParameterizedTest
     @EnumSource(EmptyValueFixture.class)
-    void shouldFilterEmptyValuesDeeply(EmptyValueFixture emptyValueFixture) {
-      Map<String, @Nullable Object> onlyEmpty = new HashMap<>();
-      Map<String, @Nullable Object> alsoEmpty = new HashMap<>();
+    void shouldFilterEmptyValuesDeeply(@NonNull EmptyValueFixture emptyValueFixture) {
+      Map<String, Object> onlyEmpty = new HashMap<>();
+      Map<String, Object> alsoEmpty = new HashMap<>();
       onlyEmpty.put("empty", emptyValueFixture.get());
       alsoEmpty.put("empty", emptyValueFixture.get());
       alsoEmpty.put("non-empty", "value");
@@ -256,38 +232,22 @@ class SettingsTest {
     }
 
     /**
-     * Represents different strategies for applying sources:
-     * <ul>
-     * <li>{@link Settings#of(Map)}</li>
-     * <li>{@link Settings.Builder#source(SettingsSource)}</li>
-     * <li>{@link Settings.Builder#source(Settings)}</li>
-     * <li>{@link Settings.Builder#sources(List)}</li>
-     * <li>{@link Settings.Builder#sources(SettingsSource...)}</li>
-     * </ul>
+     * Represents different strategies for applying sources.
      */
-    enum SingleSourceFixture implements Function<Map<String, @Nullable Object>, Settings> {
-      OF(Settings::of),
-      BUILDER_WITH_MAP_SOURCE(map -> Settings.builder()
-        .source(() -> map)
-        .build()),
-      BUILDER_WITH_SETTINGS_SOURCE(map -> Settings.builder()
-        .source(Settings.of(map))
-        .build()),
-      BUILDER_WITH_SOURCES_SINGLETON_LIST(map -> Settings.builder()
-        .sources(List.of(() -> map))
-        .build()),
-      BUILDER_WITH_SOURCES_SINGLETON_ARRAY(map -> Settings.builder()
-        .sources(() -> map)
-        .build());
+    enum SingleSourceFixture implements Function<Map<String, Object>, Settings> {
+      CONSTRUCTOR(Settings::new),
+      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.mergedWith(new Settings(other)));
 
-      private final Function<Map<String, @Nullable Object>, Settings> delegate;
+      @NonNull
+      private final Function<Map<String, Object>, Settings> delegate;
 
-      SingleSourceFixture(Function<Map<String, @Nullable Object>, Settings> delegate) {
+      SingleSourceFixture(@NonNull Function<Map<String, Object>, Settings> delegate) {
         this.delegate = delegate;
       }
 
       @Override
-      public Settings apply(Map<String, @Nullable Object> map) {
+      @NonNull
+      public Settings apply(@NonNull Map<String, Object> map) {
         return delegate.apply(map);
       }
     }
@@ -300,9 +260,10 @@ class SettingsTest {
   @Nested
   @EnumSource(MultiSourceBehavior.MultiSource.class)
   class MultiSourceBehavior {
+    @NonNull
     private final MultiSource fixture;
 
-    MultiSourceBehavior(MultiSource fixture) {
+    MultiSourceBehavior(@NonNull MultiSource fixture) {
       this.fixture = fixture;
     }
 
@@ -338,9 +299,9 @@ class SettingsTest {
 
     @ParameterizedTest
     @EnumSource(EmptyValueFixture.class)
-    void shouldNotOverrideWithSecondSourceEmptyValue(EmptyValueFixture emptyValueFixture) {
+    void shouldNotOverrideWithSecondSourceEmptyValue(@NonNull EmptyValueFixture emptyValueFixture) {
       Map<String, Object> first = Map.of("key1", "value1", "to-override", "original");
-      Map<String, @Nullable Object> second = new HashMap<>(Map.of("key2", "value2"));
+      Map<String, Object> second = new HashMap<>(Map.of("key2", "value2"));
       second.put("to-override", emptyValueFixture.get());
       Map<String, Object> expected = Map.of("key1", "value1", "key2", "value2", "to-override", "original");
 
@@ -360,9 +321,9 @@ class SettingsTest {
 
     @ParameterizedTest
     @EnumSource(EmptyValueFixture.class)
-    void shouldNotOverrideDeeplyWithSecondSourceEmptyValue(EmptyValueFixture emptyValueFixture) {
+    void shouldNotOverrideDeeplyWithSecondSourceEmptyValue(@NonNull EmptyValueFixture emptyValueFixture) {
       Map<String, Object> first = Map.of("parent", Map.of("to-override", "original"));
-      Map<String, @Nullable Object> emptyValue = new HashMap<>();
+      Map<String, Object> emptyValue = new HashMap<>();
       emptyValue.put("to-override", emptyValueFixture.get());
       Map<String, Object> second = Map.of("parent", emptyValue);
       Map<String, Object> expected = Map.of("parent", Map.of("to-override", "original"));
@@ -428,56 +389,26 @@ class SettingsTest {
     }
 
     /**
-     * Represents different strategies for applying multiple sources:
-     * <ul>
-     * <li>{@link Settings.Builder#source(SettingsSource)}</li>
-     * <li>{@link Settings.Builder#sources(List)}</li>
-     * <li>{@link Settings.Builder#sources(SettingsSource...)}</li>
-     * </ul>
+     * Represents different strategies for applying multiple sources.
      */
-    enum MultiSource implements BiFunction<Map<String, @Nullable Object>, Map<String, @Nullable Object>, Settings> {
-      BUILDER_WITH_MAP_SOURCES {
+    enum MultiSource implements BiFunction<Map<String, Object>, Map<String, Object>, Settings> {
+      PUT_ALL_SETTINGS {
         @Override
-        public Settings apply(Map<String, @Nullable Object> first, Map<String, @Nullable Object> second) {
-          return Settings.builder()
-            .source(() -> first)
-            .source(() -> second)
-            .build();
+        @NonNull
+        public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
+          return new Settings(first).mergedWith(new Settings(second));
         }
       },
-      BUILDER_WITH_SOURCES_LIST {
+      USING_COLLECTOR {
         @Override
-        public Settings apply(Map<String, @Nullable Object> first, Map<String, @Nullable Object> second) {
-          return Settings.builder()
-            .sources(List.of(() -> first, () -> second))
-            .build();
+        @NonNull
+        public Settings apply(@NonNull Map<String, Object> first, @NonNull Map<String, Object> second) {
+          return Stream.of(first, second)
+            .map(Settings::new)
+            .reduce(Settings::mergedWith)
+            .orElse(Settings.EMPTY);
         }
-      },
-      BUILDER_WITH_SOURCES_SINGLETON_ARRAY {
-        @Override
-        public Settings apply(Map<String, @Nullable Object> first, Map<String, @Nullable Object> second) {
-          return Settings.builder()
-            .sources(() -> first, () -> second)
-            .build();
-        }
-      },
-    }
-  }
-
-  /**
-   * Just testing the context source. This is because the other convenience
-   * methods require the {@code CMSettings} Blueprint content-type, that is
-   * unavailable in this test scenario. Expectation is, that this behavior
-   * is sufficiently covered by tests for {@link SettingsSource}.
-   */
-  @Nested
-  class ConvenienceSourceBehavior {
-    @Test
-    void shouldAddPropertiesFromContext() {
-      Settings settings = Settings.builder().beanSource(context).build();
-
-      assertThat(settings.properties())
-        .containsExactly(Map.entry("source", "context"));
+      }
     }
   }
 
@@ -488,15 +419,16 @@ class SettingsTest {
   @ParameterizedClass
   @EnumSource(AtBehavior.AtVariant.class)
   class AtBehavior {
+    @NonNull
     private final AtVariant atVariant;
 
-    AtBehavior(AtVariant atVariant) {
+    AtBehavior(@NonNull AtVariant atVariant) {
       this.atVariant = atVariant;
     }
 
     @ParameterizedTest
     @EnumSource(SettingsFixture.class)
-    void shouldReturnEmptyIfNotFoundInDirectProperties(SettingsFixture settingsFixture) {
+    void shouldReturnEmptyIfNotFoundInDirectProperties(@NonNull SettingsFixture settingsFixture) {
       Settings settings = settingsFixture.get();
       Optional<Object> result = atVariant.apply(settings, List.of("unavailable"));
       assertThat(result).isEmpty();
@@ -504,7 +436,7 @@ class SettingsTest {
 
     @ParameterizedTest
     @EnumSource(SettingsFixture.class)
-    void shouldReturnEmptyIfNotFoundInNestedProperties(SettingsFixture settingsFixture) {
+    void shouldReturnEmptyIfNotFoundInNestedProperties(@NonNull SettingsFixture settingsFixture) {
       Settings settings = settingsFixture.get();
       Optional<Object> result = atVariant.apply(settings, List.of("key", "unavailable"));
       assertThat(result).isEmpty();
@@ -512,36 +444,38 @@ class SettingsTest {
 
     @Test
     void shouldReturnExistingDirectProperty() {
-      Settings settings = Settings.of(Map.of("key", "value"));
+      Settings settings = new Settings(Map.of("key", "value"));
       Optional<Object> result = atVariant.apply(settings, List.of("key"));
       assertThat(result).hasValue("value");
     }
 
     @Test
     void shouldReturnExistingNestedProperty() {
-      Settings settings = Settings.of(Map.of("parent", Map.of("key", "value")));
+      Settings settings = new Settings(Map.of("parent", Map.of("key", "value")));
       Optional<Object> result = atVariant.apply(settings, List.of("parent", "key"));
       assertThat(result).hasValue("value");
     }
 
     @Test
     void shouldReturnExistingDeeperNestedProperty() {
-      Settings settings = Settings.of(Map.of("grandparent", Map.of("parent", Map.of("key", "value"))));
+      Settings settings = new Settings(Map.of("grandparent", Map.of("parent", Map.of("key", "value"))));
       Optional<Object> result = atVariant.apply(settings, List.of("grandparent", "parent", "key"));
       assertThat(result).hasValue("value");
     }
 
     enum SettingsFixture implements Supplier<Settings> {
       EMPTY(Settings.EMPTY),
-      SINGLETON_ENTRY(Settings.of(Map.of("key", "value")));
+      SINGLETON_ENTRY(new Settings(Map.of("key", "value")));
 
+      @NonNull
       private final Settings settings;
 
-      SettingsFixture(Settings settings) {
+      SettingsFixture(@NonNull Settings settings) {
         this.settings = settings;
       }
 
       @Override
+      @NonNull
       public Settings get() {
         return settings;
       }
@@ -578,7 +512,7 @@ class SettingsTest {
    * Some representations of empty values that shall be ignored for the
    * resulting properties.
    */
-  enum EmptyValueFixture implements Supplier<@Nullable Object> {
+  enum EmptyValueFixture implements Supplier<Object> {
     NULL(null),
     EMPTY_STRING(""),
     EMPTY_SET(Set.of()),
@@ -596,14 +530,6 @@ class SettingsTest {
     @Nullable
     public Object get() {
       return value;
-    }
-  }
-
-  @Configuration(proxyBeanMethods = false)
-  static class LocalConfig {
-    @Bean
-    public Map<String, Object> gccConfigurationProperties() {
-      return Map.of("source", "context");
     }
   }
 }
