@@ -230,9 +230,11 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   @Override
-  void doExecuteGlobalLinkAction(Parameters params,
+  void doExecuteGlobalLinkAction(@Nullable Parameters params,
                                  Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
+    requireNonNull(params, "Unexpected state. Parameters must not be null.");
+
     long submissionId = params.submissionId;
 
     // We need to share xliff files between #doExecuteGlobalLinkAction and #doStoreResult.
@@ -415,11 +417,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     }
   }
 
-  private static void moveFiles(File srcDir, String srcSubDirName, File targetDir, @Nullable String targetSubDirName) throws IOException {
+  private static void moveFiles(File srcDir, String srcSubDirName, File targetDir, String targetSubDirName) throws IOException {
     srcDir = new File(srcDir, srcSubDirName);
-    if (targetSubDirName != null) {
-      targetDir = new File(targetDir, targetSubDirName);
-    }
+    targetDir = new File(targetDir, targetSubDirName);
     File[] files = srcDir.listFiles();
     if (files != null && files.length > 0) {
       ensureDir(targetDir);
