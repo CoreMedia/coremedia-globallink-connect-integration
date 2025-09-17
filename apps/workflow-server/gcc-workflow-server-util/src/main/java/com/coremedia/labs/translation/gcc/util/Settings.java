@@ -1,9 +1,9 @@
 package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.annotations.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.UnknownNullness;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -28,17 +28,16 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @param properties merged properties from all sources
  * @since 2506.0.0-1
  */
-public record Settings(@NonNull Map<String, Object> properties) {
+@NullMarked
+public record Settings(Map<String, Object> properties) {
   /**
    * The logger for this class.
    */
-  @NonNull
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   /**
    * An empty settings instance with no properties.
    */
-  @NonNull
   public static final Settings EMPTY = new Settings(Map.of());
 
   /**
@@ -101,8 +100,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param other another settings instance
    * @return a new merged {@code Settings}
    */
-  @NonNull
-  public Settings mergedWith(@NonNull Settings other) {
+  public Settings mergedWith(Settings other) {
     requireNonNull(other, "other");
     if (other.isEmpty()) {
       return this;
@@ -127,8 +125,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return an {@link Optional} containing the value at the specified path, or
    * empty if not found
    */
-  @NonNull
-  public Optional<Object> at(@NonNull List<String> path) {
+  public Optional<Object> at(List<String> path) {
     Object value = properties;
     for (int i = 0; i < path.size() && value != null; i++) {
       String pathElement = path.get(i);
@@ -158,8 +155,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return an {@link Optional} containing the value at the specified path, or
    * empty if not found
    */
-  @NonNull
-  public Optional<Object> at(@NonNull String firstElement, @NonNull String... otherElements) {
+  public Optional<Object> at(String firstElement, String... otherElements) {
     List<String> path = Stream.concat(
       Stream.of(firstElement),
       Stream.of(otherElements)
@@ -173,8 +169,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param source raw input map
    * @return sanitized, potentially modified map
    */
-  @NonNull
-  private static Map<String, Object> sanitizeMap(@NonNull Map<String, Object> source) {
+  private static Map<String, Object> sanitizeMap(Map<String, Object> source) {
     return source.entrySet().stream()
       .filter(Settings::isValidEntry)
       .map(e -> sanitizeEntryValue(e, 0))
@@ -194,9 +189,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param replacement the new value to merge or overwrite with
    * @return the merged result
    */
-  @NonNull
-  private static Object deepMerge(@NonNull Object existing,
-                                  @NonNull Object replacement) {
+  private static Object deepMerge(Object existing,
+                                  Object replacement) {
     if (existing instanceof Map<?, ?> && replacement instanceof Map<?, ?>) {
       // We know from previous processing that map keys are guaranteed to be strings
       Map<String, Object> existingMap = asStringKeyedMap((Map<?, ?>) existing);
@@ -214,9 +208,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param replacementMap the new map whose values take precedence
    * @return a new map containing the merged result
    */
-  @NonNull
-  private static Map<String, Object> deepMergeMaps(@NonNull Map<String, Object> existingMap,
-                                                   @NonNull Map<String, Object> replacementMap) {
+  private static Map<String, Object> deepMergeMaps(Map<String, Object> existingMap,
+                                                   Map<String, Object> replacementMap) {
     return replacementMap.entrySet().stream()
       .collect(Collectors.toMap(
         Map.Entry::getKey,
@@ -236,8 +229,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @return the map cast to a string-keyed type
    */
   @SuppressWarnings("unchecked")
-  @NonNull
-  private static Map<String, Object> asStringKeyedMap(@NonNull Map<?, ?> rawMap) {
+  private static Map<String, Object> asStringKeyedMap(Map<?, ?> rawMap) {
     return (Map<String, Object>) rawMap;
   }
 
@@ -255,8 +247,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param <V>   the type of the value
    * @return an entry with a sanitized value
    */
-  @NonNull
-  private static <K, V> Map.Entry<K, Object> sanitizeEntryValue(@NonNull Map.Entry<K, V> entry, int depth) {
+  private static <K, V> Map.Entry<K, Object> sanitizeEntryValue(Map.Entry<K, V> entry, int depth) {
     return Map.entry(entry.getKey(), sanitizeValue(entry.getValue(), depth));
   }
 
@@ -272,8 +263,8 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param depth the current nesting depth
    * @return a sanitized value with filtered entries if it is a map
    */
-  @UnknownNullness
-  private static Object sanitizeValue(@UnknownNullness Object value, int depth) {
+  @NullUnmarked
+  private static Object sanitizeValue(Object value, int depth) {
     if (value instanceof Map<?, ?> mapValue) {
       if (depth >= MAX_DEPTH) {
         LOG.warn("Depth limit ({}) exceeded. Truncating nested structure.", MAX_DEPTH);
@@ -318,7 +309,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * @param entry the map entry to evaluate
    * @return {@code true} if the entry should be included; {@code false} otherwise
    */
-  private static boolean isValidEntry(@NonNull Map.Entry<?, ?> entry) {
+  private static boolean isValidEntry(Map.Entry<?, ?> entry) {
     return entry.getKey() instanceof String && isValidValue(entry.getValue());
   }
 
