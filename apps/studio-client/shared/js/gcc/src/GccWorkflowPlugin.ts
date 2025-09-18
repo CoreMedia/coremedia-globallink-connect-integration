@@ -270,7 +270,7 @@ const getGccWorkflowPlugin = async (): Promise<TranslationWorkflowPlugin> => {
         };
       },
 
-      saveViewModel(viewModel: GccViewModel) {
+      saveViewModel() {
         return {};
       },
 
