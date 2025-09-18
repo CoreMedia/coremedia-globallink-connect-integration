@@ -105,14 +105,45 @@ values. The interval is also limited to be not longer than one day because if
 you accidentally set it to a very big value, there would be no turning back. You
 would have to wait until it is expired.
 
-* `sendTranslationRequestRetryDelay` Overrides the default interval (secs)
-  between retries if the XLIFF could not be sent on first try.
-  (_optional_, default: `180`, type:`Integer`)
-* `downloadTranslationRetryDelay` Overrides the update interval (secs) of the
-  submission's state, and the translated XLIFF(s) are not immediately ready.
-  (_optional_, default: `1800`, type:`Integer`)
-* `cancelTranslationRetryDelay` Overrides the interval (secs) for retrying the
-  cancellation of a submission. (_optional_, default: `180`, type: `Integer`)
+:::tip TIP: Integer or String
+As retry delays you may specify integer values, interpreted as number of
+seconds or use string values, representing number of seconds when given
+without a unit.
+
+Unit's may be given as supported by Spring's
+[DurationFormatterUtils](https://docs.spring.io/spring-framework/docs/current/javadoc-api//org/springframework/format/datetime/standard/DurationFormatterUtils.html).
+
+<Since value="2506.0.0-1"/>
+
+Prior to 2506.0.0-1 only integer values were supported.
+:::
+
+* `sendTranslationRequestRetryDelay` The delay to wait, if the XLIFF could not
+  be sent on first try.
+
+  (_optional_, default: `3m`, type: `Integer` or `String`)
+
+* `downloadTranslationRetryDelay` The delay to wait before updating the
+  submission's state and to eventually download the XLIFF once it contains
+  the translations.
+
+  (_optional_, default: `30m`, type: `Integer` or `String`)
+
+* <Since value="2506.0.0-1"/>
+  `downloadTranslationEarlyRetryDelay` An alternative delay to
+  `downloadTranslationRetryDelay` in early submission stages. Allows more
+  frequent updates and especially faster feedback on assigned project
+  director IDs, required by editors when communicating with translators.
+
+  If _unset_ (the default), applies the `downloadTranslationRetryDelay`
+  instead.
+
+  (_optional_, default: _unset_, type: `Integer` or `String`)
+
+* `cancelTranslationRetryDelay` The delay to wait, if the first
+  cancellation request failed until it is repeated.
+
+  (_optional_, default: `3m`, type: `Integer` or `String`)
 
 You can also define parameters for testing with the mock facade
 (see

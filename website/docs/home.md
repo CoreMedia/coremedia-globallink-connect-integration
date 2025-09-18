@@ -8,15 +8,7 @@ tags:
   - GCC
 ---
 
-import { context } from '@site/src/ts/context';
-
 ![CoreMedia Labs Logo](https://documentation.coremedia.com/badges/banner_coremedia_labs_wide.png "CoreMedia Labs Logo Title Text")
-<Badge
-  label="CoreMedia Content Cloud"
-  style="for-the-badge"
-  color="672779"
-  message={context.cmcc.version.short}
-/>
 
 # CoreMedia GlobalLink Connect Cloud Integration
 
@@ -52,8 +44,8 @@ This extension adds the following functionality to the CoreMedia Studio:
 
 ## Previous Version Documentation
 
-To access documentation of versions prior to {context.cmcc.version.full},
-open <RepositoryLink path="website/docs/"/> and switch to the corresponding
+To access documentation for a given released version, open
+<RepositoryLink path="website/docs/"/> and switch to the corresponding
 version tag.
 
 Best experience is provided if you check out

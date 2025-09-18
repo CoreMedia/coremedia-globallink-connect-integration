@@ -13,6 +13,8 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
+import com.coremedia.labs.translation.gcc.util.RetryDelay;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.annotations.VisibleForTesting;
@@ -40,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -52,11 +55,13 @@ import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_IN
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.INVALID_LOCALE;
 import static com.coremedia.cap.translate.xliff.XliffImportResultCode.SUCCESS;
 import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.CANCELLED;
+import static com.coremedia.labs.translation.gcc.facade.GCSubmissionState.TRANSLATE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Workflow action that downloads results from the translation service if the translation job is complete.
+ * Workflow action that downloads results from the translation service if the
+ * translation job is complete.
  */
 public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromGlobalLinkAction.Parameters, DownloadFromGlobalLinkAction.Result> {
   @Serial
@@ -64,6 +69,33 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  /**
+   * States, where we expect, that the list of project director IDs are not
+   * yet complete. In these stages we may consider to poll the state more
+   * frequently for faster updates.
+   */
+  @NonNull
+  private static final EnumSet<GCSubmissionState> EARLY_PRE_TRANSLATE_STATES = EnumSet.of(
+    GCSubmissionState.IN_PRE_PROCESS,
+    GCSubmissionState.STARTED,
+    GCSubmissionState.ANALYZED,
+    GCSubmissionState.AWAITING_APPROVAL,
+    GCSubmissionState.AWAITING_QUOTE_APPROVAL
+  );
+
+  /**
+   * An initial retry delay that is typically lower (and thus: polling is
+   * more frequent) at an early stage after translation submissions have
+   * been created.
+   * <p>
+   * The main purpose is to poll more frequently when we do not have any
+   * project directory IDs yet, that editors may wait for.
+   */
+  private static final String GCC_EARLY_RETRY_DELAY_SETTINGS_KEY = "downloadTranslationEarlyRetryDelay";
+  /**
+   * The normal retry delay used to recheck if the translation is meanwhile
+   * done.
+   */
   private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "downloadTranslationRetryDelay";
 
   private static final String WORKING_DIR_PREFIX = "cmsgccwf";
@@ -134,7 +166,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
    * Sets the name of the process variable that holds the submission IDs shown to editors in Studio and
    * in the GlobalLink tools.
    *
-   * @param globalLinkPdSubmissionIdsVariable string workflow variable name
+   * @param globalLinkPdSubmissionIdsVariable name of workflow aggregation variable of type string
    */
   @SuppressWarnings("unused") // set from workflow definition
   public void setGlobalLinkPdSubmissionIdsVariable(String globalLinkPdSubmissionIdsVariable) {
@@ -182,6 +214,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   @Override
+  @NonNull
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
 
@@ -259,6 +292,46 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     }
 
     result.globalLinkStatus = submission.getState();
+  }
+
+  @NonNull
+  @Override
+  RetryDelay adaptDelayForGeneralRetry(@NonNull RetryDelay originalRetryDelay,
+                                       @NonNull Settings settings,
+                                       @NonNull Optional<Result> extendedResult,
+                                       @NonNull Map<String, List<Content>> issues) {
+    Optional<RetryDelay> initialRetryDelay = findRetryDelay(settings, GCC_EARLY_RETRY_DELAY_SETTINGS_KEY);
+    // When to return the original delay at this early check phase:
+    //   - If there is no extra retry delay, we return the original one
+    //     unmodified.
+    //   - If there are any issues, we assume, that we should stick to the
+    //     default delay.
+    if (initialRetryDelay.isEmpty() || !issues.isEmpty()) {
+      return originalRetryDelay;
+    }
+
+    boolean increasedPollingFrequency = extendedResult
+      .map(result -> {
+        if (EARLY_PRE_TRANSLATE_STATES.contains(result.globalLinkStatus)) {
+          // Even if we already have (some) PD Submission IDs, more may be added
+          // in this phase.
+          return true;
+        }
+        if (TRANSLATE != result.globalLinkStatus) {
+          // For any states later than TRANSLATE (or unknown ones), we don't
+          // want to increase polling frequency.
+          return false;
+        }
+        // If we don't have any PD Submission IDs yet, increase polling
+        // frequency.
+        return result.pdSubmissionIds == null || result.pdSubmissionIds.isEmpty();
+      }).orElse(true);
+
+    if (increasedPollingFrequency) {
+      return initialRetryDelay.get();
+    }
+
+    return originalRetryDelay;
   }
 
   @Override
