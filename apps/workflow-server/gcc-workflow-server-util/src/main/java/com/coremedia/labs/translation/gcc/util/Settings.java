@@ -50,7 +50,7 @@ public record Settings(@NonNull Map<String, Object> properties) {
    * greater than two are rather unexpected. We allow a maximum depth of 10.
    */
   @VisibleForTesting
-  public static final int MAX_DEPTH = 10;
+  static final int MAX_DEPTH = 10;
 
   /**
    * The canonical constructor that sanitizes the provided properties map.
