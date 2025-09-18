@@ -8,32 +8,45 @@
     "@coremedia-labs/studio-client.ext.gcc-studio-client": "workspace:*"
   },
   "devDependencies": {
-    "@jangaroo/build": "^3.2.0",
-    "@jangaroo/core": "^3.2.0",
-    "rimraf": "^5.0.7"
+    "@babel/core": "^7.24.7",
+    "@coremedia/eslint-config-studio-client": "workspace:*",
+    "@coremedia/studio-client.build-config": "workspace:*",
+    "@coremedia/studio-client.workflow.shared-modules": "workspace:*",
+    "eslint": "^8.57.0",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.8.2",
+    "webpack-cli": "^6.0.1",
+    "webpack": "^5.98.0"
   },
   "scripts": {
-    "clean": "rimraf ./dist && rimraf ./build",
-    "build": "jangaroo build",
-    "watch": "jangaroo watch",
-    "publish": "jangaroo publish"
+    "build": "tsc --project src && webpack build --mode=production",
+    "clean": "rimraf ./dist",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "prepublishOnly": "prepare-package",
+    "watch": "webpack watch --mode=development"
   },
   "exports": {
-    "./*": {
-      "types": "./src/*.ts",
-      "default": "./dist/src/*.js"
+    "./appEntry.js": {
+      "default": "./dist/appEntry.js"
     }
   },
   "coremedia": {
-    "projectExtensionFor": "studio-client.workflow"
+    "projectExtensionFor": "studio-client.workflow",
+    "plugins": {
+      "workflow_react_gccWorkflowPlugin": "./dist/appEntry.js"
+    }
   },
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": false,
     "exports": {
-      "./*": {
-        "types": "./src/*.d.ts",
-        "default": "./src/*.js"
+      "./appEntry.js": {
+        "default": "./appEntry.js"
+      }
+    },
+    "coremedia": {
+      "plugins": {
+        "workflow_react_gccWorkflowPlugin": "./appEntry.js"
       }
     }
   }
