@@ -80,7 +80,7 @@ public enum SettingsSource {
       LOG.warn("{} not found in bean context.", beanName);
       return Settings.EMPTY;
     }
-    return new Settings((Map<String, Object>) beanFactory.getBean(beanName, Map.class));
+    return new Settings(beanFactory.getBean(beanName, Map.class));
   }
 
   /**
