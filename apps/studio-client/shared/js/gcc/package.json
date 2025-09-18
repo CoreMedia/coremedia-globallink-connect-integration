@@ -6,31 +6,36 @@
   "private": true,
   "dependencies": {
     "@coremedia/studio-client.cap-base-models": "workspace:*",
-    "@coremedia/studio-client.cap-rest-client": "workspace:*",
     "@coremedia/studio-client.cap-rest-client-impl": "workspace:*",
-    "@coremedia/studio-client.client-core": "workspace:*",
+    "@coremedia/studio-client.cap-rest-client": "workspace:*",
     "@coremedia/studio-client.client-core-impl": "workspace:*",
+    "@coremedia/studio-client.client-core": "workspace:*",
     "@coremedia/studio-client.core-icons": "workspace:*",
+    "@coremedia/studio-client.i18n-models": "workspace:*",
     "@coremedia/studio-client.workflow-models": "workspace:*",
     "@coremedia/studio-client.workflow-plugin-models": "workspace:*",
-    "@jangaroo/ext-ts": "^2.1.0",
-    "@jangaroo/runtime": "^3.2.0"
+    "@jangaroo/runtime": "^3.3.1"
   },
   "devDependencies": {
-    "@jangaroo/build": "^3.2.0",
-    "@jangaroo/core": "^3.2.0",
-    "@coremedia/eslint-config-studio-client-ext": "workspace:*",
+    "@coremedia/eslint-config-studio-client": "workspace:*",
+    "@jangaroo/build": "^3.3.1",
+    "@jangaroo/core": "^3.3.1",
+    "@jangaroo/publish": "^3.3.1",
     "eslint": "^8.57.0",
     "rimraf": "^5.0.7"
   },
   "scripts": {
-    "clean": "rimraf ./dist && rimraf ./build",
     "build": "jangaroo build",
-    "watch": "jangaroo watch",
+    "clean": "rimraf ./dist && rimraf ./build",
+    "lint": "eslint \"src/**/*.ts\"",
     "publish": "jangaroo publish",
-    "lint": "eslint \"src/**/*.ts\""
+    "watch": "jangaroo watch"
   },
   "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/src/index.js"
+    },
     "./*": {
       "types": "./src/*.ts",
       "default": "./dist/src/*.js"
@@ -40,6 +45,10 @@
     "directory": "dist",
     "linkDirectory": false,
     "exports": {
+      ".": {
+        "types": "./src/index.d.ts",
+        "default": "./src/index.js"
+      },
       "./*": {
         "types": "./src/*.d.ts",
         "default": "./src/*.js"

@@ -1,0 +1,12 @@
+{
+  "extends": "@coremedia/studio-client.build-config/tsconfig-shared.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../dist/src"
+  },
+  "references": [
+    {
+      "path": "../../../../shared/js/gcc/src"
+    },
+  ]
+}

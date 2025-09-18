@@ -1,8 +1,13 @@
 import { as } from "@jangaroo/runtime";
-import { session, Content, ContentRepository, Struct, ContentType } from "@coremedia/studio-client.cap-rest-client";
-import ContentProperties from "@coremedia/studio-client.cap-rest-client/content/ContentProperties";
-import Logger from "@coremedia/studio-client.client-core-impl/logging/Logger";
-import RemoteBeanUtil from "@coremedia/studio-client.client-core/data/RemoteBeanUtil";
+import {
+  session,
+  Content,
+  ContentRepository,
+  Struct,
+  ContentType,
+  ContentProperties,
+} from "@coremedia/studio-client.cap-rest-client";
+import { RemoteBeanUtil } from "@coremedia/studio-client.client-core";
 
 /**
  * Access to the settings for the translation services.
@@ -126,16 +131,16 @@ export class TranslationServicesSettings {
       return undefined;
     }
     if (settingsRoot === null || settingsRoot.isDestroyed()) {
-      Logger.debug(`No settings found for translation services: ${settingsRoot}`);
+      console.debug(`No settings found for translation services: ${settingsRoot}`);
       return [];
     }
     const intermediateResult: Content[] = [];
     if (settingsRoot.isDocument()) {
-      Logger.debug(`Settings represented as single document. Adding: ${settingsRoot.getPath()} (${settingsRoot})`);
+      console.debug(`Settings represented as single document. Adding: ${settingsRoot.getPath()} (${settingsRoot})`);
       intermediateResult.push(settingsRoot);
     } else {
       // Adds contents sorted by name, so that we have a deterministic order.
-      Logger.debug(
+      console.debug(
         `Settings represented as folder. Adding child documents of: ${settingsRoot.getPath()} (${settingsRoot})`,
       );
       intermediateResult.push(...settingsRoot.getChildDocuments());
@@ -149,7 +154,7 @@ export class TranslationServicesSettings {
       return undefined;
     }
     if (!accessible) {
-      Logger.debug(`Ignoring inaccessible settings document: ${content}`);
+      console.debug(`Ignoring inaccessible settings document: ${content}`);
       return false;
     }
     const contentType: ContentType | undefined = content.getType();
@@ -180,10 +185,10 @@ export class TranslationServicesSettings {
         result.push(content);
       }
     }
-    if (Logger.isDebugEnabled()) {
-      const resultCsv = result.map((content) => `${content.getPath()} (${content})`).join(", ");
-      Logger.debug(`Found ${result.length} settings documents for translation services: ${resultCsv}`);
-    }
+
+    const resultCsv = result.map((content) => `${content.getPath()} (${content})`).join(", ");
+    console.debug(`Found ${result.length} settings documents for translation services: ${resultCsv}`);
+
     return result;
   }
 
@@ -222,7 +227,7 @@ export class TranslationServicesSettings {
     }
     const result = globallink.get(TranslationServicesSettings.P_DAY_OFFSET_FOR_DUE_DATE);
     if (typeof result !== "number" || result < 0) {
-      Logger.debug(
+      console.debug(
         `Invalid day offset for due date in settings at: ${settingsDocument.getPath()}: ${result} (${typeof result})`,
       );
       return null;
@@ -239,13 +244,11 @@ export class TranslationServicesSettings {
     for (const settingsDocument of settingsDocuments) {
       const dayOffset = TranslationServicesSettings.#getDayOffsetForDueDate(settingsDocument);
       if (typeof dayOffset === "number" && dayOffset > 0) {
-        if (Logger.isDebugEnabled()) {
-          Logger.debug(`Using day offset ${dayOffset} for due date from settings at: ${settingsDocument.getPath()}`);
-        }
+        console.debug(`Using day offset ${dayOffset} for due date from settings at: ${settingsDocument.getPath()}`);
         return dayOffset;
       }
     }
-    Logger.debug("No available and valid day offset found in settings. Using default.");
+    console.debug("No available and valid day offset found in settings. Using default.");
     return TranslationServicesSettings.DEFAULT_DAY_OFFSET_FOR_DUE_DATE;
   }
 
