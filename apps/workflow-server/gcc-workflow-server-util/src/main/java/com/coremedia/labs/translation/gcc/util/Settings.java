@@ -42,26 +42,6 @@ public record Settings(@NonNull Map<String, Object> properties) {
   public static final Settings EMPTY = new Settings(Map.of());
 
   /**
-   * Defines the global configuration path.
-   * <p>
-   * The path may denote a (settings) document as well as a folder that contains
-   * settings documents to be respected for the GlobalLink settings.
-   */
-  @VisibleForTesting
-  public static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
-
-  /**
-   * Defines the site-specific configuration path.
-   * <p>
-   * If a GlobalLink parameter should be different in a specific site,
-   * then the path either denotes a site-specific (settings) document or a
-   * folder that may contain settings documents to be used to determine the
-   * GlobalLink settings.
-   */
-  @VisibleForTesting
-  public static final String SITE_CONFIGURATION_PATH = "Options/Settings/Translation Services";
-
-  /**
    * The maximum allowed nesting depth for map structures to prevent stack
    * overflow.
    * <p>

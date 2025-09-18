@@ -5,7 +5,6 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.struct.Struct;
 import com.coremedia.cap.struct.StructBuilder;
 import com.coremedia.cap.struct.StructService;
-import com.coremedia.labs.translation.gcc.util.Settings;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.springframework.format.annotation.DurationFormat;
@@ -75,7 +74,7 @@ public class GlobalLinkConfigBuilder {
     if (site == null) {
       repository.createContentBuilder()
         .type(CT_GLOBAL_CONFIG)
-        .name(Settings.GLOBAL_CONFIGURATION_PATH)
+        .name(GlobalLinkAction.GLOBAL_CONFIGURATION_PATH)
         .property(P_GLOBAL_CONFIG, config)
         .checkedIn()
         .create();
@@ -83,7 +82,7 @@ public class GlobalLinkConfigBuilder {
       repository.createContentBuilder()
         .type(CT_SITE_CONFIG)
         .parent(site.getSiteRootFolder())
-        .name(Settings.SITE_CONFIGURATION_PATH)
+        .name(GlobalLinkAction.SITE_CONFIGURATION_PATH)
         .property(P_SITE_CONFIG, config)
         .checkedIn()
         .create();

@@ -456,7 +456,7 @@ class GlobalLinkActionTest {
       // Allow to also use our test-content-types.
       return base.mergedWith(SettingsSource.fromPath(
         repository,
-        Settings.GLOBAL_CONFIGURATION_PATH,
+        GlobalLinkAction.GLOBAL_CONFIGURATION_PATH,
         "SimpleStruct", "value"));
     }
 
@@ -466,7 +466,7 @@ class GlobalLinkActionTest {
       // Allow to also use our test-content-types.
       return base.mergedWith(SettingsSource.fromPathAtSite(
         site,
-        Settings.SITE_CONFIGURATION_PATH,
+        GlobalLinkAction.SITE_CONFIGURATION_PATH,
         SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct"));
     }
 
