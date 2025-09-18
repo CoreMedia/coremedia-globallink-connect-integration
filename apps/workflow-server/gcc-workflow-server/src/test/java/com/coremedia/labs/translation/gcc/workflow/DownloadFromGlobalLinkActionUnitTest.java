@@ -3,6 +3,8 @@ package com.coremedia.labs.translation.gcc.workflow;
 import com.coremedia.labs.translation.gcc.util.Zipper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,10 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@NullMarked
 class DownloadFromGlobalLinkActionUnitTest {
   private static final Logger LOG = LoggerFactory.getLogger(DownloadFromGlobalLinkActionUnitTest.class);
 
-  private File existingZipFile;
+  private @Nullable File existingZipFile;
 
   @BeforeEach
   void setUp() {
@@ -43,7 +46,9 @@ class DownloadFromGlobalLinkActionUnitTest {
 
   @AfterEach
   void tearDown() throws IOException {
-    FileUtils.forceDelete(existingZipFile);
+    if (existingZipFile != null) {
+      FileUtils.forceDelete(existingZipFile);
+    }
   }
 
 
@@ -83,9 +88,10 @@ class DownloadFromGlobalLinkActionUnitTest {
       // Test
       File actual = DownloadFromGlobalLinkAction.zipXliffs(createResult(workingDir));
 
+      assertNotNull(actual);
+
       // Check
       try {
-        assertNotNull(actual);
         File extracted = new File(Zipper.unzip(actual.getAbsolutePath(), null), "xliff_issue_details");
         try {
           File[] files = extracted.listFiles();
@@ -135,7 +141,7 @@ class DownloadFromGlobalLinkActionUnitTest {
     }
   }
 
-  private static void deleteFile(File file) {
+  private static void deleteFile(@Nullable File file) {
     try {
       if (file != null) {
         FileUtils.forceDelete(file);

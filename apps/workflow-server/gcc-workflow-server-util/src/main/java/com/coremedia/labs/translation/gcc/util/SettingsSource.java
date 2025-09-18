@@ -2,19 +2,19 @@ package com.coremedia.labs.translation.gcc.util;
 
 import com.coremedia.cap.common.CapObjectDestroyedException;
 import com.coremedia.cap.common.CapPropertyDescriptor;
+import com.coremedia.cap.common.NoSuchTypeException;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.struct.Struct;
+import com.google.common.annotations.VisibleForTesting;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 
-import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static com.coremedia.cap.common.CapPropertyDescriptorType.STRUCT;
 import static java.lang.invoke.MethodHandles.lookup;
@@ -23,236 +23,201 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Provides settings from various origins, such as a Spring Context or
  * CoreMedia content items.
- * <p>
- * As a {@link Supplier}, a settings source provides a
- * {@code Map<String, Object>} that represents a configuration structure.
  *
  * @since 2506.0.0-1
  */
-@FunctionalInterface
 @NullMarked
-public interface SettingsSource extends Supplier<Map<String, @Nullable Object>> {
+public enum SettingsSource {
+  ;
+
+  private static final Logger LOG = getLogger(lookup().lookupClass());
+
   /**
    * Default bean name that holds GlobalLink configuration properties.
    */
-  String GCC_CONFIGURATION_PROPERTIES_NAME = "gccConfigurationProperties";
+  public static final String GCC_CONFIGURATION_PROPERTIES_NAME = "gccConfigurationProperties";
   /**
    * Default content type that is expected to contain settings.
    */
-  String CT_SETTINGS = "CMSettings";
+  public static final String CT_SETTINGS = "CMSettings";
   /**
    * Default property that is expected to contain settings.
    */
-  String P_SETTINGS = "settings";
+  public static final String P_SETTINGS = "settings";
   /**
    * Root node for GlobalLink Connect settings in a {@link Struct}.
    * <p>
    * <strong>Type</strong>: {@code Struct}
    */
-  String KEY_GLOBALLINK_ROOT = "globalLink";
+  public static final String KEY_GLOBALLINK_ROOT = "globalLink";
 
   /**
-   * Returns the logger for this class.
-   * <p>
-   * This private static method avoids exposing a public constant. Logback's
-   * internal caching prevents repeated logger instantiation.
-   *
-   * @return the logger for this class
-   */
-  private static Logger log() {
-    return getLogger(lookup().lookupClass());
-  }
-
-  /**
-   * Creates a settings source from a Spring bean factory.
-   * <p>
-   * This method uses the default bean name
+   * Creates settings from Spring bean with name
    * {@link #GCC_CONFIGURATION_PROPERTIES_NAME}.
    *
    * @param beanFactory the Spring bean factory
-   * @return a settings source backed by the Spring context
+   * @return settings backed by the Spring bean; empty settings, if referenced
+   * bean is unavailable
    */
-  static SettingsSource fromContext(BeanFactory beanFactory) {
+  public static Settings fromContext(BeanFactory beanFactory) {
     return fromContext(beanFactory, GCC_CONFIGURATION_PROPERTIES_NAME);
   }
 
   /**
-   * Creates a settings source from a Spring bean factory.
+   * Creates settings from a Spring bean.
    *
    * @param beanFactory the Spring bean factory
-   * @param beanName    name of the bean, expected to be a
+   * @param beanName    name of the bean; expected to reference a
    *                    {@code Map<String, Object>}
-   * @return a settings source backed by the Spring context
+   * @return settings backed by the Spring bean; empty settings, if referenced
+   * bean is unavailable
    */
   @SuppressWarnings("unchecked")
-  static SettingsSource fromContext(BeanFactory beanFactory,
-                                    String beanName) {
-    return () -> {
-      if (!beanFactory.containsBean(beanName)) {
-        log().warn("{} not found in bean context.", beanName);
-        return Map.of();
-      }
-      return Map.copyOf((Map<String, Object>) beanFactory.getBean(beanName, Map.class));
-    };
+  @VisibleForTesting
+  static Settings fromContext(BeanFactory beanFactory,
+                              String beanName) {
+    if (!beanFactory.containsBean(beanName)) {
+      LOG.warn("{} not found in bean context.", beanName);
+      return Settings.EMPTY;
+    }
+    return new Settings(beanFactory.getBean(beanName, Map.class));
   }
 
   /**
-   * Retrieves all settings sources at the specified path within the site.
+   * Gets settings from given path at the site. The path may either denote
+   * a folder to contain settings documents (not searched recursively) or
+   * directly a single settings document.
    * <p>
    * This method uses the default settings content type {@link #CT_SETTINGS} and
    * property name {@link #P_SETTINGS}.
    *
    * @param site the site to search within
    * @param path the relative path from the site root
-   * @return a list of settings sources found at the path
+   * @return settings found (and possibly merged) from given site
    */
-  static List<SettingsSource> allAt(Site site, String path) {
-    return allAt(site, path, CT_SETTINGS, P_SETTINGS);
+  public static Settings fromPathAtSite(Site site, String path) {
+    return fromPathAtSite(site, path, CT_SETTINGS, P_SETTINGS);
   }
 
   /**
-   * Retrieves all settings sources at the specified path within the site.
+   * Gets settings from given path at the site. The path may either denote
+   * a folder to contain settings documents (not searched recursively) or
+   * directly a single settings document.
    *
    * @param site                   the site to search within
    * @param path                   the relative path from the site root
    * @param settingsTypeName       the content type that holds settings
    * @param settingsDescriptorName the property that holds the settings struct
-   * @return a list of settings sources found at the path
+   * @return settings found (and possibly merged) from given site
    */
-  static List<SettingsSource> allAt(Site site,
-                                    String path,
-                                    String settingsTypeName,
-                                    String settingsDescriptorName) {
-    return allAt(site.getSiteRootFolder(), path, settingsTypeName, settingsDescriptorName);
+  @VisibleForTesting
+  public static Settings fromPathAtSite(Site site,
+                                        String path,
+                                        String settingsTypeName,
+                                        String settingsDescriptorName) {
+    return fromPath(site.getSiteRootFolder(), path, settingsTypeName, settingsDescriptorName);
   }
 
   /**
-   * Retrieves all settings sources at the specified path within the repository.
+   * Gets settings from given path at the repository. The path may either denote
+   * a folder to contain settings documents (not searched recursively) or
+   * directly a single settings document.
    * <p>
    * This method uses the default settings content type {@link #CT_SETTINGS} and
    * property name {@link #P_SETTINGS}.
    *
    * @param repository the content repository to search within
    * @param path       the relative path from the repository root
-   * @return a list of settings sources found at the path
+   * @return settings found (and possibly merged) from repository
    */
-  static List<SettingsSource> allAt(ContentRepository repository,
-                                    String path) {
-    return allAt(repository, path, CT_SETTINGS, P_SETTINGS);
+  public static Settings fromPath(ContentRepository repository,
+                                  String path) {
+    return fromPath(repository, path, CT_SETTINGS, P_SETTINGS);
   }
 
   /**
-   * Retrieves all settings sources at the specified path within the repository.
+   * Gets settings from given path at the repository. The path may either denote
+   * a folder to contain settings documents (not searched recursively) or
+   * directly a single settings document.
    *
    * @param repository             the content repository to search within
    * @param path                   the relative path from the repository root
    * @param settingsTypeName       the content type that holds settings
    * @param settingsDescriptorName the property that holds the settings struct
-   * @return a list of settings sources found at the path
+   * @return settings found (and possibly merged) from repository
    */
-  static List<SettingsSource> allAt(ContentRepository repository,
-                                    String path,
-                                    String settingsTypeName,
-                                    String settingsDescriptorName) {
-    return allAt(repository.getRoot(), path, settingsTypeName, settingsDescriptorName);
+  @VisibleForTesting
+  public static Settings fromPath(ContentRepository repository,
+                                  String path,
+                                  String settingsTypeName,
+                                  String settingsDescriptorName) {
+    return fromPath(repository.getRoot(), path, settingsTypeName, settingsDescriptorName);
   }
 
   /**
-   * Retrieves all settings sources at a path relative to a parent content item.
-   * <p>
-   * This method uses the default settings content type {@link #CT_SETTINGS} and
-   * property name {@link #P_SETTINGS}.
-   *
-   * @param parent the parent content to search within
-   * @param path   the relative path from the parent
-   * @return a list of settings sources found at the path, or an empty list if
-   * the path is not found
-   */
-  static List<SettingsSource> allAt(Content parent,
-                                    String path) {
-    return allAt(parent, path, CT_SETTINGS, P_SETTINGS);
-  }
-
-  /**
-   * Retrieves all settings sources at a path relative to a parent content item.
+   * Gets settings from given path relative to the parent. The path may either
+   * denote a folder to contain settings documents (not searched recursively) or
+   * directly a single settings document.
    *
    * @param parent                 the parent content to search within
    * @param path                   the relative path from the parent
    * @param settingsTypeName       the content type that holds settings
    * @param settingsDescriptorName the property that holds the settings struct
-   * @return a list of settings sources found at the path, or an empty list if
-   * the path is not found
+   * @return settings found (and possibly merged) at given path
    */
-  static List<SettingsSource> allAt(Content parent,
-                                    String path,
-                                    String settingsTypeName,
-                                    String settingsDescriptorName) {
+  @VisibleForTesting
+  static Settings fromPath(Content parent,
+                           String path,
+                           String settingsTypeName,
+                           String settingsDescriptorName) {
     try {
       Content content = parent.getChild(path);
       if (content == null) {
-        log().debug("No content found for the given path {} at {}.", path, parent);
-        return List.of();
+        LOG.debug("No content found for the given path {} at {}.", path, parent);
+        return Settings.EMPTY;
       }
-      return allAt(content, settingsTypeName, settingsDescriptorName);
+      return fromContent(content, settingsTypeName, settingsDescriptorName);
     } catch (CapObjectDestroyedException e) {
-      log().debug("Failed accessing the given path {} at {}.", path, parent, e);
-      return List.of();
+      LOG.debug("Failed accessing the given path {} at {}.", path, parent, e);
+      return Settings.EMPTY;
     }
   }
 
   /**
-   * Retrieves settings sources from a content item, handling both documents and
-   * folders.
+   * Gets settings from given content. The content may either denote a folder
+   * to contain settings documents (not searched recursively) or directly a
+   * single settings document.
    *
    * @param content                the content to extract settings from
    * @param settingsTypeName       the content type that holds settings
    * @param settingsDescriptorName the property that holds the settings struct
-   * @return a list containing a single document source, or all child document
-   * sources if the content is a folder
+   * @return settings found (and possibly merged)
    */
-  private static List<SettingsSource> allAt(Content content,
-                                            String settingsTypeName,
-                                            String settingsDescriptorName) {
+  private static Settings fromContent(Content content,
+                                      String settingsTypeName,
+                                      String settingsDescriptorName) {
     if (content.isDocument()) {
-      return List.of(fromDocument(content, settingsTypeName, settingsDescriptorName));
+      return fromDocument(content, settingsTypeName, settingsDescriptorName);
     }
-    return allChildDocumentsAt(content, settingsTypeName, settingsDescriptorName);
+    return content.getChildrenWithType(settingsTypeName)
+      .stream()
+      .map(document -> fromDocument(document, settingsTypeName, settingsDescriptorName))
+      .reduce(Settings::mergedWith)
+      .orElse(Settings.EMPTY);
   }
 
   /**
-   * Extracts settings sources from all child documents of a given parent folder.
-   *
-   * @param parent                 the parent folder content
-   * @param settingsTypeName       the content type that holds settings
-   * @param settingsDescriptorName the property that holds the settings struct
-   * @return a list of settings sources from child documents
-   */
-  private static List<SettingsSource> allChildDocumentsAt(Content parent,
-                                                          String settingsTypeName,
-                                                          String settingsDescriptorName) {
-    try {
-      // It is acceptable to access all child documents here, as `fromDocument`
-      // is tolerant and ignores irrelevant or unmatched documents.
-      return parent.getChildDocuments().stream()
-        .map(content -> fromDocument(content, settingsTypeName, settingsDescriptorName))
-        .toList();
-    } catch (CapObjectDestroyedException e) {
-      return List.of();
-    }
-  }
-
-  /**
-   * Creates a settings source from a document with defensive error handling.
+   * Creates a settings from a document with defensive error handling.
    *
    * @param content                the document content, may be {@code null}
    * @param settingsTypeName       the content type that holds settings
    * @param settingsDescriptorName the property that holds the settings struct
-   * @return a settings source that safely extracts configuration
+   * @return settings found (and possibly merged)
    */
-  private static SettingsSource fromDocument(@Nullable Content content,
-                                             String settingsTypeName,
-                                             String settingsDescriptorName) {
-    return () -> defensiveFromDocument(content, settingsTypeName, settingsDescriptorName);
+  private static Settings fromDocument(@Nullable Content content,
+                                       String settingsTypeName,
+                                       String settingsDescriptorName) {
+    return new Settings(defensiveFromDocument(content, settingsTypeName, settingsDescriptorName));
   }
 
   /**
@@ -333,13 +298,13 @@ public interface SettingsSource extends Supplier<Map<String, @Nullable Object>> 
    * @param repository       the repository to query
    * @param settingsTypeName the name of the content type that holds settings
    * @return the settings content type
-   * @throws IllegalStateException if the settings type is not found
+   * @throws NoSuchTypeException if the settings type is not found
    */
   private static ContentType requireSettingsType(ContentRepository repository,
                                                  String settingsTypeName) {
     ContentType contentType = repository.getContentType(settingsTypeName);
     if (contentType == null) {
-      throw new IllegalStateException("Required content type \"%s\". not found.".formatted(settingsTypeName));
+      throw new NoSuchTypeException(settingsTypeName);
     }
     return contentType;
   }

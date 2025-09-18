@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.facade;
 
 import org.gs4tr.gcc.restclient.model.Status;
 import org.gs4tr.gcc.restclient.model.SubmissionStatus;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
+@NullMarked
 class GCSubmissionStateTest {
   @Mock
   private Status stateFromRestResponse;

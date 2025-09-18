@@ -57,12 +57,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import static com.coremedia.labs.translation.gcc.util.RetryDelay.saturatedOf;
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkAction.DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
@@ -143,7 +145,7 @@ class GlobalLinkActionTest {
             throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
         }
 
-        GlobalLinkAction.Parameters<@Nullable Object> params =
+        GlobalLinkAction.Parameters<Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -190,7 +192,7 @@ class GlobalLinkActionTest {
 
         int remainingAutomaticRetries = 3;
 
-        GlobalLinkAction.Parameters<@Nullable Object> params =
+        GlobalLinkAction.Parameters<Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -218,7 +220,7 @@ class GlobalLinkActionTest {
       void shouldRespectAdaptedRetryDelayForGeneralOperation() {
         int retryDelayBase = 1234;
         long delayDivisor = 2L;
-        RetryDelay expectedRetryDelay = RetryDelay.of(Duration.ofSeconds(retryDelayBase).dividedBy(2L));
+        RetryDelay expectedRetryDelay = new RetryDelay(Duration.ofSeconds(retryDelayBase).dividedBy(2L));
 
         globalLinkConfigBuilderProvider.getObject()
           .atGlobal()
@@ -227,10 +229,10 @@ class GlobalLinkActionTest {
           .build();
 
         globalLinkAction.adaptDelayForGeneralRetryBy(
-          (rd, c) -> rd.saturatedAdapt(d -> d.dividedBy(delayDivisor))
+          rd -> saturatedOf(rd.value().dividedBy(delayDivisor))
         );
 
-        GlobalLinkAction.Parameters<@Nullable Object> params =
+        GlobalLinkAction.Parameters<Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -379,8 +381,10 @@ class GlobalLinkActionTest {
     private Runnable onDoExecuteGlobalLinkAction = () -> {
       // No operation.
     };
-    private @Nullable String overrideGccRetryDelaySettingsKey;
-    private @Nullable BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator;
+    @Nullable
+    private String overrideGccRetryDelaySettingsKey;
+    @Nullable
+    private UnaryOperator<RetryDelay> retryDelayOperator;
 
     private MockedGlobalLinkAction(ApplicationContext applicationContext, GCExchangeFacade gcExchangeFacade) {
       super(true);
@@ -392,12 +396,13 @@ class GlobalLinkActionTest {
       this.onDoExecuteGlobalLinkAction = onDoExecuteGlobalLinkAction;
     }
 
-    public void adaptDelayForGeneralRetryBy(BiFunction<? super RetryDelay, ? super AdaptDelayForGeneralRetryContext<Void, Void>, RetryDelay> retryDelayOperator) {
+    public void adaptDelayForGeneralRetryBy(UnaryOperator<RetryDelay> retryDelayOperator) {
       this.retryDelayOperator = retryDelayOperator;
     }
 
     @Override
-    @Nullable Void doExtractParameters(Task task) {
+    @Nullable
+    Void doExtractParameters(Task task) {
       return null;
     }
 
@@ -414,11 +419,13 @@ class GlobalLinkActionTest {
 
     @Override
     RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
-                                         AdaptDelayForGeneralRetryContext<Void, Void> context) {
+                                         Settings settings,
+                                         Optional<Void> extendedResult,
+                                         Map<String, List<Content>> issues) {
       if (retryDelayOperator == null) {
-        return super.adaptDelayForGeneralRetry(originalRetryDelay, context);
+        return super.adaptDelayForGeneralRetry(originalRetryDelay, settings, extendedResult, issues);
       }
-      return retryDelayOperator.apply(originalRetryDelay, context);
+      return retryDelayOperator.apply(originalRetryDelay);
     }
 
     @Override
@@ -432,26 +439,20 @@ class GlobalLinkActionTest {
 
     @Override
     Settings withGlobalSettings(Settings base, ContentRepository repository) {
-      Settings.Builder builder = Settings.builder().source(base);
       // Allow to also use our test-content-types.
-      SettingsSource.allAt(
-          repository,
-          Settings.GLOBAL_CONFIGURATION_PATH,
-          "SimpleStruct", "value")
-        .forEach(builder::source);
-      return builder.build();
+      return base.mergedWith(SettingsSource.fromPath(
+        repository,
+        GLOBAL_CONFIGURATION_PATH,
+        "SimpleStruct", "value"));
     }
 
     @Override
     Settings withSiteSettings(Settings base, Site site) {
-      Settings.Builder builder = Settings.builder().source(base);
       // Allow to also use our test-content-types.
-      SettingsSource.allAt(
-          site,
-          Settings.SITE_CONFIGURATION_PATH,
-          SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct")
-        .forEach(builder::source);
-      return builder.build();
+      return base.mergedWith(SettingsSource.fromPathAtSite(
+        site,
+        SITE_CONFIGURATION_PATH,
+        SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct"));
     }
 
     public void setOverrideGccRetryDelaySettingsKey(@Nullable String overrideGccRetryDelaySettingsKey) {
@@ -460,7 +461,10 @@ class GlobalLinkActionTest {
 
     @Override
     protected String getGCCRetryDelaySettingsKey() {
-      return Objects.requireNonNullElseGet(overrideGccRetryDelaySettingsKey, super::getGCCRetryDelaySettingsKey);
+      if (overrideGccRetryDelaySettingsKey == null) {
+        return super.getGCCRetryDelaySettingsKey();
+      }
+      return overrideGccRetryDelaySettingsKey;
     }
 
     @Override
@@ -481,6 +485,7 @@ class GlobalLinkActionTest {
    * ---------------------------------------------------------------------------
    */
 
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Configuration(proxyBeanMethods = false)
   @Import({XmlRepoConfiguration.class, SimpleMultiSiteConfiguration.class, GCExchangeFacadeConfiguration.class})
   @ImportResource(reader = ResourceAwareXmlBeanDefinitionReader.class)

@@ -14,13 +14,14 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import com.coremedia.labs.translation.gcc.util.Zipper;
 import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.annotations.VisibleForTesting;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import jakarta.activation.MimeType;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,7 +233,8 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   void doExecuteGlobalLinkAction(@Nullable Parameters params,
                                  Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
-    requireNonNull(params, "Parameters must not be null.");
+    requireNonNull(params, "Unexpected state. Parameters must not be null.");
+
     long submissionId = params.submissionId;
 
     // We need to share xliff files between #doExecuteGlobalLinkAction and #doStoreResult.
@@ -294,18 +296,20 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
 
   @Override
   RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
-                                       AdaptDelayForGeneralRetryContext<Parameters, Result> context) {
-    Optional<RetryDelay> initialRetryDelay = findRetryDelay(context.settings(), GCC_EARLY_RETRY_DELAY_SETTINGS_KEY);
+                                       Settings settings,
+                                       Optional<Result> extendedResult,
+                                       Map<String, List<Content>> issues) {
+    Optional<RetryDelay> initialRetryDelay = findRetryDelay(settings, GCC_EARLY_RETRY_DELAY_SETTINGS_KEY);
     // When to return the original delay at this early check phase:
     //   - If there is no extra retry delay, we return the original one
     //     unmodified.
     //   - If there are any issues, we assume, that we should stick to the
     //     default delay.
-    if (initialRetryDelay.isEmpty() || !context.issues().isEmpty()) {
+    if (initialRetryDelay.isEmpty() || !issues.isEmpty()) {
       return originalRetryDelay;
     }
 
-    boolean increasedPollingFrequency = context.extendedResult()
+    boolean increasedPollingFrequency = extendedResult
       .map(result -> {
         if (EARLY_PRE_TRANSLATE_STATES.contains(result.globalLinkStatus)) {
           // Even if we already have (some) PD Submission IDs, more may be added
@@ -364,10 +368,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   private @Nullable Blob updateXliffsZip(Result result) {
     try {
       File newXliffsZipFile = zipXliffs(result);
-      if (newXliffsZipFile == null) {
-        return null;
-      }
-      return getConnection().getBlobService().fromFile(newXliffsZipFile, MIME_TYPE_ZIP);
+      return newXliffsZipFile == null ? null : getConnection().getBlobService().fromFile(newXliffsZipFile, MIME_TYPE_ZIP);
     } catch (Exception e) {
       // The xliffs zip is not essential, but only a goodie for manual analysis.
       // Do not fail upon this exception, the workflow is still valuable.
@@ -379,7 +380,6 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   @VisibleForTesting
   static @Nullable File zipXliffs(Result result) throws IOException {
 
-    //noinspection StringConcatenationMissingWhitespace
     File xliffResultDir = new File(result.workingDir, "result" + System.currentTimeMillis());
 
     String issueDetailsFileName = "xliff_issue_details";
@@ -391,8 +391,8 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     return zipIfNotEmpty(newXliffsZipFile, xliffResultDir);
   }
 
-  private static void addIssueDetails(File xliffResultDir, Map<Long, List<XliffImportResultItem>> resultItems, String issueDetailsFileName) throws IOException {
-    if (!resultItems.isEmpty()) {
+  private static void addIssueDetails(File xliffResultDir, @Nullable Map<Long, List<XliffImportResultItem>> resultItems, String issueDetailsFileName) throws IOException {
+    if (resultItems != null && !resultItems.isEmpty()) {
       for (Map.Entry<Long, List<XliffImportResultItem>> longListEntry : resultItems.entrySet()) {
         File itemsDir = new File(xliffResultDir, issueDetailsFileName);
         File itemsFile = new File(itemsDir, longListEntry.getKey() + "-issuedetails.txt");
@@ -447,7 +447,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   private boolean importXliffFile(InputStream inputStream,
                                   GCTaskModel task,
                                   Set<Locale> completedLocales,
-                                  Map<String, List<Content>> xliffImportIssueToContents,
+                                  Map<String, List<@Nullable Content>> xliffImportIssueToContents,
                                   Result result) {
 
     completedLocales.add(task.getTaskLocale());
@@ -480,11 +480,8 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     }
 
     for (XliffImportResultItem errorResultItem : errorResultItems) {
-      List<Content> contents = xliffImportIssueToContents.computeIfAbsent(errorResultItem.getCode().toString(), k -> new ArrayList<>());
-      Content content = errorResultItem.getContent();
-      if (content != null) {
-        contents.add(content);
-      }
+      xliffImportIssueToContents.computeIfAbsent(errorResultItem.getCode().toString(), k -> new ArrayList<>())
+        .add(errorResultItem.getContent());
     }
 
     //store each errorList under its taskID, so it can be referenced correctly later

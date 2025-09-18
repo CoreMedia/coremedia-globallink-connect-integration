@@ -27,6 +27,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionException;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeSubmissionNotFoundException;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
+import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.workflow.common.util.SpringAwareLongAction;
 import com.google.common.annotations.VisibleForTesting;
@@ -40,14 +41,11 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 import org.omg.CORBA.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
 
 import java.io.Serial;
 import java.lang.reflect.Type;
@@ -113,6 +111,26 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     .enableComplexMapKeySerialization()
     .registerTypeHierarchyAdapter(Content.class, new ContentObjectSerializer())
     .create();
+
+  /**
+   * Defines the global configuration path.
+   * <p>
+   * The path may denote a (settings) document as well as a folder that contains
+   * settings documents to be respected for the GlobalLink settings.
+   */
+  @VisibleForTesting
+  static final String GLOBAL_CONFIGURATION_PATH = "/Settings/Options/Settings/Translation Services";
+
+  /**
+   * Defines the site-specific configuration path.
+   * <p>
+   * If a GlobalLink parameter should be different in a specific site,
+   * then the path either denotes a site-specific (settings) document or a
+   * folder that may contain settings documents to be used to determine the
+   * GlobalLink settings.
+   */
+  @VisibleForTesting
+  static final String SITE_CONFIGURATION_PATH = "Options/Settings/Translation Services";
 
   /**
    * Property for specification of delay in seconds before retrying Content
@@ -272,7 +290,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   protected static Optional<RetryDelay> findRetryDelay(Settings settings,
                                                        String key) {
     return settings.at(key)
-      .flatMap(RetryDelay::trySaturatedFromObject);
+      .flatMap(RetryDelay::findRetryDelay);
   }
 
   @Override
@@ -291,7 +309,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
 
     RetryDelay retryDelay = RetryDelay.DEFAULT;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
-    Settings settings = withContextSettings(getSpringContext());
+    Settings settings = SettingsSource.fromContext(getSpringContext());
 
     try {
       settings = withGlobalSettings(settings, getConnection().getContentRepository());
@@ -346,12 +364,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     // download of translations that are still missing
     result.retryDelaySeconds = adaptDelayForGeneralRetry(
       retryDelay,
-      new AdaptDelayForGeneralRetryContext<>(
-        settings,
-        parameters.extendedParameters,
-        result.extendedResult,
-        issues
-      )
+      settings,
+      result.extendedResult,
+      issues
     )
       .toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
@@ -364,57 +379,40 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param settings settings to read the delay from
    * @return delay to use
    */
-  // Since approvals around 2406.2.0-1 and 2506.0.0-1, keeping the pre-existing
-  // state. We may later decide to just let the actions provide the delay
-  // directly.
   private RetryDelay getDefaultRetryDelay(Settings settings) {
     return getRetryDelay(settings, getGCCRetryDelaySettingsKey());
   }
 
   /**
-   * Implementing actions may intervene here, if they detect a state, where
-   * the general retry delay should be adapted. Like, the action may detect that
-   * it is in a state where the polling interval should be decreased, thus,
-   * polling per time should be increased. Prominent example here is the
-   * download action, where you may want to decrease the polling interval until
-   * relevant information like the project director ID have been retrieved.
-   * <p>
-   * Returns the delay unmodified by default.
+   * Implementing actions may override this method, if they detect a state,
+   * where the general retry delay should be adapted. Like, the action may
+   * detect that it is in a state where the polling interval should be
+   * decreased, thus, polling per time should be increased. Prominent example
+   * here is the download action, where you may want to decrease the polling
+   * interval until relevant information like the project director ID have been
+   * retrieved.
    * <p>
    * This method gets a bunch of information passed, that is meant to assist to
    * decide if and how to adapt the retry delay.
    *
    * @param originalRetryDelay original (default/general) retry delay
-   * @param context            some context you may want to respect for
-   *                           adapting the delay
+   * @param settings           settings, like where to read an alternative delay
+   *                           from
+   * @param extendedResult     your action specific result
+   * @param issues             a (mutable) map of issues; may be used to
+   *                           determine a different behavior when issues exist
+   *                           as well as to add more issues when problems arise
+   *                           adapting the retry delay
    * @return adapted (or unchanged) retry delay
+   * @implSpec The default implementation returns the given delay as is.
    * @see #getRetryDelay(Settings, String)
    */
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
-                                       AdaptDelayForGeneralRetryContext<P, R> context) {
+                                       Settings settings,
+                                       Optional<R> extendedResult,
+                                       Map<String, List<Content>> issues) {
     return originalRetryDelay;
-  }
-
-  /**
-   * Context information for {@link #adaptDelayForGeneralRetry(RetryDelay, AdaptDelayForGeneralRetryContext)}.
-   *
-   * @param settings           settings, like where to read an alternative delay from
-   * @param extendedParameters your action specific parameters; result of
-   *                           {@link #doExtractParameters(Task)}, thus,
-   *                           the nullability state depends on the implementation
-   * @param extendedResult     your action specific result
-   * @param issues             a (mutable) map of issues; may be used to determine a
-   *                           different behavior when issues exist as well as to add more
-   *                           issues when problems arise adapting the retry delay
-   * @param <P>                type of extended parameters
-   * @param <R>                type of extended result
-   */
-  record AdaptDelayForGeneralRetryContext<P, R>(
-    Settings settings,
-    @NullUnmarked P extendedParameters,
-    Optional<R> extendedResult,
-    Map<String, List<Content>> issues
-  ) {
   }
 
   @Override
@@ -460,8 +458,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @return the parameters for the actual computation or {@code null} if no
    * parameters are needed
    */
-  @NullUnmarked
-  abstract P doExtractParameters(@NonNull Task task);
+  abstract @Nullable P doExtractParameters(Task task);
 
   /**
    * Executes the action and optionally sets a result value at the given {@code resultConsumer}.
@@ -511,7 +508,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param result result value that was passed to the consumer in {@link #doExecuteGlobalLinkAction}
    * @return value to store in the {@code resultVariable} or null to store nothing in that variable
    */
-  @Nullable Object doStoreResult(Task task, R result) {
+  @Nullable
+  Object doStoreResult(Task task, R result) {
     return result;
   }
 
@@ -566,28 +564,16 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
       .orElse(DEFAULT_RETRY_COMMUNICATION_ERRORS);
   }
 
-  private static Settings withContextSettings(BeanFactory springContext) {
-    return Settings.builder()
-      .beanSource(springContext)
-      .build();
-  }
-
   @VisibleForTesting
   Settings withGlobalSettings(Settings base,
                               ContentRepository repository) {
-    return Settings.builder()
-      .source(base)
-      .repositorySource(repository)
-      .build();
+    return base.mergedWith(SettingsSource.fromPath(repository, GLOBAL_CONFIGURATION_PATH));
   }
 
   @VisibleForTesting
   Settings withSiteSettings(Settings base,
                             Site site) {
-    return Settings.builder()
-      .source(base)
-      .siteSource(site)
-      .build();
+    return base.mergedWith(SettingsSource.fromPathAtSite(site, SITE_CONFIGURATION_PATH));
   }
 
   private GCExchangeFacade openSession(Settings settings) {
@@ -668,9 +654,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
         : maxAutomaticRetries;
     }
     if (result.remainingAutomaticRetries > 0) {
-      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} delay.", getName(),
+      LOG.info("{}: Failed to connect to GCC ({}). Will retry {} time(s) with {} seconds delay.", getName(),
         GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, result.remainingAutomaticRetries,
-        retryDelay.humanReadable(), exception);
+        retryDelay.toSeconds(), exception);
     } else {
       LOG.warn("{}: Failed to connect to GCC ({}).", getName(), GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR, exception);
     }
@@ -681,7 +667,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  @Nullable Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+  @Nullable
+  Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
     if (issues.isEmpty()) {
       return null;
     }
@@ -711,9 +698,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  @NullUnmarked
-  record Parameters<P>(P extendedParameters,
-                       @NonNull Collection<ContentObject> masterContentObjects,
+  record Parameters<P>(@Nullable P extendedParameters,
+                       Collection<ContentObject> masterContentObjects,
                        int remainingAutomaticRetries) {
   }
 
@@ -730,10 +716,10 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     @Nullable Blob issues;
     /**
      * Number of remaining automatic retries, if there are issues.
-     * A value of {@link Integer#MAX_VALUE} signals, that the current
-     * GlobalLink Connection Retry is or was interrupted by a CMS connection
-     * error. Once this is fixed, the remaining retries should be set to their
-     * initial value again.
+     * <p>
+     * A value of {@link Integer#MAX_VALUE} is only to be set for CMS connection
+     * errors, where we do not limit retries. Once these are fixed, the
+     * remaining retries should be set to their initial value again.
      */
     int remainingAutomaticRetries;
     /**

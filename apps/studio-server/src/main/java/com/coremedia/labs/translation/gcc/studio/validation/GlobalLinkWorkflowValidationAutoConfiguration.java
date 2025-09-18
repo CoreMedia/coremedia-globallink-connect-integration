@@ -7,6 +7,7 @@ import com.coremedia.rest.cap.workflow.validation.model.ValidationTask;
 import com.coremedia.rest.cap.workflow.validation.model.WorkflowStartValidators;
 import com.coremedia.rest.cap.workflow.validation.model.WorkflowTaskValidators;
 import com.coremedia.rest.cap.workflow.validation.model.WorkflowValidatorsModel;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ import static com.coremedia.rest.cap.workflow.validation.configuration.Translati
 
 @Configuration
 @Import(TranslationWorkflowValidationConfiguration.class)
+@NullMarked
 public class GlobalLinkWorkflowValidationAutoConfiguration {
 
   public static final String GLOBAL_LINK_DUE_DATE_KEY = "globalLinkDueDate";

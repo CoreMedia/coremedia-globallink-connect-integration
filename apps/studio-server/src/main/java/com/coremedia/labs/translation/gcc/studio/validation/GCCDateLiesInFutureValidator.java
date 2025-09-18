@@ -6,9 +6,11 @@ import com.coremedia.rest.validation.Issues;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.rest.validation.impl.IssuesImpl;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Collections;
 
+@NullMarked
 public class GCCDateLiesInFutureValidator extends DateLiesInFutureValidator {
 
   private final String additionalDateProperty;
