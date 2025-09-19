@@ -17,7 +17,7 @@ class GlobalLinkWorkflowException extends CapException {
     this(errorCode, message, null, parameters);
   }
 
-  GlobalLinkWorkflowException(String errorCode, String message, Throwable cause, @Nullable Object... parameters) {
+  GlobalLinkWorkflowException(String errorCode, String message, @Nullable Throwable cause, @Nullable Object... parameters) {
     super(
       "globallink",
       errorCode,
