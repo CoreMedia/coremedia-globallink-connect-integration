@@ -59,7 +59,18 @@ err() {
   fi
 }
 
-info() { printf >&2 '[INFO] %s\n' "$*"; }
+info() {
+  # Check if stderr is a terminal and tput is available
+  if [[ -t 2 ]] && command -v tput &>/dev/null; then
+    local BLUE
+    local RESET
+    BLUE="$(tput setaf 4)"
+    RESET="$(tput sgr0)"
+    printf >&2 '[%sINFO%s] %s\n' "${BLUE}" "${RESET}" "$*"
+  else
+    printf >&2 '[INFO] %s\n' "$*"
+  fi
+}
 
 warn() {
   # Check if stderr is a terminal and tput is available
