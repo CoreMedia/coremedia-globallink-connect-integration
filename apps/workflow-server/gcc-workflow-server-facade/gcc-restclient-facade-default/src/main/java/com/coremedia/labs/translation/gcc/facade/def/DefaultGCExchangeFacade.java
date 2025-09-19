@@ -475,17 +475,22 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return {@code PageableResponseData} to retrieve the total number of pages.
    */
   private PageableResponseData executeRequest(TaskListRequest request, Consumer<? super GCTask> taskConsumer) {
-    Tasks.TasksResponseData tasksList = delegate.getTasksList(request);
+    Tasks.TasksResponseData taskData = delegate.getTasksList(request);
 
-    if (tasksList == null) {
-      tasksList = new Tasks.TasksResponseData();
-    }
-    if (tasksList.getTasks() == null) {
-      tasksList.setTasks(Collections.emptyList());
+    if (taskData == null) {
+      taskData = new Tasks.TasksResponseData();
     }
 
-    tasksList.getTasks().forEach(taskConsumer);
-    return tasksList;
+    List<GCTask> taskList = taskData.getTasks();
+
+    if (taskList == null) {
+      // Ensure non-null data
+      taskData.setTasks(List.of());
+    } else {
+      taskList.forEach(taskConsumer);
+    }
+
+    return taskData;
   }
 
   @Override
