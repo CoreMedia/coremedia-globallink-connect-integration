@@ -508,8 +508,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param result result value that was passed to the consumer in {@link #doExecuteGlobalLinkAction}
    * @return value to store in the {@code resultVariable} or null to store nothing in that variable
    */
-  @Nullable
-  Object doStoreResult(Task task, R result) {
+  @Nullable Object doStoreResult(Task task, R result) {
     return result;
   }
 

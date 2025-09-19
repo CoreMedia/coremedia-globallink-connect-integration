@@ -334,7 +334,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   @Override
-  Void doStoreResult(Task task, Result result) {
+  @Nullable Void doStoreResult(Task task, Result result) {
     try {
       Process process = task.getContainingProcess();
       if (result.globalLinkStatus != null) {
