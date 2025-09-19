@@ -112,7 +112,7 @@ public class GCSubmissionModel {
   }
 
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(@Nullable Object object) {
     if (object == null || getClass() != object.getClass()) {
       return false;
     }
