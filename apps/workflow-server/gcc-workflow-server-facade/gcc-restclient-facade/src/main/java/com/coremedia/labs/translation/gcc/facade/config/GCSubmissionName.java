@@ -2,6 +2,7 @@ package com.coremedia.labs.translation.gcc.facade.config;
 
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -97,6 +98,8 @@ public final class GCSubmissionName {
    * @param config the {@code globalLink} configuration
    * @return the configuration for submission names
    */
+  // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+  @SuppressWarnings("nullness")
   public static GCSubmissionName fromGlobalLinkConfig(Map<String, ?> config) {
     Object configObject = config.get(CONFIG_KEY);
     if (configObject instanceof GCSubmissionName submissionName) {
@@ -126,7 +129,7 @@ public final class GCSubmissionName {
   }
 
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(@Nullable Object object) {
     if (object == null || getClass() != object.getClass()) {
       return false;
     }
