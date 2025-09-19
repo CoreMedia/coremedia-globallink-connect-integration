@@ -545,8 +545,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     SitesService sitesService = getSitesService();
     return masterContents.stream()
       .map(sitesService::getSiteAspect)
-      .map(ContentObjectSiteAspect::getSite)
-      .filter(Objects::nonNull)
+      .map(ContentObjectSiteAspect::findSite)
+      .flatMap(Optional::stream)
       .findAny()
       .orElseThrow(() -> new IllegalStateException("No master site found"));
   }
