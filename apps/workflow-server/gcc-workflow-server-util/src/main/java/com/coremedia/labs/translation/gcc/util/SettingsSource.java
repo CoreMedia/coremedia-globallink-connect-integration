@@ -232,7 +232,7 @@ public enum SettingsSource {
                                                            String settingsTypeName,
                                                            String settingsDescriptorName) {
     try {
-      if (!isIsValidSettingsDocument(content, settingsTypeName, settingsDescriptorName)) {
+      if (content == null || !isIsValidSettingsDocument(content, settingsTypeName, settingsDescriptorName)) {
         return Map.of();
       }
 
@@ -263,10 +263,10 @@ public enum SettingsSource {
    * @return {@code true} if the content is a valid settings document with a
    * settings struct, {@code false} otherwise
    */
-  private static boolean isIsValidSettingsDocument(@Nullable Content content,
+  private static boolean isIsValidSettingsDocument(Content content,
                                                    String settingsTypeName,
                                                    String settingsDescriptorName) {
-    if (content == null || !content.isDocument() || content.isDestroyed()) {
+    if (!content.isDocument() || content.isDestroyed()) {
       return false;
     }
 
