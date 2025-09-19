@@ -1,10 +1,9 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.model.Status;
 import org.gs4tr.gcc.restclient.model.SubmissionStatus;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
@@ -28,7 +27,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @see SubmissionStatus
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public enum GCSubmissionState {
 
   /*
@@ -96,14 +95,13 @@ public enum GCSubmissionState {
 
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
-  @Nullable
-  private final String submissionStatusText;
+  private final @Nullable String submissionStatusText;
 
   GCSubmissionState() {
     submissionStatusText = null;
   }
 
-  GCSubmissionState(@NonNull SubmissionStatus submissionStatus) {
+  GCSubmissionState(SubmissionStatus submissionStatus) {
     submissionStatusText = submissionStatus.text();
   }
 
@@ -113,7 +111,7 @@ public enum GCSubmissionState {
    *
    * @param submissionStatusText text
    */
-  GCSubmissionState(@NonNull String submissionStatusText) {
+  GCSubmissionState(String submissionStatusText) {
     this.submissionStatusText = submissionStatusText;
   }
 
@@ -124,6 +122,8 @@ public enum GCSubmissionState {
    * @param submissionState GCC submission state to transform; {@code null} will always return {@link #OTHER}
    * @return representation for GCC facade
    */
+  // jspecify-reference-checker: Fails to deal with orElseGet.
+  @SuppressWarnings("nullness")
   public static GCSubmissionState fromSubmissionState(@Nullable Status submissionState) {
     // Note, that if queried for a submission state directly after it has been
     // started, may result in a submission state being 'null'.
@@ -150,8 +150,7 @@ public enum GCSubmissionState {
    * @param statusName name to parse
    * @return status; {@link #OTHER} for any yet unknown status
    */
-  @NonNull
-  public static Optional<GCSubmissionState> findSubmissionStateByName(@NonNull String statusName) {
+  public static Optional<GCSubmissionState> findSubmissionStateByName(String statusName) {
     return Arrays.stream(values())
       .filter(s -> nonNull(s.submissionStatusText))
       .filter(s -> statusName.equalsIgnoreCase(s.submissionStatusText))

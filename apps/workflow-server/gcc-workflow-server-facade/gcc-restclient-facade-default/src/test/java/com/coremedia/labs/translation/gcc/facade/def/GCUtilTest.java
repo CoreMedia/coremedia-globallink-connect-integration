@@ -1,10 +1,10 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.assertj.core.api.Assertions;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests {@link GCUtil}.
  */
+@NullMarked
 class GCUtilTest {
   @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @ParameterizedTest
@@ -114,8 +115,8 @@ class GCUtilTest {
 
   private static final class InstantArgumentsProvider implements ArgumentsProvider {
     @Override
-    public Stream<? extends Arguments> provideArguments(@NonNull ParameterDeclarations parameters,
-                                                        @NonNull ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters,
+                                                        ExtensionContext context) {
       LocalDateTime someTime = LocalDateTime.of(2018, 7, 15, 13, 11, 30, 0);
       return Stream.concat(
           Stream.of(

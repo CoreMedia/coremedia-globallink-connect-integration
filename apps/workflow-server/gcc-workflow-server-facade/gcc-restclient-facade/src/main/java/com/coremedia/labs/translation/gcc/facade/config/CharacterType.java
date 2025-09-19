@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Optional;
@@ -25,6 +25,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @since 2406.1
  */
+@NullMarked
 public enum CharacterType {
   /**
    * Only characters from the Basic Multilingual Plane (BMP) are supported.
@@ -33,8 +34,8 @@ public enum CharacterType {
     private static final Pattern HIGHER_UNICODE_CHARACTERS = Pattern.compile("[^\\x00-\\uffff]");
 
     @Override
-    public String replaceAllInvalid(@NonNull String value,
-                                    @NonNull Function<MatchResult, String> replacer) {
+    public String replaceAllInvalid(String value,
+                                    Function<MatchResult, String> replacer) {
       return HIGHER_UNICODE_CHARACTERS
         .matcher(value)
         .replaceAll(replacer);
@@ -52,8 +53,8 @@ public enum CharacterType {
      * @return the value as is
      */
     @Override
-    public String replaceAllInvalid(@NonNull String value,
-                                    @NonNull Function<MatchResult, String> replacer) {
+    public String replaceAllInvalid(String value,
+                                    Function<MatchResult, String> replacer) {
       return value;
     }
   },
@@ -69,7 +70,7 @@ public enum CharacterType {
    * @param replacer the function to replace invalid characters
    * @return the value with all invalid characters replaced
    */
-  public abstract String replaceAllInvalid(@NonNull String value, @NonNull Function<MatchResult, String> replacer);
+  public abstract String replaceAllInvalid(String value, Function<MatchResult, String> replacer);
 
   /**
    * Returns the type for the given configuration object.
@@ -99,7 +100,6 @@ public enum CharacterType {
    * @param type type as string
    * @return the parsed type, or empty if the type is unknown/not set
    */
-  @NonNull
   public static Optional<CharacterType> fromString(@Nullable String type) {
     if (type == null || type.isBlank()) {
       LOG.trace("No supported character-type given. Returning empty.");

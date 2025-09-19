@@ -1,5 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -16,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import static java.lang.invoke.MethodHandles.lookup;
@@ -27,12 +30,13 @@ import static org.slf4j.LoggerFactory.getLogger;
  * the extended tests are ignored. If they are available, a test may get the
  * read credentials injected into a {@code Map<String, String>} parameter.
  */
+@NullMarked
 public class GccCredentialsExtension implements ExecutionCondition, ParameterResolver {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   private static final String USER_HOME = System.getProperty("user.home");
   private static final Path GCC_CREDENTIALS_PATH = Paths.get(USER_HOME, ".gcc.properties");
-  private Map<String, String> gccProperties;
+  private @Nullable Map<String, String> gccProperties;
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
@@ -68,7 +72,7 @@ public class GccCredentialsExtension implements ExecutionCondition, ParameterRes
   @Override
   public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
     synchronized (this) {
-      return gccProperties;
+      return Objects.requireNonNull(gccProperties, "GCC Properties yet unset.");
     }
   }
 }

@@ -14,7 +14,8 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.translate.item.ContentToTranslateItemTransformer;
 import com.coremedia.translate.item.TranslateItem;
 import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -42,12 +43,14 @@ import static com.coremedia.cap.translate.xliff.XliffExportOptions.xliffExportOp
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.XLIFF_EXPORT_FAILURE;
 import static com.coremedia.translate.item.TransformStrategy.ITEM_PER_TARGET;
 import static java.lang.invoke.MethodHandles.lookup;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
  * Requests a translation from GlobalLink by opening a submission with uploaded XLIFF for translatable
  * properties of content specified by the workflow.
  */
+@NullMarked
 public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAction.Parameters, String> {
   private static final Logger LOG = LoggerFactory.getLogger(lookup().lookupClass());
 
@@ -56,12 +59,12 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
 
   private static final String GCC_RETRY_DELAY_SETTINGS_KEY = "sendTranslationRequestRetryDelay";
 
-  private String derivedContentsVariable;
-  private String subjectVariable;
-  private String commentVariable;
-  private String performerVariable;
-  private String globalLinkDueDateVariable;
-  private String globalLinkWorkflowVariable;
+  private @Nullable String derivedContentsVariable;
+  private @Nullable String subjectVariable;
+  private @Nullable String commentVariable;
+  private @Nullable String performerVariable;
+  private @Nullable String globalLinkDueDateVariable;
+  private @Nullable String globalLinkWorkflowVariable;
 
   // --- construct and configure ----------------------------------------------------------------------
 
@@ -139,14 +142,12 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
 
   @Override
-  @NonNull
   protected String getGCCRetryDelaySettingsKey() {
     return GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
   @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @Override
-  @NonNull
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
 
@@ -176,8 +177,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    *               these issues to the end-user, who may trigger a retry, for example.
    */
   @Override
-  void doExecuteGlobalLinkAction(Parameters params, Consumer<? super String> resultConsumer,
+  void doExecuteGlobalLinkAction(@Nullable Parameters params, Consumer<? super String> resultConsumer,
                                    GCExchangeFacade facade, Map<String, List<Content>> issues) {
+    requireNonNull(params, "Parameters must not be null.");
     Collection<Content> derivedContents = params.derivedContents;
     Collection<ContentObject> masterContentObjects = params.masterContentObjects;
     if (derivedContents.isEmpty() || masterContentObjects.isEmpty()) {
@@ -260,10 +262,10 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    * @return the result that contains the ID of the created submission, or an error result
    * @throws GCFacadeCommunicationException if submitting the submission failed
    */
-  protected String submitSubmission(GCExchangeFacade facade, String subject, String comment,
-                                  Locale sourceLocale,
-                                  Map<Locale, List<TranslateItem>> translationItemsByLocale,
-                                  ZonedDateTime dueDate, String workflow, String submitter) {
+  protected String submitSubmission(GCExchangeFacade facade, String subject, @Nullable String comment,
+                                    Locale sourceLocale,
+                                    Map<Locale, List<TranslateItem>> translationItemsByLocale,
+                                    ZonedDateTime dueDate, @Nullable String workflow, @Nullable String submitter) {
 
     Map<String, List<Locale>> xliffFileIds = uploadContents(facade, sourceLocale, translationItemsByLocale);
 
@@ -310,9 +312,9 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
     return site.getLocale();
   }
 
-  record Parameters(String subject, String comment, Collection<Content> derivedContents,
-                    Collection<ContentObject> masterContentObjects, ZonedDateTime dueDate, String workflow,
-                    User submitter) {
+  record Parameters(String subject, @Nullable String comment, Collection<Content> derivedContents,
+                    Collection<ContentObject> masterContentObjects, ZonedDateTime dueDate, @Nullable String workflow,
+                    @Nullable User submitter) {
   }
 
 }

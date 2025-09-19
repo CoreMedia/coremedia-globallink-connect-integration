@@ -1,6 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.mock.settings;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -8,6 +8,7 @@ import java.util.Optional;
 /**
  * Possible values for the {@code globalLink.mockError} setting.
  */
+@NullMarked
 public enum MockError {
   /**
    * Provokes a communication failure during the cancellation request.
@@ -36,8 +37,7 @@ public enum MockError {
   UPLOAD_COMMUNICATION,
   ;
 
-  @NonNull
-  public static Optional<MockError> tryParse(@NonNull String value) {
+  public static Optional<MockError> tryParse(String value) {
     if (value.isEmpty()) {
       return Optional.empty();
     }
