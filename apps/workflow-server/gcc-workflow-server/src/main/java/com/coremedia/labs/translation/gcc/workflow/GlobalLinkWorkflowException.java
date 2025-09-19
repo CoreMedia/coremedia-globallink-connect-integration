@@ -5,8 +5,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
-
-import static java.util.Arrays.stream;
+import java.util.ArrayList;
+import java.util.List;
 
 @NullMarked
 class GlobalLinkWorkflowException extends CapException {
@@ -23,8 +23,19 @@ class GlobalLinkWorkflowException extends CapException {
       errorCode,
       errorCode,
       message,
-      stream(parameters).map(o -> o == null ? null : String.valueOf(o)).toArray(String[]::new),
+      asNullableStringParameters(parameters),
       cause);
   }
 
+  private static @Nullable String[] asNullableStringParameters(@Nullable Object[] parameters) {
+    List<@Nullable String> result = new ArrayList<>();
+    for (Object parameter : parameters) {
+      if (parameter == null) {
+        result.add(null);
+      } else {
+        result.add(parameter.toString());
+      }
+    }
+    return result.toArray(new @Nullable String[0]);
+  }
 }
