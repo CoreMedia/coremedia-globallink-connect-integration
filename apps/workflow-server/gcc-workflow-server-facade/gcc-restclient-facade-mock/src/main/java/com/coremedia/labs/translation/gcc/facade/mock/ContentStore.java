@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -51,10 +52,12 @@ final class ContentStore {
    *
    * @param id content to remove
    * @return data of the content which got removed
+   * @throws NullPointerException if content with the given ID is not contained
+   * in the store
    */
   String removeContent(String id) {
     synchronized (store) {
-      return store.remove(id);
+      return Objects.requireNonNull(store.remove(id), "Content not found: %s".formatted(id));
     }
   }
 
