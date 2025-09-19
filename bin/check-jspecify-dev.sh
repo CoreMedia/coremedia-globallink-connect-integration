@@ -46,11 +46,33 @@ cd() {
 #######################################
 # Helper: print to stderr
 #######################################
-err() { printf 'ERROR: %s\n' "$*" >&2; }
+err() {
+  # Check if stderr is a terminal and tput is available
+  if [[ -t 2 ]] && command -v tput &>/dev/null; then
+    local RED
+    local RESET
+    RED="$(tput setaf 1)"
+    RESET="$(tput sgr0)"
+    printf >&2 '[%sERROR%s] %s\n' "${RED}" "${RESET}" "$*"
+  else
+    printf >&2 '[ERROR] %s\n' "$*"
+  fi
+}
 
-info() { printf 'INFO: %s\n' "$*" >&2; }
+info() { printf >&2 '[INFO] %s\n' "$*"; }
 
-warn() { printf 'WARN: %s\n' "$*" >&2; }
+warn() {
+  # Check if stderr is a terminal and tput is available
+  if [[ -t 2 ]] && command -v tput &>/dev/null; then
+    local YELLOW
+    local RESET
+    YELLOW="$(tput setaf 3)"
+    RESET="$(tput sgr0)"
+    printf >&2 '[%sWARN%s] %s\n' "${YELLOW}" "${RESET}" "$*"
+  else
+    printf >&2 '[WARN] %s\n' "$*"
+  fi
+}
 
 #######################################
 # Usage
