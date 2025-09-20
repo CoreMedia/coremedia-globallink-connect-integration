@@ -11,30 +11,21 @@ import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.CharacterType;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
-import org.gs4tr.gcc.restclient.GCExchange;
-import org.gs4tr.gcc.restclient.model.GCFile;
-import org.gs4tr.gcc.restclient.model.LocaleConfig;
-import org.gs4tr.gcc.restclient.operation.ConnectorsConfig;
-import org.gs4tr.gcc.restclient.operation.Content;
-import org.gs4tr.gcc.restclient.request.PageableRequest;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
-import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,9 +33,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,60 +42,56 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
+import static com.coremedia.labs.translation.gcc.facade.GCConfigProperty.KEY_FILE_TYPE;
+import static com.coremedia.labs.translation.gcc.facade.def.ExtendedDefaultGCExchangeFacade.connect;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * <p>
  * Contract test for GCC RestClient.
- * </p>
  * <p>
  * This is a test which should run on demand for example if you extended
  * the facade or if either the GCC Java API got updated, or the corresponding
  * GCC REST Backend.
- * </p>
  * <p>
  * It is a so-called contract test and thus tests the contract between
  * the consumer (this facade) and the producer (the GCC Java API).
- * </p>
  * <p>
  * In order to run the test, you need to add a file {@code .gcc.properties}
  * to your user home folder:
- * </p>
  * <pre>{@code
  * apiKey=ab12cd34
  * url=https://connect-dev.translations.com/api/v3/
  * key=0e...abc
  * fileType=xliff
  * }</pre>
+ * <p>
+ * <strong>Configuration Profiles:</strong>
+ * <p>
+ * Some tests may require adapted settings (like a different connector key
+ * to test cancellation). If a corresponding profile has been set for a given
+ * test, you may override the settings from {@code .gcc.properties} selectively
+ * in {@code .gcc.<profile>.properties}.
+ * <p>
+ * Currently supported profiles:
+ * <ul>
+ * <li>{@code cancellation}: If your standard (most likely automatic,
+ * pseudo-translated) connector is too fast or does now allow cancellation,
+ * you may set, for example, an alternative connector key here (like a
+ * connector for manual submission transitions).</li>
+ * </ul>
  */
-@ExtendWith(GccCredentialsExtension.class)
+@GccCredentials
 @NullMarked
 class DefaultGCExchangeFacadeContractTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
-  private static final String XML_CONTENT = """
-    <?xml version="1.0" encoding="utf-8" standalone="yes"?><test>Lorem Ipsum</test>""";
-  private static final String XLIFF_CONTENT_PATTERN = """
-    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-      <file original="someId" source-language="%s" datatype="xml" target-language="%s">
-        <body>
-          <trans-unit id="1" datatype="plaintext">
-            <source>Lorem Ipsum</source>
-            <target>Lorem Ipsum</target>
-          </trans-unit>
-        </body>
-      </file>
-    </xliff>
-    """;
   private static final long TRANSLATION_TIMEOUT_MINUTES = 30L;
   private static final long SUBMISSION_VALID_TIMEOUT_MINUTES = 2L;
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -137,7 +122,7 @@ class DefaultGCExchangeFacadeContractTest {
     @DisplayName("Validate that login works.")
     void shouldLoginSuccessfully(Map<String, Object> gccProperties) {
       LOG.info("Properties: {}", gccProperties);
-      assertThatCode(() -> new DefaultGCExchangeFacade(gccProperties))
+      assertThatCode(() -> connect(gccProperties))
         .doesNotThrowAnyException();
     }
 
@@ -147,7 +132,7 @@ class DefaultGCExchangeFacadeContractTest {
       Map<String, Object> patchedProperties = new HashMap<>(gccProperties);
       patchedProperties.put("apiKey", "invalid");
       LOG.info("Properties: {} patched to {}", gccProperties, patchedProperties);
-      assertThatCode(() -> new DefaultGCExchangeFacade(patchedProperties))
+      assertThatCode(() -> connect(patchedProperties))
         .isInstanceOf(GCFacadeAccessException.class)
         .hasCauseInstanceOf(IllegalAccessError.class);
     }
@@ -163,85 +148,87 @@ class DefaultGCExchangeFacadeContractTest {
       Map<String, Object> patchedProperties = new HashMap<>(gccProperties);
       patchedProperties.put("key", "invalid");
       LOG.info("Properties: {} patched to {}", gccProperties, patchedProperties);
-      assertThatCode(() -> new DefaultGCExchangeFacade(patchedProperties))
+      assertThatCode(() -> connect(patchedProperties))
         .isInstanceOf(GCFacadeConnectorKeyConfigException.class)
         .hasNoCause();
     }
   }
 
+  /**
+   * We expect some configuration, that suits our requirements for subsequent
+   * tests. These will be validated here.
+   */
   @Nested
-  @DisplayName("Tests for available File Types")
-  class FileTypes {
-    @ParameterizedTest(name = "[{index}] Optional File Type {0} should be available.")
-    @ValueSource(strings = "xml")
-    @DisplayName("Ensure that optional file types are available.")
-    void optionalFileTypesAvailable(String type, Map<String, Object> gccProperties) {
-      // These file types are optional. They may be required for testing, but they are not
-      // important for production usage.
-      assertFileTypeAvailable(type, gccProperties);
+  @NullUnmarked
+  class ConfigurationValidation {
+    private static ExtendedDefaultGCExchangeFacade facade;
+    private static Map<String, Object> gccProperties;
+
+    @BeforeAll
+    static void beforeAll(Map<String, Object> gccProperties) {
+      facade = connect(gccProperties);
+      ConfigurationValidation.gccProperties = gccProperties;
     }
 
-    @ParameterizedTest(name = "[{index}] Required File Type {0} should be available.")
-    @ValueSource(strings = "xliff")
-    @DisplayName("Ensure that required file types are available.")
-    void requiredFileTypesAvailable(String type, Map<String, Object> gccProperties) {
-      // These file types are crucial for this GCC client.
-      assertFileTypeAvailable(type, gccProperties);
+    @Test
+    void shouldHaveAnyFileType() {
+      assertThat(facade.connectorsConfig().fileTypes()).isNotEmpty();
     }
 
-    private static void assertFileTypeAvailable(String type, Map<String, Object> gccProperties) {
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      GCExchange delegate = facade.getDelegate();
-      ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = delegate.getConnectorsConfig();
-      List<String> availableTypes = connectorsConfig.getFileTypes();
-      assertThat(type).isIn(availableTypes);
-    }
-  }
-
-  @Nested
-  @DisplayName("Tests for available Supported Locales")
-  class SupportedLocales {
-    @ParameterizedTest(name = "[{index}] Required Target Locale {0} should be available.")
-    @ValueSource(strings = {"de-DE", "fr-FR"})
-    @DisplayName("Ensure that target locales required by tests are available.")
-    void requiredTargetLocalesAreAvailable(String expectedSupportedLocale, Map<String, Object> gccProperties) {
-      assertSupportedLocaleAvailable(expectedSupportedLocale, lc -> !lc.getIsSource(), gccProperties);
+    @Test
+    void shouldHaveExpectedFileTypeFromProperties() {
+      Object propertyValue = gccProperties.get(KEY_FILE_TYPE);
+      assumeThat(propertyValue)
+        .as("Should have configured expected file type as String at %s, but is: %s".formatted(KEY_FILE_TYPE, propertyValue))
+        .isInstanceOf(String.class);
+      assertThat(facade.connectorsConfig().fileTypes())
+        .contains(propertyValue.toString());
     }
 
-    @ParameterizedTest(name = "[{index}] Required Source Locale {0} should be available.")
-    @ValueSource(strings = "en-US")
-    @DisplayName("Ensure that source locales required by tests are available.")
-    void requiredSourceLocalesAreAvailable(String expectedSupportedLocale, Map<String, Object> gccProperties) {
-      assertSupportedLocaleAvailable(expectedSupportedLocale, LocaleConfig::getIsSource, gccProperties);
+    @Test
+    void shouldHaveAnySourceLocaleAvailable(Map<String, Object> gccProperties) {
+      assertThat(connect(gccProperties).connectorsConfig().sourceLocales())
+        .isNotEmpty();
     }
 
-    private static void assertSupportedLocaleAvailable(String expectedSupportedLocale, Predicate<LocaleConfig> localeConfigPredicate, Map<String, Object> gccProperties) {
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
-      List<Locale> supportedLocales = getSupportedLocaleStream(connectorsConfig, localeConfigPredicate).toList();
-      Locale expected = Locale.forLanguageTag(expectedSupportedLocale);
-      LOG.info("Available locales: {}", supportedLocales.stream().map(Locale::toLanguageTag).toList());
-      assertThat(supportedLocales).anySatisfy(tl -> assertThat(tl).isEqualTo(expected));
+    @Test
+    void shouldHaveAnyTargetLocaleAvailable(Map<String, Object> gccProperties) {
+      assertThat(ExtendedDefaultGCExchangeFacade.connect(gccProperties).connectorsConfig().targetLocales())
+        .isNotEmpty();
+    }
+
+    @Test
+    void shouldHaveAnyLanguageDirectionsConfigured(Map<String, Object> gccProperties) {
+      assertThat(connect(gccProperties).connectorsConfig().languageDirections())
+        .isNotEmpty();
     }
   }
 
   @Nested
   @DisplayName("Test for content upload")
+  @NullUnmarked
   class ContentUpload {
+    private static ExtendedDefaultGCExchangeFacade facade;
+
+    @BeforeAll
+    static void beforeAll(Map<String, Object> gccProperties) {
+      facade = connect(gccProperties);
+    }
+
     @Test
     @DisplayName("Upload File.")
-    void upload(Map<String, Object> gccProperties) {
+    void upload() {
       Instant startTimeUtc = Instant.now().atZone(ZoneOffset.UTC).toInstant();
 
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      GCExchange delegate = facade.getDelegate();
+      long contentCountBefore = facade.totalRecordsCount();
 
-      long contentCountBefore = getTotalRecordsCount(delegate);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
+      String fileId = fixture.upload(facade).fileId();
 
       assertThat(fileId).isNotEmpty();
 
-      long contentCountAfter = getTotalRecordsCount(delegate);
+      long contentCountAfter = facade.totalRecordsCount();
 
       // Fail-early test: Ensure that we actually received any content.
       // Note, that we expect no latency here. If we experience that the
@@ -249,43 +236,38 @@ class DefaultGCExchangeFacadeContractTest {
       // a wait statement here (e.g., using Awaitility).
       assertThat(contentCountAfter).isGreaterThan(contentCountBefore);
 
-      Content.ContentResponseData contentList = delegate.getContentList(new PageableRequest(1L, contentCountAfter));
-
-      List<GCFile> filesWithToString = contentList.getResponseData().stream().map(f -> {
-        GCFile spy = Mockito.spy(f);
-        Mockito.when(spy.toString()).thenReturn(String.format("%s [id=%s, contentId=%s, type=%s, updated=%s]", f.getName(), f.getId(), f.getContentId(), f.getFileType(), f.getUpdatedAt()));
-        return spy;
-      }).toList();
-      assertThat(filesWithToString).anySatisfy(
-        f -> {
-          assertThat(f).extracting(GCFile::getContentId).isEqualTo(fileId);
-          assertThat(f.getUpdatedAt()).matches(date -> date.toInstant().isAfter(startTimeUtc));
-        }
-      );
-    }
-
-    static long getTotalRecordsCount(GCExchange exchange) {
-      Content.ContentResponseData contentList = exchange.getContentList();
-      return contentList.getTotalRecordsCount();
+      assertThat(facade.getContentList()).anySatisfy(f -> {
+        assertThat(f.contentId()).isEqualTo(fileId);
+        assertThat(f.updatedAt()).isAfter(startTimeUtc);
+      });
     }
   }
 
   @Nested
   @DisplayName("Tests for cancellation")
+  // We may need a different connector configuration for testing cancellation
+  // support.
+  @GccCredentials("cancellation")
+  @NullUnmarked
   class Cancellation {
+    private static ExtendedDefaultGCExchangeFacade facade;
+
+    @BeforeAll
+    static void beforeAll(Map<String, Object> gccProperties) {
+      facade = connect(gccProperties);
+    }
+
     @Test
     @DisplayName("Be aware of submission/task cancellation.")
-    void shouldBeCancellationAware(Map<String, Object> gccProperties) {
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
+    void shouldBeCancellationAware() {
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
-      long submissionId = facade.submitSubmission(
+      long submissionId = fixture.uploadAndSubmit(
+        facade,
         submissionName,
         "Submission is meant to be cancelled via API and later confirmed.",
-        getSomeDueDate(),
-        null,
-        testName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        testName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -336,39 +318,21 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
-  /**
-   * Get some due date for testing. Due to an issue within the GCC Java
-   * REST Client API (v3.1.3) ignoring UTC time-zone requirement, we should
-   * ensure, that the offset is not just some hours, but rather days.
-   *
-   * @return some due date for testing
-   */
-  private static ZonedDateTime getSomeDueDate() {
-    return ZonedDateTime.of(LocalDateTime.now().plusDays(2L), ZoneId.systemDefault());
-  }
-
-  private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
-    @Override
-    public boolean test(InputStream inputStream, GCTaskModel task) {
-      return true;
-    }
-  }
-
   @Nested
   @DisplayName("Test general content submission")
   class ContentSubmission {
     @Test
     @DisplayName("Test simple submission")
-    void submitXml(Map<String, Object> gccProperties) {
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
-      long submissionId = facade.submitSubmission(
+    void shouldPerformSimpleSubmissionSuccessfully(Map<String, Object> gccProperties) {
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
+      long submissionId = fixture.uploadAndSubmit(
+        facade,
         submissionName,
-        null,
-        getSomeDueDate(),
-        null,
-        "admin",
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        "Testing just a simple submission.",
+        testName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -390,26 +354,29 @@ class DefaultGCExchangeFacadeContractTest {
     @EnumSource(SendSubmitter.class)
     void shouldRespectSubmitter(SendSubmitter sendSubmitter,
                                 Map<String, Object> originalGccProperties) {
-      Map<String, @Nullable Object> gccProperties = new HashMap<>(originalGccProperties);
-      gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, sendSubmitter.getSendSubmitter());
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
+      Boolean sendSubmitterFlag = sendSubmitter.getSendSubmitter();
+      if (sendSubmitterFlag != null) {
+        gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, sendSubmitterFlag);
+      }
       String comment = switch (sendSubmitter) {
         case YES -> "Respect send submitter-name explicitly (%s)".formatted(testName);
         case NO -> "Ignore submitter-name (use credentials user instead)";
         case DEFAULT -> "Default: Ignore submitter-name (use credentials user instead)";
       };
-      long submissionId = facade.submitSubmission(
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
+      long submissionId = fixture.uploadAndSubmit(
+        facade,
         "%s; %s".formatted(submissionName, sendSubmitter),
         comment,
-        getSomeDueDate(),
-        null,
-        testName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        testName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
-      if (Boolean.TRUE.equals(sendSubmitter.getSendSubmitter())) {
+      if (Boolean.TRUE.equals(sendSubmitterFlag)) {
         await("Submission should have submitter 'admin'.")
           .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
           .pollDelay(1L, TimeUnit.SECONDS)
@@ -433,16 +400,16 @@ class DefaultGCExchangeFacadeContractTest {
                                             Map<String, Object> originalGccProperties) {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, true);
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
       String submitterName = "%s(%s)".formatted(testName, challenge.getChallenge());
-      long submissionId = facade.submitSubmission(
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
+      long submissionId = fixture.uploadAndSubmit(
+        facade,
         "%s; %s".formatted(submissionName, challenge),
-        null,
-        getSomeDueDate(),
-        null,
-        submitterName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        "Submitter Name Challenge",
+        submitterName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -488,18 +455,17 @@ class DefaultGCExchangeFacadeContractTest {
       // The only known way to provoke a failure for now is using a
       // high Unicode character and set it unmodified as instruction text.
       gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       String unicodeDove = "\uD83D\uDD4A";
       String comment = "Instruction to break GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(unicodeDove);
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
-      long submissionId = facade.submitSubmission(
+      long submissionId = fixture.uploadAndSubmit(
+        facade,
         submissionName,
         comment,
-        getSomeDueDate(),
-        null,
-        testName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        testName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -523,17 +489,17 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest
     @DisplayName("Should respect and nicely handle instructions aka comments.")
     @EnumSource(CommentFixture.class)
-    void shouldRespectInstructions(CommentFixture fixture,
+    void shouldRespectInstructions(CommentFixture commentFixture,
                                    Map<String, Object> gccProperties) {
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
-      long submissionId = facade.submitSubmission(
-        "%s; %s".formatted(submissionName, fixture.name()),
-        fixture.getComment(),
-        getSomeDueDate(),
-        null,
-        testName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture xliffFixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
+      long submissionId = xliffFixture.uploadAndSubmit(
+        facade,
+        "%s; %s".formatted(submissionName, commentFixture.name()),
+        commentFixture.getComment(),
+        testName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -558,16 +524,16 @@ class DefaultGCExchangeFacadeContractTest {
     @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
     void shouldPreemptivelyReplaceProblematicCharactersInSubmissionNames(SupplementaryMultilingualPlaneChallenge challenge,
                                                                          Map<String, Object> gccProperties) {
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture xliffFixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
       String submissionNameChallenge = "%s(%s)".formatted(submissionName, challenge.getChallenge());
-      long submissionId = facade.submitSubmission(
+      long submissionId = xliffFixture.uploadAndSubmit(
+        facade,
         submissionNameChallenge,
         "Submission name with possible problematic characters: challenge ID '%s'".formatted(challenge),
-        getSomeDueDate(),
-        null,
-        testName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        testName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -600,14 +566,16 @@ class DefaultGCExchangeFacadeContractTest {
     @EnumSource(SubmissionNameLengthFixture.class)
     void shouldPreemptivelyTruncateLongSubmissionNames(SubmissionNameLengthFixture fixture,
                                                        Map<String, Object> gccProperties) {
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture xliffFixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
       String paddedSubmissionName = fixture.pad(submissionName);
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       // Unmet Failure Scenario: If the length of the submission name eventually
       // passed to the GCC REST Backend is longer than the available maximum
       // length, a 400-error is raised along with a message that states the
       // maximum length.
-      long submissionId = facade.submitSubmission(
+      long submissionId = xliffFixture.uploadAndSubmit(
+        facade,
         paddedSubmissionName,
         "%s (%s)\nOriginal Submission Name (%d chars, expected to be shortened if required to at maximum %d characters):\n\t%s".formatted(
           testName,
@@ -616,10 +584,8 @@ class DefaultGCExchangeFacadeContractTest {
           GCSubmissionName.DEFAULT_MAX_LENGTH,
           paddedSubmissionName
         ),
-        getSomeDueDate(),
-        null,
-        testName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
+        testName
+      );
 
       assertThat(submissionId).isGreaterThan(0L);
 
@@ -650,25 +616,21 @@ class DefaultGCExchangeFacadeContractTest {
   @Tag("full")
   @DisplayName("Translate XLIFF and receive results (takes about 10 Minutes)")
   void translateXliff(Map<String, Object> gccProperties) {
-    GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-    ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
-    List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).toList();
-    Locale masterLocale = getSupportedLocaleStream(connectorsConfig, LocaleConfig::getIsSource)
-      .findFirst()
-      .orElseThrow(() -> new IllegalStateException("At least one source locale required."));
+    ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+    Map.Entry<Locale, List<Locale>> anyLanguageDirection = facade.connectorsConfig().anyLanguageDirection();
+    List<XliffFixture> xliffFixtures = anyLanguageDirection.getValue().stream()
+      .map(target -> XliffFixture.of(testName, anyLanguageDirection.getKey(), target))
+      .toList();
 
-    if (targetLocales.isEmpty()) {
-      throw new IllegalStateException("At least one target locale (non-source) required.");
-    }
-
-    Map<String, List<Locale>> contentMap = uploadContents(facade, testName, masterLocale, targetLocales);
-    long submissionId = facade.submitSubmission(
-      submissionName,
-      "Full translation workflow test from submission to retrieving results.",
-      getSomeDueDate(),
-      null,
-      testName,
-      masterLocale, contentMap);
+    long submissionId =
+      XliffFixture.uploadAndSubmitAll(
+        facade,
+        submissionName,
+        "Full translation workflow test from submission to retrieving results.",
+        testName,
+        anyLanguageDirection.getKey(),
+        xliffFixtures
+      );
 
     assertSubmissionReachesState(facade, submissionId, GCSubmissionState.COMPLETED, TRANSLATION_TIMEOUT_MINUTES);
 
@@ -678,11 +640,18 @@ class DefaultGCExchangeFacadeContractTest {
 
     assertThat(xliffResults)
       .describedAs("All XLIFFs shall have been pseudo-translated.")
-      .hasSize(targetLocales.size())
+      .hasSize(xliffFixtures.size())
       .allSatisfy(s -> assertThat(s).doesNotContain("<target>Lorem Ipsum"));
 
     //After all tasks have been marked as delivered also the submission shall be marked as delivered.
     assertSubmissionReachesState(facade, submissionId, GCSubmissionState.DELIVERED, 5L);
+  }
+
+  private static class TrueTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+    @Override
+    public boolean test(InputStream inputStream, GCTaskModel task) {
+      return true;
+    }
   }
 
   private record TaskDataConsumer(List<String> xliffResults) implements BiPredicate<InputStream, GCTaskModel> {
@@ -703,38 +672,6 @@ class DefaultGCExchangeFacadeContractTest {
       }
       return true;
     }
-  }
-
-  /**
-   * Retrieves all supported locales matching the given predicate.
-   * Note, that the implementation uses {@link LocaleConfig#getLocaleLabel()} which
-   * is expected to be a language-tag. Mapping might need to be changed, if this
-   * shall be the PD locale or connector locale instead.
-   *
-   * @param connectorsConfig      the answer from connectors config
-   * @param localeConfigPredicate predicate to apply
-   * @return stream of matching locales; uses {@link LocaleConfig#getLocaleLabel()} for transformation
-   */
-  private static Stream<Locale> getSupportedLocaleStream(ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig, Predicate<LocaleConfig> localeConfigPredicate) {
-    return connectorsConfig.getSupportedLocales().stream()
-      .filter(localeConfigPredicate)
-      .map(LocaleConfig::getLocaleLabel)
-      // GCC REST Backend Bug Workaround: Locale contains/may contain trailing space.
-      .map(String::trim)
-      .map(Locale::forLanguageTag);
-  }
-
-  private static Map<String, List<Locale>> uploadContents(GCExchangeFacade facade, String testName, Locale masterLocale, List<Locale> targetLocales) {
-    ImmutableMap.Builder<String, List<Locale>> contentMapBuilder = ImmutableMap.builder();
-
-    for (Locale targetLocale : targetLocales) {
-      String xliffContent = String.format(XLIFF_CONTENT_PATTERN, masterLocale.toLanguageTag(), targetLocale.toLanguageTag());
-      String fileName = String.format("%s_%s2%s.xliff", testName, masterLocale.toLanguageTag(), targetLocale.toLanguageTag());
-      String fileId = facade.uploadContent(fileName, new ByteArrayResource(xliffContent.getBytes(UTF_8)), masterLocale);
-      contentMapBuilder.put(fileId, List.of(targetLocale));
-    }
-
-    return contentMapBuilder.build();
   }
 
   private static void assertSubmissionReachesState(GCExchangeFacade facade, long submissionId, GCSubmissionState stateToReach, long timeout) {
