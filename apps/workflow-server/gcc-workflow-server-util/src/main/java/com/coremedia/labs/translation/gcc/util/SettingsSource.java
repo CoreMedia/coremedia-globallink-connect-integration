@@ -257,7 +257,7 @@ public enum SettingsSource {
    * Validates that the given content is a proper settings document with the
    * required structure.
    *
-   * @param content                the content to validate, may be {@code null}
+   * @param content                the content to validate
    * @param settingsTypeName       the content type that holds settings
    * @param settingsDescriptorName the property that holds the settings struct
    * @return {@code true} if the content is a valid settings document with a
