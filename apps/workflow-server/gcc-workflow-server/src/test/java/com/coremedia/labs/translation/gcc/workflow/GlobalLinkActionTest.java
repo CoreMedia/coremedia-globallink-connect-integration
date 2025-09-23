@@ -145,7 +145,7 @@ class GlobalLinkActionTest {
             throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
         }
 
-        GlobalLinkAction.Parameters<Object> params =
+        GlobalLinkAction.Parameters<@Nullable Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -192,7 +192,7 @@ class GlobalLinkActionTest {
 
         int remainingAutomaticRetries = 3;
 
-        GlobalLinkAction.Parameters<Object> params =
+        GlobalLinkAction.Parameters<@Nullable Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -232,7 +232,7 @@ class GlobalLinkActionTest {
           rd -> saturatedOf(rd.value().dividedBy(delayDivisor))
         );
 
-        GlobalLinkAction.Parameters<Object> params =
+        GlobalLinkAction.Parameters<@Nullable Object> params =
           new GlobalLinkAction.Parameters<>(
             null,
             List.of(masterSite.getSiteIndicator()),
@@ -373,7 +373,7 @@ class GlobalLinkActionTest {
    * ---------------------------------------------------------------------------
    */
 
-  private static final class MockedGlobalLinkAction extends GlobalLinkAction<Void, Void> {
+  private static final class MockedGlobalLinkAction extends GlobalLinkAction<@Nullable Void, Void> {
     @Serial
     private static final long serialVersionUID = -288745610618179168L;
     private final ApplicationContext applicationContext;
@@ -401,8 +401,7 @@ class GlobalLinkActionTest {
     }
 
     @Override
-    @Nullable
-    Void doExtractParameters(Task task) {
+    @Nullable Void doExtractParameters(Task task) {
       return null;
     }
 
