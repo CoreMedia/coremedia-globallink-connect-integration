@@ -11,6 +11,14 @@ tags:
 * **Connector Type**: `default`
 * **Key Type**: `manual`
 
+:::tip TIP: Cancelation vs. Cancellation
+GlobalLink uses "Cancellation", but according to Miriam Webster, which is our
+go-to source for spelling, "Cancelation" is better to be used in American
+English – while both are valid.
+
+**Source:** [Merriam-Webster: Cancelled or Canceled - Which is Correct?](https://www.merriam-webster.com/grammar/canceled-or-cancelled)
+:::
+
 ## Cancelation in Studio
 
 1. Log in as Rick C.
