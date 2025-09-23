@@ -134,7 +134,7 @@ public final class MockSubmissionStates {
    * @return map of state pointcut configurations; on invalid or not existing
    * configuration an empty map will be returned
    */
-  // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
   private static Map<GCSubmissionState, StatePointcutConfig> parseConfig(Map<?, ?> config) {
     Map<GCSubmissionState, StatePointcutConfig> result = new EnumMap<>(GCSubmissionState.class);
@@ -278,7 +278,7 @@ public final class MockSubmissionStates {
      * @param object configuration to parse
      * @return state pointcut configuration
      */
-    // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+    // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
     @SuppressWarnings("nullness")
     public static Optional<StatePointcutConfig> fromConfig(@Nullable Object object) {
       if (!(object instanceof Map<?, ?> config) || config.isEmpty()) {
@@ -297,7 +297,7 @@ public final class MockSubmissionStates {
      * @param config configuration to parse
      * @return state pointcut configuration
      */
-    // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+    // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
     @SuppressWarnings("nullness")
     private static StatePointcutConfig parseStateConfig(Map<?, ?> config) {
       List<GCSubmissionState> before = parseStateList(config.get("before"));
@@ -317,7 +317,7 @@ public final class MockSubmissionStates {
      * @param config configuration to parse
      * @return list of submission states
      */
-    // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+    // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
     @SuppressWarnings("nullness")
     private static List<GCSubmissionState> parseStateList(@Nullable Object config) {
       if (config instanceof String stateName) {

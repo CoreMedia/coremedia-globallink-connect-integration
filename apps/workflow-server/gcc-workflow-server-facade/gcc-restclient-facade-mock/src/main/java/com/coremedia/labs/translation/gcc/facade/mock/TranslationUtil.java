@@ -159,7 +159,7 @@ final class TranslationUtil {
     return writer.toString();
   }
 
-  // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
   private static void performPseudoTranslation(Document doc, boolean mockInvalidXliff) {
     if (mockInvalidXliff) {

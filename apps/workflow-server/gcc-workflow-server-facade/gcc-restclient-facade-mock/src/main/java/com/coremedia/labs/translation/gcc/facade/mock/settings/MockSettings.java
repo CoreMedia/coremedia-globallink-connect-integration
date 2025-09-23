@@ -97,7 +97,7 @@ public record MockSettings(
     }
   }
 
-  // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
   public static MockSettings fromGlobalLinkConfig(Map<String, ?> config) {
     Object mockConfigObject = config.get(CONFIG_MOCK);
@@ -107,7 +107,7 @@ public record MockSettings(
     return EMPTY;
   }
 
-  // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
   public static MockSettings fromMockConfig(Map<?, ?> config) {
     if (config.isEmpty()) {

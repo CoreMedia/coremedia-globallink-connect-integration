@@ -98,7 +98,7 @@ public final class GCSubmissionName {
    * @param config the {@code globalLink} configuration
    * @return the configuration for submission names
    */
-  // jspecify-reference-checker: Fails to deal with pattern binding. Suppressed.
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
   public static GCSubmissionName fromGlobalLinkConfig(Map<String, ?> config) {
     Object configObject = config.get(CONFIG_KEY);
