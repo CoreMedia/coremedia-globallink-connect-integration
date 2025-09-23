@@ -485,7 +485,7 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
    * @throws GCFacadeException           if an error was raised by the given facade
    * @throws GlobalLinkWorkflowException if some other error occurred
    */
-  abstract void doExecuteGlobalLinkAction(@Nullable P params,
+  abstract void doExecuteGlobalLinkAction(P params,
                                           Consumer<? super R> resultConsumer,
                                           GCExchangeFacade facade,
                                           Map<String, List<Content>> issues);
