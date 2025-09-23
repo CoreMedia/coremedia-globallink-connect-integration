@@ -3,6 +3,8 @@ package com.coremedia.labs.translation.gcc.workflow;
 import com.coremedia.labs.translation.gcc.util.Zipper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,24 +17,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@NullMarked
 class DownloadFromGlobalLinkActionUnitTest {
   private static final Logger LOG = LoggerFactory.getLogger(DownloadFromGlobalLinkActionUnitTest.class);
 
-  private File existingZipFile;
+  private @Nullable File existingZipFile;
 
   @BeforeEach
   void setUp() {
     try {
       existingZipFile = Files.createTempFile("ccbwtgdfglaut", ".zip").toFile();
-      try (InputStream is = DownloadFromGlobalLinkActionUnitTest.class.getResourceAsStream("/com/coremedia/labs/translation/gcc/workflow/existing.zip");
-           OutputStream os = new FileOutputStream(existingZipFile)) {
+      InputStream is = requireNonNull(DownloadFromGlobalLinkActionUnitTest.class.getResourceAsStream("/com/coremedia/labs/translation/gcc/workflow/existing.zip"));
+      OutputStream os = new FileOutputStream(existingZipFile);
+      try (is; os) {
         IOUtils.copy(is, os);
       }
     } catch (IOException e) {
@@ -42,7 +46,9 @@ class DownloadFromGlobalLinkActionUnitTest {
 
   @AfterEach
   void tearDown() throws IOException {
-    FileUtils.forceDelete(existingZipFile);
+    if (existingZipFile != null) {
+      FileUtils.forceDelete(existingZipFile);
+    }
   }
 
 
@@ -82,17 +88,18 @@ class DownloadFromGlobalLinkActionUnitTest {
       // Test
       File actual = DownloadFromGlobalLinkAction.zipXliffs(createResult(workingDir));
 
+      assertNotNull(actual);
+
       // Check
       try {
-        assertNotNull(actual);
         File extracted = new File(Zipper.unzip(actual.getAbsolutePath(), null), "xliff_issue_details");
         try {
           File[] files = extracted.listFiles();
           assertNotNull(files);
           assertEquals(2, files.length);
           // Check files by well known length, which is sufficiently unique in this test.
-          assertEquals(5L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
-          assertEquals(6L, Objects.requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
+          assertEquals(5L, requireNonNull(extracted.listFiles((dir, name) -> "zipentry2.txt".equals(name)))[0].length());
+          assertEquals(6L, requireNonNull(extracted.listFiles((dir, name) -> "zipentry3.txt".equals(name)))[0].length());
         } finally {
           deleteFile(extracted);
         }
@@ -134,7 +141,7 @@ class DownloadFromGlobalLinkActionUnitTest {
     }
   }
 
-  private static void deleteFile(File file) {
+  private static void deleteFile(@Nullable File file) {
     try {
       if (file != null) {
         FileUtils.forceDelete(file);

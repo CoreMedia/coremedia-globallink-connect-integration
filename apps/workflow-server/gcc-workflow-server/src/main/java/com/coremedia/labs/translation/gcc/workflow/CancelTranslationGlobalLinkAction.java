@@ -6,8 +6,8 @@ import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +33,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Workflow action that cancels a GlobalLink submission.
  */
+@NullMarked
 public class CancelTranslationGlobalLinkAction extends
         GlobalLinkAction<CancelTranslationGlobalLinkAction.Parameters, CancelTranslationGlobalLinkAction.Result> {
   @Serial
@@ -44,11 +45,11 @@ public class CancelTranslationGlobalLinkAction extends
 
   private static final int HTTP_OK = 200;
 
-  private String globalLinkSubmissionIdVariable;
-  private String globalLinkPdSubmissionIdsVariable;
-  private String globalLinkSubmissionStatusVariable;
-  private String cancelledVariable;
-  private String completedLocalesVariable;
+  private @Nullable String globalLinkSubmissionIdVariable;
+  private @Nullable String globalLinkPdSubmissionIdsVariable;
+  private @Nullable String globalLinkSubmissionStatusVariable;
+  private @Nullable String cancelledVariable;
+  private @Nullable String completedLocalesVariable;
 
   // --- construct and configure ------------------------------------
 
@@ -116,13 +117,11 @@ public class CancelTranslationGlobalLinkAction extends
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
 
   @Override
-  @NonNull
   protected String getGCCRetryDelaySettingsKey() {
     return GCC_RETRY_DELAY_SETTINGS_KEY;
   }
 
   @Override
-  @NonNull
   Parameters doExtractParameters(Task task) {
     Process process = task.getContainingProcess();
     String submissionId = process.getString(globalLinkSubmissionIdVariable);
@@ -133,9 +132,12 @@ public class CancelTranslationGlobalLinkAction extends
     return new Parameters(parseSubmissionId(submissionId, task.getId()), cancelled, completedLocales);
   }
 
+  // NullableProblems: IntelliJ IDEA 2025.2.2 notes false-positive "can be null". Ignored.
   @Override
-  void doExecuteGlobalLinkAction(Parameters params, Consumer<? super Result> resultConsumer,
-                                 GCExchangeFacade facade, Map<String, List<Content>> issues) {
+  void doExecuteGlobalLinkAction(@SuppressWarnings("NullableProblems") Parameters params,
+                                 Consumer<? super Result> resultConsumer,
+                                 GCExchangeFacade facade,
+                                 Map<String, List<Content>> issues) {
     long submissionId = params.submissionId;
     // Ignore Submission Error State: As we are trying to cancel the submission,
     // we don't care about the error state. At least for observed scenarios,
@@ -189,9 +191,8 @@ public class CancelTranslationGlobalLinkAction extends
     }
   }
 
-  @Nullable
   @Override
-  Void doStoreResult(Task task, Result result) {
+  @Nullable Void doStoreResult(Task task, Result result) {
     Process process = task.getContainingProcess();
     process.set(globalLinkSubmissionStatusVariable, result.submissionState.toString());
     process.set(cancelledVariable, result.cancelled);

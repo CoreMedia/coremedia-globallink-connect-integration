@@ -1,12 +1,15 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
 
 /**
  * Signals that a submission was not found at GlobalLink.
  */
+@SuppressWarnings("unused")
+@NullMarked
 public class GCFacadeSubmissionNotFoundException extends GCFacadeSubmissionException {
   @Serial
   private static final long serialVersionUID = 7381206719419170238L;

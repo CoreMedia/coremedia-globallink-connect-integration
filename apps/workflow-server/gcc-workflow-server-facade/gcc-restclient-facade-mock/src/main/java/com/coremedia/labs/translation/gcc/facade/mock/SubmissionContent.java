@@ -1,8 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
 import com.google.common.collect.ImmutableList;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.Locale;
@@ -10,7 +9,7 @@ import java.util.Locale;
 /**
  * Represents a content which is part of a translation.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 record SubmissionContent(String fileId, String fileContent, List<Locale> targetLocales) {
   SubmissionContent(String fileId, String fileContent, List<Locale> targetLocales) {
     this.fileId = fileId;

@@ -1,8 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
 import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -35,7 +34,7 @@ import static java.util.stream.Collectors.joining;
 /**
  * Provides simple <em>mock</em> translation by replacing characters.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 final class TranslationUtil {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final Map<String, String> TRANSLATE = ImmutableMap.<String, String>builder()
@@ -160,6 +159,8 @@ final class TranslationUtil {
     return writer.toString();
   }
 
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+  @SuppressWarnings("nullness")
   private static void performPseudoTranslation(Document doc, boolean mockInvalidXliff) {
     if (mockInvalidXliff) {
       doc.getDocumentElement().appendChild(doc.createElementNS("intentionally", "invalid"));

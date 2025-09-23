@@ -12,7 +12,8 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.translate.workflow.AsRobotUser;
 import com.google.common.io.Resources;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -69,22 +70,21 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
  */
 @SpringJUnitConfig(classes = DownloadFromGlobalLinkActionTest.LocalConfig.class)
 @DirtiesContext(classMode = AFTER_CLASS)
+@NullMarked
 class DownloadFromGlobalLinkActionTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   private static final Pattern REPLACE_TARGET_PATTERN = Pattern.compile("(?<attr>cmxliff:target)=\"(?<value>[^\"]*)\"");
   private static final Pattern REPLACE_ORIGINAL_PATTERN = Pattern.compile("(?<attr>original)=\"(?<value>[^\"]*)\"");
 
-  @NonNull
   private final DownloadFromGlobalLinkAction action;
-  @NonNull
   private final GCExchangeFacade gcExchangeFacade;
 
   private Version masterVersion;
   private Content targetContent;
 
-  DownloadFromGlobalLinkActionTest(@Autowired @NonNull DownloadFromGlobalLinkAction action,
-                                   @Autowired @NonNull GCExchangeFacade gcExchangeFacade) {
+  DownloadFromGlobalLinkActionTest(@Autowired DownloadFromGlobalLinkAction action,
+                                   @Autowired GCExchangeFacade gcExchangeFacade) {
     this.action = action;
     this.gcExchangeFacade = gcExchangeFacade;
   }
@@ -134,7 +134,7 @@ class DownloadFromGlobalLinkActionTest {
           .build())
         .when(gcExchangeFacade).getSubmission(anyLong());
 
-      AtomicReference<DownloadFromGlobalLinkAction.Result> resultHolder = new AtomicReference<>();
+      AtomicReference<DownloadFromGlobalLinkAction.@Nullable Result> resultHolder = new AtomicReference<>();
       Map<String, List<Content>> issues = new HashMap<>();
       action.doExecuteGlobalLinkAction(new DownloadFromGlobalLinkAction.Parameters(1L, new HashSet<>(), false), resultHolder::set, gcExchangeFacade, issues);
 
@@ -153,10 +153,11 @@ class DownloadFromGlobalLinkActionTest {
 
       mockXliffDownload(gcExchangeFacade, xliff);
 
-      AtomicReference<DownloadFromGlobalLinkAction.Result> resultHolder = new AtomicReference<>();
+      AtomicReference<DownloadFromGlobalLinkAction.@Nullable Result> resultHolder = new AtomicReference<>();
       action.doExecuteGlobalLinkAction(new DownloadFromGlobalLinkAction.Parameters(1L, new HashSet<>(), false), resultHolder::set, gcExchangeFacade, new HashMap<>());
       DownloadFromGlobalLinkAction.Result result = resultHolder.get();
 
+      assertThat(result).isNotNull();
       assertThat(result.resultItems.values().stream().anyMatch(list -> {
         XliffImportResultItem resultItem = list.isEmpty() ? null : list.get(0);
         return resultItem != null && resultItem.getCode() == NO_SUCH_PROPERTY &&
@@ -168,7 +169,7 @@ class DownloadFromGlobalLinkActionTest {
     }
   }
 
-  private static void mockXliffDownload(@NonNull GCExchangeFacade gcExchangeFacade, @NonNull String xliff) {
+  private static void mockXliffDownload(GCExchangeFacade gcExchangeFacade, String xliff) {
     doAnswer((Answer<Boolean>) invocationOnMock -> {
       BiPredicate<InputStream, GCTaskModel> consumer = invocationOnMock.getArgument(1);
       ByteArrayInputStream inputStream = new ByteArrayInputStream(xliff.getBytes(StandardCharsets.UTF_8));
@@ -178,13 +179,11 @@ class DownloadFromGlobalLinkActionTest {
     doReturn(GCSubmissionModel.builder(1L).state(GCSubmissionState.DELIVERED).build()).when(gcExchangeFacade).getSubmission(anyLong());
   }
 
-  @NonNull
-  private static String readXliff(@NonNull Version masterVersion, @NonNull Content targetContent) {
+  private static String readXliff(Version masterVersion, Content targetContent) {
     return readXliff(masterVersion.getId(), targetContent.getId());
   }
 
-  @NonNull
-  private static String readXliff(@NonNull String masterVersionId, @NonNull String targetContentId) {
+  private static String readXliff(String masterVersionId, String targetContentId) {
     try {
       String raw = Resources.toString(getResource(DownloadFromGlobalLinkActionTest.class, "LoremIpsum.xliff"), StandardCharsets.UTF_8);
       String result = REPLACE_TARGET_PATTERN.matcher(raw).replaceAll(String.format("${attr}=\"%s\"", targetContentId));
@@ -205,8 +204,7 @@ class DownloadFromGlobalLinkActionTest {
   static class LocalConfig {
     @Bean
     @Scope(SCOPE_SINGLETON)
-    @NonNull
-    public DownloadFromGlobalLinkAction downloadFromGlobalLinkAction(@NonNull ApplicationContext context) {
+    public DownloadFromGlobalLinkAction downloadFromGlobalLinkAction(ApplicationContext context) {
       return new MockedDownloadFromGlobalLinkAction(context);
     }
   }
@@ -214,15 +212,13 @@ class DownloadFromGlobalLinkActionTest {
   private static final class MockedDownloadFromGlobalLinkAction extends DownloadFromGlobalLinkAction {
     @Serial
     private static final long serialVersionUID = -4082795575498550151L;
-    @NonNull
     private final ApplicationContext applicationContext;
 
-    private MockedDownloadFromGlobalLinkAction(@NonNull ApplicationContext applicationContext) {
+    private MockedDownloadFromGlobalLinkAction(ApplicationContext applicationContext) {
       this.applicationContext = applicationContext;
     }
 
     @Override
-    @NonNull
     protected ApplicationContext getSpringContext() {
       return applicationContext;
     }

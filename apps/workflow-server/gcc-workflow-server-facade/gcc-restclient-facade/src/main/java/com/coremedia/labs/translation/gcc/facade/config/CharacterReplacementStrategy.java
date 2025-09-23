@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Optional;
@@ -16,6 +16,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @since 2406.1
  */
+@NullMarked
 public enum CharacterReplacementStrategy {
   /**
    * Do not apply any replacement.
@@ -48,18 +49,15 @@ public enum CharacterReplacementStrategy {
 
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
-  @NonNull
   private final String id;
 
-  @NonNull
   private final Function<MatchResult, String> replacer;
 
-  CharacterReplacementStrategy(@NonNull Function<MatchResult, String> replacer) {
+  CharacterReplacementStrategy(Function<MatchResult, String> replacer) {
     id = stripUnderscoresAndDashes(name());
     this.replacer = replacer;
   }
 
-  @NonNull
   public Function<MatchResult, String> replacer() {
     return replacer;
   }
@@ -86,7 +84,6 @@ public enum CharacterReplacementStrategy {
     return Optional.empty();
   }
 
-  @NonNull
   public static Optional<CharacterReplacementStrategy> fromString(@Nullable String strategy) {
     if (strategy == null || strategy.isBlank()) {
       LOG.trace("No replacement-strategy given. Returning empty.");
@@ -102,8 +99,7 @@ public enum CharacterReplacementStrategy {
     return Optional.empty();
   }
 
-  @NonNull
-  private static String replaceIfNotEmpty(@NonNull MatchResult mr, @NonNull String replacement) {
+  private static String replaceIfNotEmpty(MatchResult mr, String replacement) {
     return mr.group().isEmpty() ? "" : replacement;
   }
 
@@ -113,8 +109,7 @@ public enum CharacterReplacementStrategy {
    * @param str string to strip underscores and dashes from
    * @return string without underscores and dashes
    */
-  @NonNull
-  private static String stripUnderscoresAndDashes(@NonNull String str) {
+  private static String stripUnderscoresAndDashes(String str) {
     return str.replace("_", "").replace("-", "");
   }
 }

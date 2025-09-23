@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.mock.settings;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -13,11 +13,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Settings for the Mock Facade.
  */
+@NullMarked
 public record MockSettings(
   long stateChangeDelaySeconds,
   int stateChangeDelayOffsetPercentage,
   @Nullable MockError error,
-  @NonNull MockSubmissionStates submissionStates
+  MockSubmissionStates submissionStates
 ) {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
@@ -26,7 +27,6 @@ public record MockSettings(
   /**
    * Empty settings (with defaults applied).
    */
-  @NonNull
   public static final MockSettings EMPTY = new MockSettings(
     DEFAULT_STATE_CHANGE_DELAY_SECONDS,
     DEFAULT_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE,
@@ -97,8 +97,9 @@ public record MockSettings(
     }
   }
 
-  @NonNull
-  public static MockSettings fromGlobalLinkConfig(@NonNull Map<String, ?> config) {
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+  @SuppressWarnings("nullness")
+  public static MockSettings fromGlobalLinkConfig(Map<String, ?> config) {
     Object mockConfigObject = config.get(CONFIG_MOCK);
     if (mockConfigObject instanceof Map<?, ?> mockConfigMap) {
       return fromMockConfig(mockConfigMap);
@@ -106,8 +107,9 @@ public record MockSettings(
     return EMPTY;
   }
 
-  @NonNull
-  public static MockSettings fromMockConfig(@NonNull Map<?, ?> config) {
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+  @SuppressWarnings("nullness")
+  public static MockSettings fromMockConfig(Map<?, ?> config) {
     if (config.isEmpty()) {
       return EMPTY;
     }

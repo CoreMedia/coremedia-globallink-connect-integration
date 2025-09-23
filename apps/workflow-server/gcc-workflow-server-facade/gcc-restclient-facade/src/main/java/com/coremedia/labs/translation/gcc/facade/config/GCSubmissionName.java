@@ -1,7 +1,8 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -25,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @see CharacterReplacementStrategy
  * @since 2406.1
  */
+@NullMarked
 public final class GCSubmissionName {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final String CONFIG_KEY = GCConfigProperty.KEY_SUBMISSION_NAME;
@@ -47,11 +49,8 @@ public final class GCSubmissionName {
    *   <li>{@code characterReplacementStrategy}: {@link CharacterReplacementStrategy#UNDERSCORE}</li>
    * </ul>
    */
-  @NonNull
   public static final GCSubmissionName DEFAULT = new GCSubmissionName(DEFAULT_SUPPORTED_CHARACTER_TYPE, DEFAULT_CHARACTER_REPLACEMENT_STRATEGY);
-  @NonNull
   private final CharacterType characterType;
-  @NonNull
   private final CharacterReplacementStrategy characterReplacementStrategy;
 
   /**
@@ -60,8 +59,8 @@ public final class GCSubmissionName {
    * @param characterType                type of supported characters
    * @param characterReplacementStrategy strategy for replacing invalid characters
    */
-  private GCSubmissionName(@NonNull CharacterType characterType,
-                           @NonNull CharacterReplacementStrategy characterReplacementStrategy) {
+  private GCSubmissionName(CharacterType characterType,
+                           CharacterReplacementStrategy characterReplacementStrategy) {
     this.characterType = characterType;
     this.characterReplacementStrategy = characterReplacementStrategy;
   }
@@ -72,8 +71,7 @@ public final class GCSubmissionName {
    * @param value the value to transform
    * @return the transformed value
    */
-  @NonNull
-  public String transform(@NonNull String value) {
+  public String transform(String value) {
     String trimmed = value.trim();
     String transformed = characterType.replaceAllInvalid(trimmed, characterReplacementStrategy.replacer());
     String truncated = truncate(transformed);
@@ -89,8 +87,7 @@ public final class GCSubmissionName {
    * @param value the value to truncate
    * @return the truncated value
    */
-  @NonNull
-  private static String truncate(@NonNull String value) {
+  private static String truncate(String value) {
     return value.substring(0, Math.min(value.length(), DEFAULT_MAX_LENGTH));
   }
 
@@ -101,8 +98,9 @@ public final class GCSubmissionName {
    * @param config the {@code globalLink} configuration
    * @return the configuration for submission names
    */
-  @NonNull
-  public static GCSubmissionName fromGlobalLinkConfig(@NonNull Map<String, ?> config) {
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+  @SuppressWarnings("nullness")
+  public static GCSubmissionName fromGlobalLinkConfig(Map<String, ?> config) {
     Object configObject = config.get(CONFIG_KEY);
     if (configObject instanceof GCSubmissionName submissionName) {
       return submissionName;
@@ -131,7 +129,7 @@ public final class GCSubmissionName {
   }
 
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(@Nullable Object object) {
     if (object == null || getClass() != object.getClass()) {
       return false;
     }

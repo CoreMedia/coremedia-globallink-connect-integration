@@ -13,14 +13,14 @@ import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.model.GCFile;
 import org.gs4tr.gcc.restclient.model.LocaleConfig;
 import org.gs4tr.gcc.restclient.operation.ConnectorsConfig;
 import org.gs4tr.gcc.restclient.operation.Content;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -89,6 +89,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * }</pre>
  */
 @ExtendWith(GccCredentialsExtension.class)
+@NullMarked
 class DefaultGCExchangeFacadeContractTest {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final String XML_CONTENT = """
@@ -119,7 +120,7 @@ class DefaultGCExchangeFacadeContractTest {
   private String testName;
 
   @BeforeEach
-  void setUp(@NonNull TestInfo testInfo) {
+  void setUp(TestInfo testInfo) {
     testName = testInfo.getTestMethod().map(Method::getName).orElse("noname");
     submissionName = "%s: %s".formatted(TEST_ID, testName);
   }
@@ -134,7 +135,7 @@ class DefaultGCExchangeFacadeContractTest {
   class Login {
     @Test
     @DisplayName("Validate that login works.")
-    void shouldLoginSuccessfully(@NonNull Map<String, Object> gccProperties) {
+    void shouldLoginSuccessfully(Map<String, Object> gccProperties) {
       LOG.info("Properties: {}", gccProperties);
       assertThatCode(() -> new DefaultGCExchangeFacade(gccProperties))
         .doesNotThrowAnyException();
@@ -142,7 +143,7 @@ class DefaultGCExchangeFacadeContractTest {
 
     @Test
     @DisplayName("Validate that invalid login is denied.")
-    void shouldFailToLoginWithInvalidApiKey(@NonNull Map<String, Object> gccProperties) {
+    void shouldFailToLoginWithInvalidApiKey(Map<String, Object> gccProperties) {
       Map<String, Object> patchedProperties = new HashMap<>(gccProperties);
       patchedProperties.put("apiKey", "invalid");
       LOG.info("Properties: {} patched to {}", gccProperties, patchedProperties);
@@ -158,7 +159,7 @@ class DefaultGCExchangeFacadeContractTest {
      * submission by ID), we validate the connector key initially instead.
      */
     @Test
-    void shouldValidateConnectorKeyInitially(@NonNull Map<String, Object> gccProperties) {
+    void shouldValidateConnectorKeyInitially(Map<String, Object> gccProperties) {
       Map<String, Object> patchedProperties = new HashMap<>(gccProperties);
       patchedProperties.put("key", "invalid");
       LOG.info("Properties: {} patched to {}", gccProperties, patchedProperties);
@@ -229,7 +230,7 @@ class DefaultGCExchangeFacadeContractTest {
   class ContentUpload {
     @Test
     @DisplayName("Upload File.")
-    void upload(@NonNull Map<String, Object> gccProperties) {
+    void upload(Map<String, Object> gccProperties) {
       Instant startTimeUtc = Instant.now().atZone(ZoneOffset.UTC).toInstant();
 
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
@@ -274,9 +275,8 @@ class DefaultGCExchangeFacadeContractTest {
   class Cancellation {
     @Test
     @DisplayName("Be aware of submission/task cancellation.")
-    void shouldBeCancellationAware(@NonNull Map<String, Object> gccProperties) {
+    void shouldBeCancellationAware(Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      GCExchange delegate = facade.getDelegate();
 
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       long submissionId = facade.submitSubmission(
@@ -359,7 +359,7 @@ class DefaultGCExchangeFacadeContractTest {
   class ContentSubmission {
     @Test
     @DisplayName("Test simple submission")
-    void submitXml(@NonNull Map<String, Object> gccProperties) {
+    void submitXml(Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       long submissionId = facade.submitSubmission(
@@ -388,9 +388,9 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest
     @DisplayName("Should respect isSendSubmitter state.")
     @EnumSource(SendSubmitter.class)
-    void shouldRespectSubmitter(@NonNull SendSubmitter sendSubmitter,
-                                @NonNull Map<String, Object> originalGccProperties) {
-      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
+    void shouldRespectSubmitter(SendSubmitter sendSubmitter,
+                                Map<String, Object> originalGccProperties) {
+      Map<String, @Nullable Object> gccProperties = new HashMap<>(originalGccProperties);
       gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, sendSubmitter.getSendSubmitter());
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
@@ -429,8 +429,8 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest
     @DisplayName("Should accept various characters in the submitter name.")
     @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
-    void shouldAcceptSubmitterNameChallenge(@NonNull SupplementaryMultilingualPlaneChallenge challenge,
-                                            @NonNull Map<String, Object> originalGccProperties) {
+    void shouldAcceptSubmitterNameChallenge(SupplementaryMultilingualPlaneChallenge challenge,
+                                            Map<String, Object> originalGccProperties) {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       gccProperties.put(GCConfigProperty.KEY_IS_SEND_SUBMITTER, true);
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
@@ -483,7 +483,7 @@ class DefaultGCExchangeFacadeContractTest {
      * removed.
      */
     @Test
-    void shouldExposeErrorStateToClient(@NonNull Map<String, Object> originalGccProperties) {
+    void shouldExposeErrorStateToClient(Map<String, Object> originalGccProperties) {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       // The only known way to provoke a failure for now is using a
       // high Unicode character and set it unmodified as instruction text.
@@ -523,8 +523,8 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest
     @DisplayName("Should respect and nicely handle instructions aka comments.")
     @EnumSource(CommentFixture.class)
-    void shouldRespectInstructions(@NonNull CommentFixture fixture,
-                                   @NonNull Map<String, Object> gccProperties) {
+    void shouldRespectInstructions(CommentFixture fixture,
+                                   Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       long submissionId = facade.submitSubmission(
@@ -556,8 +556,8 @@ class DefaultGCExchangeFacadeContractTest {
     @ParameterizedTest
     @DisplayName("Should prevent failures in GCC backend for problematic characters in the submission name.")
     @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
-    void shouldPreemptivelyReplaceProblematicCharactersInSubmissionNames(@NonNull SupplementaryMultilingualPlaneChallenge challenge,
-                                                                         @NonNull Map<String, Object> gccProperties) {
+    void shouldPreemptivelyReplaceProblematicCharactersInSubmissionNames(SupplementaryMultilingualPlaneChallenge challenge,
+                                                                         Map<String, Object> gccProperties) {
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
       String submissionNameChallenge = "%s(%s)".formatted(submissionName, challenge.getChallenge());
@@ -598,8 +598,8 @@ class DefaultGCExchangeFacadeContractTest {
 
     @ParameterizedTest
     @EnumSource(SubmissionNameLengthFixture.class)
-    void shouldPreemptivelyTruncateLongSubmissionNames(@NonNull SubmissionNameLengthFixture fixture,
-                                                       @NonNull Map<String, Object> gccProperties) {
+    void shouldPreemptivelyTruncateLongSubmissionNames(SubmissionNameLengthFixture fixture,
+                                                       Map<String, Object> gccProperties) {
       String paddedSubmissionName = fixture.pad(submissionName);
       GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
       String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
@@ -649,7 +649,7 @@ class DefaultGCExchangeFacadeContractTest {
   @Tag("slow")
   @Tag("full")
   @DisplayName("Translate XLIFF and receive results (takes about 10 Minutes)")
-  void translateXliff(@NonNull Map<String, Object> gccProperties) {
+  void translateXliff(Map<String, Object> gccProperties) {
     GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
     ConnectorsConfig.ConnectorsConfigResponseData connectorsConfig = facade.getDelegate().getConnectorsConfig();
     List<Locale> targetLocales = getSupportedLocaleStream(connectorsConfig, lc -> !lc.getIsSource()).toList();
@@ -690,7 +690,6 @@ class DefaultGCExchangeFacadeContractTest {
     public boolean test(InputStream is, GCTaskModel task) {
       ByteSource byteSource = new ByteSource() {
         @Override
-        @NonNull
         public InputStream openStream() {
           return is;
         }
@@ -773,8 +772,7 @@ class DefaultGCExchangeFacadeContractTest {
     }
   }
 
-  @NonNull
-  private static String padEnd(@NonNull String str, int minLength, char startChar, char endChar) {
+  private static String padEnd(String str, int minLength, char startChar, char endChar) {
     StringBuilder builder = new StringBuilder(str);
     char currentChar = startChar;
     while (builder.length() < minLength) {
@@ -794,15 +792,13 @@ class DefaultGCExchangeFacadeContractTest {
     NO(false),
     DEFAULT(null);
 
-    @Nullable
-    private final Boolean isSendSubmitter;
+    private final @Nullable Boolean isSendSubmitter;
 
     SendSubmitter(@Nullable Boolean isSendSubmitter) {
       this.isSendSubmitter = isSendSubmitter;
     }
 
-    @Nullable
-    public Boolean getSendSubmitter() {
+    public @Nullable Boolean getSendSubmitter() {
       return isSendSubmitter;
     }
   }
@@ -849,7 +845,7 @@ class DefaultGCExchangeFacadeContractTest {
       this.endChar = endChar;
     }
 
-    public String pad(@NonNull String original) {
+    public String pad(String original) {
       return padEnd(original, minLength, startChar, endChar);
     }
   }
@@ -889,14 +885,12 @@ class DefaultGCExchangeFacadeContractTest {
       \t* Block: Miscellaneous Symbols and Pictographs, Dove: \uD83D\uDD4A (U+1F54A)
       EOM""");
 
-    @NonNull
     private final String comment;
 
-    CommentFixture(@NonNull String comment) {
+    CommentFixture(String comment) {
       this.comment = comment;
     }
 
-    @NonNull
     public String getComment() {
       return comment;
     }
@@ -908,14 +902,12 @@ class DefaultGCExchangeFacadeContractTest {
     BMP("ä&→\uFF01"),
     SMP("Dove: \uD83D\uDD4A");
 
-    @NonNull
     private final String challenge;
 
-    SupplementaryMultilingualPlaneChallenge(@NonNull String challenge) {
+    SupplementaryMultilingualPlaneChallenge(String challenge) {
       this.challenge = challenge;
     }
 
-    @NonNull
     public String getChallenge() {
       return challenge;
     }

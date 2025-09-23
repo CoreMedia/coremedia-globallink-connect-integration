@@ -1,8 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
 
@@ -10,7 +9,7 @@ import java.io.Serial;
  * Signals some local IO failure.
  */
 @SuppressWarnings("unused")
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public class GCFacadeIOException extends GCFacadeException {
   @Serial
   private static final long serialVersionUID = 8022138209281797363L;

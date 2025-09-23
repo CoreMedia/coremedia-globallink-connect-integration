@@ -9,8 +9,8 @@ import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.struct.Struct;
 import com.google.common.annotations.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @since 2506.0.0-1
  */
+@NullMarked
 public enum SettingsSource {
   ;
 
@@ -58,8 +59,7 @@ public enum SettingsSource {
    * @return settings backed by the Spring bean; empty settings, if referenced
    * bean is unavailable
    */
-  @NonNull
-  public static Settings fromContext(@NonNull BeanFactory beanFactory) {
+  public static Settings fromContext(BeanFactory beanFactory) {
     return fromContext(beanFactory, GCC_CONFIGURATION_PROPERTIES_NAME);
   }
 
@@ -74,9 +74,8 @@ public enum SettingsSource {
    */
   @SuppressWarnings("unchecked")
   @VisibleForTesting
-  @NonNull
-  static Settings fromContext(@NonNull BeanFactory beanFactory,
-                              @NonNull String beanName) {
+  static Settings fromContext(BeanFactory beanFactory,
+                              String beanName) {
     if (!beanFactory.containsBean(beanName)) {
       LOG.warn("{} not found in bean context.", beanName);
       return Settings.EMPTY;
@@ -96,8 +95,7 @@ public enum SettingsSource {
    * @param path the relative path from the site root
    * @return settings found (and possibly merged) from given site
    */
-  @NonNull
-  public static Settings fromPathAtSite(@NonNull Site site, @NonNull String path) {
+  public static Settings fromPathAtSite(Site site, String path) {
     return fromPathAtSite(site, path, CT_SETTINGS, P_SETTINGS);
   }
 
@@ -113,11 +111,10 @@ public enum SettingsSource {
    * @return settings found (and possibly merged) from given site
    */
   @VisibleForTesting
-  @NonNull
-  public static Settings fromPathAtSite(@NonNull Site site,
-                                        @NonNull String path,
-                                        @NonNull String settingsTypeName,
-                                        @NonNull String settingsDescriptorName) {
+  public static Settings fromPathAtSite(Site site,
+                                        String path,
+                                        String settingsTypeName,
+                                        String settingsDescriptorName) {
     return fromPath(site.getSiteRootFolder(), path, settingsTypeName, settingsDescriptorName);
   }
 
@@ -133,9 +130,8 @@ public enum SettingsSource {
    * @param path       the relative path from the repository root
    * @return settings found (and possibly merged) from repository
    */
-  @NonNull
-  public static Settings fromPath(@NonNull ContentRepository repository,
-                                  @NonNull String path) {
+  public static Settings fromPath(ContentRepository repository,
+                                  String path) {
     return fromPath(repository, path, CT_SETTINGS, P_SETTINGS);
   }
 
@@ -151,11 +147,10 @@ public enum SettingsSource {
    * @return settings found (and possibly merged) from repository
    */
   @VisibleForTesting
-  @NonNull
-  public static Settings fromPath(@NonNull ContentRepository repository,
-                                  @NonNull String path,
-                                  @NonNull String settingsTypeName,
-                                  @NonNull String settingsDescriptorName) {
+  public static Settings fromPath(ContentRepository repository,
+                                  String path,
+                                  String settingsTypeName,
+                                  String settingsDescriptorName) {
     return fromPath(repository.getRoot(), path, settingsTypeName, settingsDescriptorName);
   }
 
@@ -171,11 +166,10 @@ public enum SettingsSource {
    * @return settings found (and possibly merged) at given path
    */
   @VisibleForTesting
-  @NonNull
-  static Settings fromPath(@NonNull Content parent,
-                           @NonNull String path,
-                           @NonNull String settingsTypeName,
-                           @NonNull String settingsDescriptorName) {
+  static Settings fromPath(Content parent,
+                           String path,
+                           String settingsTypeName,
+                           String settingsDescriptorName) {
     try {
       Content content = parent.getChild(path);
       if (content == null) {
@@ -199,10 +193,9 @@ public enum SettingsSource {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return settings found (and possibly merged)
    */
-  @NonNull
-  private static Settings fromContent(@NonNull Content content,
-                                      @NonNull String settingsTypeName,
-                                      @NonNull String settingsDescriptorName) {
+  private static Settings fromContent(Content content,
+                                      String settingsTypeName,
+                                      String settingsDescriptorName) {
     if (content.isDocument()) {
       return fromDocument(content, settingsTypeName, settingsDescriptorName);
     }
@@ -221,10 +214,9 @@ public enum SettingsSource {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return settings found (and possibly merged)
    */
-  @NonNull
   private static Settings fromDocument(@Nullable Content content,
-                                       @NonNull String settingsTypeName,
-                                       @NonNull String settingsDescriptorName) {
+                                       String settingsTypeName,
+                                       String settingsDescriptorName) {
     return new Settings(defensiveFromDocument(content, settingsTypeName, settingsDescriptorName));
   }
 
@@ -236,12 +228,11 @@ public enum SettingsSource {
    * @param settingsDescriptorName the property that holds the settings struct
    * @return a map of GlobalLink settings, or an empty map if extraction fails
    */
-  @NonNull
   private static Map<String, Object> defensiveFromDocument(@Nullable Content content,
-                                                           @NonNull String settingsTypeName,
-                                                           @NonNull String settingsDescriptorName) {
+                                                           String settingsTypeName,
+                                                           String settingsDescriptorName) {
     try {
-      if (!isIsValidSettingsDocument(content, settingsTypeName, settingsDescriptorName)) {
+      if (content == null || !isIsValidSettingsDocument(content, settingsTypeName, settingsDescriptorName)) {
         return Map.of();
       }
 
@@ -266,16 +257,16 @@ public enum SettingsSource {
    * Validates that the given content is a proper settings document with the
    * required structure.
    *
-   * @param content                the content to validate, may be {@code null}
+   * @param content                the content to validate
    * @param settingsTypeName       the content type that holds settings
    * @param settingsDescriptorName the property that holds the settings struct
    * @return {@code true} if the content is a valid settings document with a
    * settings struct, {@code false} otherwise
    */
-  private static boolean isIsValidSettingsDocument(@Nullable Content content,
-                                                   @NonNull String settingsTypeName,
-                                                   @NonNull String settingsDescriptorName) {
-    if (content == null || !content.isDocument() || content.isDestroyed()) {
+  private static boolean isIsValidSettingsDocument(Content content,
+                                                   String settingsTypeName,
+                                                   String settingsDescriptorName) {
+    if (!content.isDocument() || content.isDestroyed()) {
       return false;
     }
 
@@ -296,9 +287,8 @@ public enum SettingsSource {
    * @return the settings content type
    * @throws IllegalStateException if the settings type is not found
    */
-  @NonNull
-  private static ContentType requireSettingsType(@NonNull Content content,
-                                                 @NonNull String settingsTypeName) {
+  private static ContentType requireSettingsType(Content content,
+                                                 String settingsTypeName) {
     return requireSettingsType(content.getRepository(), settingsTypeName);
   }
 
@@ -310,9 +300,8 @@ public enum SettingsSource {
    * @return the settings content type
    * @throws NoSuchTypeException if the settings type is not found
    */
-  @NonNull
-  private static ContentType requireSettingsType(@NonNull ContentRepository repository,
-                                                 @NonNull String settingsTypeName) {
+  private static ContentType requireSettingsType(ContentRepository repository,
+                                                 String settingsTypeName) {
     ContentType contentType = repository.getContentType(settingsTypeName);
     if (contentType == null) {
       throw new NoSuchTypeException(settingsTypeName);

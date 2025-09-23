@@ -1,14 +1,13 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 
 /**
  * Service Provider Interface for GCExchange facades.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public interface GCExchangeFacadeProvider {
   /**
    * Type token this SPI responds to.

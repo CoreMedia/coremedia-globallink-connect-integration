@@ -1,12 +1,14 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
 import com.google.common.base.Splitter;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Arrays;
 
 /**
  * Simple Task State Model.
  */
+@NullMarked
 enum TaskState {
   /**
    * Any other state, which we do not really care about. This is the initial

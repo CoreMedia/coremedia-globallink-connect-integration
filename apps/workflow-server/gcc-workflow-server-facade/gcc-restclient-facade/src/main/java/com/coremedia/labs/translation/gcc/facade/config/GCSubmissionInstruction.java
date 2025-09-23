@@ -1,7 +1,8 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -25,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @see CharacterReplacementStrategy
  * @since 2406.1
  */
+@NullMarked
 public final class GCSubmissionInstruction {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final String CONFIG_KEY = GCConfigProperty.KEY_SUBMISSION_INSTRUCTION;
@@ -66,17 +68,13 @@ public final class GCSubmissionInstruction {
    *   <li>{@code textTransform}: {@link TextTransform#TEXT_TO_HTML}</li>
    * </ul>
    */
-  @NonNull
   public static final GCSubmissionInstruction DEFAULT = new GCSubmissionInstruction(
     DEFAULT_SUPPORTED_CHARACTER_TYPE,
     DEFAULT_CHARACTER_REPLACEMENT_STRATEGY,
     DEFAULT_TEXT_TYPE
   );
-  @NonNull
   private final CharacterType characterType;
-  @NonNull
   private final CharacterReplacementStrategy characterReplacementStrategy;
-  @NonNull
   private final TextTransform textTransform;
 
   /**
@@ -86,9 +84,9 @@ public final class GCSubmissionInstruction {
    * @param characterReplacementStrategy strategy for replacing invalid characters
    * @param textTransform                     the default text type
    */
-  private GCSubmissionInstruction(@NonNull CharacterType characterType,
-                                  @NonNull CharacterReplacementStrategy characterReplacementStrategy,
-                                  @NonNull TextTransform textTransform) {
+  private GCSubmissionInstruction(CharacterType characterType,
+                                  CharacterReplacementStrategy characterReplacementStrategy,
+                                  TextTransform textTransform) {
     this.characterType = characterType;
     this.characterReplacementStrategy = characterReplacementStrategy;
     this.textTransform = textTransform;
@@ -100,8 +98,7 @@ public final class GCSubmissionInstruction {
    * @param value the value to transform
    * @return the transformed value
    */
-  @NonNull
-  public String transformText(@NonNull String value) {
+  public String transformText(String value) {
     String transformedCharacters = characterType.replaceAllInvalid(value, characterReplacementStrategy.replacer());
     String transformedText = textTransform.transform(transformedCharacters);
     if (LOG.isDebugEnabled() && !value.equals(transformedText)) {
@@ -117,8 +114,9 @@ public final class GCSubmissionInstruction {
    * @param config the {@code globalLink} configuration
    * @return the configuration for submission names
    */
-  @NonNull
-  public static GCSubmissionInstruction fromGlobalLinkConfig(@NonNull Map<String, ?> config) {
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+  @SuppressWarnings("nullness")
+  public static GCSubmissionInstruction fromGlobalLinkConfig(Map<String, ?> config) {
     Object configObject = config.get(CONFIG_KEY);
     if (configObject instanceof GCSubmissionInstruction submissionInstruction) {
       return submissionInstruction;
@@ -148,7 +146,7 @@ public final class GCSubmissionInstruction {
   }
 
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(@Nullable Object object) {
     if (object == null || getClass() != object.getClass()) {
       return false;
     }

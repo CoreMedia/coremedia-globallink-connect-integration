@@ -1,10 +1,10 @@
 package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.io.ByteStreams;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +22,14 @@ import java.util.zip.ZipOutputStream;
 /**
  * One-call zip and unzip convenience
  */
+@NullMarked
 public final class Zipper {
   private static final Logger LOG = LoggerFactory.getLogger(Zipper.class);
   private static final String TMPFILE_PREFIX = "gcczipper";
 
   // static class
-  private Zipper() {}
+  private Zipper() {
+  }
 
 
   // --- features ---------------------------------------------------
@@ -38,10 +40,9 @@ public final class Zipper {
    * The invoker is responsible for deletion of the output directory.
    *
    * @param zipFile the zip file, URL or file path
-   * @param prefix extract only entries that start with this prefix (optional)
+   * @param prefix  extract only entries that start with this prefix (optional)
    * @return the output directory
    */
-  @NonNull
   public static File unzip(String zipFile, @Nullable String prefix) {
     File extractionDir = tempDir();
     try {
@@ -57,8 +58,8 @@ public final class Zipper {
    * Extracts the zip file into the target directory.
    *
    * @param targetDir the target directory
-   * @param zipFile the zip file, URL or file path
-   * @param prefix extract only entries that start with this prefix (optional)
+   * @param zipFile   the zip file, URL or file path
+   * @param prefix    extract only entries that start with this prefix (optional)
    */
   public static void unzip(File targetDir, String zipFile, @Nullable String prefix) {
     unzip(targetDir, new File(zipFile), prefix);
@@ -68,8 +69,8 @@ public final class Zipper {
    * Zip the source directory into the zip file.
    *
    * @param zipFile the zip file, writable URL or file path
-   * @param srcDir the directory to be zipped
-   * @param prefix include only entries that start with the prefix (optional)
+   * @param srcDir  the directory to be zipped
+   * @param prefix  include only entries that start with the prefix (optional)
    */
   public static void zip(String zipFile, File srcDir, @Nullable String prefix) {
     zip(new File(zipFile), srcDir, prefix);
@@ -85,7 +86,7 @@ public final class Zipper {
         if (PathUtil.isReferringToParent(entry.getName())) {
           throw new IllegalArgumentException(zipFile.getAbsolutePath() + " exploits the Zip Slip Vulnerability. Extraction aborted.");
         }
-        if (!entry.isDirectory() && (prefix==null || entry.getName().startsWith(prefix))) {
+        if (!entry.isDirectory() && (prefix == null || entry.getName().startsWith(prefix))) {
           File file = new File(targetDir, entry.getName());
           mkParentDirs(file);
           try (OutputStream fos = new FileOutputStream(file)) {
@@ -113,7 +114,7 @@ public final class Zipper {
     }
   }
 
-  private static void recZip(ZipOutputStream zos, File zipRoot, File file, File theZipFileItself, String prefix) throws IOException {
+  private static void recZip(ZipOutputStream zos, File zipRoot, File file, File theZipFileItself, @Nullable String prefix) throws IOException {
     if (file.isDirectory()) {
       File[] children = file.listFiles();
       if (children != null) {
@@ -123,7 +124,7 @@ public final class Zipper {
       }
     } else if (!file.equals(theZipFileItself)) {
       String name = zipEntryName(zipRoot, file);
-      if (prefix==null || name.startsWith(prefix)) {
+      if (prefix == null || name.startsWith(prefix)) {
         try (FileInputStream fis = new FileInputStream(file)) {
           zos.putNextEntry(new ZipEntry(name));
           IOUtils.copy(fis, zos);
@@ -167,7 +168,6 @@ public final class Zipper {
     }
   }
 
-  @NonNull
   private static File tempDir() {
     try {
       return Files.createTempDirectory(TMPFILE_PREFIX).toFile();
