@@ -43,7 +43,6 @@ import static com.coremedia.cap.translate.xliff.XliffExportOptions.xliffExportOp
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.XLIFF_EXPORT_FAILURE;
 import static com.coremedia.translate.item.TransformStrategy.ITEM_PER_TARGET;
 import static java.lang.invoke.MethodHandles.lookup;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
@@ -182,7 +181,6 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
                                  Consumer<? super String> resultConsumer,
                                  GCExchangeFacade facade,
                                  Map<String, List<Content>> issues) {
-    requireNonNull(params, "Parameters must not be null.");
     Collection<Content> derivedContents = params.derivedContents;
     Collection<ContentObject> masterContentObjects = params.masterContentObjects;
     if (derivedContents.isEmpty() || masterContentObjects.isEmpty()) {

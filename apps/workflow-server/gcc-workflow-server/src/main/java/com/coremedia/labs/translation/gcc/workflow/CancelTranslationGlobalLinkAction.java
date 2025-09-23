@@ -138,7 +138,6 @@ public class CancelTranslationGlobalLinkAction extends
                                  Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade,
                                  Map<String, List<Content>> issues) {
-    requireNonNull(params, "Parameters must not be null.");
     long submissionId = params.submissionId;
     // Ignore Submission Error State: As we are trying to cancel the submission,
     // we don't care about the error state. At least for observed scenarios,

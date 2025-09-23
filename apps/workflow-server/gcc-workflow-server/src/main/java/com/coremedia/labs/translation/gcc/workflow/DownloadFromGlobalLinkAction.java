@@ -234,8 +234,6 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   void doExecuteGlobalLinkAction(@SuppressWarnings("NullableProblems") Parameters params,
                                  Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
-    requireNonNull(params, "Unexpected state. Parameters must not be null.");
-
     long submissionId = params.submissionId;
 
     // We need to share xliff files between #doExecuteGlobalLinkAction and #doStoreResult.
