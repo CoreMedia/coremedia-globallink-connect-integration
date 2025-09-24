@@ -39,7 +39,7 @@ public class GccCredentialsExtension implements ExecutionCondition, ParameterRes
   private static final String GCC_PROPERTIES_DEFAULT = ".gcc.properties";
   private static final String GCC_PROPERTIES_PROFILE_PATTERN = ".gcc.%s.properties";
   private static final Path GCC_CREDENTIALS_PATH = Paths.get(USER_HOME, GCC_PROPERTIES_DEFAULT);
-  private volatile @Nullable Map<String, String> gccProperties;
+  private @Nullable Map<String, String> gccProperties;
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext extensionContext) {
