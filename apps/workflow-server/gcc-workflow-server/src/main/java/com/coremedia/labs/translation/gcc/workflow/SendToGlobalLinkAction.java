@@ -43,7 +43,6 @@ import static com.coremedia.cap.translate.xliff.XliffExportOptions.xliffExportOp
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkWorkflowErrorCodes.XLIFF_EXPORT_FAILURE;
 import static com.coremedia.translate.item.TransformStrategy.ITEM_PER_TARGET;
 import static java.lang.invoke.MethodHandles.lookup;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
@@ -176,10 +175,12 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    *               variable set with {@link #setIssuesVariable(String)}. The workflow can display
    *               these issues to the end-user, who may trigger a retry, for example.
    */
+  // NullableProblems: IntelliJ IDEA 2025.2.2 notes false-positive "can be null". Ignored.
   @Override
-  void doExecuteGlobalLinkAction(@Nullable Parameters params, Consumer<? super String> resultConsumer,
-                                   GCExchangeFacade facade, Map<String, List<Content>> issues) {
-    requireNonNull(params, "Parameters must not be null.");
+  void doExecuteGlobalLinkAction(@SuppressWarnings("NullableProblems") Parameters params,
+                                 Consumer<? super String> resultConsumer,
+                                 GCExchangeFacade facade,
+                                 Map<String, List<Content>> issues) {
     Collection<Content> derivedContents = params.derivedContents;
     Collection<ContentObject> masterContentObjects = params.masterContentObjects;
     if (derivedContents.isEmpty() || masterContentObjects.isEmpty()) {

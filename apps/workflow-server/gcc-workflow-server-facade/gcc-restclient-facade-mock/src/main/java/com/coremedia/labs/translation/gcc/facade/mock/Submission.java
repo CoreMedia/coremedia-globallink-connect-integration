@@ -137,12 +137,12 @@ final class Submission {
       LOG.trace("No active replay scenario.");
       return Optional.empty();
     }
-    Optional<GCSubmissionState> nextState = activeReplayScenario.next();
+    Optional<GCSubmissionState> nextState = scenario.next();
     if (nextState.isEmpty()) {
       LOG.trace("Replay scenario exhausted. Resetting.");
       activeReplayScenario = null;
     } else {
-      LOG.debug("Replay scenario (left: {}): {}", activeReplayScenario.size(), nextState.get());
+      LOG.debug("Replay scenario (left: {}): {}", scenario.size(), nextState.get());
     }
     return nextState;
   }

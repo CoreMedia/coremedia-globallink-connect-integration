@@ -229,12 +229,11 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     return new Parameters(parseSubmissionId(submissionId, task.getId()), completedLocales, cancellationAllowed);
   }
 
+  // NullableProblems: IntelliJ IDEA 2025.2.2 notes false-positive "can be null". Ignored.
   @Override
-  void doExecuteGlobalLinkAction(@Nullable Parameters params,
+  void doExecuteGlobalLinkAction(@SuppressWarnings("NullableProblems") Parameters params,
                                  Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade, Map<String, List<Content>> issues) {
-    requireNonNull(params, "Unexpected state. Parameters must not be null.");
-
     long submissionId = params.submissionId;
 
     // We need to share xliff files between #doExecuteGlobalLinkAction and #doStoreResult.
@@ -334,7 +333,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   @Override
-  Void doStoreResult(Task task, Result result) {
+  @Nullable Void doStoreResult(Task task, Result result) {
     try {
       Process process = task.getContainingProcess();
       if (result.globalLinkStatus != null) {

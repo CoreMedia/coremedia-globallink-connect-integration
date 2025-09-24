@@ -122,6 +122,8 @@ public enum GCSubmissionState {
    * @param submissionState GCC submission state to transform; {@code null} will always return {@link #OTHER}
    * @return representation for GCC facade
    */
+  // jspecify-reference-checker: Fails to deal with orElseGet.
+  @SuppressWarnings("nullness")
   public static GCSubmissionState fromSubmissionState(@Nullable Status submissionState) {
     // Note, that if queried for a submission state directly after it has been
     // started, may result in a submission state being 'null'.

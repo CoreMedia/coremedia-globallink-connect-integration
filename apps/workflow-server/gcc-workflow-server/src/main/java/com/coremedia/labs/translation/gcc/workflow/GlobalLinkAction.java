@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -93,7 +92,7 @@ import static java.util.Objects.requireNonNull;
  *            passes to its consumer argument and that is then passed as parameter to {@link #doStoreResult(Task, Object)}
  */
 @NullMarked
-abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
+abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwareLongAction {
   private static final Logger LOG = LoggerFactory.getLogger(GlobalLinkAction.class);
 
   @Serial
@@ -458,7 +457,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @return the parameters for the actual computation or {@code null} if no
    * parameters are needed
    */
-  abstract @Nullable P doExtractParameters(Task task);
+  abstract P doExtractParameters(Task task);
 
   /**
    * Executes the action and optionally sets a result value at the given {@code resultConsumer}.
@@ -486,7 +485,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @throws GCFacadeException           if an error was raised by the given facade
    * @throws GlobalLinkWorkflowException if some other error occurred
    */
-  abstract void doExecuteGlobalLinkAction(@Nullable P params,
+  abstract void doExecuteGlobalLinkAction(P params,
                                           Consumer<? super R> resultConsumer,
                                           GCExchangeFacade facade,
                                           Map<String, List<Content>> issues);
@@ -508,8 +507,7 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
    * @param result result value that was passed to the consumer in {@link #doExecuteGlobalLinkAction}
    * @return value to store in the {@code resultVariable} or null to store nothing in that variable
    */
-  @Nullable
-  Object doStoreResult(Task task, R result) {
+  @Nullable Object doStoreResult(Task task, R result) {
     return result;
   }
 
@@ -545,8 +543,8 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
     SitesService sitesService = getSitesService();
     return masterContents.stream()
       .map(sitesService::getSiteAspect)
-      .map(ContentObjectSiteAspect::getSite)
-      .filter(Objects::nonNull)
+      .map(ContentObjectSiteAspect::findSite)
+      .flatMap(Optional::stream)
       .findAny()
       .orElseThrow(() -> new IllegalStateException("No master site found"));
   }
@@ -698,9 +696,9 @@ abstract class GlobalLinkAction<P, R> extends SpringAwareLongAction {
   }
 
   @VisibleForTesting
-  record Parameters<P>(@Nullable P extendedParameters,
-                       Collection<ContentObject> masterContentObjects,
-                       int remainingAutomaticRetries) {
+  record Parameters<P extends @Nullable Object>(P extendedParameters,
+                                                Collection<ContentObject> masterContentObjects,
+                                                int remainingAutomaticRetries) {
   }
 
   @VisibleForTesting

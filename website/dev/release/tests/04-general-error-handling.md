@@ -12,12 +12,12 @@ tags:
 * **Connector Type**: `default`
 * **Key Type**: `automatic`
 
-1. Log in as Rick C.
+1. Log in as Rick C and open Content as well as Workflow App.
 
 2. Open the GlobalLink
    settings `/Settings/Options/Settings/Translation Services/GlobalLink`
    1. `type` is set to `default`
-   2. Credentials for gcc are entered (**manual** workflow key)
+   2. Credentials for gcc are entered (**automatic** workflow key)
 
 3. **Break it:** Change the `apiKey` to something wrong, for example, add a `-`
    (minus) to the beginning.
@@ -75,4 +75,4 @@ tags:
 
 16. Choose "Continue translation"
 
-17. The workflow should end without errors and appear in Closed.
+17. The workflow should continue without errors translating the document.

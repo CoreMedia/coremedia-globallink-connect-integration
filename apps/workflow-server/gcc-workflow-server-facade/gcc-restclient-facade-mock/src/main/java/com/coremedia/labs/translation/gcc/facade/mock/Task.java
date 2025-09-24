@@ -65,13 +65,13 @@ final class Task {
    * @param delayOffsetPercentage percentage offset to the base delay, which will either reduce or increase
    *                              the delay
    * @param targetLocale          targetLocale for the Task
-   * @param taskStates            task states to reach based on timing; defaults to {@link TaskState#COMPLETED} if not set
+   * @param taskStates            task states to reach based on timing; defaults to {@link TaskState#COMPLETED} if empty
    */
-  Task(String content, long delayBaseSeconds, int delayOffsetPercentage, Locale targetLocale, TaskState @Nullable... taskStates) {
+  Task(String content, long delayBaseSeconds, int delayOffsetPercentage, Locale targetLocale, TaskState... taskStates) {
     this.content = content;
     this.targetLocale = targetLocale;
     long currentTimeMillis = System.currentTimeMillis();
-    if (taskStates == null || taskStates.length == 0) {
+    if (taskStates.length == 0) {
       timeInMillisToState.put(currentTimeMillis + calcDelayMs(delayBaseSeconds, delayOffsetPercentage), TaskState.COMPLETED);
     } else {
       long taskSwitchTimeMillis = currentTimeMillis + calcDelayMs(delayBaseSeconds, delayOffsetPercentage);

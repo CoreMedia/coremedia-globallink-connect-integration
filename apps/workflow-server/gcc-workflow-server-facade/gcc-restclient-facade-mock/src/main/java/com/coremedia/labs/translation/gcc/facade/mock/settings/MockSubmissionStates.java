@@ -134,6 +134,8 @@ public final class MockSubmissionStates {
    * @return map of state pointcut configurations; on invalid or not existing
    * configuration an empty map will be returned
    */
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+  @SuppressWarnings("nullness")
   private static Map<GCSubmissionState, StatePointcutConfig> parseConfig(Map<?, ?> config) {
     Map<GCSubmissionState, StatePointcutConfig> result = new EnumMap<>(GCSubmissionState.class);
     for (Map.Entry<?, ?> entry : config.entrySet()) {
@@ -223,6 +225,8 @@ public final class MockSubmissionStates {
      *
      * @return next state to replay; empty if no more states are available
      */
+    // jspecify-reference-checker: Fails to detect cannot-be-null for Optional.of() argument.
+    @SuppressWarnings("nullness")
     public Optional<GCSubmissionState> next() {
       if (states.isEmpty()) {
         LOG.trace("No more states available in replay scenario.");
@@ -274,6 +278,8 @@ public final class MockSubmissionStates {
      * @param object configuration to parse
      * @return state pointcut configuration
      */
+    // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+    @SuppressWarnings("nullness")
     public static Optional<StatePointcutConfig> fromConfig(@Nullable Object object) {
       if (!(object instanceof Map<?, ?> config) || config.isEmpty()) {
         return Optional.empty();
@@ -291,6 +297,8 @@ public final class MockSubmissionStates {
      * @param config configuration to parse
      * @return state pointcut configuration
      */
+    // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+    @SuppressWarnings("nullness")
     private static StatePointcutConfig parseStateConfig(Map<?, ?> config) {
       List<GCSubmissionState> before = parseStateList(config.get("before"));
       List<GCSubmissionState> after = parseStateList(config.get("after"));
@@ -309,10 +317,12 @@ public final class MockSubmissionStates {
      * @param config configuration to parse
      * @return list of submission states
      */
+    // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+    @SuppressWarnings("nullness")
     private static List<GCSubmissionState> parseStateList(@Nullable Object config) {
       if (config instanceof String stateName) {
         Optional<GCSubmissionState> state = findSubmissionStateByName(stateName);
-        return state.map(List::of).orElseGet(List::of);
+        return state.map(List::of).orElse(List.of());
       }
       if (config instanceof List<?> list) {
         List<GCSubmissionState> states = new ArrayList<>();

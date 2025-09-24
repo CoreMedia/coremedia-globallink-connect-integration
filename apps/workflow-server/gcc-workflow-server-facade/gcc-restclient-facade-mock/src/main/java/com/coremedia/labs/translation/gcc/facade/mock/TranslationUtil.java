@@ -159,6 +159,8 @@ final class TranslationUtil {
     return writer.toString();
   }
 
+  // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
+  @SuppressWarnings("nullness")
   private static void performPseudoTranslation(Document doc, boolean mockInvalidXliff) {
     if (mockInvalidXliff) {
       doc.getDocumentElement().appendChild(doc.createElementNS("intentionally", "invalid"));

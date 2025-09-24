@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,10 @@ final class SLF4JHandler extends Handler {
   }
 
   @Override
-  public void publish(LogRecord record) {
+  public void publish(@Nullable LogRecord record) {
+    if (record == null) {
+      return;
+    }
     Level level = record.getLevel();
     String message = record.getMessage();
     Throwable thrown = record.getThrown();
