@@ -18,7 +18,8 @@ tags:
    settings `/Settings/Options/Settings/Translation Services/GlobalLink`
 
     1. `type` is set to `mock`
-    2. `mock.error` is set to `DOWNLOAD_XLIFF`
+    2. `mock.scenario` is set to `translate-invalid-xliff`
+       (alternative scenario: `translate-string-too-long`)
 
 3. Start a translation for an article.
 

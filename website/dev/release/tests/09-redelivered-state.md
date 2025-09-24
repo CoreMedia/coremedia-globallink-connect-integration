@@ -24,31 +24,7 @@ The following steps simulate this scenario:
 
    1. `type` is set to `mock`
    2. Set `retryCommunicationErrors` to `0` (assumed to ease state mocking)
-   3. `mock.error` is set to `DOWNLOAD_XLIFF`
-   4. **Submission State Mocking**: Add (or activate) the following mock
-      settings:
-
-      ```yaml
-      mock:
-        # [...]
-        submissionStates:
-          Completed:
-            # Directly after "Completed" state, the submission is marked as
-            # "Redelivered".
-            after:
-              # We need to duplicate the state, as otherwise you may observe
-              # the "Review Redelivered Translation" task, to be triggered
-              # directly after "Completed" and not, after we got into the
-              # error handling task.
-              - Completed
-              - Redelivered
-            # Mark the state as final, not to continue with the next
-            # (standard) state.
-            final: true
-      ```
-
-      **Side Note** For now, we accept the duplicate state. We may want to
-      review, though, if processing (or mocking) can be optimized here.
+   3. `mock.scenario` is set to `submission-redelivered`
 
 3. Start a translation for an article.
 
@@ -59,8 +35,7 @@ The following steps simulate this scenario:
    1. Field "Current Task" should be “Review Translation (redelivered)”
    2. Status should be “Redelivered”
    3. In the section "More", a download link for the broken XLIFF should be
-      shown under "Issue Details" (if you skipped setting `mock.error` the
-      field is not available).
+      shown under "Issue Details".
 
 6. Click the XLIFF download link
 

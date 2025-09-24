@@ -1,11 +1,12 @@
 package com.coremedia.labs.translation.gcc.facade.mock.settings;
 
+import com.coremedia.labs.translation.gcc.facade.mock.scenarios.NoOperationScenario;
+import com.coremedia.labs.translation.gcc.facade.mock.scenarios.Scenario;
+import com.coremedia.labs.translation.gcc.facade.mock.scenarios.Scenarios;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
-import java.util.Objects;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -17,8 +18,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public record MockSettings(
   long stateChangeDelaySeconds,
   int stateChangeDelayOffsetPercentage,
-  @Nullable MockError error,
-  MockSubmissionStates submissionStates
+  Scenario scenario
 ) {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
@@ -30,8 +30,7 @@ public record MockSettings(
   public static final MockSettings EMPTY = new MockSettings(
     DEFAULT_STATE_CHANGE_DELAY_SECONDS,
     DEFAULT_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE,
-    null,
-    MockSubmissionStates.EMPTY
+    NoOperationScenario.INSTANCE
   );
 
   /**
@@ -50,14 +49,6 @@ public record MockSettings(
   @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "2406.1")
   public static final String LEGACY_CONFIG_DELAY_OFFSET_PERCENTAGE = "mockDelayOffsetPercentage";
-  /**
-   * Legacy top-level configuration key below `globalLink` setting.
-   *
-   * @deprecated Use mock.{@value #CONFIG_ERROR} instead.
-   */
-  @SuppressWarnings("DeprecatedIsStillUsed")
-  @Deprecated(since = "2406.1")
-  public static final String LEGACY_CONFIG_MOCK_ERROR = "mockError";
 
   /**
    * Struct key for the mock configuration.
@@ -77,21 +68,15 @@ public record MockSettings(
    */
   public static final String CONFIG_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE = "stateChangeDelayOffsetPercentage";
   /**
-   * Provokes a specific error in the mock facade, like, for example,
-   * communication errors during XLIFF download.
-   * <p>
-   * Applicable values are the names of the enum values of
-   * {@link MockError}
-   * (case-insensitive).
+   * A scenario that should be mocked.
+   *
+   * @since 2506.0.1-1
    */
-  public static final String CONFIG_ERROR = "error";
-  /**
-   * Augments artificial submission state changes.
-   */
-  public static final String CONFIG_SUBMISSION_STATES = "submissionStates";
+  // Planned to replace some of existing mocking strategies, like to
+  // simulate errors.
+  public static final String SCENARIO = "scenario";
 
   public MockSettings {
-    Objects.requireNonNull(submissionStates, "submissionStates");
     if (stateChangeDelayOffsetPercentage < 0 || stateChangeDelayOffsetPercentage > 100) {
       throw new IllegalArgumentException("Offset Percentage must be between 0 and 100.");
     }
@@ -115,8 +100,7 @@ public record MockSettings(
     }
     long stateChangeDelaySeconds = DEFAULT_STATE_CHANGE_DELAY_SECONDS;
     int stateChangeDelayOffsetPercentage = DEFAULT_STATE_CHANGE_DELAY_OFFSET_PERCENTAGE;
-    MockError error = null;
-    MockSubmissionStates submissionStates = MockSubmissionStates.EMPTY;
+    Scenario scenario = NoOperationScenario.INSTANCE;
 
     Object stateChangeDelaySecondsObject = config.get(CONFIG_STATE_CHANGE_DELAY_SECONDS);
     if (stateChangeDelaySecondsObject == null) {
@@ -134,24 +118,16 @@ public record MockSettings(
       stateChangeDelayOffsetPercentage = number.intValue();
     }
 
-    Object errorObject = config.get(CONFIG_ERROR);
-    if (errorObject == null) {
-      errorObject = config.get(LEGACY_CONFIG_MOCK_ERROR);
-    }
-    if (errorObject instanceof String errorString) {
-      error = MockError.tryParse(errorString).orElse(null);
-    }
-
-    Object submissionStatesObject = config.get(CONFIG_SUBMISSION_STATES);
-    if (submissionStatesObject instanceof Map<?, ?> submissionStatesMap) {
-      submissionStates = MockSubmissionStates.fromConfig(submissionStatesMap);
+    Object scenarioObject = config.get(SCENARIO);
+    if (scenarioObject instanceof String scenarioString) {
+      scenario = Scenarios.fromString(scenarioString).orElse(NoOperationScenario.INSTANCE);
+      LOG.info("Active scenario: {} ({})", scenario.id(), scenario.getClass().getName());
     }
 
     MockSettings mockSettings = new MockSettings(
       stateChangeDelaySeconds,
       stateChangeDelayOffsetPercentage,
-      error,
-      submissionStates
+      scenario
     );
     LOG.debug("Parsed mock settings: {}", mockSettings);
     return mockSettings;
