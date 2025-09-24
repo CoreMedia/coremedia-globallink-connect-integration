@@ -141,6 +141,21 @@ public class GCSubmissionModel {
   }
 
   /**
+   * Creates a builder using the given model as base.
+   *
+   * @param base model to copy from
+   * @return builder
+   */
+  public static Builder builder(GCSubmissionModel base) {
+    return new Builder(base.getSubmissionId())
+            .pdSubmissionIds(base.getPdSubmissionIds())
+            .name(base.getName())
+            .state(base.getState())
+            .submitter(base.submitter)
+            .error(base.isError());
+  }
+
+  /**
    * Builder for submission model.
    */
   public static final class Builder {
