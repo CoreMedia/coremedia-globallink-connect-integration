@@ -67,6 +67,23 @@ const HANDLE_DOWNLOAD_TRANSLATION_ERROR_TASK_NAME: string = "HandleDownloadTrans
 const HANDLE_CANCEL_TRANSLATION_ERROR_TASK_NAME: string = "HandleCancelTranslationError";
 const MILLISECONDS_FOR_ONE_DAY: number = 86400000;
 
+/**
+ * Format options to display the due date in the workflow UI.
+ *
+ * **Example:**
+ *
+ * * en-US: 09/25/2025, 06:05 PM GMT+2
+ * * de-DE: 25.09.2025, 18:05 MESZ
+ */
+const dateTimeFormat: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZoneName: "short",
+};
+
 interface GccViewModel {
   globalLinkPdSubmissionIds?: string;
   globalLinkSubmissionStatus?: string;
@@ -495,12 +512,7 @@ function dateToString(value): string {
 
   if (date) {
     const locale = joo.localeSupport.getLocale();
-    // Oct 15, 2025, 12:00:00 AM GMT+2
-    // 15.10.2025, 00:00:00 MESZ
-    return new Intl.DateTimeFormat(locale, {
-      dateStyle: "medium",
-      timeStyle: "long",
-    }).format(date);
+    return new Intl.DateTimeFormat(locale, dateTimeFormat).format(date);
   }
 }
 
