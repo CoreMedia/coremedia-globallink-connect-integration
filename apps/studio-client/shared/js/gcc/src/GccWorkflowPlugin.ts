@@ -495,7 +495,12 @@ function dateToString(value): string {
 
   if (date) {
     const locale = joo.localeSupport.getLocale();
-    return new Intl.DateTimeFormat(locale).format(date);
+    // Oct 15, 2025, 12:00:00 AM GMT+2
+    // 15.10.2025, 00:00:00 MESZ
+    return new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      timeStyle: "long",
+    }).format(date);
   }
 }
 
