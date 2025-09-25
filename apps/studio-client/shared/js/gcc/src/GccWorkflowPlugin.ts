@@ -494,7 +494,8 @@ function dateToString(value): string {
   }
 
   if (date) {
-    return date.toLocaleString();
+    const locale = joo.localeSupport?.getLocale?.() || "en-US";
+    return new Intl.DateTimeFormat(locale).format(date);
   }
 }
 
