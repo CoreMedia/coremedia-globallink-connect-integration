@@ -72,16 +72,15 @@ const MILLISECONDS_FOR_ONE_DAY: number = 86400000;
  *
  * **Example:**
  *
- * * en-US: 09/25/2025, 06:05 PM GMT+2
- * * de-DE: 25.09.2025, 18:05 MESZ
+ * * `en-US`: 09/25/2025, 6:05 PM
+ * * `de-DE`: 25.09.2025, 18:05
  */
 const dateTimeFormat: Intl.DateTimeFormatOptions = {
   year: "numeric",
   month: "2-digit",
   day: "2-digit",
-  hour: "2-digit",
+  hour: "numeric",
   minute: "2-digit",
-  timeZoneName: "short",
 };
 
 interface GccViewModel {
