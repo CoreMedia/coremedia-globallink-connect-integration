@@ -9,41 +9,6 @@ It is recommended to remove this facade in production environments, as it is
 considered harmful to switch from the default facade to mock facade and vice
 versa, as it will produce inconsistent states for running workflows.
 
-## Control Task State Switching
-
-This facade allows to control the task-state switching behavior by workflow
-subject. If the subject does not contain any task-state switching information
-it defaults to tasks switching automatically to _Completed_ state after a
-certain time.
-
-To use the task-state switching the subject must not contain anything despite
-the task-state switching information. The structure of the subject must be
-as follows (with some user-input convenience):
-
-```text
-states:<taskStateId>[, ...]
-```
-
-The default behavior could be written as:
-
-```text
-states:completed
-```
-
-Other examples:
-
-```text
-states:other,cancelled
-```
-
-For a complete list of supported task states see class `com.coremedia.labs.translation.gcc.facade.mock.TaskState`.
-It also contains more information on state parsing.
-
-Note, that some task states might not be useful to put into the list, as they
-will be reached by normal workflow processes. You may of course still enforce
-a switch to "Delivered" state after some time, if you want to simulate unexpected
-states at GCC backend.
-
 ## Mock Facade Configuration
 
 You can configure the behaviour of the Mock Facade via the GlobalLink settings
@@ -55,13 +20,27 @@ Therefore, you can set the following parameters within the `mock` section
 * `stateChangeDelaySeconds` base (minimum) offset in seconds  (type:`Integer`)
 * `stateChangeDelayOffsetPercentage` percentage offset to the base delay, which
   will either reduce or increase the delay (type:`Integer`)
-* `error` (type:`String`) If you want to test the Error Handling you can set this parameter to: 
-  * `download_xliff` for an xliff import error
-  * `download_communication` for a download communication error
-  * `upload_communication` for an upload communication error
-  * `cancel_communication` for a cancellation communication error
-  * `cancel_result` for a failed or rejected cancellation
-* `submissionStates` (type:`Struct`) allows to override or augment the default
-  submission states. Suitable, if there are submission states that are typically
-  only reached via manual interaction on the GCC backend (such as the state
-  "Redelivered"). For details, see documentation of `MockSubmissionStates`.
+* `scenario` (type:`String`) If you want to test specific scenarios you can set
+  this parameter to:
+  * `cancelation-not-found`: Simulates a submission not found error on
+    cancelation.
+  * `full-regular-approval-state-flow`: Simulates a submission that passes all
+    regular states, including approval states. This enriches normal mocking,
+    that skips several intermediate states for simplicity.
+  * `gcc-outage-on-cancelation`: Simulates a permanent GCC connection outage on
+    cancelation.
+  * `gcc-outage-on-download`: Simulates a permanent GCC connection outage on
+    XLIFF download.
+  * `gcc-outage-on-upload`: Simulates a permanent GCC connection outage on XLIFF
+    upload.
+  * `submission-canceled-by-globallink`: Simulates a submission that got
+    canceled via GCC backend.
+  * `submission-error`: Simulates a submission that reaches the (unrecoverable)
+    error state at GCC.
+  * `submission-redelivered`: Simulates a typical redelivered scenario, with
+    first corrupted XLIFF, then signalling redelivered state.
+  * `translate-invalid-xliff`: Simulates a permanently corrupted XLIFF shipped
+    by GCC.
+  * `translate-string-too-long`: Simulates a translation with long strings
+    returned to provoke a string-too-long failure. Works best, if strings to
+    translate are from a string property with a max-length less than 2048.

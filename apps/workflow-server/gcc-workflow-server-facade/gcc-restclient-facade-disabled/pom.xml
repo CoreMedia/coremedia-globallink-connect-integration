@@ -18,6 +18,11 @@
       <artifactId>gcc-restclient-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>gcc-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.translations.globallink</groupId>

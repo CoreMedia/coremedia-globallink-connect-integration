@@ -1,7 +1,6 @@
-import ResourceBundleUtil from "@jangaroo/runtime/l10n/ResourceBundleUtil";
 import GccProcessDefinitions_properties from "./Gcc_properties";
 
-ResourceBundleUtil.override(GccProcessDefinitions_properties, {
+Object.assign(GccProcessDefinitions_properties, {
   TranslationGlobalLink_submission_id_key: "Auftragsnummer",
   TranslationGlobalLink_submission_status_key: "Status",
   TranslationGlobalLink_submission_dueDate_key: "Fälligkeit",
@@ -18,7 +17,7 @@ ResourceBundleUtil.override(GccProcessDefinitions_properties, {
   TranslationGlobalLink_submission_status_TRANSLATE: "Übersetzung",
   TranslationGlobalLink_submission_status_REVIEW: "Überprüfung",
   TranslationGlobalLink_submission_status_COMPLETED: "Abgeschlossen",
-  TranslationGlobalLink_submission_status_REDELIVERED: "Erneut ausgeliefert",
+  TranslationGlobalLink_submission_status_REDELIVERED: "Wieder Ausgeliefert",
   TranslationGlobalLink_submission_status_DELIVERED: "Ausgeliefert",
   TranslationGlobalLink_submission_status_OTHER: "Unbekannt",
   TranslationGlobalLink_submission_status_unavailable: "Nicht verfügbar",
@@ -26,7 +25,8 @@ ResourceBundleUtil.override(GccProcessDefinitions_properties, {
   translationResultXliff_Button_text: "ZIP Datei mit Detailinformationen herunterladen",
   confirm_cancellation_title: "Übersetzungsaufträge Abbrechen",
   confirm_cancellation: "Die ausgewählten Übersetzungsaufträge werden abgebrochen. Wollen Sie fortfahren?",
-  Action_Tooltip_Cancel_Process: "Die ausgewählten Übersetzungsaufträge abbrechen.",
+  Action_text_Cancel_Process: "Abbrechen",
+  Action_tooltip_Cancel_Process: "Die ausgewählten Übersetzungsaufträge abbrechen.",
   TranslationGlobalLink_completed_Locales: "Bereits übersetzte Locales",
   TranslationGlobalLink_Multi_Target_Locale_Text: "{0} Locales",
 });

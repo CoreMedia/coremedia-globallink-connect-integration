@@ -18,7 +18,7 @@ Plane (SMP).
 The given manual test steps "mock" this state, as we cannot ensure that an
 error persists over time. If you want to test the real-life behavior, you
 may choose using the "default" rather than the "mock" type and instead of
-using `mock.error`, you may use the `submissionInstruction.characterType`
+using `mock.scenario`, you may use the `submissionInstruction.characterType`
 setting. Set it to `unicode` and add some SMP characters to the instructions
 (thus, workflow notes), like for example, the dove emoji: 🕊.
 
@@ -32,8 +32,7 @@ test, that a submission in an error state may still be canceled.
 
 1. Log in as Rick C.
 2. Use `mock` type.
-3. Set `mock.error` to `SUBMISSION_ERROR`. For a quick path, you may skip
-   the extra submission state mocking as sketched in the detailed steps.
+3. Set `mock.scenario` to `submission-error`.
 4. Start a translation of an article.
 5. Open the started workflow process.
 6. Expect a user-task "Download error" and accept it.
@@ -48,22 +47,7 @@ test, that a submission in an error state may still be canceled.
    settings `/Settings/Options/Settings/Translation Services/GlobalLink`
 
    1. `type` is set to `mock`
-   2. `mock.error` is set to `SUBMISSION_ERROR`
-   3. **Submission State Mocking**: Add (or activate) the following mock
-      settings (optional step, but recommended to test closer to the real-world
-      scenario):
-
-      ```yaml
-      mock:
-        # [...]
-        submissionStates:
-          Started:
-            override: Pre-Process
-            # Mark as final to ease mocking here. Prevents further states,
-            # though, which is, that you also cannot cancel the submission
-            # in this mocked scenario.
-            final: true
-      ```
+   2. `mock.scenario` is set to `submission-error`
 
 3. Start a translation for an article.
 
@@ -74,7 +58,3 @@ test, that a submission in an error state may still be canceled.
 6. Accept the task.
 
 7. Click the error issue information and see a "General submission failure."
-
-In the real-world scenario, you may now continue like to "Abort and rollback
-changes" as most likely, the submission cannot be repaired. This is not possible
-in this simple mocked scenario, though.

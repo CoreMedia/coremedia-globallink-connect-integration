@@ -574,12 +574,8 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
     return base.mergedWith(SettingsSource.fromPathAtSite(site, SITE_CONFIGURATION_PATH));
   }
 
-  private GCExchangeFacade openSession(Settings settings) {
-    return openSession(settings.properties());
-  }
-
   @VisibleForTesting
-  GCExchangeFacade openSession(Map<String, Object> settings) {
+  GCExchangeFacade openSession(Settings settings) {
     return defaultFactory().openSession(settings);
   }
 

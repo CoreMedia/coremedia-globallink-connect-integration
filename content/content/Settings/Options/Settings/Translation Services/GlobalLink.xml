@@ -4,7 +4,7 @@
     <Struct xmlns="http://www.coremedia.com/2008/struct">
       <StructProperty Name="globalLink">
         <Struct>
-          <StringProperty Name="url">https://connect-dev.translations.com/api/v3</StringProperty>
+          <StringProperty Name="url">https://stg-glconnect.transperfect.com/rest-api/v3</StringProperty>
           <StringProperty Name="key">Your Connector Key</StringProperty>
           <StringProperty Name="fileType">xliff</StringProperty>
           <IntProperty Name="dayOffsetForDueDate">20</IntProperty>
@@ -62,67 +62,29 @@
                 Name="comment"><![CDATA[Configuration for the mock implementation of the GlobalLink exchange facade (type=mock).]]></StringProperty>
               <IntProperty Name="stateChangeDelaySeconds">10</IntProperty>
               <IntProperty Name="stateChangeDelayOffsetPercentage">0</IntProperty>
-              <StringProperty
-                Name="error"><![CDATA[Set to a MockGCExchangeFacadeProvider.MockError value to test error handling.]]></StringProperty>
-              <StructProperty Name="errorExamples">
+              <StringProperty Name="scenario"/>
+              <StructProperty Name="scenarios">
                 <Struct>
                   <StringProperty
-                    Name="cancel_communication"><![CDATA[Submission-Cancellation: Trigger a communication error.]]></StringProperty>
+                    Name="cancelation-not-found"><![CDATA[Simulates a submission not found error on cancelation.]]></StringProperty>
                   <StringProperty
-                    Name="cancel_result"><![CDATA[Submission-Cancellation: Trigger an error response from GCC backend.]]></StringProperty>
+                    Name="full-regular-approval-state-flow"><![CDATA[Simulates a submission that passes all regular states, including approval states.]]></StringProperty>
                   <StringProperty
-                    Name="download_communication"><![CDATA[XLIFF-Download: Trigger a general communication error.]]></StringProperty>
+                    Name="gcc-outage-on-cancelation"><![CDATA[Simulates a permanent GCC connection outage on cancelation.]]></StringProperty>
                   <StringProperty
-                    Name="download_xliff"><![CDATA[Broken XLIFF file on downloading translation results.]]></StringProperty>
+                    Name="gcc-outage-on-download"><![CDATA[Simulates a permanent GCC connection outage on XLIFF download.]]></StringProperty>
                   <StringProperty
-                    Name="submission_error"><![CDATA[Trigger an internal error state of the submission.]]></StringProperty>
+                    Name="gcc-outage-on-upload"><![CDATA[Simulates a permanent GCC connection outage on XLIFF upload.]]></StringProperty>
                   <StringProperty
-                    Name="upload_communication"><![CDATA[XLIFF-Upload: Trigger a general communication error.]]></StringProperty>
-                </Struct>
-              </StructProperty>
-              <StructProperty Name="example1:submissionStates">
-                <Struct>
+                    Name="submission-error"><![CDATA[Simulates a submission that reaches the (unrecoverable) error state at GCC.]]></StringProperty>
                   <StringProperty
-                    Name="comment"><![CDATA[Example for replacing `Delivered` submission state with `Redelivered` state.]]></StringProperty>
+                    Name="submission-canceled-by-globallink"><![CDATA[Simulates a submission that got canceled via GCC backend.]]></StringProperty>
                   <StringProperty
-                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
-                  <StructProperty Name="Delivered">
-                    <Struct>
-                      <StringProperty Name="override">Redelivered</StringProperty>
-                      <BooleanProperty Name="final">true</BooleanProperty>
-                    </Struct>
-                  </StructProperty>
-                </Struct>
-              </StructProperty>
-              <StructProperty Name="example2:submissionStates">
-                <Struct>
+                    Name="submission-redelivered"><![CDATA[Simulates a typical redelivered scenario, with first corrupted XLIFF, then signalling redelivered state.]]></StringProperty>
                   <StringProperty
-                    Name="comment"><![CDATA[Example to follow with submission state `Redelivered` after `Completed`. Suggestion to also set `download_xliff` as error to simulate real-world scenario.]]></StringProperty>
+                    Name="translate-invalid-xliff"><![CDATA[Simulates a permanently corrupted XLIFF shipped by GCC.]]></StringProperty>
                   <StringProperty
-                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
-                  <StructProperty Name="Completed">
-                    <Struct>
-                      <StringListProperty Name="after">
-                        <String>Completed</String>
-                        <String>Redelivered</String>
-                      </StringListProperty>
-                      <BooleanProperty Name="final">true</BooleanProperty>
-                    </Struct>
-                  </StructProperty>
-                </Struct>
-              </StructProperty>
-              <StructProperty Name="example3:submissionStates">
-                <Struct>
-                  <StringProperty
-                    Name="comment"><![CDATA[Example for mocking submission-error behavior. Suggestion to also set `submission_error` as error to simulate real-world scenario.]]></StringProperty>
-                  <StringProperty
-                    Name="enable"><![CDATA[To enable, rename parent node to 'submissionStates']]></StringProperty>
-                  <StructProperty Name="Started">
-                    <Struct>
-                      <StringProperty Name="override">Pre-Process</StringProperty>
-                      <BooleanProperty Name="final">true</BooleanProperty>
-                    </Struct>
-                  </StructProperty>
+                    Name="translate-string-too-long"><![CDATA[Simulates a translation with long strings returned to provoke a string-too-long failure.]]></StringProperty>
                 </Struct>
               </StructProperty>
             </Struct>

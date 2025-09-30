@@ -1,8 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade;
 
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
 
 /**
  * An implementation of this factory may decide on different facades
@@ -26,5 +25,5 @@ public interface GCExchangeFacadeSessionProvider {
    * @implSpec Factories may support extra settings in order to control which
    * facade to instantiate.
    */
-  GCExchangeFacade openSession(Map<String, Object> settings);
+  GCExchangeFacade openSession(Settings settings);
 }

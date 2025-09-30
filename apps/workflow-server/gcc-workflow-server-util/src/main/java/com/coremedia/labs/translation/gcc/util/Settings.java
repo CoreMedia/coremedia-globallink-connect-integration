@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +40,15 @@ public record Settings(Map<String, Object> properties) {
    * An empty settings instance with no properties.
    */
   public static final Settings EMPTY = new Settings(Map.of());
+
+  /**
+   * Keys whose values are considered sensitive and should be masked in
+   * string representations.
+   */
+  private static final Set<String> SENSITIVE_KEYS = Set.of(
+    "apiKey",
+    "password"
+  );
 
   /**
    * The maximum allowed nesting depth for map structures to prevent stack
@@ -303,5 +313,15 @@ public record Settings(Map<String, Object> properties) {
       return !map.isEmpty();
     }
     return true;
+  }
+
+  @Override
+  public String toString() {
+    Map<String, Object> properties = this.properties.entrySet().stream()
+      .collect(Collectors.toMap(
+        Map.Entry::getKey,
+        e -> SENSITIVE_KEYS.contains(e.getKey()) ? "****" : e.getValue()
+      ));
+    return "%s[properties=%s]".formatted(lookup().lookupClass().getSimpleName(), properties);
   }
 }

@@ -92,11 +92,11 @@ class GlobalLinkActionTest {
   class OpenSessionBehavior {
     @Test
     void shouldRespectMockFacadeType() {
-      GCExchangeFacade facade = globalLinkAction.superOpenSession(Map.of(
+      GCExchangeFacade facade = globalLinkAction.superOpenSession(new Settings(Map.of(
         GCConfigProperty.KEY_URL, "https://example.org/",
         GCConfigProperty.KEY_API_KEY, "irrelevantApiKey",
         GCConfigProperty.KEY_KEY, "irrelevantKey",
-        GCConfigProperty.KEY_TYPE, "mock"));
+        GCConfigProperty.KEY_TYPE, "mock")));
       assertThat(facade).isInstanceOf(MockedGCExchangeFacade.class);
     }
   }
@@ -428,11 +428,11 @@ class GlobalLinkActionTest {
     }
 
     @Override
-    GCExchangeFacade openSession(Map<String, Object> settings) {
+    GCExchangeFacade openSession(Settings settings) {
       return gcExchangeFacade;
     }
 
-    GCExchangeFacade superOpenSession(Map<String, Object> settings) {
+    GCExchangeFacade superOpenSession(Settings settings) {
       return super.openSession(settings);
     }
 
