@@ -15,6 +15,11 @@ on:
 permissions:
   contents: read # Required for actions/checkout
 
+# Prevent overlapping deployments for the same ref (hardening)
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   # https://github.com/actions/runner-images/issues/70
   NODE_OPTIONS: "--max_old_space_size=4096"
@@ -32,15 +37,48 @@ jobs:
       should-deploy: ${{ steps.check.outputs.should-deploy }}
     steps:
       - id: check
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-          PR_MERGED: ${{ github.event.pull_request.merged }}
         run: |
-          if [[ "$PR_MERGED" == "true" && "$HEAD_REF" =~ ^maintenance/ ]]; then
-            echo "should-deploy=true" >> $GITHUB_OUTPUT
-          else
-            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          EVENT="${{ github.event_name }}"
+          echo "Event: $EVENT"
+
+          # Manual or reusable workflow invocation always deploys.
+          if [[ "$EVENT" == "workflow_dispatch" || "$EVENT" == "workflow_call" ]]; then
+            echo "Triggered via $EVENT: enabling deployment."
+            echo "should-deploy=true" >> "$GITHUB_OUTPUT"
+            echo "Manual/reusable trigger" > decision.txt
+            exit 0
           fi
+
+          # Only evaluate PR-specific data for pull_request events.
+          if [[ "$EVENT" == "pull_request" ]]; then
+            PR_MERGED="${{ github.event.pull_request.merged }}"
+            HEAD_REF="${{ github.event.pull_request.head.ref }}"
+            if [[ "$PR_MERGED" == "true" && "$HEAD_REF" =~ ^maintenance/ ]]; then
+              echo "Merged maintenance/* PR: enabling deployment. ($HEAD_REF)"
+              echo "should-deploy=true" >> "$GITHUB_OUTPUT"
+              echo "Merged maintenance PR ($HEAD_REF)" > decision.txt
+              exit 0
+            else
+              echo "Not a qualifying merged maintenance/* PR: skipping deployment. ($HEAD_REF)"
+              echo "should-deploy=false" >> "$GITHUB_OUTPUT"
+              echo "Non-qualifying PR" > decision.txt
+              exit 0
+            fi
+          fi
+
+          # Fallback: Unknown event type (should normally not occur with current triggers)
+          echo "Unhandled event type: $EVENT -> skip deployment"
+          echo "should-deploy=false" >> "$GITHUB_OUTPUT"
+          echo "Unhandled event" > decision.txt
+      - name: Summarize deployment decision
+        if: always()
+        run: |
+          echo "### Deployment Decision" >> $GITHUB_STEP_SUMMARY
+          echo "Event: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          if [[ -f decision.txt ]]; then
+            echo "Reason: $(cat decision.txt)" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "should-deploy: ${{ steps.check.outputs.should-deploy }}" >> $GITHUB_STEP_SUMMARY
   env:
     needs: check-source-branch
     if: needs.check-source-branch.outputs.should-deploy == 'true'
