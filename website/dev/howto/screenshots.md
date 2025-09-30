@@ -17,7 +17,7 @@ recommended steps to reach a given UI state per corresponding screenshot.
 
 ### Common Screenshot Size
 
-**TL;DR**: Use device terminal emulation with viewport size 1280x800.
+**TL;DR**: Use device terminal emulation with viewport size 1920x1080.
 
 To best align the sizes of the screenshots, it is recommended to use the
 browser's developer tools to set the viewport size to a common value. This
@@ -61,12 +61,14 @@ globalLink:
   type: mock
   # Boolean; changed within manual test steps
   isSendSubmitter: false
-  # Integer
-  sendTranslationRequestRetryDelay: 60
-  # Integer
-  downloadTranslationRetryDelay: 60
-  # Integer
-  cancelTranslationRetryDelay: 60
+  # String
+  sendTranslationRequestRetryDelay: 1m
+  # String
+  sendTranslationRequestEarlyRetryDelay: 1m
+  # String
+  downloadTranslationRetryDelay: 1m
+  # String
+  cancelTranslationRetryDelay: 1m
   # Integer; change existing value
   retryCommunicationErrors: 1
   # Mock settings to possibly adapt.
@@ -210,7 +212,13 @@ external screenshot tool, to trigger the screenshot via a hotkey. If possible,
 adjust your screenshot tool to also capture the mouse cursor.
 
 1. **Content:** (Hint: Same as for `gcc-running.png`, so you may reuse it.)
-   * Create a new article named _Press Release_.
+   * Create a picture document named _Press Release Image_ with the following
+     image:
+
+     ![Press Release Image](./img/press-release.jpg)
+
+   * Create a new article named _Press Release_. Add the picture to
+     _Pictures and Other Media_.
    * Add the content to the Chef Corp. Homepage.
 2. **Content App:**
    * Minimize the preview before taking the screenshot. The currently opened
@@ -263,6 +271,18 @@ with the differencing view.
    * Change the pseudo-translated title just to "News".
    * Check-in the modified content.
    * Move the separators around to have a good view on the overall scenario.
+
+:::tip TIP: Annoying Spellchecker
+If you have a spellchecker enabled in your browser, it may highlight the
+text as having spelling mistakes. To disable it, while you are in developer
+tools, adjust the `<body>` element adding the attribute `spellcheck="false"`.
+
+As an alternative, type into the console:
+
+```javascript
+document.body.spellcheck=false
+```
+:::
 
 **Cleanup**: Consider accepting the user task and selecting _Rollback_ to end
 the workflow.
