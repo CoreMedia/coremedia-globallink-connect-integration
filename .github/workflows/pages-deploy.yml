@@ -40,6 +40,10 @@ jobs:
       build-ref: ${{ steps.check.outputs.build-ref }}
     steps:
       - id: check
+        env:
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           EVENT="${{ github.event_name }}"
           echo "Event: $EVENT"
@@ -56,9 +60,6 @@ jobs:
 
           # Only evaluate PR-specific data for pull_request events.
           if [[ "$EVENT" == "pull_request" ]]; then
-            PR_MERGED="${{ github.event.pull_request.merged }}"
-            HEAD_REF="${{ github.event.pull_request.head.ref }}"
-            BASE_REF="${{ github.event.pull_request.base.ref }}"
             if [[ "$PR_MERGED" == "true" && "$HEAD_REF" =~ ^maintenance/ && "$BASE_REF" == "main" ]]; then
               echo "Merged maintenance/* PR into $BASE_REF: enabling deployment. (head: $HEAD_REF)"
               echo "should-deploy=true" >> "$GITHUB_OUTPUT"
