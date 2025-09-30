@@ -2,9 +2,8 @@ package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeProvider;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
 
 @NullMarked
 public class DefaultGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
@@ -21,7 +20,7 @@ public class DefaultGCExchangeFacadeProvider implements GCExchangeFacadeProvider
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, Object> settings) {
+  public GCExchangeFacade getFacade(Settings settings) {
     return new DefaultGCExchangeFacade(settings);
   }
 

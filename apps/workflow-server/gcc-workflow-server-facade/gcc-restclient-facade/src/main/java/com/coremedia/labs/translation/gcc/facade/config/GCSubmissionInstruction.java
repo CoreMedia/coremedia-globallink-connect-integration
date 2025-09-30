@@ -1,12 +1,14 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -116,8 +118,12 @@ public final class GCSubmissionInstruction {
    */
   // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
-  public static GCSubmissionInstruction fromGlobalLinkConfig(Map<String, ?> config) {
-    Object configObject = config.get(CONFIG_KEY);
+  public static GCSubmissionInstruction fromGlobalLinkConfig(Settings config) {
+    Optional<Object> instructionConfig = config.at(CONFIG_KEY);
+    if (instructionConfig.isEmpty()) {
+      return DEFAULT;
+    }
+    Object configObject = instructionConfig.get();
     if (configObject instanceof GCSubmissionInstruction submissionInstruction) {
       return submissionInstruction;
     }

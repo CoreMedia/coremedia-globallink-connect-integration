@@ -3,10 +3,12 @@ package com.coremedia.labs.translation.gcc.facade.mock.settings;
 import com.coremedia.labs.translation.gcc.facade.mock.scenarios.NoOperationScenario;
 import com.coremedia.labs.translation.gcc.facade.mock.scenarios.Scenario;
 import com.coremedia.labs.translation.gcc.facade.mock.scenarios.Scenarios;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -84,8 +86,12 @@ public record MockSettings(
 
   // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
-  public static MockSettings fromGlobalLinkConfig(Map<String, ?> config) {
-    Object mockConfigObject = config.get(CONFIG_MOCK);
+  public static MockSettings fromGlobalLinkConfig(Settings config) {
+    Optional<Object> mockConfig = config.at(CONFIG_MOCK);
+    if (mockConfig.isEmpty()) {
+      return EMPTY;
+    }
+    Object mockConfigObject = mockConfig.get();
     if (mockConfigObject instanceof Map<?, ?> mockConfigMap) {
       return fromMockConfig(mockConfigMap);
     }

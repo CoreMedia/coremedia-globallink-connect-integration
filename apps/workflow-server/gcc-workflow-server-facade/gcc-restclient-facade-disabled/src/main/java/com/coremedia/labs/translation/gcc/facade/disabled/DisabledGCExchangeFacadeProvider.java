@@ -2,9 +2,8 @@ package com.coremedia.labs.translation.gcc.facade.disabled;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeProvider;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
 
 @NullMarked
 public class DisabledGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
@@ -16,7 +15,7 @@ public class DisabledGCExchangeFacadeProvider implements GCExchangeFacadeProvide
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, Object> settings) {
+  public GCExchangeFacade getFacade(Settings settings) {
     return DisabledGCExchangeFacade.getInstance();
   }
 }

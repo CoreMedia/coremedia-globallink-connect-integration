@@ -13,6 +13,7 @@ import com.coremedia.labs.translation.gcc.facade.config.CharacterType;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.coremedia.labs.translation.gcc.facade.config.TextTransform;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import com.google.common.io.ByteStreams;
 import org.assertj.core.api.SoftAssertions;
 import org.gs4tr.gcc.restclient.GCExchange;
@@ -115,7 +116,7 @@ class DefaultGCExchangeFacadeTest {
     void failOnMissingRequiredConfiguration(String excludedKey) {
       Map<String, Object> config = new HashMap<>(requiredConfig);
       config.remove(excludedKey);
-      assertThatCode(() -> new DefaultGCExchangeFacade(config)).hasMessageContaining(excludedKey);
+      assertThatCode(() -> new DefaultGCExchangeFacade(new Settings(config))).hasMessageContaining(excludedKey);
     }
 
     /**
@@ -127,7 +128,7 @@ class DefaultGCExchangeFacadeTest {
     void shouldFailOnUnavailableConnectorKey() {
       Map<String, Object> config = new HashMap<>(requiredConfig);
       when(gcExchange.getConnectors()).thenReturn(List.of());
-      assertThatCode(() -> new DefaultGCExchangeFacade(config, cfg -> {
+      assertThatCode(() -> new DefaultGCExchangeFacade(new Settings(config), cfg -> {
         lenient().when(gcExchange.getConfig()).thenReturn(cfg);
         return gcExchange;
       })).hasMessageContaining(GCConfigProperty.KEY_KEY);
@@ -1023,7 +1024,7 @@ class DefaultGCExchangeFacadeTest {
     }
 
     MockDefaultGCExchangeFacade(Map<String, Object> config, GCExchange delegate) {
-      super(config, cfg -> {
+      super(new Settings(config), cfg -> {
         lenient().when(delegate.getConfig()).thenReturn(cfg);
         Connector connector = Mockito.mock(Connector.class);
         lenient().when(delegate.getConnectors()).thenReturn(List.of(connector));

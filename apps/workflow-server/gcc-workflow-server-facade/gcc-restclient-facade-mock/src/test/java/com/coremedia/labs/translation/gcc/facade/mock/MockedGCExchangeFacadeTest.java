@@ -6,6 +6,7 @@ import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.mock.scenarios.SubmissionCanceledByGlobalLinkScenario;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -102,7 +103,7 @@ class MockedGCExchangeFacadeTest {
 
   @Test
   void facadeAvailableViaServiceLoader() {
-    GCExchangeFacade facade = DefaultGCExchangeFacadeSessionProvider.defaultFactory().openSession(singletonMap(GCConfigProperty.KEY_TYPE, MockGCExchangeFacadeProvider.TYPE_TOKEN));
+    GCExchangeFacade facade = DefaultGCExchangeFacadeSessionProvider.defaultFactory().openSession(new Settings(Map.of(GCConfigProperty.KEY_TYPE, MockGCExchangeFacadeProvider.TYPE_TOKEN)));
     assertThat(facade).isInstanceOf(MockedGCExchangeFacade.class);
   }
 }

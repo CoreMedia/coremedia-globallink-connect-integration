@@ -16,6 +16,7 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
@@ -47,7 +48,6 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.IllformedLocaleException;
 import java.util.List;
@@ -65,7 +65,6 @@ import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.gs4tr.gcc.restclient.model.TaskStatus.Cancelled;
 import static org.gs4tr.gcc.restclient.model.TaskStatus.Completed;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -101,17 +100,17 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @throws GCFacadeConfigException        if configuration is incomplete
    * @throws GCFacadeCommunicationException if connection to GCC failed.
    */
-  DefaultGCExchangeFacade(Map<String, Object> config) {
+  DefaultGCExchangeFacade(Settings config) {
     this(config, GCExchange::new);
   }
 
   @VisibleForTesting
-  DefaultGCExchangeFacade(Map<String, Object> config,
+  DefaultGCExchangeFacade(Settings config,
                           Function<GCConfig, GCExchange> exchangeFactory) {
-    String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
-    String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
-    String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
-    isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
+    String apiUrl = requireConfig(config, GCConfigProperty.KEY_URL);
+    String connectorKey = requireConfig(config, GCConfigProperty.KEY_KEY);
+    String apiKey = requireConfig(config, GCConfigProperty.KEY_API_KEY);
+    isSendSubmitter = config.at(GCConfigProperty.KEY_IS_SEND_SUBMITTER).map(o -> Boolean.valueOf(String.valueOf(o))).orElse(false);
     submissionName = GCSubmissionName.fromGlobalLinkConfig(config);
     submissionInstruction = GCSubmissionInstruction.fromGlobalLinkConfig(config);
     LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
@@ -132,11 +131,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     } catch (IllegalAccessError e) {
       throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
-    fileTypeSupplier = Suppliers.memoize(() -> {
-      Object value = config.get(GCConfigProperty.KEY_FILE_TYPE);
-      return getSupportedFileType(
-          value == null ? null : String.valueOf(value));
-      }
+    fileTypeSupplier = Suppliers.memoize(() -> config.at(GCConfigProperty.KEY_FILE_TYPE)
+      .map(String::valueOf)
+      .map(this::getSupportedFileType)
+      .orElseGet(() -> getSupportedFileType(null))
     );
   }
 
@@ -167,14 +165,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     }
   }
 
-  private static String requireNonNullConfig(Map<String, Object> config, String key) {
-    Object value = config.get(key);
-    if (value == null) {
-      throw new GCFacadeConfigException("Configuration for %s is missing. Configuration (values hidden): %s", key, config.entrySet().stream()
-        .collect(toMap(Map.Entry::getKey, e -> GCConfigProperty.KEY_URL.equals(e.getKey()) ? e.getValue() : "*****"))
-      );
-    }
-    return String.valueOf(value);
+  private static String requireConfig(Settings config, String key) {
+    return config.at(key)
+      .map(String::valueOf)
+      .orElseThrow(() -> new GCFacadeConfigException("Configuration for %s is missing. Configuration : %s", key, config));
   }
 
   @Override

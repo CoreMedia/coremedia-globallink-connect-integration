@@ -1,8 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade;
 
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
 
 /**
  * Service Provider Interface for GCExchange facades.
@@ -20,7 +19,7 @@ public interface GCExchangeFacadeProvider {
    * Signal if this SPI is responsible for the given type token.
    *
    * @param typeToken type token from settings
-   * @return {@code true}, if {@link #getFacade(Map)} shall be called; {@code false} otherwise
+   * @return {@code true}, if {@link #getFacade(Settings)} shall be called; {@code false} otherwise
    * @implNote By default, compares to {@link #getTypeToken()} ignoring case.
    */
   default boolean isApplicable(String typeToken) {
@@ -33,7 +32,7 @@ public interface GCExchangeFacadeProvider {
    * @param settings settings to use, contains for example credentials
    * @return GCExchange facade
    */
-  GCExchangeFacade getFacade(Map<String, Object> settings);
+  GCExchangeFacade getFacade(Settings settings);
 
   /**
    * Signal, if this is a default SPI, which should be used if no other SPI

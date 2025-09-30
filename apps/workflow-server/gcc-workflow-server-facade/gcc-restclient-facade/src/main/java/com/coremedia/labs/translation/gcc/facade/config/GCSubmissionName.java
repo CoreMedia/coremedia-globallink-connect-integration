@@ -1,12 +1,14 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -100,12 +102,16 @@ public final class GCSubmissionName {
    */
   // jspecify-reference-checker: Fails to deal with instanceof pattern variable. Suppressed.
   @SuppressWarnings("nullness")
-  public static GCSubmissionName fromGlobalLinkConfig(Map<String, ?> config) {
-    Object configObject = config.get(CONFIG_KEY);
-    if (configObject instanceof GCSubmissionName submissionName) {
+  public static GCSubmissionName fromGlobalLinkConfig(Settings config) {
+    Optional<Object> optNameConfig = config.at(CONFIG_KEY);
+    if (optNameConfig.isEmpty()) {
+      return DEFAULT;
+    }
+    Object rawNameConfig = optNameConfig.get();
+    if (rawNameConfig instanceof GCSubmissionName submissionName) {
       return submissionName;
     }
-    if (configObject instanceof Map<?, ?> configMap) {
+    if (rawNameConfig instanceof Map<?, ?> configMap) {
       return fromSubmissionNameConfig(configMap);
     }
     return DEFAULT;

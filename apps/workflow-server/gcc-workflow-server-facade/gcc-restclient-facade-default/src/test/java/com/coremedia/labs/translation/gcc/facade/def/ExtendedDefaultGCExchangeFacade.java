@@ -1,5 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
+import com.coremedia.labs.translation.gcc.util.Settings;
 import org.gs4tr.gcc.restclient.model.GCFile;
 import org.gs4tr.gcc.restclient.operation.Content;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
@@ -22,7 +23,7 @@ public class ExtendedDefaultGCExchangeFacade extends DefaultGCExchangeFacade {
   private volatile @Nullable ConnectorsConfig connectorsConfig;
 
   public ExtendedDefaultGCExchangeFacade(Map<String, Object> config) {
-    super(config);
+    super(new Settings(config));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Connectors Configuration: {}", connectorsConfig());
