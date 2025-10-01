@@ -58,7 +58,7 @@
     "@docusaurus/types": "3.8.1",
     "@types/unist": "^3.0.3",
     "depcheck": "^1.4.7",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.3"
   },
   "browserslist": {
     "production": [
