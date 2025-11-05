@@ -9,9 +9,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
-    "@coremedia/eslint-config-studio-client": "workspace:*",
-    "@coremedia/studio-client.build-config": "workspace:*",
-    "@coremedia/studio-client.workflow.shared-modules": "workspace:*",
+    "@coremedia/eslint-config-studio-client": "2506.0.1",
+    "@coremedia/studio-client.build-config": "2506.0.1",
+    "@coremedia/studio-client.workflow.shared-modules": "2506.0.1",
     "eslint": "^8.57.0",
     "rimraf": "^5.0.7",
     "typescript": "^5.8.2",
