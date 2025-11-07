@@ -5,24 +5,24 @@
   "license": "CoreMedia Open Source License",
   "private": true,
   "dependencies": {
-    "@coremedia/studio-client.cap-base-models": "workspace:*",
-    "@coremedia/studio-client.cap-rest-client-impl": "workspace:*",
-    "@coremedia/studio-client.cap-rest-client": "workspace:*",
-    "@coremedia/studio-client.client-core-impl": "workspace:*",
-    "@coremedia/studio-client.client-core": "workspace:*",
-    "@coremedia/studio-client.core-icons": "workspace:*",
-    "@coremedia/studio-client.i18n-models": "workspace:*",
-    "@coremedia/studio-client.workflow-models": "workspace:*",
-    "@coremedia/studio-client.workflow-plugin-models": "workspace:*",
-    "@jangaroo/runtime": "^3.3.1"
+    "@coremedia/studio-client.cap-base-models": "catalog:",
+    "@coremedia/studio-client.cap-rest-client-impl": "catalog:",
+    "@coremedia/studio-client.cap-rest-client": "catalog:",
+    "@coremedia/studio-client.client-core-impl": "catalog:",
+    "@coremedia/studio-client.client-core": "catalog:",
+    "@coremedia/studio-client.core-icons": "catalog:",
+    "@coremedia/studio-client.i18n-models": "catalog:",
+    "@coremedia/studio-client.workflow-models": "catalog:",
+    "@coremedia/studio-client.workflow-plugin-models": "catalog:",
+    "@jangaroo/runtime": "catalog:"
   },
   "devDependencies": {
-    "@coremedia/eslint-config-studio-client": "workspace:*",
-    "@jangaroo/build": "^3.3.1",
-    "@jangaroo/core": "^3.3.1",
-    "@jangaroo/publish": "^3.3.1",
-    "eslint": "^8.57.0",
-    "rimraf": "^5.0.7"
+    "@coremedia/eslint-config-studio-client": "catalog:",
+    "@jangaroo/build": "catalog:",
+    "@jangaroo/core": "catalog:",
+    "@jangaroo/publish": "catalog:",
+    "eslint": "catalog:",
+    "rimraf": "catalog:"
   },
   "scripts": {
     "build": "jangaroo build",
