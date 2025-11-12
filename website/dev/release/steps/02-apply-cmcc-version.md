@@ -14,9 +14,9 @@ version reference `<cm.middle.core.version>` in `gcc-workflow-server-parent`
 (POM path: `apps/workflow-server/pom.xml`) is updated.
 
 :::info INFO: No Changes Needed for Studio-Client
-Since release `v2412.0.0-1` (February 2025) it is not required anymore to apply
+Starting with release `v2512.0.0-1` it is not required anymore to apply
 a similar change to the Studio client code. This is because we use the
-`workspace:` version inside there to refer to corresponding artifacts of the
+`catalog:` version inside there to refer to corresponding artifacts of the
 CMCC workspace.
 :::
 

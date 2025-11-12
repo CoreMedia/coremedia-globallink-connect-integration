@@ -8,15 +8,15 @@
     "@coremedia-labs/studio-client.ext.gcc-studio-client": "workspace:*"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.7",
-    "@coremedia/eslint-config-studio-client": "workspace:*",
-    "@coremedia/studio-client.build-config": "workspace:*",
-    "@coremedia/studio-client.workflow.shared-modules": "workspace:*",
-    "eslint": "^8.57.0",
-    "rimraf": "^5.0.7",
-    "typescript": "^5.8.2",
-    "webpack-cli": "^6.0.1",
-    "webpack": "^5.98.0"
+    "@babel/core": "catalog:",
+    "@coremedia/eslint-config-studio-client": "catalog:",
+    "@coremedia/studio-client.build-config": "catalog:",
+    "@coremedia/studio-client.workflow.shared-modules": "catalog:",
+    "eslint": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
+    "webpack-cli": "catalog:",
+    "webpack": "catalog:"
   },
   "scripts": {
     "build": "tsc --project src && webpack build --mode=production",
