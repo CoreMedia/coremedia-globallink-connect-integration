@@ -1,4 +1,4 @@
 onlyBuiltDependencies:
   - core-js
   - core-js-pure
-minimumReleaseAge: 10080 # 1 week (in minutes)
+minimumReleaseAge: 1440 # 1 day in minutes
