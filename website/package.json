@@ -24,8 +24,7 @@
     "build": "docusaurus build",
     "clear": "docusaurus clear",
     "deploy": "docusaurus deploy",
-    "deps:check": "depcheck",
-    "deps:unused": "depcheck --json | jq '.dependencies + .devDependencies'",
+    "knip": "knip",
     "docusaurus": "docusaurus",
     "preinstall": "node ./scripts/check-pnpm.mjs",
     "start": "docusaurus start",
@@ -57,7 +56,7 @@
     "@docusaurus/tsconfig": "3.9.2",
     "@docusaurus/types": "3.9.2",
     "@types/unist": "^3.0.3",
-    "depcheck": "^1.4.7",
+    "knip": "^5.38.2",
     "typescript": "~5.9.3"
   },
   "browserslist": {

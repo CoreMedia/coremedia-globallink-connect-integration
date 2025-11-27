@@ -1,5 +1,6 @@
 {
-  "ignores": [
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreDependencies": [
     "@docusaurus/theme-mermaid",
     "@docusaurus/preset-classic",
     "@docusaurus/core",
@@ -10,19 +11,13 @@
     "react-dom",
     "prism-react-renderer",
     "clsx",
-    "depcheck",
     "remark",
     "typescript"
   ],
-  "skip-missing": false,
-  "ignore-patterns": [
-    "build",
-    "dist",
-    ".docusaurus",
-    "static"
-  ],
-  "specials": [
-    "webpack",
-    "babel"
+  "ignore": [
+    "build/**",
+    "dist/**",
+    ".docusaurus/**",
+    "static/**"
   ]
 }
