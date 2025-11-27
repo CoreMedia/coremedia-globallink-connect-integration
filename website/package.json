@@ -36,28 +36,28 @@
     "write-translations": "docusaurus write-translations"
   },
   "dependencies": {
-    "@docusaurus/core": "3.9.2",
-    "@docusaurus/logger": "^3.9.2",
-    "@docusaurus/plugin-content-docs": "^3.9.2",
-    "@docusaurus/preset-classic": "3.9.2",
-    "@docusaurus/theme-mermaid": "^3.9.2",
-    "@mdx-js/react": "^3.1.1",
-    "@types/mdast": "^4.0.4",
-    "clsx": "^2.0.0",
-    "mdast-util-from-markdown": "^2.0.2",
-    "prism-react-renderer": "^2.3.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "remark": "^15.0.1",
-    "unified": "^11.0.5",
-    "unist-util-visit": "^5.0.0"
+    "@docusaurus/core": "catalog:",
+    "@docusaurus/logger": "catalog:",
+    "@docusaurus/plugin-content-docs": "catalog:",
+    "@docusaurus/preset-classic": "catalog:",
+    "@docusaurus/theme-mermaid": "catalog:",
+    "@mdx-js/react": "catalog:",
+    "@types/mdast": "catalog:",
+    "clsx": "catalog:",
+    "mdast-util-from-markdown": "catalog:",
+    "prism-react-renderer": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "remark": "catalog:",
+    "unified": "catalog:",
+    "unist-util-visit": "catalog:"
   },
   "devDependencies": {
-    "@docusaurus/tsconfig": "3.9.2",
-    "@docusaurus/types": "3.9.2",
-    "@types/unist": "^3.0.3",
-    "knip": "^5.38.2",
-    "typescript": "~5.9.3"
+    "@docusaurus/tsconfig": "catalog:",
+    "@docusaurus/types": "catalog:",
+    "@types/unist": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:"
   },
   "browserslist": {
     "production": [
