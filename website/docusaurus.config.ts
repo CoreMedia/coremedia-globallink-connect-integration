@@ -93,7 +93,6 @@ const config: Config = {
 
   onBrokenAnchors: 'throw',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'throw',
   onDuplicateRoutes: 'throw',
 
   // Even if you don't use internationalization, you can use this field to set
@@ -104,6 +103,9 @@ const config: Config = {
   },
 
   markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
     mermaid: true,
   },
 
