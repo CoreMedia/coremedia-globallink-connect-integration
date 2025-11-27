@@ -11,13 +11,24 @@
     "react-dom",
     "prism-react-renderer",
     "clsx",
-    "remark",
-    "typescript"
+    "remark"
   ],
   "ignore": [
     "build/**",
     "dist/**",
     ".docusaurus/**",
-    "static/**"
+    "static/**",
+    "docs/**/*.{md,mdx}",
+    "blog/**/*.{md,mdx}",
+    "dev/**/*.{md,mdx}"
+  ],
+  "entry": [
+    "docusaurus.config.{js,ts}",
+    "src/theme/**/*.{js,jsx,ts,tsx}",
+    "src/components/**/*.{js,jsx,ts,tsx}",
+    "src/remark/**/*.{js,ts}"
+  ],
+  "project": [
+    "**/*.{js,jsx,ts,tsx}"
   ]
 }
