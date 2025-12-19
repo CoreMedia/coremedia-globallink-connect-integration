@@ -3,6 +3,7 @@
   "author": "CoreMedia GmbH",
   "version": "1.0.0-SNAPSHOT",
   "license": "CoreMedia Open Source License",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@coremedia-labs/studio-client.ext.gcc-studio-client": "workspace:*"

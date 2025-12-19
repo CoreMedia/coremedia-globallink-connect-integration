@@ -1,3 +1,3 @@
-const { babelConfig } = require("@coremedia/studio-client.build-config");
+import { babelConfig } from "@coremedia/studio-client.build-config";
 
-module.exports = babelConfig;
+export default babelConfig;

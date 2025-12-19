@@ -1,7 +1,7 @@
-const { sharedModules } = require("@coremedia/studio-client.main.shared-modules");
-const { getPluginWebpackConfig } = require("@coremedia/studio-client.build-config");
+import { sharedModules } from "@coremedia/studio-client.main.shared-modules";
+import { getPluginWebpackConfig } from "@coremedia/studio-client.build-config";
 
-module.exports = getPluginWebpackConfig({
+export default getPluginWebpackConfig({
   name: "main_gccWorkflowPlugin",
   sharedModules: {
     "@coremedia/studio-client.main.shared-modules": sharedModules,
