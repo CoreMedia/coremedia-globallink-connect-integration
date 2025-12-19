@@ -9,7 +9,7 @@ import {
   TextField,
   TranslationWorkflowPlugin,
   WorkflowIssuesLocalization,
-  WorkflowLocalization,
+  WorkflowLocalizationConfig,
   workflowLocalizationRegistry,
   workflowPlugins,
   WorkflowState,
@@ -383,7 +383,7 @@ getGccWorkflowPlugin().then((gccWorkflowPlugin) => {
   workflowPlugins._.addTranslationWorkflowPlugin(gccWorkflowPlugin);
 });
 
-const getGccProcessLocalization = async (): Promise<WorkflowLocalization> => {
+const getGccProcessLocalization = async (): Promise<WorkflowLocalizationConfig> => {
   const localizer = await getLocalizer(GccWorkflowLocalization_properties);
 
   return {
