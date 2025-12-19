@@ -17,7 +17,7 @@
     "@jangaroo/runtime": "catalog:"
   },
   "devDependencies": {
-    "@coremedia/eslint-config-studio-client": "catalog:",
+    "@coremedia/studio-client.eslint-config": "catalog:",
     "@jangaroo/build": "catalog:",
     "@jangaroo/core": "catalog:",
     "@jangaroo/publish": "catalog:",
@@ -27,7 +27,7 @@
   "scripts": {
     "build": "jangaroo build",
     "clean": "rimraf ./dist && rimraf ./build",
-    "lint": "eslint \"src/**/*.ts\"",
+    "lint": "eslint",
     "publish": "jangaroo publish",
     "watch": "jangaroo watch"
   },
