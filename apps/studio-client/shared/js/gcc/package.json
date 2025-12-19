@@ -20,7 +20,6 @@
     "@coremedia/studio-client.eslint-config": "catalog:",
     "@jangaroo/build": "catalog:",
     "@jangaroo/core": "catalog:",
-    "@jangaroo/publish": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:"
   },
@@ -28,7 +27,6 @@
     "build": "jangaroo build",
     "clean": "rimraf ./dist && rimraf ./build",
     "lint": "eslint",
-    "publish": "jangaroo publish",
     "watch": "jangaroo watch"
   },
   "exports": {

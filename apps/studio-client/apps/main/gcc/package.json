@@ -23,7 +23,6 @@
     "build": "tsc --project src && webpack build --mode=production",
     "clean": "rimraf ./dist",
     "lint": "eslint",
-    "prepublishOnly": "prepare-package",
     "watch": "webpack watch --mode=development"
   },
   "exports": {
