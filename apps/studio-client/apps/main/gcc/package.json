@@ -16,8 +16,8 @@
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "typescript": "catalog:",
-    "webpack-cli": "catalog:",
-    "webpack": "catalog:"
+    "webpack": "catalog:",
+    "webpack-cli": "catalog:"
   },
   "scripts": {
     "build": "tsc --project src && webpack build --mode=production",

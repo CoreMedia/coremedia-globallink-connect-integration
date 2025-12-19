@@ -6,10 +6,10 @@
   "private": true,
   "dependencies": {
     "@coremedia/studio-client.cap-base-models": "catalog:",
-    "@coremedia/studio-client.cap-rest-client-impl": "catalog:",
     "@coremedia/studio-client.cap-rest-client": "catalog:",
-    "@coremedia/studio-client.client-core-impl": "catalog:",
+    "@coremedia/studio-client.cap-rest-client-impl": "catalog:",
     "@coremedia/studio-client.client-core": "catalog:",
+    "@coremedia/studio-client.client-core-impl": "catalog:",
     "@coremedia/studio-client.core-icons": "catalog:",
     "@coremedia/studio-client.i18n-models": "catalog:",
     "@coremedia/studio-client.workflow-models": "catalog:",
