@@ -29,6 +29,6 @@ catalogs:
 
     # Other dependencies
     clsx: ^2.0.0
-    knip: ^5.38.2
+    knip: ^5.78.0
     prism-react-renderer: ^2.3.0
     typescript: ~5.9.3
