@@ -1,11 +1,5 @@
-onlyBuiltDependencies:
-  - core-js
-  - core-js-pure
-minimumReleaseAge: 1440 # 1 day in minutes
-
 catalogs:
   default:
-    # Docusaurus packages - kept in sync
     '@docusaurus/core': ^3.9.2
     '@docusaurus/logger': ^3.9.2
     '@docusaurus/plugin-content-docs': ^3.9.2
@@ -13,22 +7,22 @@ catalogs:
     '@docusaurus/theme-mermaid': ^3.9.2
     '@docusaurus/tsconfig': ^3.9.2
     '@docusaurus/types': ^3.9.2
-
-    # React
     '@mdx-js/react': ^3.1.1
-    react: ^19.2.0
-    react-dom: ^19.2.0
-
-    # MDX/Markdown utilities
     '@types/mdast': ^4.0.4
     '@types/unist': ^3.0.3
+    clsx: ^2.0.0
+    knip: ^5.79.0
     mdast-util-from-markdown: ^2.0.2
+    prism-react-renderer: ^2.3.0
+    react: ^19.2.0
+    react-dom: ^19.2.0
     remark: ^15.0.1
+    typescript: ~5.9.3
     unified: ^11.0.5
     unist-util-visit: ^5.0.0
 
-    # Other dependencies
-    clsx: ^2.0.0
-    knip: ^5.38.2
-    prism-react-renderer: ^2.3.0
-    typescript: ~5.9.3
+minimumReleaseAge: 1440
+
+onlyBuiltDependencies:
+  - core-js
+  - core-js-pure
