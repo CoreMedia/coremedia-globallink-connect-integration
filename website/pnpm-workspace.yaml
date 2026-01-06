@@ -14,8 +14,8 @@ catalogs:
     knip: ^5.79.0
     mdast-util-from-markdown: ^2.0.2
     prism-react-renderer: ^2.3.0
-    react: ^19.2.0
-    react-dom: ^19.2.0
+    react: ^19.2.3
+    react-dom: ^19.2.3
     remark: ^15.0.1
     typescript: ~5.9.3
     unified: ^11.0.5
