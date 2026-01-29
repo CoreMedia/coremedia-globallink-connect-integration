@@ -8,10 +8,8 @@
     "@coremedia-labs/studio-client.ext.gcc-studio-client": "workspace:*"
   },
   "devDependencies": {
-    "@jangaroo/build": "^3.3.1",
-    "@jangaroo/core": "^3.3.1",
-    "@jangaroo/publish": "^3.1.0",
-    "rimraf": "^5.0.7"
+    "@jangaroo/build": "catalog:",
+    "@jangaroo/core": "catalog:","rimraf": "catalog:"
   },
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",

@@ -5,32 +5,30 @@
   "license": "CoreMedia Open Source License",
   "private": true,
   "dependencies": {
-    "@coremedia/studio-client.cap-base-models": "^2506.0.0",
-    "@coremedia/studio-client.cap-rest-client": "^2506.0.0",
-    "@coremedia/studio-client.cap-rest-client-impl": "^2506.0.0",
-    "@coremedia/studio-client.client-core": "^2506.0.0",
-    "@coremedia/studio-client.client-core-impl": "^2506.0.0",
-    "@coremedia/studio-client.core-icons": "^2506.0.0",
-    "@coremedia/studio-client.i18n-models": "^2506.0.0",
-    "@coremedia/studio-client.workflow-models": "^2506.0.0",
-    "@coremedia/studio-client.workflow-plugin-models": "^2506.0.0",
-    "@jangaroo/ext-ts": "^2.1.0",
-    "@jangaroo/runtime": "^3.3.1"
+    "@coremedia/studio-client.cap-base-models": "catalog:",
+    "@coremedia/studio-client.cap-rest-client": "catalog:",
+    "@coremedia/studio-client.cap-rest-client-impl": "catalog:",
+    "@coremedia/studio-client.client-core": "catalog:",
+    "@coremedia/studio-client.client-core-impl": "catalog:",
+    "@coremedia/studio-client.core-icons": "catalog:",
+    "@coremedia/studio-client.i18n-models": "catalog:",
+    "@coremedia/studio-client.workflow-models": "catalog:",
+    "@coremedia/studio-client.workflow-plugin-models": "catalog:",
+    "@jangaroo/ext-ts": "catalog:",
+    "@jangaroo/runtime": "catalog:"
   },
   "devDependencies": {
-    "@jangaroo/build": "^3.3.1",
-    "@jangaroo/core": "^3.3.1",
-    "@coremedia/eslint-config-studio-client-ext": "^2506.0.0",
-    "@jangaroo/publish": "^3.1.0",
-    "eslint": "^8.57.0",
-    "rimraf": "^5.0.7"
+    "@jangaroo/build": "catalog:",
+    "@jangaroo/core": "catalog:",
+    "@coremedia/studio-client.ext.eslint-config": "catalog:",
+    "eslint": "catalog:",
+    "rimraf": "catalog:"
   },
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",
     "build": "jangaroo build",
     "watch": "jangaroo watch",
-    "publish": "jangaroo publish",
-    "lint": "eslint \"src/**/*.ts\""
+    "lint": "eslint"
   },
   "exports": {
     "./*": {
