@@ -1,7 +1,7 @@
 import { as } from "@jangaroo/runtime";
 import { session, Content, ContentRepository, Struct, ContentType } from "@coremedia/studio-client.cap-rest-client";
 import ContentProperties from "@coremedia/studio-client.cap-rest-client/content/ContentProperties";
-import Logger from "@coremedia/studio-client.client-core-impl/logging/Logger";
+import Logger from "@coremedia/studio-client.client-core/logging/Logger";
 import RemoteBeanUtil from "@coremedia/studio-client.client-core/data/RemoteBeanUtil";
 
 /**

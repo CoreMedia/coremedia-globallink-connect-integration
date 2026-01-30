@@ -1,9 +1,9 @@
 import ILocalesService from "@coremedia/studio-client.cap-base-models/locale/ILocalesService";
 import localesService from "@coremedia/studio-client.cap-base-models/locale/localesService";
-import ContentRepositoryImpl from "@coremedia/studio-client.cap-rest-client-impl/content/impl/ContentRepositoryImpl";
-import TaskDefinitionImpl from "@coremedia/studio-client.cap-rest-client-impl/workflow/impl/TaskDefinitionImpl";
+import ContentRepositoryImpl from "@coremedia/studio-client.cap-rest-client/content/impl/ContentRepositoryImpl";
+import TaskDefinitionImpl from "@coremedia/studio-client.cap-rest-client/workflow/impl/TaskDefinitionImpl";
 import { session, Process, Task, WorkflowObjectProperties } from "@coremedia/studio-client.cap-rest-client";
-import RemoteService from "@coremedia/studio-client.client-core-impl/data/impl/RemoteService";
+import RemoteService from "@coremedia/studio-client.client-core/data/impl/RemoteService";
 import { Blob, Calendar, RemoteBeanUtil } from "@coremedia/studio-client.client-core";
 import {
   Binding,
