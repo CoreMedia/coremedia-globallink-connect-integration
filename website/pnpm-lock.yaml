@@ -40,8 +40,8 @@ catalogs:
       specifier: ^2.0.0
       version: 2.1.1
     knip:
-      specifier: ^5.79.0
-      version: 5.79.0
+      specifier: ^5.82.1
+      version: 5.82.1
     mdast-util-from-markdown:
       specifier: ^2.0.2
       version: 2.0.2
@@ -132,7 +132,7 @@ importers:
         version: 3.0.3
       knip:
         specifier: 'catalog:'
-        version: 5.79.0(@types/node@24.10.1)(typescript@5.9.3)
+        version: 5.82.1(@types/node@24.10.1)(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3694,8 +3694,8 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  knip@5.79.0:
-    resolution: {integrity: sha512-rcg+mNdqm6UiTuRVyy6UuuHw1n4ABMpNXDtrfGaCeUtJoRBAvAENIebr8YMtOz6XE7iVHZ8+rY7skgEtosczhQ==}
+  knip@5.82.1:
+    resolution: {integrity: sha512-1nQk+5AcnkqL40kGQXfouzAEXkTR+eSrgo/8m1d0BMei4eAzFwghoXC4gOKbACgBiCof7hE8wkBVDsEvznf85w==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -5670,9 +5670,6 @@ packages:
     resolution: {integrity: sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==}
     engines: {node: '>=12.20'}
 
-  zod@4.1.13:
-    resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
-
   zod@4.3.5:
     resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
 
@@ -5681,33 +5678,33 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/gateway@2.0.15(zod@4.1.13)':
+  '@ai-sdk/gateway@2.0.15(zod@4.3.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.5)
       '@vercel/oidc': 3.0.5
-      zod: 4.1.13
+      zod: 4.3.5
 
-  '@ai-sdk/provider-utils@3.0.17(zod@4.1.13)':
+  '@ai-sdk/provider-utils@3.0.17(zod@4.3.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.6
-      zod: 4.1.13
+      zod: 4.3.5
 
   '@ai-sdk/provider@2.0.0':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@2.0.101(react@19.2.3)(zod@4.1.13)':
+  '@ai-sdk/react@2.0.101(react@19.2.3)(zod@4.3.5)':
     dependencies:
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
-      ai: 5.0.101(zod@4.1.13)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.5)
+      ai: 5.0.101(zod@4.3.5)
       react: 19.2.3
       swr: 2.3.6(react@19.2.3)
       throttleit: 2.1.0
     optionalDependencies:
-      zod: 4.1.13
+      zod: 4.3.5
 
   '@algolia/abtesting@1.10.0':
     dependencies:
@@ -6899,14 +6896,14 @@ snapshots:
 
   '@docsearch/react@4.3.2(@algolia/client-search@5.44.0)(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(search-insights@2.17.3)':
     dependencies:
-      '@ai-sdk/react': 2.0.101(react@19.2.3)(zod@4.1.13)
+      '@ai-sdk/react': 2.0.101(react@19.2.3)(zod@4.3.5)
       '@algolia/autocomplete-core': 1.19.2(@algolia/client-search@5.44.0)(algoliasearch@5.44.0)(search-insights@2.17.3)
       '@docsearch/core': 4.3.1(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@docsearch/css': 4.3.2
-      ai: 5.0.101(zod@4.1.13)
+      ai: 5.0.101(zod@4.3.5)
       algoliasearch: 5.44.0
       marked: 16.4.2
-      zod: 4.1.13
+      zod: 4.3.5
     optionalDependencies:
       '@types/react': 19.2.7
       react: 19.2.3
@@ -8485,13 +8482,13 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@5.0.101(zod@4.1.13):
+  ai@5.0.101(zod@4.3.5):
     dependencies:
-      '@ai-sdk/gateway': 2.0.15(zod@4.1.13)
+      '@ai-sdk/gateway': 2.0.15(zod@4.3.5)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.5)
       '@opentelemetry/api': 1.9.0
-      zod: 4.1.13
+      zod: 4.3.5
 
   ajv-formats@2.1.1(ajv@8.17.1):
     optionalDependencies:
@@ -10286,7 +10283,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knip@5.79.0(@types/node@24.10.1)(typescript@5.9.3):
+  knip@5.82.1(@types/node@24.10.1)(typescript@5.9.3):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
       '@types/node': 24.10.1
@@ -12768,8 +12765,6 @@ snapshots:
   yallist@3.1.1: {}
 
   yocto-queue@1.2.2: {}
-
-  zod@4.1.13: {}
 
   zod@4.3.5: {}
 
