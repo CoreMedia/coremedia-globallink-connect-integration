@@ -135,7 +135,7 @@ class DownloadFromGlobalLinkActionTest {
         .when(gcExchangeFacade).getSubmission(anyLong());
 
       AtomicReference<DownloadFromGlobalLinkAction.@Nullable Result> resultHolder = new AtomicReference<>();
-      Map<String, List<Content>> issues = new HashMap<>();
+      Map<String, List<@Nullable Content>> issues = new HashMap<>();
       action.doExecuteGlobalLinkAction(new DownloadFromGlobalLinkAction.Parameters(1L, new HashSet<>(), false), resultHolder::set, gcExchangeFacade, issues);
 
       assertThat(issues).containsKey(GlobalLinkWorkflowErrorCodes.SUBMISSION_ERROR);
@@ -157,14 +157,16 @@ class DownloadFromGlobalLinkActionTest {
       action.doExecuteGlobalLinkAction(new DownloadFromGlobalLinkAction.Parameters(1L, new HashSet<>(), false), resultHolder::set, gcExchangeFacade, new HashMap<>());
       DownloadFromGlobalLinkAction.Result result = resultHolder.get();
 
-      assertThat(result).isNotNull();
-      assertThat(result.resultItems.values().stream().anyMatch(list -> {
-        XliffImportResultItem resultItem = list.isEmpty() ? null : list.get(0);
-        return resultItem != null && resultItem.getCode() == NO_SUCH_PROPERTY &&
-          resultItem.getSeverity() == MAJOR && Objects.equals(resultItem.getContent(), targetContent) &&
-          Objects.equals(resultItem.getProperty(), "nosuchproperty");
-      })).isTrue();
-      assertThat(result.resultItems).containsKey(1L);
+      assertThat(result)
+        .isInstanceOfSatisfying(DownloadFromGlobalLinkAction.Result.class, r -> {
+          assertThat(r.resultItems.values().stream().anyMatch(list -> {
+            XliffImportResultItem resultItem = list.isEmpty() ? null : list.get(0);
+            return resultItem != null && resultItem.getCode() == NO_SUCH_PROPERTY &&
+              resultItem.getSeverity() == MAJOR && Objects.equals(resultItem.getContent(), targetContent) &&
+              Objects.equals(resultItem.getProperty(), "nosuchproperty");
+          })).isTrue();
+          assertThat(r.resultItems).containsKey(1L);
+        });
       assertThat(targetContent.getString("string")).isEmpty();
     }
   }

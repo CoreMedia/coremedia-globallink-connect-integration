@@ -229,11 +229,10 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     return new Parameters(parseSubmissionId(submissionId, task.getId()), completedLocales, cancellationAllowed);
   }
 
-  // NullableProblems: IntelliJ IDEA 2025.2.2 notes false-positive "can be null". Ignored.
   @Override
-  void doExecuteGlobalLinkAction(@SuppressWarnings("NullableProblems") Parameters params,
+  void doExecuteGlobalLinkAction(Parameters params,
                                  Consumer<? super Result> resultConsumer,
-                                 GCExchangeFacade facade, Map<String, List<Content>> issues) {
+                                 GCExchangeFacade facade, Map<String, List<@Nullable Content>> issues) {
     long submissionId = params.submissionId;
 
     // We need to share xliff files between #doExecuteGlobalLinkAction and #doStoreResult.
@@ -256,7 +255,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   private void doExecuteGlobalLinkAction(GCExchangeFacade facade, long submissionId, Result result,
-                                         Map<String, List<Content>> issues) {
+                                         Map<String, List<@Nullable Content>> issues) {
 
     //in case we came from 'HandleDownloadTranslationError' we need to correctly set the "cancellationAllowed" variable first.
     disableCancelWhenCompletedLocalesExist(result);
@@ -297,7 +296,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
                                        Settings settings,
                                        Optional<Result> extendedResult,
-                                       Map<String, List<Content>> issues) {
+                                       Map<String, List<@Nullable Content>> issues) {
     Optional<RetryDelay> initialRetryDelay = findRetryDelay(settings, GCC_EARLY_RETRY_DELAY_SETTINGS_KEY);
     // When to return the original delay at this early check phase:
     //   - If there is no extra retry delay, we return the original one

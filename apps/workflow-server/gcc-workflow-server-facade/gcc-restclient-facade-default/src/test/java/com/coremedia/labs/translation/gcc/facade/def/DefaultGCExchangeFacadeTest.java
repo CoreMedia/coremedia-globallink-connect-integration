@@ -92,7 +92,7 @@ class DefaultGCExchangeFacadeTest {
   private static final String MOCK_GCC_CONNECTOR_KEY = "connector-key";
   @Mock
   private GCExchange gcExchange;
-  private Map<String, Object> requiredConfig;
+  private Map<String, @Nullable Object> requiredConfig;
 
   @BeforeEach
   void setUp() {
@@ -114,9 +114,9 @@ class DefaultGCExchangeFacadeTest {
       GCConfigProperty.KEY_KEY
     })
     void failOnMissingRequiredConfiguration(String excludedKey) {
-      Map<String, Object> config = new HashMap<>(requiredConfig);
+      Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
       config.remove(excludedKey);
-      assertThatCode(() -> new DefaultGCExchangeFacade(new Settings(config))).hasMessageContaining(excludedKey);
+      assertThatCode(() -> new DefaultGCExchangeFacade(Settings.ofSanitized(config))).hasMessageContaining(excludedKey);
     }
 
     /**
@@ -126,9 +126,9 @@ class DefaultGCExchangeFacadeTest {
      */
     @Test
     void shouldFailOnUnavailableConnectorKey() {
-      Map<String, Object> config = new HashMap<>(requiredConfig);
+      Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
       when(gcExchange.getConnectors()).thenReturn(List.of());
-      assertThatCode(() -> new DefaultGCExchangeFacade(new Settings(config), cfg -> {
+      assertThatCode(() -> new DefaultGCExchangeFacade(Settings.ofSanitized(config), cfg -> {
         lenient().when(gcExchange.getConfig()).thenReturn(cfg);
         return gcExchange;
       })).hasMessageContaining(GCConfigProperty.KEY_KEY);
@@ -261,7 +261,7 @@ class DefaultGCExchangeFacadeTest {
     @EnumSource(IsSendSubmitterFixture.class)
     void shouldRespectIsSendSubmitter(IsSendSubmitterFixture fixture, TestInfo testInfo) {
       String id = testInfo.getTestMethod().map(Method::getName).orElse("unknown");
-      Map<String, Object> config = new HashMap<>(requiredConfig);
+      Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
       fixture.applyConfig(config);
 
       MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
@@ -397,7 +397,7 @@ class DefaultGCExchangeFacadeTest {
       void shouldRespectAlternativeReplacementConfiguration() {
         String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
         String expectedSanitizedSubject = "SMP-Dove: ?";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
           GCSubmissionName.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
         ));
@@ -424,7 +424,7 @@ class DefaultGCExchangeFacadeTest {
       @Test
       void shouldRespectAlternativeCharacterTypeConfiguration() {
         String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
           GCSubmissionName.CHARACTER_TYPE_KEY, CharacterType.UNICODE
         ));
@@ -496,7 +496,7 @@ class DefaultGCExchangeFacadeTest {
       void shouldRespectAlternativeUnicodeCharacterReplacementConfiguration() {
         String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
         String expectedSanitizedInstructions = "SMP-Dove: ?";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
           GCSubmissionInstruction.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
         ));
@@ -523,7 +523,7 @@ class DefaultGCExchangeFacadeTest {
       @Test
       void shouldRespectAlternativeUnicodeCharacterTypeConfiguration() {
         String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
           GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE
         ));
@@ -572,7 +572,7 @@ class DefaultGCExchangeFacadeTest {
       @Test
       void shouldRespectDisabledTextTypeTransformation() {
         String instructionsChallenge = "Hello <World>!\nThis is a test.";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
           GCSubmissionInstruction.TEXT_TRANSFORM_KEY, TextTransform.NONE
         ));
@@ -636,7 +636,7 @@ class DefaultGCExchangeFacadeTest {
       }
 
       private record HappyPathTaskDataConsumer(
-        String[] actualContentRead) implements BiPredicate<InputStream, GCTaskModel> {
+        @Nullable String[] actualContentRead) implements BiPredicate<InputStream, GCTaskModel> {
 
         @Override
         public boolean test(InputStream is, GCTaskModel task) {
@@ -1023,8 +1023,8 @@ class DefaultGCExchangeFacadeTest {
       super(delegate, "xliff");
     }
 
-    MockDefaultGCExchangeFacade(Map<String, Object> config, GCExchange delegate) {
-      super(new Settings(config), cfg -> {
+    MockDefaultGCExchangeFacade(Map<String, @Nullable Object> config, GCExchange delegate) {
+      super(Settings.ofSanitized(config), cfg -> {
         lenient().when(delegate.getConfig()).thenReturn(cfg);
         Connector connector = Mockito.mock(Connector.class);
         lenient().when(delegate.getConnectors()).thenReturn(List.of(connector));

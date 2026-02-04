@@ -304,7 +304,7 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
 
     Result<R> result = new Result<>();
     // maps error codes to affected contents; list of contents may be empty for some errors */
-    Map<String, List<Content>> issues = new HashMap<>();
+    Map<String, List<@Nullable Content>> issues = new HashMap<>();
 
     RetryDelay retryDelay = RetryDelay.DEFAULT;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
@@ -410,7 +410,7 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
   RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
                                        Settings settings,
                                        Optional<R> extendedResult,
-                                       Map<String, List<Content>> issues) {
+                                       Map<String, List<@Nullable Content>> issues) {
     return originalRetryDelay;
   }
 
@@ -488,7 +488,7 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
   abstract void doExecuteGlobalLinkAction(P params,
                                           Consumer<? super R> resultConsumer,
                                           GCExchangeFacade facade,
-                                          Map<String, List<Content>> issues);
+                                          Map<String, List<@Nullable Content>> issues);
 
   /**
    * Receives the result from {@link #doExecuteGlobalLinkAction(Object, Consumer, GCExchangeFacade, Map)} if that
@@ -601,7 +601,7 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
     result.remainingAutomaticRetries = Integer.MAX_VALUE;
     result.retryDelaySeconds = cmsRetryDelaySeconds;
     // issue type is irrelevant, it's just required to have *some* issue
-    Map<String, List<Content>> issues = new HashMap<>();
+    Map<String, List<@Nullable Content>> issues = new HashMap<>();
     issues.put(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR, List.of());
     result.issues = issuesAsJsonBlob(issues);
     return result;
@@ -638,7 +638,7 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
    * @param maxAutomaticRetries maximum number of retries for the current GlobalLink action.
    */
   private Result<R> getResultForGCCConnectionError(GCFacadeCommunicationException exception, Result<R> result,
-                                                   Map<String, List<Content>> issues, Parameters<P> parameters,
+                                                   Map<String, List<@Nullable Content>> issues, Parameters<P> parameters,
                                                    RetryDelay retryDelay, int maxAutomaticRetries) {
     if (issues.isEmpty()) {
       boolean isInRetryLoop =
@@ -662,21 +662,21 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
 
   @VisibleForTesting
   @Nullable
-  Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+  Blob issuesAsJsonBlob(Map<String, List<@Nullable Content>> issues) {
     if (issues.isEmpty()) {
       return null;
     }
 
     // all issues should have the severity ERROR when displayed in Studio
-    Map<Severity, Map<String, List<Content>>> studioIssues = Map.of(Severity.ERROR, issues);
+    Map<Severity, Map<String, List<@Nullable Content>>> studioIssues = Map.of(Severity.ERROR, issues);
 
     byte[] bytes = issuesAsJsonString(studioIssues).getBytes(StandardCharsets.UTF_8);
     return getConnection().getBlobService().fromBytes(bytes, MIME_TYPE_JSON);
   }
 
   @VisibleForTesting
-  static String issuesAsJsonString(Map<Severity, Map<String, List<Content>>> issues) {
-    Type typeToken = new TypeToken<Map<Severity, Map<XliffImportResultCode, List<Content>>>>() {
+  static String issuesAsJsonString(Map<Severity, Map<String, List<@Nullable Content>>> issues) {
+    Type typeToken = new TypeToken<Map<Severity, Map<XliffImportResultCode, List<@Nullable Content>>>>() {
     }.getType();
     return contentObjectReturnsIdGson.toJson(issues, typeToken);
   }

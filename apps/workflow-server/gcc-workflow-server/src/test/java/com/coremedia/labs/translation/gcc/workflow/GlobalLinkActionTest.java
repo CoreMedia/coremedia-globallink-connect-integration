@@ -112,6 +112,7 @@ class GlobalLinkActionTest {
 
     @Nested
     class CmsOutageBehavior {
+      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @ParameterizedTest(name = "[{index}] {arguments}")
       @CsvSource(useHeadersInDisplayName = true, textBlock = """
         retryDelaySource
@@ -179,6 +180,7 @@ class GlobalLinkActionTest {
         this.retryDelayMode = retryDelayMode;
       }
 
+      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @ParameterizedTest(name = "[{index}] Retry Delay Key With Overridden Name = {0}")
       @ValueSource(booleans = {true, false})
       void shouldUseExpectedRetryDelayKey(boolean overrideName) {
@@ -216,6 +218,7 @@ class GlobalLinkActionTest {
           );
       }
 
+      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @Test
       void shouldRespectAdaptedRetryDelayForGeneralOperation() {
         int retryDelayBase = 1234;
@@ -241,8 +244,9 @@ class GlobalLinkActionTest {
 
         GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(params);
 
-        assertThat(result).isNotNull();
-        assertThat(result.retryDelaySeconds)
+        assertThat(result)
+          .isNotNull()
+          .extracting(r -> r.retryDelaySeconds)
           .as("Should use expected adapted retry delay key (%d divided by %d)", retryDelayBase, delayDivisor)
           .isEqualTo(expectedRetryDelay.toSecondsInt());
       }
@@ -259,7 +263,7 @@ class GlobalLinkActionTest {
         .nameTemplate()
         .create();
       // Mock some test response that contains contents.
-      Map<Severity, Map<String, List<Content>>> issues = Map.of(
+      Map<Severity, Map<String, List<@Nullable Content>>> issues = Map.of(
         Severity.ERROR,
         Map.of(
           CapErrorCodes.CHECKED_OUT_BY_OTHER,
@@ -407,7 +411,7 @@ class GlobalLinkActionTest {
 
     @Override
     void doExecuteGlobalLinkAction(@Nullable Void params, Consumer<? super Void> resultConsumer,
-                                   GCExchangeFacade facade, Map<String, List<Content>> issues) {
+                                   GCExchangeFacade facade, Map<String, List<@Nullable Content>> issues) {
       onDoExecuteGlobalLinkAction.run();
     }
 
@@ -420,7 +424,7 @@ class GlobalLinkActionTest {
     RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
                                          Settings settings,
                                          Optional<Void> extendedResult,
-                                         Map<String, List<Content>> issues) {
+                                         Map<String, List<@Nullable Content>> issues) {
       if (retryDelayOperator == null) {
         return super.adaptDelayForGeneralRetry(originalRetryDelay, settings, extendedResult, issues);
       }
@@ -467,11 +471,16 @@ class GlobalLinkActionTest {
     }
 
     @Override
-    Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+    Blob issuesAsJsonBlob(Map<String, List<@Nullable Content>> issues) {
       return Mockito.mock(Blob.class, "issuesAsJsonBlob(%d): %s".formatted(
         issues.size(),
         issues.entrySet().stream()
-          .map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue().stream().map(Content::getId).collect(Collectors.joining(","))))
+          .map(entry -> String.format("%s: %s",
+            entry.getKey(),
+            entry.getValue().stream()
+              .filter(Objects::nonNull)
+              .map(Content::getId)
+              .collect(Collectors.joining(","))))
           .collect(Collectors.joining(";"))
       ));
     }
