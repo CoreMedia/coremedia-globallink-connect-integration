@@ -123,26 +123,24 @@ class GlobalLinkActionTest {
         int expectedRetryDelay;
 
         switch (retryDelaySource) {
-          case "context":
+          case "context" ->
             // From gcc-workflow.properties
             expectedRetryDelay = 60;
-            break;
-          case "global":
+          case "global" -> {
             expectedRetryDelay = 120;
             globalLinkConfigBuilderProvider.getObject()
               .atGlobal()
               .withRetryDelay("cms-retry-delay", Duration.ofSeconds(expectedRetryDelay))
               .build();
-            break;
-          case "site":
+          }
+          case "site" -> {
             expectedRetryDelay = 180;
             globalLinkConfigBuilderProvider.getObject()
               .atSite(masterSite)
               .withRetryDelay("cms-retry-delay", Duration.ofSeconds(expectedRetryDelay))
               .build();
-            break;
-          default:
-            throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
+          }
+          default -> throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
         }
 
         GlobalLinkAction.Parameters<@Nullable Object> params =
