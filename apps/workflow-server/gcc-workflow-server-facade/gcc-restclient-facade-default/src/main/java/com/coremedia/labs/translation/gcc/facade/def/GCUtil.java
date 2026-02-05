@@ -65,7 +65,7 @@ final class GCUtil {
       try {
         response = requestExecutor.apply(request);
       } catch (RuntimeException e) {
-        throw new GCFacadeCommunicationException(e, String.format("Failure while processing page %d for request: %s.", currentPageNumber, request));
+        throw new GCFacadeCommunicationException(e, "Failure while processing page %d for request: %s.", currentPageNumber, request);
       }
       totalPageNumber = response.getTotalResultPagesCount();
       if (totalPageNumber == null) {
