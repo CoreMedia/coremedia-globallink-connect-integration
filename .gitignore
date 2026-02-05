@@ -146,6 +146,8 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 .repository
+# org.codehaus.plexus.compiler.javac.JavacCompiler
+*.args
 
 ### NotepadPP ###
 # Notepad++ backups #
