@@ -64,6 +64,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 
 import static java.util.Collections.emptyList;
@@ -628,20 +630,25 @@ class DefaultGCExchangeFacadeTest {
         when(gcExchange.confirmTask(eq(expectedTaskId))).thenReturn(true);
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-        @Nullable String[] actualContentRead = {null};
+        AtomicReference<String> actualContentRead = new AtomicReference<>("unset");
 
         facade.downloadCompletedTasks(expectedSubmissionId, new HappyPathTaskDataConsumer(actualContentRead));
 
-        assertThat(actualContentRead[0]).isEqualTo(LOREM_IPSUM);
+        assertThat(actualContentRead).hasValue(LOREM_IPSUM);
       }
 
-      private record HappyPathTaskDataConsumer(
-        @Nullable String[] actualContentRead) implements BiPredicate<InputStream, GCTaskModel> {
+      @SuppressWarnings("ClassCanBeRecord") // Not appropriate to use record here, as value is mutable.
+      private static final class HappyPathTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+        private final AtomicReference<String> actualContentRead;
+
+        private HappyPathTaskDataConsumer(AtomicReference<String> actualContentRead) {
+          this.actualContentRead = actualContentRead;
+        }
 
         @Override
         public boolean test(InputStream is, GCTaskModel task) {
           try {
-            actualContentRead[0] = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
+            actualContentRead.set(new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8));
             return true;
           } catch (IOException e) {
             throw new RuntimeException(e);
