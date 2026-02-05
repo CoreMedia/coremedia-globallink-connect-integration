@@ -175,7 +175,8 @@ class DownloadFromGlobalLinkActionTest {
     doAnswer((Answer<Boolean>) invocationOnMock -> {
       BiPredicate<InputStream, GCTaskModel> consumer = invocationOnMock.getArgument(1);
       ByteArrayInputStream inputStream = new ByteArrayInputStream(xliff.getBytes(StandardCharsets.UTF_8));
-      consumer.test(inputStream, new GCTaskModel(1L, Locale.GERMANY));
+      boolean result = consumer.test(inputStream, new GCTaskModel(1L, Locale.GERMANY));
+      LOG.trace("Ignoring irrelevant result of consumer: {}", result);
       return true;
     }).when(gcExchangeFacade).downloadCompletedTasks(anyLong(), any());
     doReturn(GCSubmissionModel.builder(1L).state(GCSubmissionState.DELIVERED).build()).when(gcExchangeFacade).getSubmission(anyLong());
