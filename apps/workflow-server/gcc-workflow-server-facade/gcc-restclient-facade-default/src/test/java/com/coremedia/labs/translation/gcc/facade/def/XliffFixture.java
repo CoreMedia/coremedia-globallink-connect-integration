@@ -156,7 +156,7 @@ public record XliffFixture(
    * @return some due date for testing
    */
   private static ZonedDateTime getSomeDueDate() {
-    return ZonedDateTime.of(LocalDateTime.now().plusDays(2L), ZoneId.systemDefault());
+    return ZonedDateTime.of(LocalDateTime.now(ZoneId.systemDefault()).plusDays(2L), ZoneId.systemDefault());
   }
 
   /**

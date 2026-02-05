@@ -123,7 +123,7 @@ class GCUtilTest {
             ZonedDateTime.of(LocalDateTime.ofEpochSecond(0L, 0, ZoneOffset.UTC), ZoneOffset.UTC),
             ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 2, 0, 0), ZoneId.of("Europe/Berlin")),
             ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 3, 0, 0), ZoneId.of("Europe/Berlin")),
-            ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault())
+            ZonedDateTime.of(LocalDateTime.now(ZoneId.systemDefault()), ZoneId.systemDefault())
           ),
           ZoneId.getAvailableZoneIds().stream()
             .map(ZoneId::of)

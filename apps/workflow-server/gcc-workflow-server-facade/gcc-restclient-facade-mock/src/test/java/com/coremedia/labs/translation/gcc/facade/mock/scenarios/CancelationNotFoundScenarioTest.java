@@ -38,7 +38,7 @@ class CancelationNotFoundScenarioTest {
       long submissionId = facade.submitSubmission(
         testName,
         null,
-        ZonedDateTime.of(LocalDateTime.now().plusHours(2L), ZoneId.systemDefault()),
+        ZonedDateTime.of(LocalDateTime.now(ZoneId.systemDefault()).plusHours(2L), ZoneId.systemDefault()),
         null,
         "admin",
         Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));

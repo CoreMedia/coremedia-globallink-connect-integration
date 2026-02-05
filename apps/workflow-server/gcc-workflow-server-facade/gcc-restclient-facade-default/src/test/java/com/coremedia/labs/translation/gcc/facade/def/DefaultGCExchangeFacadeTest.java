@@ -270,7 +270,7 @@ class DefaultGCExchangeFacadeTest {
       ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
         null,
         null,
-        ZonedDateTime.now().plusDays(1L),
+        ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
         null,
         submitter,
         Locale.US,
@@ -338,7 +338,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subject,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -359,7 +359,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -381,7 +381,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subjectChallenge,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -408,7 +408,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subjectChallenge,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -435,7 +435,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subjectChallenge,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -458,7 +458,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -480,7 +480,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -507,7 +507,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -534,7 +534,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -557,7 +557,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -581,7 +581,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
