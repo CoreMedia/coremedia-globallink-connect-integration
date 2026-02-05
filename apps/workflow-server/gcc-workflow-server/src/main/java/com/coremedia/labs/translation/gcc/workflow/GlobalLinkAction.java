@@ -417,8 +417,8 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
   @Override
   public final ActionResult storeResult(Task task, @Nullable Object result) {
     checkNotAborted(task);
-    if (result instanceof Exception) {
-      return storeResultException(task, (Exception) result);
+    if (result instanceof Exception exception) {
+      return storeResultException(task, exception);
     }
     if (result == null) {
       // skip
@@ -622,9 +622,9 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
   }
 
   static boolean isCapExceptionWithMatchingErrorCode(Throwable throwable) {
-    return throwable instanceof CapException
-      && ((CapException) throwable).getErrorCode() != null
-      && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(((CapException) throwable).getErrorCode());
+    return throwable instanceof CapException exception
+      && exception.getErrorCode() != null
+      && REPOSITORY_UNAVAILABLE_ERROR_CODES.contains(exception.getErrorCode());
   }
 
   /**
