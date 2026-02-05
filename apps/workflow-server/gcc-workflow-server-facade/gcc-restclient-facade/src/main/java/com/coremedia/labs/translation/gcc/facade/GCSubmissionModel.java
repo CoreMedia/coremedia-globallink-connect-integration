@@ -112,11 +112,10 @@ public class GCSubmissionModel {
   }
 
   @Override
-  public boolean equals(@Nullable Object object) {
-    if (object == null || getClass() != object.getClass()) {
+  public boolean equals(Object o) {
+    if (!(o instanceof GCSubmissionModel that)) {
       return false;
     }
-    GCSubmissionModel that = (GCSubmissionModel) object;
     return submissionId == that.submissionId && error == that.error && Objects.equals(pdSubmissionIds, that.pdSubmissionIds) && Objects.equals(name, that.name) && state == that.state && Objects.equals(submitter, that.submitter);
   }
 

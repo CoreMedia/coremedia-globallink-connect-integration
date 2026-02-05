@@ -29,16 +29,11 @@ public class GCTaskModel {
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
+  public boolean equals(Object o) {
+    if (!(o instanceof GCTaskModel that)) {
       return false;
     }
-    GCTaskModel that = (GCTaskModel) o;
-    return taskId == that.taskId &&
-      Objects.equals(taskLocale, that.taskLocale);
+    return taskId == that.taskId && Objects.equals(taskLocale, that.taskLocale);
   }
 
   @Override
