@@ -101,6 +101,7 @@ class DefaultGCExchangeFacadeContractTest {
    * The included timestamp is meant to ease the identification of a given
    * test run.
    */
+  @SuppressWarnings("TimeInStaticInitializer") // Time only meant as rough guidance. No need to tune initialization time.
   private static final String TEST_ID = "CT#%s".formatted(LocalDateTime.now(ZoneId.systemDefault()).format(DATE_TIME_FORMATTER));
   private String submissionName;
   private String testName;
