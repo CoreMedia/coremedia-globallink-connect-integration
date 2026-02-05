@@ -1011,6 +1011,7 @@ class DefaultGCExchangeFacadeTest {
       }
     },
     BOOLEAN_TRUE() {
+      @SuppressWarnings("BooleanLiteral")
       @Override
       protected Object sendSubmitterConfig() {
         return Boolean.TRUE;
@@ -1022,6 +1023,7 @@ class DefaultGCExchangeFacadeTest {
       }
     },
     BOOLEAN_FALSE() {
+      @SuppressWarnings("BooleanLiteral")
       @Override
       protected Object sendSubmitterConfig() {
         return Boolean.FALSE;
