@@ -343,11 +343,11 @@ class GlobalLinkActionTest {
       this.exception = exception;
     }
 
-    public Exception exception() {
+    Exception exception() {
       return exception;
     }
 
-    public static RepositoryNotAvailableException createRepositoryNotAvailableException() {
+    static RepositoryNotAvailableException createRepositoryNotAvailableException() {
       return new RepositoryNotAvailableException("foo", null, null);
     }
   }
@@ -366,7 +366,7 @@ class GlobalLinkActionTest {
       this.exception = exception;
     }
 
-    public Exception exception() {
+    Exception exception() {
       return exception;
     }
   }
@@ -396,11 +396,11 @@ class GlobalLinkActionTest {
       this.gcExchangeFacade = gcExchangeFacade;
     }
 
-    public void onDoExecuteGlobalLinkAction(Runnable onDoExecuteGlobalLinkAction) {
+    private void onDoExecuteGlobalLinkAction(Runnable onDoExecuteGlobalLinkAction) {
       this.onDoExecuteGlobalLinkAction = onDoExecuteGlobalLinkAction;
     }
 
-    public void adaptDelayForGeneralRetryBy(UnaryOperator<RetryDelay> retryDelayOperator) {
+    private void adaptDelayForGeneralRetryBy(UnaryOperator<RetryDelay> retryDelayOperator) {
       this.retryDelayOperator = retryDelayOperator;
     }
 
@@ -458,7 +458,7 @@ class GlobalLinkActionTest {
         SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct"));
     }
 
-    public void setOverrideGccRetryDelaySettingsKey(@Nullable String overrideGccRetryDelaySettingsKey) {
+    private void setOverrideGccRetryDelaySettingsKey(@Nullable String overrideGccRetryDelaySettingsKey) {
       this.overrideGccRetryDelaySettingsKey = overrideGccRetryDelaySettingsKey;
     }
 

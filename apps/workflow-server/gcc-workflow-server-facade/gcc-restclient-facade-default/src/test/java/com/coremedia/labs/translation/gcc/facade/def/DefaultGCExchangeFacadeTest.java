@@ -1033,13 +1033,13 @@ class DefaultGCExchangeFacadeTest {
       });
     }
 
-    public ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
-                                                                       @Nullable String comment,
-                                                                       ZonedDateTime dueDate,
-                                                                       @Nullable String workflow,
-                                                                       @Nullable String submitter,
-                                                                       Locale sourceLocale,
-                                                                       Map<String, List<Locale>> contentMap) {
+    private ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
+                                                                @Nullable String comment,
+                                                                ZonedDateTime dueDate,
+                                                                @Nullable String workflow,
+                                                                @Nullable String submitter,
+                                                                Locale sourceLocale,
+                                                                Map<String, List<Locale>> contentMap) {
       SubmissionSubmit.SubmissionSubmitResponseData response = Mockito.mock(SubmissionSubmit.SubmissionSubmitResponseData.class);
       long expectedSubmissionId = 42L;
 
@@ -1069,7 +1069,7 @@ class DefaultGCExchangeFacadeTest {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public GCSubmissionModel getNotExistingSubmission() {
+    private GCSubmissionModel getNotExistingSubmission() {
       Submissions.SubmissionsResponseData response = Mockito.mock(Submissions.SubmissionsResponseData.class);
 
       when(getDelegate().getSubmissionsList(any())).thenReturn(response);
@@ -1077,13 +1077,13 @@ class DefaultGCExchangeFacadeTest {
       return getSubmission(42L);
     }
 
-    public GCSubmissionModel getSuccessfulSubmission() {
+    private GCSubmissionModel getSuccessfulSubmission() {
       GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.Completed);
       when(submission.getIsError()).thenReturn(Boolean.FALSE);
       return getSubmission(42L);
     }
 
-    public GCSubmissionModel getErredSubmission() {
+    private GCSubmissionModel getErredSubmission() {
       GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.PreProcess);
       when(submission.getIsError()).thenReturn(Boolean.TRUE);
       return getSubmission(42L);
