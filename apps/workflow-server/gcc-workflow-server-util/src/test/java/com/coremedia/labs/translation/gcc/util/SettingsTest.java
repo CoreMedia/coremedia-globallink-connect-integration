@@ -233,18 +233,17 @@ class SettingsTest {
      * Represents different strategies for applying sources.
      */
     enum SingleSourceFixture implements Function<Map<String, @Nullable Object>, Settings> {
-      CONSTRUCTOR(Settings::new),
-      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.mergedWith(new Settings(other)));
-
-      private final Function<Map<String, @Nullable Object>, Settings> delegate;
-
-      SingleSourceFixture(Function<Map<String, @Nullable Object>, Settings> delegate) {
-        this.delegate = delegate;
-      }
-
-      @Override
-      public Settings apply(Map<String, @Nullable Object> map) {
-        return delegate.apply(map);
+      CONSTRUCTOR() {
+        @Override
+        public Settings apply(Map<String, @Nullable Object> map) {
+          return Settings.ofSanitized(map);
+        }
+      },
+      EMPTY_PUT_ALL_SETTINGS() {
+        @Override
+        public Settings apply(Map<String, @Nullable Object> map) {
+          return Settings.EMPTY.mergedWith(Settings.ofSanitized(map));
+        }
       }
     }
   }
@@ -503,21 +502,35 @@ class SettingsTest {
    * resulting properties.
    */
   enum EmptyValueFixture implements Supplier<@Nullable Object> {
-    NULL(null),
-    EMPTY_STRING(""),
-    EMPTY_SET(Set.of()),
-    EMPTY_LIST(List.of()),
-    EMPTY_MAP(Map.of());
-
-    private final @Nullable Object value;
-
-    EmptyValueFixture(@Nullable Object value) {
-      this.value = value;
-    }
-
-    @Override
-    public @Nullable Object get() {
-      return value;
+    NULL() {
+      @Override
+      public @Nullable Object get() {
+        return null;
+      }
+    },
+    EMPTY_STRING() {
+      @Override
+      public Object get() {
+        return "";
+      }
+    },
+    EMPTY_SET() {
+      @Override
+      public Object get() {
+        return Set.of();
+      }
+    },
+    EMPTY_LIST() {
+      @Override
+      public Object get() {
+        return List.of();
+      }
+    },
+    EMPTY_MAP() {
+      @Override
+      public Object get() {
+        return Map.of();
+      }
     }
   }
 }

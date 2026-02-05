@@ -21,46 +21,66 @@ public enum CharacterReplacementStrategy {
   /**
    * Do not apply any replacement.
    */
-  NONE(MatchResult::group),
+  NONE() {
+    @Override
+    public Function<MatchResult, String> replacer() {
+      return MatchResult::group;
+    }
+  },
   /**
    * Replace with an empty string.
    */
-  EMPTY(mr -> ""),
+  EMPTY() {
+    @Override
+    public Function<MatchResult, String> replacer() {
+      return mr -> "";
+    }
+  },
   /**
    * Replace with an underscore.
    */
-  UNDERSCORE(mr -> replaceIfNotEmpty(mr, "_")),
+  UNDERSCORE() {
+    @Override
+    public Function<MatchResult, String> replacer() {
+      return mr -> replaceIfNotEmpty(mr, "_");
+    }
+  },
   /**
    * Replace with a question mark.
    */
-  QUESTION_MARK(mr -> replaceIfNotEmpty(mr, "?")),
+  QUESTION_MARK() {
+    @Override
+    public Function<MatchResult, String> replacer() {
+      return mr -> replaceIfNotEmpty(mr, "?");
+    }
+  },
   /**
    * Replace with a Unicode code point.
    */
-  UNICODE_CODE_POINT(mr -> {
-    String group = mr.group();
-    if (mr.group().isEmpty()) {
-      return "";
+  UNICODE_CODE_POINT() {
+    @Override
+    public Function<MatchResult, String> replacer() {
+      return mr -> {
+        String group = mr.group();
+        if (group.isEmpty()) {
+          return "";
+        }
+        int codePoint = group.codePointAt(0);
+        return String.format("U+%04X", codePoint);
+      };
     }
-    int codePoint = group.codePointAt(0);
-    return String.format("U+%04X", codePoint);
-  }),
+  },
   ;
 
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   private final String id;
 
-  private final Function<MatchResult, String> replacer;
-
-  CharacterReplacementStrategy(Function<MatchResult, String> replacer) {
+  CharacterReplacementStrategy() {
     id = stripUnderscoresAndDashes(name());
-    this.replacer = replacer;
   }
 
-  public Function<MatchResult, String> replacer() {
-    return replacer;
-  }
+  public abstract Function<MatchResult, String> replacer();
 
   /**
    * Returns the strategy for the given configuration object.

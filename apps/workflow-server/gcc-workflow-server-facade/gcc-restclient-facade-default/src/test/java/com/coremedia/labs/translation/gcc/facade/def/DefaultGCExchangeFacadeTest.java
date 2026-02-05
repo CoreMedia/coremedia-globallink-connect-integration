@@ -988,28 +988,91 @@ class DefaultGCExchangeFacadeTest {
   }
 
   enum IsSendSubmitterFixture {
-    UNSET("unset", false),
-    NULL(null, false),
-    BOOLEAN_TRUE(true, true),
-    BOOLEAN_FALSE(false, false),
-    STRING_TRUE("true", true),
-    STRING_FALSE("false", false),
-    STRING_ANY("anyString", false),
+    UNSET() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "unset";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    NULL() {
+      @Override
+      protected @Nullable Object sendSubmitterConfig() {
+        return null;
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    BOOLEAN_TRUE() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return Boolean.TRUE;
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return true;
+      }
+    },
+    BOOLEAN_FALSE() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return Boolean.FALSE;
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    STRING_TRUE() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "true";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return true;
+      }
+    },
+    STRING_FALSE() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "false";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    STRING_ANY() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "anyString";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
     ;
 
-    private final @Nullable Object sendSubmitterConfig;
-    private final boolean expectedIsSendSubmitter;
+    protected abstract @Nullable Object sendSubmitterConfig();
 
-    IsSendSubmitterFixture(@Nullable Object sendSubmitterConfig, boolean expectedIsSendSubmitter) {
-      this.sendSubmitterConfig = sendSubmitterConfig;
-      this.expectedIsSendSubmitter = expectedIsSendSubmitter;
-    }
-
-    public boolean expectedSendSubmitter() {
-      return expectedIsSendSubmitter;
-    }
+    public abstract boolean expectedSendSubmitter();
 
     public void applyConfig(Map<String, @Nullable Object> config) {
+      Object sendSubmitterConfig = sendSubmitterConfig();
       if ("unset".equals(sendSubmitterConfig)) {
         config.remove(GCConfigProperty.KEY_IS_SEND_SUBMITTER);
       } else {

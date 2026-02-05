@@ -60,7 +60,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -313,17 +312,72 @@ class GlobalLinkActionTest {
    */
 
   enum RepositoryUnavailableFixture {
-    REPOSITORY_NOT_AVAILABLE_EXCEPTION(createRepositoryNotAvailableException()),
-    CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null)),
-    NESTED_CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION(new RuntimeException(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null))),
-    USER_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION(new CapException("foo", CapErrorCodes.USER_REPOSITORY_UNAVAILABLE, null, null)),
-    REPOSITORY_NOT_AVAILABLE_CAP_EXCEPTION(new CapException("foo", CapErrorCodes.REPOSITORY_NOT_AVAILABLE, null, null)),
-    RNAE_CAUSING_CAP_EXCEPTION(cause -> new CapException("foo", null, null, cause)),
-    RNAE_CAUSING_INVALID_PROPERTY_EXCEPTION(cause -> new InvalidPropertyException(Object.class, "foo", "bar", cause)),
-    RNAE_CAUSING_INVOCATION_TARGET_EXCEPTION(InvocationTargetException::new),
-    RNAE_CAUSING_EVALUATION_EXCEPTION(EvaluationException::new),
-    RNAE_CAUSING_RUNTIME_EXCEPTION(RuntimeException::new),
-    RNAE_CAUSING_NESTED_RUNTIME_EXCEPTION(cause -> new RuntimeException(new RuntimeException(cause))),
+    REPOSITORY_NOT_AVAILABLE_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return createRepositoryNotAvailableException();
+      }
+    },
+    CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null);
+      }
+    },
+    NESTED_CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null));
+      }
+    },
+    USER_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.USER_REPOSITORY_UNAVAILABLE, null, null);
+      }
+    },
+    REPOSITORY_NOT_AVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.REPOSITORY_NOT_AVAILABLE, null, null);
+      }
+    },
+    RNAE_CAUSING_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", null, null, createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_INVALID_PROPERTY_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new InvalidPropertyException(Object.class, "foo", "bar", createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_INVOCATION_TARGET_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new InvocationTargetException(createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_EVALUATION_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new EvaluationException(createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_NESTED_RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(new RuntimeException(createRepositoryNotAvailableException()));
+      }
+    },
     /**
      * Observed during debugging when the content server was restarted while a corba call was made:
      *
@@ -331,21 +385,14 @@ class GlobalLinkActionTest {
      * org.omg.CORBA.OBJECT_NOT_EXIST: FINE: 02510002: The server ID in the target object key does not match the server key expected by the server  vmcid: OMG  minor code: 2  completed: No
      * }</pre>
      */
-    CORBA_OBJECT_NOT_EXIST_ISSUE_EXCEPTION(new CapException("content", CapErrorCodes.UNEXPECTED_RUNTIME_EXCEPTION, null, new OBJECT_NOT_EXIST()));
+    CORBA_OBJECT_NOT_EXIST_ISSUE_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("content", CapErrorCodes.UNEXPECTED_RUNTIME_EXCEPTION, null, new OBJECT_NOT_EXIST());
+      }
+    };
 
-    private final Exception exception;
-
-    RepositoryUnavailableFixture(Function<RepositoryNotAvailableException, Exception> exceptionFunction) {
-      exception = exceptionFunction.apply(createRepositoryNotAvailableException());
-    }
-
-    RepositoryUnavailableFixture(Exception exception) {
-      this.exception = exception;
-    }
-
-    Exception exception() {
-      return exception;
-    }
+    abstract Exception exception();
 
     static RepositoryNotAvailableException createRepositoryNotAvailableException() {
       return new RepositoryNotAvailableException("foo", null, null);
@@ -353,22 +400,39 @@ class GlobalLinkActionTest {
   }
 
   enum NoRepositoryUnavailableFixture {
-    RUNTIME_EXCEPTION(new RuntimeException()),
-    NESTED_RUNTIME_EXCEPTION(new RuntimeException(new RuntimeException())),
-    INVOCATION_TARGET_EXCEPTION_WITH_IRRELEVANT_CAUSE(new InvocationTargetException(new RuntimeException())),
-    IRRELEVANT_CAP_EXCEPTION_NO_ERROR_CODE(new CapException("foo", null, null, null)),
-    CAP_EXCEPTION_WITH_IRRELEVANT_ERROR_CODE(new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null)),
+    RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException();
+      }
+    },
+    NESTED_RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(new RuntimeException());
+      }
+    },
+    INVOCATION_TARGET_EXCEPTION_WITH_IRRELEVANT_CAUSE() {
+      @Override
+      Exception exception() {
+        return new InvocationTargetException(new RuntimeException());
+      }
+    },
+    IRRELEVANT_CAP_EXCEPTION_NO_ERROR_CODE() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", null, null, null);
+      }
+    },
+    CAP_EXCEPTION_WITH_IRRELEVANT_ERROR_CODE() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null);
+      }
+    },
     ;
 
-    private final Exception exception;
-
-    NoRepositoryUnavailableFixture(Exception exception) {
-      this.exception = exception;
-    }
-
-    Exception exception() {
-      return exception;
-    }
+    abstract Exception exception();
   }
 
   /*

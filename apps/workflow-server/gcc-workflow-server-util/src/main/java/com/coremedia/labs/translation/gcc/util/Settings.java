@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.errorprone.annotations.Immutable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
@@ -29,6 +30,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @param properties merged properties from all sources
  * @since 2506.0.0-1
  */
+@SuppressWarnings("Immutable") // We ensure immutability by defensive copying and unmodifiable collections.
+@Immutable
 @NullMarked
 public record Settings(Map<String, Object> properties) {
   /**
@@ -183,7 +186,7 @@ public record Settings(Map<String, Object> properties) {
       .filter(Settings::isValidEntry)
       .map(e -> sanitizeEntryValue(e, 0))
       .filter(Settings::isValidEntry)
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   /**
