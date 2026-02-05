@@ -155,6 +155,7 @@ class CharacterReplacementStrategyTest {
 
   enum PatternFixture {
     ANY(Pattern.compile(".*")),
+    @SuppressWarnings("BareDotMetacharacter")
     ANY_CHAR(Pattern.compile(".")),
     A_CHAR(Pattern.compile("a")),
     SMP(Pattern.compile("[^\\x00-\\uffff]"));
