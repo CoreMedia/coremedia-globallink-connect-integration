@@ -37,6 +37,7 @@ public class GccCredentialsExtension implements ExecutionCondition, ParameterRes
 
   private static final String USER_HOME = System.getProperty("user.home");
   private static final String GCC_PROPERTIES_DEFAULT = ".gcc.properties";
+  @SuppressWarnings("InlineFormatString")
   private static final String GCC_PROPERTIES_PROFILE_PATTERN = ".gcc.%s.properties";
   private static final Path GCC_CREDENTIALS_PATH = Paths.get(USER_HOME, GCC_PROPERTIES_DEFAULT);
   private @Nullable Map<String, String> gccProperties;
