@@ -50,7 +50,7 @@ final class PathUtil {
   private static List<String> tokenizeAndNormalize(String path) {
     Iterable<String> split = Splitter.on(PATH_SEPARATOR).omitEmptyStrings().split(path);
     List<String> segments = StreamSupport.stream(split.spliterator(), false)
-                                         .filter(s -> !(PATH_SELF.equals(s)))
+                                         .filter(s -> !PATH_SELF.equals(s))
                                          .collect(Collectors.toList());
     for (int i=1; i<segments.size(); ++i) {
       if (PATH_PARENT.equals(segments.get(i)) && !PATH_PARENT.equals(segments.get(i-1))) {

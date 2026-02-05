@@ -495,7 +495,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   private static File prepareWorkingDir() {
     try {
       File workingDir = Files.createTempDirectory(WORKING_DIR_PREFIX).toFile();
-      if (!(new File(workingDir, NEWXLIFFS).mkdir())) {
+      if (!new File(workingDir, NEWXLIFFS).mkdir()) {
         throw new IllegalStateException("Cannot create subdirectories in temp dir");
       }
       return workingDir;
