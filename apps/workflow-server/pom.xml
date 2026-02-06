@@ -76,12 +76,7 @@
 
   <profiles>
     <profile>
-      <id>strict-checks</id>
-      <activation>
-        <property>
-          <name>!skipChecks</name>
-        </property>
-      </activation>
+      <id>gcc-strict-checks</id>
       <build>
         <plugins>
           <plugin>
