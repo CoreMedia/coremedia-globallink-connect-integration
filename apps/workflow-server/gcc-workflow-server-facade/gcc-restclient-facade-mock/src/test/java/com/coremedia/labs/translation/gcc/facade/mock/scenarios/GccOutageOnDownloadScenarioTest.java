@@ -6,6 +6,7 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -25,6 +26,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@NullMarked
 class GccOutageOnDownloadScenarioTest {
   @Nested
   class FacadeIntegrationBehavior {

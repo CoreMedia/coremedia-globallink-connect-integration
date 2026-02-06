@@ -1,5 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.annotation.Documented;
@@ -14,6 +15,7 @@ import java.lang.annotation.Target;
 @ExtendWith(GccCredentialsExtension.class)
 @Inherited
 @Documented
+@NullMarked
 public @interface GccCredentials {
   /**
    * An optional profile to <em>prefer</em> over the default credentials.
