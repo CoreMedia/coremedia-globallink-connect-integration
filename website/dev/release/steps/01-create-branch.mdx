@@ -167,21 +167,25 @@ maintenance branch (for _minor_ versions).
 <TabItem value="major">
 ```bash
 git switch --create --track "maintenance/2506.x" "origin/main"
+git push --set-upstream origin "maintenance/2506.x"
+git switch --create --track "approval/2506.x" "origin/main"
 ```
 </TabItem>
 <TabItem value="minor">
 ```bash
-git switch --create --track "approval/2406.1" "origin/maintenance/2406.x"
+git switch --create --track "approval/2406.1.0" "origin/maintenance/2406.x"
 ```
 </TabItem>
 </Tabs>
 
-In general all adaptations are done on an `approval/*` branch, which is later
-reviewed, merged and deleted. We simplify the process for _major_ releases by
-using the `maintenance/*` branch directly.
+For a fresh approval of a major release, we create a new maintenance branch from
+`main` and an approval branch from `main` as well. For a minor release, we just
+create an approval branch from the related maintenance branch. This way, the
+subsequent steps for a major and minor release are almost identical.
 
-:::caution CAUTION: Protect Branches
-If creating new maintenance branches, you should mark them as protected branches
-in GitHub, so that they are not deleted by accident when later merged back to
-main again (as one-time merge only).
+:::info INFO: Protected Branches
+The branch `main` as well as all branches matching pattern `maintenance/*` are
+protected branches in GitHub. This means that you cannot push directly to these
+branches, but need to create a pull request for merging your changes. This is a
+safety mechanism to prevent unintended changes to these branches.
 :::
