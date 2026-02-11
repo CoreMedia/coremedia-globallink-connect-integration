@@ -60,7 +60,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -112,6 +111,7 @@ class GlobalLinkActionTest {
 
     @Nested
     class CmsOutageBehavior {
+      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @ParameterizedTest(name = "[{index}] {arguments}")
       @CsvSource(useHeadersInDisplayName = true, textBlock = """
         retryDelaySource
@@ -123,26 +123,24 @@ class GlobalLinkActionTest {
         int expectedRetryDelay;
 
         switch (retryDelaySource) {
-          case "context":
+          case "context" ->
             // From gcc-workflow.properties
             expectedRetryDelay = 60;
-            break;
-          case "global":
+          case "global" -> {
             expectedRetryDelay = 120;
             globalLinkConfigBuilderProvider.getObject()
               .atGlobal()
               .withRetryDelay("cms-retry-delay", Duration.ofSeconds(expectedRetryDelay))
               .build();
-            break;
-          case "site":
+          }
+          case "site" -> {
             expectedRetryDelay = 180;
             globalLinkConfigBuilderProvider.getObject()
               .atSite(masterSite)
               .withRetryDelay("cms-retry-delay", Duration.ofSeconds(expectedRetryDelay))
               .build();
-            break;
-          default:
-            throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
+          }
+          default -> throw new IllegalStateException("Unknown retry delay source %s".formatted(retryDelaySource));
         }
 
         GlobalLinkAction.Parameters<@Nullable Object> params =
@@ -179,6 +177,7 @@ class GlobalLinkActionTest {
         this.retryDelayMode = retryDelayMode;
       }
 
+      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @ParameterizedTest(name = "[{index}] Retry Delay Key With Overridden Name = {0}")
       @ValueSource(booleans = {true, false})
       void shouldUseExpectedRetryDelayKey(boolean overrideName) {
@@ -216,6 +215,7 @@ class GlobalLinkActionTest {
           );
       }
 
+      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @Test
       void shouldRespectAdaptedRetryDelayForGeneralOperation() {
         int retryDelayBase = 1234;
@@ -241,8 +241,9 @@ class GlobalLinkActionTest {
 
         GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(params);
 
-        assertThat(result).isNotNull();
-        assertThat(result.retryDelaySeconds)
+        assertThat(result)
+          .isNotNull()
+          .extracting(r -> r.retryDelaySeconds)
           .as("Should use expected adapted retry delay key (%d divided by %d)", retryDelayBase, delayDivisor)
           .isEqualTo(expectedRetryDelay.toSecondsInt());
       }
@@ -259,7 +260,7 @@ class GlobalLinkActionTest {
         .nameTemplate()
         .create();
       // Mock some test response that contains contents.
-      Map<Severity, Map<String, List<Content>>> issues = Map.of(
+      Map<Severity, Map<String, List<@Nullable Content>>> issues = Map.of(
         Severity.ERROR,
         Map.of(
           CapErrorCodes.CHECKED_OUT_BY_OTHER,
@@ -309,17 +310,72 @@ class GlobalLinkActionTest {
    */
 
   enum RepositoryUnavailableFixture {
-    REPOSITORY_NOT_AVAILABLE_EXCEPTION(createRepositoryNotAvailableException()),
-    CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null)),
-    NESTED_CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION(new RuntimeException(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null))),
-    USER_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION(new CapException("foo", CapErrorCodes.USER_REPOSITORY_UNAVAILABLE, null, null)),
-    REPOSITORY_NOT_AVAILABLE_CAP_EXCEPTION(new CapException("foo", CapErrorCodes.REPOSITORY_NOT_AVAILABLE, null, null)),
-    RNAE_CAUSING_CAP_EXCEPTION(cause -> new CapException("foo", null, null, cause)),
-    RNAE_CAUSING_INVALID_PROPERTY_EXCEPTION(cause -> new InvalidPropertyException(Object.class, "foo", "bar", cause)),
-    RNAE_CAUSING_INVOCATION_TARGET_EXCEPTION(InvocationTargetException::new),
-    RNAE_CAUSING_EVALUATION_EXCEPTION(EvaluationException::new),
-    RNAE_CAUSING_RUNTIME_EXCEPTION(RuntimeException::new),
-    RNAE_CAUSING_NESTED_RUNTIME_EXCEPTION(cause -> new RuntimeException(new RuntimeException(cause))),
+    REPOSITORY_NOT_AVAILABLE_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return createRepositoryNotAvailableException();
+      }
+    },
+    CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null);
+      }
+    },
+    NESTED_CONTENT_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null));
+      }
+    },
+    USER_REPOSITORY_UNAVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.USER_REPOSITORY_UNAVAILABLE, null, null);
+      }
+    },
+    REPOSITORY_NOT_AVAILABLE_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.REPOSITORY_NOT_AVAILABLE, null, null);
+      }
+    },
+    RNAE_CAUSING_CAP_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", null, null, createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_INVALID_PROPERTY_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new InvalidPropertyException(Object.class, "foo", "bar", createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_INVOCATION_TARGET_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new InvocationTargetException(createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_EVALUATION_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new EvaluationException(createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(createRepositoryNotAvailableException());
+      }
+    },
+    RNAE_CAUSING_NESTED_RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(new RuntimeException(createRepositoryNotAvailableException()));
+      }
+    },
     /**
      * Observed during debugging when the content server was restarted while a corba call was made:
      *
@@ -327,44 +383,54 @@ class GlobalLinkActionTest {
      * org.omg.CORBA.OBJECT_NOT_EXIST: FINE: 02510002: The server ID in the target object key does not match the server key expected by the server  vmcid: OMG  minor code: 2  completed: No
      * }</pre>
      */
-    CORBA_OBJECT_NOT_EXIST_ISSUE_EXCEPTION(new CapException("content", CapErrorCodes.UNEXPECTED_RUNTIME_EXCEPTION, null, new OBJECT_NOT_EXIST()));
+    CORBA_OBJECT_NOT_EXIST_ISSUE_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new CapException("content", CapErrorCodes.UNEXPECTED_RUNTIME_EXCEPTION, null, new OBJECT_NOT_EXIST());
+      }
+    };
 
-    private final Exception exception;
+    abstract Exception exception();
 
-    RepositoryUnavailableFixture(Function<RepositoryNotAvailableException, Exception> exceptionFunction) {
-      exception = exceptionFunction.apply(createRepositoryNotAvailableException());
-    }
-
-    RepositoryUnavailableFixture(Exception exception) {
-      this.exception = exception;
-    }
-
-    public Exception exception() {
-      return exception;
-    }
-
-    public static RepositoryNotAvailableException createRepositoryNotAvailableException() {
+    static RepositoryNotAvailableException createRepositoryNotAvailableException() {
       return new RepositoryNotAvailableException("foo", null, null);
     }
   }
 
   enum NoRepositoryUnavailableFixture {
-    RUNTIME_EXCEPTION(new RuntimeException()),
-    NESTED_RUNTIME_EXCEPTION(new RuntimeException(new RuntimeException())),
-    INVOCATION_TARGET_EXCEPTION_WITH_IRRELEVANT_CAUSE(new InvocationTargetException(new RuntimeException())),
-    IRRELEVANT_CAP_EXCEPTION_NO_ERROR_CODE(new CapException("foo", null, null, null)),
-    CAP_EXCEPTION_WITH_IRRELEVANT_ERROR_CODE(new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null)),
+    RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException();
+      }
+    },
+    NESTED_RUNTIME_EXCEPTION() {
+      @Override
+      Exception exception() {
+        return new RuntimeException(new RuntimeException());
+      }
+    },
+    INVOCATION_TARGET_EXCEPTION_WITH_IRRELEVANT_CAUSE() {
+      @Override
+      Exception exception() {
+        return new InvocationTargetException(new RuntimeException());
+      }
+    },
+    IRRELEVANT_CAP_EXCEPTION_NO_ERROR_CODE() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", null, null, null);
+      }
+    },
+    CAP_EXCEPTION_WITH_IRRELEVANT_ERROR_CODE() {
+      @Override
+      Exception exception() {
+        return new CapException("foo", CapErrorCodes.CANNOT_READ_BLOB, null, null);
+      }
+    },
     ;
 
-    private final Exception exception;
-
-    NoRepositoryUnavailableFixture(Exception exception) {
-      this.exception = exception;
-    }
-
-    public Exception exception() {
-      return exception;
-    }
+    abstract Exception exception();
   }
 
   /*
@@ -392,11 +458,11 @@ class GlobalLinkActionTest {
       this.gcExchangeFacade = gcExchangeFacade;
     }
 
-    public void onDoExecuteGlobalLinkAction(Runnable onDoExecuteGlobalLinkAction) {
+    private void onDoExecuteGlobalLinkAction(Runnable onDoExecuteGlobalLinkAction) {
       this.onDoExecuteGlobalLinkAction = onDoExecuteGlobalLinkAction;
     }
 
-    public void adaptDelayForGeneralRetryBy(UnaryOperator<RetryDelay> retryDelayOperator) {
+    private void adaptDelayForGeneralRetryBy(UnaryOperator<RetryDelay> retryDelayOperator) {
       this.retryDelayOperator = retryDelayOperator;
     }
 
@@ -407,7 +473,7 @@ class GlobalLinkActionTest {
 
     @Override
     void doExecuteGlobalLinkAction(@Nullable Void params, Consumer<? super Void> resultConsumer,
-                                   GCExchangeFacade facade, Map<String, List<Content>> issues) {
+                                   GCExchangeFacade facade, Map<String, List<@Nullable Content>> issues) {
       onDoExecuteGlobalLinkAction.run();
     }
 
@@ -420,7 +486,7 @@ class GlobalLinkActionTest {
     RetryDelay adaptDelayForGeneralRetry(RetryDelay originalRetryDelay,
                                          Settings settings,
                                          Optional<Void> extendedResult,
-                                         Map<String, List<Content>> issues) {
+                                         Map<String, List<@Nullable Content>> issues) {
       if (retryDelayOperator == null) {
         return super.adaptDelayForGeneralRetry(originalRetryDelay, settings, extendedResult, issues);
       }
@@ -454,7 +520,7 @@ class GlobalLinkActionTest {
         SimpleMultiSiteConfiguration.CT_SITE_CONTENT, "struct"));
     }
 
-    public void setOverrideGccRetryDelaySettingsKey(@Nullable String overrideGccRetryDelaySettingsKey) {
+    private void setOverrideGccRetryDelaySettingsKey(@Nullable String overrideGccRetryDelaySettingsKey) {
       this.overrideGccRetryDelaySettingsKey = overrideGccRetryDelaySettingsKey;
     }
 
@@ -467,11 +533,16 @@ class GlobalLinkActionTest {
     }
 
     @Override
-    Blob issuesAsJsonBlob(Map<String, List<Content>> issues) {
+    Blob issuesAsJsonBlob(Map<String, List<@Nullable Content>> issues) {
       return Mockito.mock(Blob.class, "issuesAsJsonBlob(%d): %s".formatted(
         issues.size(),
         issues.entrySet().stream()
-          .map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue().stream().map(Content::getId).collect(Collectors.joining(","))))
+          .map(entry -> String.format("%s: %s",
+            entry.getKey(),
+            entry.getValue().stream()
+              .filter(Objects::nonNull)
+              .map(Content::getId)
+              .collect(Collectors.joining(","))))
           .collect(Collectors.joining(";"))
       ));
     }

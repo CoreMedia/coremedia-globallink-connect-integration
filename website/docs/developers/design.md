@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 description: Insights to the design of the CoreMedia GlobalLink Connector.
 ---
 

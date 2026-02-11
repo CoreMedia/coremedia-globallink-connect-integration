@@ -64,6 +64,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 
 import static java.util.Collections.emptyList;
@@ -92,7 +94,7 @@ class DefaultGCExchangeFacadeTest {
   private static final String MOCK_GCC_CONNECTOR_KEY = "connector-key";
   @Mock
   private GCExchange gcExchange;
-  private Map<String, Object> requiredConfig;
+  private Map<String, @Nullable Object> requiredConfig;
 
   @BeforeEach
   void setUp() {
@@ -114,9 +116,9 @@ class DefaultGCExchangeFacadeTest {
       GCConfigProperty.KEY_KEY
     })
     void failOnMissingRequiredConfiguration(String excludedKey) {
-      Map<String, Object> config = new HashMap<>(requiredConfig);
+      Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
       config.remove(excludedKey);
-      assertThatCode(() -> new DefaultGCExchangeFacade(new Settings(config))).hasMessageContaining(excludedKey);
+      assertThatCode(() -> new DefaultGCExchangeFacade(Settings.ofSanitized(config))).hasMessageContaining(excludedKey);
     }
 
     /**
@@ -126,9 +128,9 @@ class DefaultGCExchangeFacadeTest {
      */
     @Test
     void shouldFailOnUnavailableConnectorKey() {
-      Map<String, Object> config = new HashMap<>(requiredConfig);
+      Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
       when(gcExchange.getConnectors()).thenReturn(List.of());
-      assertThatCode(() -> new DefaultGCExchangeFacade(new Settings(config), cfg -> {
+      assertThatCode(() -> new DefaultGCExchangeFacade(Settings.ofSanitized(config), cfg -> {
         lenient().when(gcExchange.getConfig()).thenReturn(cfg);
         return gcExchange;
       })).hasMessageContaining(GCConfigProperty.KEY_KEY);
@@ -261,7 +263,7 @@ class DefaultGCExchangeFacadeTest {
     @EnumSource(IsSendSubmitterFixture.class)
     void shouldRespectIsSendSubmitter(IsSendSubmitterFixture fixture, TestInfo testInfo) {
       String id = testInfo.getTestMethod().map(Method::getName).orElse("unknown");
-      Map<String, Object> config = new HashMap<>(requiredConfig);
+      Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
       fixture.applyConfig(config);
 
       MockDefaultGCExchangeFacade facade = new MockDefaultGCExchangeFacade(config, gcExchange);
@@ -270,7 +272,7 @@ class DefaultGCExchangeFacadeTest {
       ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
         null,
         null,
-        ZonedDateTime.now().plusDays(1L),
+        ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
         null,
         submitter,
         Locale.US,
@@ -338,7 +340,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subject,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -359,7 +361,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -381,7 +383,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subjectChallenge,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -397,7 +399,7 @@ class DefaultGCExchangeFacadeTest {
       void shouldRespectAlternativeReplacementConfiguration() {
         String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
         String expectedSanitizedSubject = "SMP-Dove: ?";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
           GCSubmissionName.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
         ));
@@ -408,7 +410,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subjectChallenge,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -424,7 +426,7 @@ class DefaultGCExchangeFacadeTest {
       @Test
       void shouldRespectAlternativeCharacterTypeConfiguration() {
         String subjectChallenge = "SMP-Dove: \uD83D\uDC25";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(
           GCSubmissionName.CHARACTER_TYPE_KEY, CharacterType.UNICODE
         ));
@@ -435,7 +437,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           subjectChallenge,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -458,7 +460,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           null,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -480,7 +482,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -496,7 +498,7 @@ class DefaultGCExchangeFacadeTest {
       void shouldRespectAlternativeUnicodeCharacterReplacementConfiguration() {
         String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
         String expectedSanitizedInstructions = "SMP-Dove: ?";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
           GCSubmissionInstruction.CHARACTER_REPLACEMENT_STRATEGY_KEY, CharacterReplacementStrategy.QUESTION_MARK
         ));
@@ -507,7 +509,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -523,7 +525,7 @@ class DefaultGCExchangeFacadeTest {
       @Test
       void shouldRespectAlternativeUnicodeCharacterTypeConfiguration() {
         String instructionsChallenge = "SMP-Dove: \uD83D\uDC25";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
           GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE
         ));
@@ -534,7 +536,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -557,7 +559,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -572,7 +574,7 @@ class DefaultGCExchangeFacadeTest {
       @Test
       void shouldRespectDisabledTextTypeTransformation() {
         String instructionsChallenge = "Hello <World>!\nThis is a test.";
-        Map<String, Object> config = new HashMap<>(requiredConfig);
+        Map<String, @Nullable Object> config = new HashMap<>(requiredConfig);
         config.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(
           GCSubmissionInstruction.TEXT_TRANSFORM_KEY, TextTransform.NONE
         ));
@@ -581,7 +583,7 @@ class DefaultGCExchangeFacadeTest {
         ArgumentCaptor<SubmissionSubmitRequest> submissionSubmitRequestCaptor = facade.submitAnySubmission(
           null,
           instructionsChallenge,
-          ZonedDateTime.now().plusDays(1L),
+          ZonedDateTime.now(ZoneId.systemDefault()).plusDays(1L),
           null,
           null,
           Locale.US,
@@ -628,20 +630,25 @@ class DefaultGCExchangeFacadeTest {
         when(gcExchange.confirmTask(eq(expectedTaskId))).thenReturn(true);
 
         GCExchangeFacade facade = new MockDefaultGCExchangeFacade(gcExchange);
-        @Nullable String[] actualContentRead = {null};
+        AtomicReference<String> actualContentRead = new AtomicReference<>("unset");
 
         facade.downloadCompletedTasks(expectedSubmissionId, new HappyPathTaskDataConsumer(actualContentRead));
 
-        assertThat(actualContentRead[0]).isEqualTo(LOREM_IPSUM);
+        assertThat(actualContentRead).hasValue(LOREM_IPSUM);
       }
 
-      private record HappyPathTaskDataConsumer(
-        String[] actualContentRead) implements BiPredicate<InputStream, GCTaskModel> {
+      @SuppressWarnings("ClassCanBeRecord") // Not appropriate to use record here, as value is mutable.
+      private static final class HappyPathTaskDataConsumer implements BiPredicate<InputStream, GCTaskModel> {
+        private final AtomicReference<String> actualContentRead;
+
+        private HappyPathTaskDataConsumer(AtomicReference<String> actualContentRead) {
+          this.actualContentRead = actualContentRead;
+        }
 
         @Override
         public boolean test(InputStream is, GCTaskModel task) {
           try {
-            actualContentRead[0] = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
+            actualContentRead.set(new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8));
             return true;
           } catch (IOException e) {
             throw new RuntimeException(e);
@@ -988,28 +995,93 @@ class DefaultGCExchangeFacadeTest {
   }
 
   enum IsSendSubmitterFixture {
-    UNSET("unset", false),
-    NULL(null, false),
-    BOOLEAN_TRUE(true, true),
-    BOOLEAN_FALSE(false, false),
-    STRING_TRUE("true", true),
-    STRING_FALSE("false", false),
-    STRING_ANY("anyString", false),
+    UNSET() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "unset";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    NULL() {
+      @Override
+      protected @Nullable Object sendSubmitterConfig() {
+        return null;
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    BOOLEAN_TRUE() {
+      @SuppressWarnings("BooleanLiteral")
+      @Override
+      protected Object sendSubmitterConfig() {
+        return Boolean.TRUE;
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return true;
+      }
+    },
+    BOOLEAN_FALSE() {
+      @SuppressWarnings("BooleanLiteral")
+      @Override
+      protected Object sendSubmitterConfig() {
+        return Boolean.FALSE;
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    STRING_TRUE() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "true";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return true;
+      }
+    },
+    STRING_FALSE() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "false";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
+    STRING_ANY() {
+      @Override
+      protected Object sendSubmitterConfig() {
+        return "anyString";
+      }
+
+      @Override
+      public boolean expectedSendSubmitter() {
+        return false;
+      }
+    },
     ;
 
-    private final @Nullable Object sendSubmitterConfig;
-    private final boolean expectedIsSendSubmitter;
+    protected abstract @Nullable Object sendSubmitterConfig();
 
-    IsSendSubmitterFixture(@Nullable Object sendSubmitterConfig, boolean expectedIsSendSubmitter) {
-      this.sendSubmitterConfig = sendSubmitterConfig;
-      this.expectedIsSendSubmitter = expectedIsSendSubmitter;
-    }
-
-    public boolean expectedSendSubmitter() {
-      return expectedIsSendSubmitter;
-    }
+    public abstract boolean expectedSendSubmitter();
 
     public void applyConfig(Map<String, @Nullable Object> config) {
+      Object sendSubmitterConfig = sendSubmitterConfig();
       if ("unset".equals(sendSubmitterConfig)) {
         config.remove(GCConfigProperty.KEY_IS_SEND_SUBMITTER);
       } else {
@@ -1023,8 +1095,8 @@ class DefaultGCExchangeFacadeTest {
       super(delegate, "xliff");
     }
 
-    MockDefaultGCExchangeFacade(Map<String, Object> config, GCExchange delegate) {
-      super(new Settings(config), cfg -> {
+    MockDefaultGCExchangeFacade(Map<String, @Nullable Object> config, GCExchange delegate) {
+      super(Settings.ofSanitized(config), cfg -> {
         lenient().when(delegate.getConfig()).thenReturn(cfg);
         Connector connector = Mockito.mock(Connector.class);
         lenient().when(delegate.getConnectors()).thenReturn(List.of(connector));
@@ -1033,13 +1105,13 @@ class DefaultGCExchangeFacadeTest {
       });
     }
 
-    public ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
-                                                                       @Nullable String comment,
-                                                                       ZonedDateTime dueDate,
-                                                                       @Nullable String workflow,
-                                                                       @Nullable String submitter,
-                                                                       Locale sourceLocale,
-                                                                       Map<String, List<Locale>> contentMap) {
+    private ArgumentCaptor<SubmissionSubmitRequest> submitAnySubmission(@Nullable String subject,
+                                                                @Nullable String comment,
+                                                                ZonedDateTime dueDate,
+                                                                @Nullable String workflow,
+                                                                @Nullable String submitter,
+                                                                Locale sourceLocale,
+                                                                Map<String, List<Locale>> contentMap) {
       SubmissionSubmit.SubmissionSubmitResponseData response = Mockito.mock(SubmissionSubmit.SubmissionSubmitResponseData.class);
       long expectedSubmissionId = 42L;
 
@@ -1069,7 +1141,7 @@ class DefaultGCExchangeFacadeTest {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public GCSubmissionModel getNotExistingSubmission() {
+    private GCSubmissionModel getNotExistingSubmission() {
       Submissions.SubmissionsResponseData response = Mockito.mock(Submissions.SubmissionsResponseData.class);
 
       when(getDelegate().getSubmissionsList(any())).thenReturn(response);
@@ -1077,13 +1149,13 @@ class DefaultGCExchangeFacadeTest {
       return getSubmission(42L);
     }
 
-    public GCSubmissionModel getSuccessfulSubmission() {
+    private GCSubmissionModel getSuccessfulSubmission() {
       GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.Completed);
       when(submission.getIsError()).thenReturn(Boolean.FALSE);
       return getSubmission(42L);
     }
 
-    public GCSubmissionModel getErredSubmission() {
+    private GCSubmissionModel getErredSubmission() {
       GCSubmission submission = prepareGetSubmissionMock(SubmissionStatus.PreProcess);
       when(submission.getIsError()).thenReturn(Boolean.TRUE);
       return getSubmission(42L);

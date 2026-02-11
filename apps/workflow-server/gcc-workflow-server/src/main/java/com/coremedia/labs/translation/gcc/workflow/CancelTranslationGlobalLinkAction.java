@@ -132,12 +132,11 @@ public class CancelTranslationGlobalLinkAction extends
     return new Parameters(parseSubmissionId(submissionId, task.getId()), cancelled, completedLocales);
   }
 
-  // NullableProblems: IntelliJ IDEA 2025.2.2 notes false-positive "can be null". Ignored.
   @Override
-  void doExecuteGlobalLinkAction(@SuppressWarnings("NullableProblems") Parameters params,
+  void doExecuteGlobalLinkAction(Parameters params,
                                  Consumer<? super Result> resultConsumer,
                                  GCExchangeFacade facade,
-                                 Map<String, List<Content>> issues) {
+                                 Map<String, List<@Nullable Content>> issues) {
     long submissionId = params.submissionId;
     // Ignore Submission Error State: As we are trying to cancel the submission,
     // we don't care about the error state. At least for observed scenarios,
@@ -217,7 +216,7 @@ public class CancelTranslationGlobalLinkAction extends
    * @return {@code true} if the submission was successfully cancelled,
    * {@code false} otherwise
    */
-  private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<Content>> issues) {
+  private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<@Nullable Content>> issues) {
     int httpStatus = facade.cancelSubmission(submissionId);
     if (httpStatus == HTTP_OK) {
       return true;

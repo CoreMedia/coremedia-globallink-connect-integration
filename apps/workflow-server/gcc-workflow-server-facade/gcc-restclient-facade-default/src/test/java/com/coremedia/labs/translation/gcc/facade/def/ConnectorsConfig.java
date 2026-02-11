@@ -71,17 +71,17 @@ public record ConnectorsConfig(String name,
       int previousTargetCount = result.getValue().size();
       int currentTargetCount = entry.getValue().size();
       switch (currentTargetCount) {
-        case 0:
-          throw new IllegalStateException("Should have been filtered before.");
-        case 1:
+        case 0 -> throw new IllegalStateException("Should have been filtered before.");
+        case 1 -> {
           // No need to update. Our existing state may be the better match
           // already.
-          continue;
-        case 2:
+        }
+        case 2 -> {
           // This is what we hoped for, just a minimal set of target locales
           // that is greater than 1.
           return entry;
-        default:
+        }
+        default -> {
           if (previousTargetCount == 1) {
             // We can safely switch without getting "worse" in terms of
             // our preferred number of target locales.
@@ -93,6 +93,7 @@ public record ConnectorsConfig(String name,
               result = entry;
             }
           }
+        }
       }
     }
     return result;

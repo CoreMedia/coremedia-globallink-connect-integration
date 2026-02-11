@@ -27,10 +27,10 @@ public record TaskDataConsumer(StringBuilder xliffResult) implements BiPredicate
     return true;
   }
 
-  private static class InputStreamByteSource extends ByteSource {
+  private static final class InputStreamByteSource extends ByteSource {
     private final InputStream is;
 
-    public InputStreamByteSource(InputStream is) {
+    private InputStreamByteSource(InputStream is) {
       this.is = is;
     }
 

@@ -27,5 +27,5 @@ While you are at adapting the CMCC version number, you may want to update the
 documentation reference right away.
 
 For details see the
-[documentation update reference](./06-update-documentation.md).
+[documentation update reference](07-update-documentation.md).
 :::

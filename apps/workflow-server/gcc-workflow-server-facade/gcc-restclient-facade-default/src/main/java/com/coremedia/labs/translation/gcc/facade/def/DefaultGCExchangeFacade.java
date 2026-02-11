@@ -161,7 +161,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String configuredKey = gcExchange.getConfig().getConnectorKey();
     List<String> availableConnectorKeys = gcExchange.getConnectors().stream().map(Connector::getConnectorKey).toList();
     if (!availableConnectorKeys.contains(configuredKey)) {
-      throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).".formatted(gcExchange.getConfig().getApiUrl()));
+      throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).", gcExchange.getConfig().getApiUrl());
     }
   }
 
@@ -249,7 +249,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       // here.
       return response.getStatus();
     } catch (RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to cancel submission: id=" + submissionId);
+      throw new GCFacadeCommunicationException(e, "Failed to cancel submission: id=%d", submissionId);
     }
   }
 
@@ -354,10 +354,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         MessageResponse messageResponse = delegate.confirmTaskCancellation(taskId);
         if (!HTTP_OK.equals(messageResponse.getStatus())) {
           LOG.debug("Failed to confirm task cancellation for the task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
-          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task " + taskId);
+          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task %d", taskId);
         }
       } catch (RuntimeException e) {
-        throw new GCFacadeCommunicationException(e, "Failed to confirm the cancelled task: " + taskId);
+        throw new GCFacadeCommunicationException(e, "Failed to confirm the cancelled task: %d", taskId);
       }
     }
   }
@@ -538,16 +538,15 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         TaskStatus status = TaskStatus.valueOf(t.getState());
         LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
         switch (status) {
-          case Delivered:
-            break;
-          case Cancelled:
+          case Delivered -> {
+          }
+          case Cancelled -> {
             LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
             // Logical AND: Only use confirmed state, if value
             // is still true. Otherwise, keep false state.
             allDone.compareAndSet(true, t.getIsCancelConfirmed());
-            break;
-          default:
-            allDone.set(false);
+          }
+          default -> allDone.set(false);
         }
       })
     );
@@ -570,7 +569,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     try {
       responseData = delegate.getSubmissionsList(request);
     } catch (RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to retrieve submission list for submission ID " + submissionId);
+      throw new GCFacadeCommunicationException(e, "Failed to retrieve submission list for submission ID %d", submissionId);
     }
     List<GCSubmission> submissions = responseData.getSubmissions();
     if (submissions == null || submissions.isEmpty()) {

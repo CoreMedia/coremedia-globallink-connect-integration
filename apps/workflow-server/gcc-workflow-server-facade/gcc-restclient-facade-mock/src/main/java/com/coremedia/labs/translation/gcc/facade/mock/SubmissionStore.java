@@ -78,7 +78,7 @@ final class SubmissionStore {
         return;
       }
     }
-    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d", submissionId);
   }
 
   GCSubmissionState getSubmissionState(long submissionId) {
@@ -87,7 +87,7 @@ final class SubmissionStore {
         return submissions.get(submissionId).getState();
       }
     }
-    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d", submissionId);
   }
 
   Collection<Task> getCompletedTasks(long submissionId) {
@@ -96,7 +96,7 @@ final class SubmissionStore {
         return submissions.get(submissionId).getCompletedTasks();
       }
     }
-    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d", submissionId);
   }
 
   Collection<Task> getCancelledTasks(long submissionId) {
@@ -105,6 +105,6 @@ final class SubmissionStore {
         return submissions.get(submissionId).getCancelledTasks();
       }
     }
-    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d".formatted(submissionId));
+    throw new GCFacadeSubmissionNotFoundException("Unknown submission ID: %d", submissionId);
   }
 }

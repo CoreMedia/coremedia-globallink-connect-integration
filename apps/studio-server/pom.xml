@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>studio-server.extensions</artifactId>
@@ -7,11 +8,23 @@
     <version>1-SNAPSHOT</version>
   </parent>
 
-    <groupId>com.coremedia.labs.translation.gcc</groupId>
+  <groupId>com.coremedia.labs.translation.gcc</groupId>
   <artifactId>gcc-studio-server</artifactId>
 
   <properties>
     <coremedia.project.extension.for>studio-server</coremedia.project.extension.for>
+    <error-prone.version>2.46.0</error-prone.version>
+    <nullaway.version>0.13.1</nullaway.version>
+    <!--
+     Error Prone Arguments
+     =====================
+
+     Must all be on a single line separated by spaces.
+
+     See <https://errorprone.info/docs/flags>
+     See <https://github.com/uber/NullAway/wiki/Configuration>
+    -->
+    <error-prone.args>-Xplugin:ErrorProne -XepAllSuggestionsAsWarnings -XepOpt:NullAway:JSpecifyMode=true -XepOpt:NullAway:OnlyNullMarked=true</error-prone.args>
   </properties>
 
   <dependencyManagement>
@@ -57,21 +70,19 @@
 
   <profiles>
     <profile>
-      <id>strict-checks</id>
-      <activation>
-        <property>
-          <name>!skipChecks</name>
-        </property>
-      </activation>
+      <id>gcc-strict-checks</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
+              <!-- =====================[ General strict compiler settings ] -->
               <failOnWarning>true</failOnWarning>
               <showDeprecation>true</showDeprecation>
               <showWarnings>true</showWarnings>
+              <!-- Required for Error Prone -->
+              <fork>true</fork>
               <compilerArgs>
                 <!-- Disable annotation processing to avoid version compatibility warnings -->
                 <!--
@@ -81,7 +92,37 @@
                      less than -source '17'
                 -->
                 <arg>-proc:none</arg>
+                <!-- ===============================[ Error Prone Settings ] -->
+                <!-- See https://errorprone.info/docs/installation -->
+                <arg>-XDcompilePolicy=simple</arg>
+                <arg>--should-stop=ifError=FLOW</arg>
+                <!-- necessary only if building with JDK21: https://github.com/google/error-prone/issues/5426 -->
+                <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+                <arg>${error-prone.args}</arg>
+                <!-- Work around IllegalAccessError for JDK 9+ modules -->
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>com.google.errorprone</groupId>
+                  <artifactId>error_prone_core</artifactId>
+                  <version>${error-prone.version}</version>
+                </path>
+                <path>
+                  <groupId>com.uber.nullaway</groupId>
+                  <artifactId>nullaway</artifactId>
+                  <version>${nullaway.version}</version>
+                </path>
+              </annotationProcessorPaths>
             </configuration>
           </plugin>
         </plugins>

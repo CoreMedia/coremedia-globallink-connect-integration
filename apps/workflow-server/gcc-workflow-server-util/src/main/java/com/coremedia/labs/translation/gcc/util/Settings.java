@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.errorprone.annotations.Immutable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
@@ -29,6 +30,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @param properties merged properties from all sources
  * @since 2506.0.0-1
  */
+@SuppressWarnings("Immutable") // We ensure immutability by defensive copying and unmodifiable collections.
+@Immutable
 @NullMarked
 public record Settings(Map<String, Object> properties) {
   /**
@@ -66,12 +69,31 @@ public record Settings(Map<String, Object> properties) {
    * <p>
    * Removes invalid entries (null keys/values, empty collections/maps/strings),
    * recursively sanitizes nested maps/collections, and enforces depth limits.
+   * <p>
+   * <strong>Nullability:</strong>
+   * To pass configurations containing {@code null} values, use the static
+   * factory method {@link #ofSanitized(Map)} instead.
    *
    * @param properties raw properties (will be defensively sanitized)
    */
   public Settings {
     requireNonNull(properties, "properties");
     properties = sanitizeMap(properties);
+  }
+
+  /**
+   * Factory method for settings, that will sanitize the provided properties map.
+   * <p>
+   * Removes invalid entries (null keys/values, empty collections/maps/strings),
+   * recursively sanitizes nested maps/collections, and enforces depth limits.
+   *
+   * @param properties raw properties (will be defensively sanitized)
+   * @since 2512.0.0-1
+   */
+  public static Settings ofSanitized(Map<String, @Nullable Object> properties) {
+    requireNonNull(properties, "properties");
+    Map<String, Object> sanitizedProperties = sanitizeMap(properties);
+    return new Settings(sanitizedProperties);
   }
 
   /**
@@ -159,12 +181,12 @@ public record Settings(Map<String, Object> properties) {
    * @param source raw input map
    * @return sanitized, potentially modified map
    */
-  private static Map<String, Object> sanitizeMap(Map<String, Object> source) {
+  private static <V extends @Nullable Object> Map<String, Object> sanitizeMap(Map<String, V> source) {
     return source.entrySet().stream()
       .filter(Settings::isValidEntry)
       .map(e -> sanitizeEntryValue(e, 0))
       .filter(Settings::isValidEntry)
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   /**
@@ -240,14 +262,15 @@ public record Settings(Map<String, Object> properties) {
    * @return a sanitized value with filtered entries if it is a map
    */
   @NullUnmarked
-  private static Object sanitizeValue(Object value, int depth) {
+  private static Object sanitizeValue(@Nullable Object value, int depth) {
     if (value instanceof Map<?, ?> mapValue) {
+      @SuppressWarnings("unchecked") Map<Object, @Nullable Object> nullableMapValue = (Map<Object, @Nullable Object>) mapValue;
       if (depth >= MAX_DEPTH) {
         LOG.warn("Depth limit ({}) exceeded. Truncating nested structure.", MAX_DEPTH);
         return Map.of(); // Return empty map to maintain type consistency
       }
 
-      return mapValue.entrySet().stream()
+      return nullableMapValue.entrySet().stream()
         .filter(Settings::isValidEntry)
         .map(e -> sanitizeEntryValue(e, depth + 1))
         .filter(Settings::isValidEntry)
@@ -285,7 +308,7 @@ public record Settings(Map<String, Object> properties) {
    * @param entry the map entry to evaluate
    * @return {@code true} if the entry should be included; {@code false} otherwise
    */
-  private static boolean isValidEntry(Map.Entry<?, ?> entry) {
+  private static <V extends @Nullable Object> boolean isValidEntry(Map.Entry<?, V> entry) {
     return entry.getKey() instanceof String && isValidValue(entry.getValue());
   }
 

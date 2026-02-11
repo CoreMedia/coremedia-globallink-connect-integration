@@ -8,6 +8,7 @@
 ![Latest Release Version](https://img.shields.io/github/v/release/CoreMedia/coremedia-globallink-connect-integration?style=for-the-badge&filter=v*&sort=semver&logo=semanticrelease&label=Latest&color=672779)
 ![GCC Used](https://img.shields.io/badge/GCC_REST_API_(used)_-v3.1.3-198754?style=for-the-badge&logo=semanticrelease)
 ![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient?label=GCC%20REST%20API%20(recent)&style=for-the-badge&logo=semanticrelease&color=0d6efd)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-198754?style=for-the-badge&logo=githubpages)](https://coremedia.github.io/coremedia-globallink-connect-integration/)
 
 # Translation via GlobalLink Connect Cloud
 

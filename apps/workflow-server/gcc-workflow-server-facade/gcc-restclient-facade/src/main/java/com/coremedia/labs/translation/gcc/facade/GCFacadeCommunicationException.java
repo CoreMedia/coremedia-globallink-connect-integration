@@ -1,5 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade;
 
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -17,11 +19,13 @@ public class GCFacadeCommunicationException extends GCFacadeException {
   public GCFacadeCommunicationException() {
   }
 
-  public GCFacadeCommunicationException(String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeCommunicationException(@FormatString String message, @Nullable Object... args) {
     super(message, args);
   }
 
-  public GCFacadeCommunicationException(Throwable cause, String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeCommunicationException(Throwable cause, @FormatString String message, @Nullable Object... args) {
     super(cause, message, args);
   }
 

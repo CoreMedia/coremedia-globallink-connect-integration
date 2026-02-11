@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -100,7 +101,8 @@ class DefaultGCExchangeFacadeContractTest {
    * The included timestamp is meant to ease the identification of a given
    * test run.
    */
-  private static final String TEST_ID = "CT#%s".formatted(LocalDateTime.now().format(DATE_TIME_FORMATTER));
+  @SuppressWarnings("TimeInStaticInitializer") // Time only meant as rough guidance. No need to tune initialization time.
+  private static final String TEST_ID = "CT#%s".formatted(LocalDateTime.now(ZoneId.systemDefault()).format(DATE_TIME_FORMATTER));
   private String submissionName;
   private String testName;
 

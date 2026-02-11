@@ -1,5 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade;
 
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -17,11 +19,13 @@ public class GCFacadeSubmissionNotFoundException extends GCFacadeSubmissionExcep
   public GCFacadeSubmissionNotFoundException() {
   }
 
-  public GCFacadeSubmissionNotFoundException(String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeSubmissionNotFoundException(@FormatString String message, @Nullable Object... args) {
     super(message, args);
   }
 
-  public GCFacadeSubmissionNotFoundException(Throwable cause, String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeSubmissionNotFoundException(Throwable cause, @FormatString String message, @Nullable Object... args) {
     super(cause, message, args);
   }
 

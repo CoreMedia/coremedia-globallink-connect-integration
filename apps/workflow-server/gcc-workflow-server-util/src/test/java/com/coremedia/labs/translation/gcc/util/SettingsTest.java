@@ -70,7 +70,7 @@ class SettingsTest {
 
     @Test
     void shouldHaveExpectedProperties() {
-      Map<String, Object> properties = Map.of("key", "value");
+      Map<String, @Nullable Object> properties = Map.of("key", "value");
       Settings settings = fixture.apply(properties);
       assertThat(settings.properties()).isEqualTo(properties);
     }
@@ -85,7 +85,7 @@ class SettingsTest {
       Map<@Nullable Object, @Nullable Object> nestedInvalidMap = new HashMap<>();
       nestedInvalidMap.put("valid_key", "value1");
       nestedInvalidMap.put(key, "value2");
-      Map<String, Object> input = Map.of("containsInvalid", nestedInvalidMap);
+      Map<String, @Nullable Object> input = Map.of("containsInvalid", nestedInvalidMap);
       Map<String, Object> expected = Map.of("containsInvalid", Map.of("valid_key", "value1"));
 
       Settings settings = fixture.apply(input);
@@ -113,7 +113,7 @@ class SettingsTest {
       alsoEmpty.put("empty", emptyValueFixture.get());
       alsoEmpty.put("non-empty", "value");
 
-      Map<String, Object> properties = Map.of(
+      Map<String, @Nullable Object> properties = Map.of(
         "non-empty", "value",
         "parent-only-empty", onlyEmpty,
         "parent-also-empty", alsoEmpty
@@ -133,11 +133,11 @@ class SettingsTest {
 
     @Test
     void shouldRespectMapEntriesUpToMaxDepth() {
-      Map<String, Object> properties = new HashMap<>();
-      Map<String, Object> current = properties;
+      Map<String, @Nullable Object> properties = new HashMap<>();
+      Map<String, @Nullable Object> current = properties;
       current.put("level", 0);
       for (int i = 0; i < Settings.MAX_DEPTH; i++) {
-        Map<String, Object> next = new HashMap<>();
+        Map<String, @Nullable Object> next = new HashMap<>();
         next.put("level", i + 1);
         current.put("next", next);
         current = next;
@@ -163,7 +163,7 @@ class SettingsTest {
         currentList = next;
       }
 
-      Map<String, Object> properties = Map.of("list", list);
+      Map<String, @Nullable Object> properties = Map.of("list", list);
 
       Settings settings = fixture.apply(properties);
 
@@ -172,8 +172,8 @@ class SettingsTest {
 
     @Test
     void shouldStripMapEntriesBelowMaxDepth() {
-      Map<String, Object> properties = new HashMap<>();
-      Map<String, Object> current = properties;
+      Map<String, @Nullable Object> properties = new HashMap<>();
+      Map<String, @Nullable Object> current = properties;
       Map<String, Object> expected = new HashMap<>();
       Map<String, Object> currentExpected = expected;
 
@@ -181,7 +181,7 @@ class SettingsTest {
       currentExpected.put("level", 0);
 
       for (int i = 0; i < Settings.MAX_DEPTH + 1; i++) {
-        Map<String, Object> next = new HashMap<>();
+        Map<String, @Nullable Object> next = new HashMap<>();
         Map<String, Object> nextExpected = new HashMap<>();
         next.put("level", i + 1);
         nextExpected.put("level", i + 1);
@@ -221,7 +221,7 @@ class SettingsTest {
         currentExpectedList = nextExpected;
       }
 
-      Map<String, Object> properties = Map.of("list", list);
+      Map<String, @Nullable Object> properties = Map.of("list", list);
       Map<String, Object> expected = Map.of("list", expectedList);
 
       Settings settings = fixture.apply(properties);
@@ -233,18 +233,17 @@ class SettingsTest {
      * Represents different strategies for applying sources.
      */
     enum SingleSourceFixture implements Function<Map<String, @Nullable Object>, Settings> {
-      CONSTRUCTOR(Settings::new),
-      EMPTY_PUT_ALL_SETTINGS(other -> Settings.EMPTY.mergedWith(new Settings(other)));
-
-      private final Function<Map<String, @Nullable Object>, Settings> delegate;
-
-      SingleSourceFixture(Function<Map<String, @Nullable Object>, Settings> delegate) {
-        this.delegate = delegate;
-      }
-
-      @Override
-      public Settings apply(Map<String, @Nullable Object> map) {
-        return delegate.apply(map);
+      CONSTRUCTOR() {
+        @Override
+        public Settings apply(Map<String, @Nullable Object> map) {
+          return Settings.ofSanitized(map);
+        }
+      },
+      EMPTY_PUT_ALL_SETTINGS() {
+        @Override
+        public Settings apply(Map<String, @Nullable Object> map) {
+          return Settings.EMPTY.mergedWith(Settings.ofSanitized(map));
+        }
       }
     }
   }
@@ -390,7 +389,7 @@ class SettingsTest {
       PUT_ALL_SETTINGS {
         @Override
         public Settings apply(Map<String, @Nullable Object> first, Map<String, @Nullable Object> second) {
-          return new Settings(first).mergedWith(new Settings(second));
+          return Settings.ofSanitized(first).mergedWith(Settings.ofSanitized(second));
         }
       },
       USING_COLLECTOR {
@@ -503,21 +502,35 @@ class SettingsTest {
    * resulting properties.
    */
   enum EmptyValueFixture implements Supplier<@Nullable Object> {
-    NULL(null),
-    EMPTY_STRING(""),
-    EMPTY_SET(Set.of()),
-    EMPTY_LIST(List.of()),
-    EMPTY_MAP(Map.of());
-
-    private final @Nullable Object value;
-
-    EmptyValueFixture(@Nullable Object value) {
-      this.value = value;
-    }
-
-    @Override
-    public @Nullable Object get() {
-      return value;
+    NULL() {
+      @Override
+      public @Nullable Object get() {
+        return null;
+      }
+    },
+    EMPTY_STRING() {
+      @Override
+      public Object get() {
+        return "";
+      }
+    },
+    EMPTY_SET() {
+      @Override
+      public Object get() {
+        return Set.of();
+      }
+    },
+    EMPTY_LIST() {
+      @Override
+      public Object get() {
+        return List.of();
+      }
+    },
+    EMPTY_MAP() {
+      @Override
+      public Object get() {
+        return Map.of();
+      }
     }
   }
 }

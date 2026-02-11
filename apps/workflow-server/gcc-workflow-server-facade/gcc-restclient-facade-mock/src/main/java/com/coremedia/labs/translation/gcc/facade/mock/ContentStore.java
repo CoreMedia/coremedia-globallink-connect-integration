@@ -42,7 +42,7 @@ final class ContentStore {
         store.put(id, source.asCharSource(StandardCharsets.UTF_8).read());
       }
     } catch (IOException e) {
-      throw new GCFacadeIOException(e, "Failed to read resource: " + resource);
+      throw new GCFacadeIOException(e, "Failed to read resource: %s", resource);
     }
     return id;
   }

@@ -175,12 +175,11 @@ public class SendToGlobalLinkAction extends GlobalLinkAction<SendToGlobalLinkAct
    *               variable set with {@link #setIssuesVariable(String)}. The workflow can display
    *               these issues to the end-user, who may trigger a retry, for example.
    */
-  // NullableProblems: IntelliJ IDEA 2025.2.2 notes false-positive "can be null". Ignored.
   @Override
-  void doExecuteGlobalLinkAction(@SuppressWarnings("NullableProblems") Parameters params,
+  void doExecuteGlobalLinkAction(Parameters params,
                                  Consumer<? super String> resultConsumer,
                                  GCExchangeFacade facade,
-                                 Map<String, List<Content>> issues) {
+                                 Map<String, List<@Nullable Content>> issues) {
     Collection<Content> derivedContents = params.derivedContents;
     Collection<ContentObject> masterContentObjects = params.masterContentObjects;
     if (derivedContents.isEmpty() || masterContentObjects.isEmpty()) {

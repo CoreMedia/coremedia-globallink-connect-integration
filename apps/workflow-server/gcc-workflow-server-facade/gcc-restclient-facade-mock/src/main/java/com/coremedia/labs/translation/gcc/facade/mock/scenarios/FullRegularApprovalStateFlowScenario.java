@@ -5,10 +5,10 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,7 +127,7 @@ public class FullRegularApprovalStateFlowScenario implements Scenario, Submissio
     /**
      * Active replay states.
      */
-    private final Deque<GCSubmissionState> activeReplayStates = new LinkedList<>();
+    private final Deque<GCSubmissionState> activeReplayStates = new ArrayDeque<>();
 
     /**
      * Creates a submission state flow for the given submission ID.
