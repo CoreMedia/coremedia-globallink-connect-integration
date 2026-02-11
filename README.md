@@ -9,7 +9,7 @@
 ![Current Release Version](https://img.shields.io/badge/Current-V2406.3.0--1-672779?style=for-the-badge&logo=semanticrelease)
 [![Latest Release Version](https://img.shields.io/github/v/release/CoreMedia/coremedia-globallink-connect-integration?style=for-the-badge&filter=v*&sort=semver&logo=semanticrelease&label=Latest&color=363936)](https://github.com/CoreMedia/coremedia-globallink-connect-integration/releases) \
 ![CoreMedia Content Cloud Version](https://img.shields.io/badge/CMCC-V2406.3.0-198754?style=for-the-badge&logo=semanticrelease)
-![GCC Used](https://img.shields.io/badge/GCC_REST_(current)_-v3.1.3-198754?style=for-the-badge&logo=semanticrelease)
+![GCC Used](https://img.shields.io/badge/GCC_REST_(current)_-v3.1.9-198754?style=for-the-badge&logo=semanticrelease)
 [![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient?label=GCC%20REST%20(latest)&style=for-the-badge&logo=semanticrelease&color=363936)](https://central.sonatype.com/artifact/com.translations.globallink/gcc-restclient) \
 ![Java: 17](https://img.shields.io/badge/Java-17-006cae?style=for-the-badge&logo=openjdk)
 ![Maven 3.8.6](https://img.shields.io/badge/Maven-3.8.6-dd3428?style=for-the-badge&logo=apachemaven) \
