@@ -71,8 +71,8 @@ public enum GCSubmissionState {
    * {@link #COMPLETED completed} is set directly to redelivered, without
    * the XLIFF provided via the GCC backend.
    * <p>
-   * The GCC API (v3.1.3) does not cover this state, so that we need to
-   * mock it.
+   * The GCC API (neither v3.1.3, nor v3.1.9) does not cover this state, so that
+   * we need to mock it.
    *
    * @since 2406.1
    */

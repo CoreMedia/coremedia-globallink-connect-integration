@@ -5,7 +5,6 @@
     <artifactId>studio-server.extensions</artifactId>
     <groupId>com.coremedia.blueprint</groupId>
     <version>1-SNAPSHOT</version>
-    <relativePath>../../../../../../apps/studio-server/blueprint/modules/extensions/pom.xml</relativePath>
   </parent>
 
     <groupId>com.coremedia.labs.translation.gcc</groupId>
