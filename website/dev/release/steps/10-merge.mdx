@@ -95,13 +95,9 @@ gitGraph:
 
 ## Git Steps
 
-:::caution CAUTION: Protect Branches
-Prior to merging a major approval branch, ensure that it is marked as protected
-within the GitHub settings. It will be deleted otherwise on merge.
-:::
-
-Thus, for a **major release** approval we merge the branch _once_ to `main`,
-but keep the branch for later maintenance releases.
+Thus, for a **major release** approval we merge the approval branch and
+subsequently the corresponding maintenance branch _once_ to `main`,
+but keep the maintenance branch for later maintenance releases.
 
 For a **minor release** we just merge approval branch. No changes are applied
 to `main` including no updates done on the documentation (unless, of course,
