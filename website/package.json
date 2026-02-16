@@ -8,8 +8,8 @@
     "url": "https://coremedia.com/"
   },
   "engines": {
-    "node": ">=22",
-    "pnpm": "^10.23"
+    "node": ">=24",
+    "pnpm": ">=10.24.0 <11"
   },
   "private": true,
   "keywords": [
