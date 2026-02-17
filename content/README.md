@@ -14,7 +14,7 @@ Note, that in order to activate GlobalLink, it is required, that you link
 this settings document to the root documents (also known as _Homepage_) of
 those master sites which shall use GlobalLink for translation.
 
-The Settings Struct for GlobalLink contains the following entries:
+The basic Settings Struct for GlobalLink contains the following entries:
 
 * **`globalLink`**
     * **`url`:** for example `http://yourhostname:9095/api/v3`

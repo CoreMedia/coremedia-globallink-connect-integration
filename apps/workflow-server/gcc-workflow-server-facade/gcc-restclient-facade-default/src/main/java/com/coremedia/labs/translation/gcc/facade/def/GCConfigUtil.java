@@ -6,6 +6,7 @@ import com.coremedia.labs.translation.gcc.util.Settings;
 import org.gs4tr.gcc.restclient.GCConfig;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Optional;
@@ -49,7 +50,16 @@ enum GCConfigUtil {
 
     redirectLogging(gcConfig);
 
+    configureConnectionRetries(config, gcConfig);
+
     return gcConfig;
+  }
+
+  private static void configureConnectionRetries(Settings config, GCConfig gcConfig) {
+    findInteger(config, GCConfigProperty.KEY_MAX_RETRIES_ON_SERVICE_UNAVAILABLE)
+      .ifPresent(gcConfig::setMaxRetriesOnServiceUnavailable);
+    findInteger(config, GCConfigProperty.KEY_MAX_RETRIES_ON_REQUEST_ERRORS)
+      .ifPresent(gcConfig::setMaxRetriesOnRequestErrors);
   }
 
   /**
@@ -95,5 +105,53 @@ enum GCConfigUtil {
   private static Optional<String> findString(Settings config, String key) {
     return config.at(key)
       .map(String::valueOf);
+  }
+
+  /**
+   * Try to find an integer value for the given key in the given config. Returns
+   * an empty Optional if the key is not present or if the value cannot be
+   * parsed as an integer.
+   *
+   * @param config the config to search in
+   * @param key    the key to search for
+   * @return an Optional containing the integer value if found and parsable, or
+   * an empty Optional if not found or not parsable
+   */
+  @SuppressWarnings("NullableProblems") // false-positive in IntelliJ Idea
+  private static Optional<Integer> findInteger(Settings config, String key) {
+    return config.at(key)
+      .map(GCConfigUtil::tryParse);
+  }
+
+  /**
+   * Tries to parse an integer from the given value. If the value is already an
+   * integer, it is returned as is. If the value is a string, an attempt is made
+   * to parse an integer from the string. If the parsing fails or if the value
+   * is of any other type, {@code null} is returned.
+   *
+   * @param value the value to parse an integer from; may be {@code null}
+   * @return the parsed integer, or {@code null} on any issue
+   */
+  private static @Nullable Integer tryParse(@Nullable Object value) {
+    switch (value) {
+      case null -> {
+        return null;
+      }
+      case Integer intValue -> {
+        return intValue;
+      }
+      case String stringValue -> {
+        try {
+          return Integer.parseInt(stringValue);
+        } catch (NumberFormatException e) {
+          LOG.trace("Unable to parse integer from string {}.", stringValue, e);
+          return null;
+        }
+      }
+      default -> {
+        LOG.trace("Unexpected type {} to parse integer from value: {}.", value.getClass(), value);
+        return null;
+      }
+    }
   }
 }
