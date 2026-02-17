@@ -4,7 +4,7 @@
   On Update review and adapt the following badges:
      * (L12) Current Release Version: The version of the GCC integration release, e.g. `v2512.0.0-1`.
      * (L14) CoreMedia Content Cloud Version: The version of CMCC that is supported by the current release, e.g. `V2512.0.0`.
-     * (L15) GCC Used: The version of the GCC REST client used in the current release, e.g. `v3.1.3`.
+     * (L15) GCC Used: The version of the GCC REST client used in the current release, e.g. `v3.1.9`.
      * (L17) Java Version: The Java version required to run the GCC REST client, e.g. `Java 21`.
      * (L18) Maven Version: The Maven version required to build the project, e.g. `Maven 3.9.11`.
 -->
@@ -12,7 +12,7 @@
 ![Current Release Version](https://img.shields.io/badge/Current-V2512.0.0--1-672779?style=for-the-badge&logo=semanticrelease)
 [![Latest Release Version](https://img.shields.io/github/v/release/CoreMedia/coremedia-globallink-connect-integration?style=for-the-badge&filter=v*&sort=semver&logo=semanticrelease&label=Latest&color=363936)](https://github.com/CoreMedia/coremedia-globallink-connect-integration/releases) \
 ![CoreMedia Content Cloud Version](https://img.shields.io/badge/CMCC-V2512.0.0-198754?style=for-the-badge&logo=semanticrelease)
-![GCC Used](https://img.shields.io/badge/GCC_REST_(current)_-v3.1.3-198754?style=for-the-badge&logo=semanticrelease)
+![GCC Used](https://img.shields.io/badge/GCC_REST_(current)_-v3.1.9-198754?style=for-the-badge&logo=semanticrelease)
 [![Maven Central: GCC Recent](https://img.shields.io/maven-central/v/com.translations.globallink/gcc-restclient?label=GCC%20REST%20(latest)&style=for-the-badge&logo=semanticrelease&color=363936)](https://central.sonatype.com/artifact/com.translations.globallink/gcc-restclient) \
 ![Java 21](https://img.shields.io/badge/Java-21-006cae?style=for-the-badge&logo=openjdk)
 ![Maven 3.9.11](https://img.shields.io/badge/Maven-3.9.11-dd3428?style=for-the-badge&logo=apachemaven) \
