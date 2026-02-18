@@ -3,6 +3,7 @@ package com.coremedia.labs.translation.gcc.facade.def;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCFacadeConfigException;
 import com.coremedia.labs.translation.gcc.util.Settings;
+import com.google.common.annotations.VisibleForTesting;
 import org.gs4tr.gcc.restclient.GCConfig;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.jspecify.annotations.NullMarked;
@@ -31,7 +32,8 @@ enum GCConfigUtil {
   /**
    * Some string, so GCC can identify the source of requests.
    */
-  private static final String USER_AGENT = lookup().lookupClass().getPackage().getName();
+  @VisibleForTesting
+  static final String USER_AGENT = lookup().lookupClass().getPackage().getName();
 
   /**
    * Returns the provider for GCConfig based on the given
@@ -132,7 +134,8 @@ enum GCConfigUtil {
    * @param value the value to parse an integer from; may be {@code null}
    * @return the parsed integer, or {@code null} on any issue
    */
-  private static @Nullable Integer tryParse(@Nullable Object value) {
+  @VisibleForTesting
+  static @Nullable Integer tryParse(@Nullable Object value) {
     switch (value) {
       case null -> {
         return null;
