@@ -565,7 +565,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         submissionId
       );
     }
-    return submissions.get(0);
+    return submissions.getFirst();
   }
 
   private String getSupportedFileType(@Nullable String configuredFileType) {
@@ -585,7 +585,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String result;
     if (configuredFileType == null) {
       // if no file type is configured, just use the first from the list of supported file types
-      result = supportedFileTypes.get(0);
+      result = supportedFileTypes.getFirst();
     } else if (supportedFileTypes.contains(configuredFileType)) {
       // configured file type found in supported ones
       result = configuredFileType;

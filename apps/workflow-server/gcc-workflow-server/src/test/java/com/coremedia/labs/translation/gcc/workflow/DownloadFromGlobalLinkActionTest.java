@@ -160,7 +160,7 @@ class DownloadFromGlobalLinkActionTest {
       assertThat(result)
         .isInstanceOfSatisfying(DownloadFromGlobalLinkAction.Result.class, r -> {
           assertThat(r.resultItems.values().stream().anyMatch(list -> {
-            XliffImportResultItem resultItem = list.isEmpty() ? null : list.get(0);
+            XliffImportResultItem resultItem = list.isEmpty() ? null : list.getFirst();
             return resultItem != null && resultItem.getCode() == NO_SUCH_PROPERTY &&
               resultItem.getSeverity() == MAJOR && Objects.equals(resultItem.getContent(), targetContent) &&
               Objects.equals(resultItem.getProperty(), "nosuchproperty");

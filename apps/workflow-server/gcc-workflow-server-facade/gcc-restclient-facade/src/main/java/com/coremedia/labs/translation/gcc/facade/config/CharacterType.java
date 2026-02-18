@@ -80,18 +80,22 @@ public enum CharacterType {
    * an unsupported type
    */
   public static Optional<CharacterType> fromConfig(@Nullable Object type) {
-    if (type == null) {
-      LOG.trace("No character-type given. Returning empty.");
-      return Optional.empty();
+    switch (type) {
+      case null -> {
+        LOG.trace("No character-type given. Returning empty.");
+        return Optional.empty();
+      }
+      case CharacterType characterType -> {
+        return Optional.of(characterType);
+      }
+      case String stringType -> {
+        return fromString(stringType);
+      }
+      default -> {
+        LOG.debug("Unsupported type of character-type {} '{}'. Returning empty.", type.getClass(), type);
+        return Optional.empty();
+      }
     }
-    if (type instanceof CharacterType characterType) {
-      return Optional.of(characterType);
-    }
-    if (type instanceof String stringType) {
-      return fromString(stringType);
-    }
-    LOG.debug("Unsupported type of character-type {} '{}'. Returning empty.", type.getClass(), type);
-    return Optional.empty();
   }
 
   /**
