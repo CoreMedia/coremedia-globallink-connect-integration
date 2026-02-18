@@ -74,6 +74,7 @@
   "pnpm": {
     "overrides": {
       "ajv@>=8.0.0 <8.18.0": "^8.18.0",
+      "baseline-browser-mapping": "^2.9.19",
       "express": "^4.22.1",
       "lodash": "^4.17.23",
       "qs": "^6.14.1"
