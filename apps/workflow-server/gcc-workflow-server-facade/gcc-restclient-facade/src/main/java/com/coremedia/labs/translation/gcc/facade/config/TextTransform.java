@@ -85,18 +85,22 @@ public enum TextTransform {
    * an unsupported type
    */
   public static Optional<TextTransform> fromConfig(@Nullable Object type) {
-    if (type == null) {
-      LOG.trace("No text-type given. Returning empty.");
-      return Optional.empty();
+    switch (type) {
+      case null -> {
+        LOG.trace("No text-type given. Returning empty.");
+        return Optional.empty();
+      }
+      case TextTransform textTransform -> {
+        return Optional.of(textTransform);
+      }
+      case String stringType -> {
+        return fromString(stringType);
+      }
+      default -> {
+        LOG.debug("Unsupported type of text-type {} '{}'. Returning empty.", type.getClass(), type);
+        return Optional.empty();
+      }
     }
-    if (type instanceof TextTransform textTransform) {
-      return Optional.of(textTransform);
-    }
-    if (type instanceof String stringType) {
-      return fromString(stringType);
-    }
-    LOG.debug("Unsupported type of text-type {} '{}'. Returning empty.", type.getClass(), type);
-    return Optional.empty();
   }
 
   /**

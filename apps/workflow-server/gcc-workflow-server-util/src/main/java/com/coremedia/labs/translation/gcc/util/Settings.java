@@ -328,19 +328,13 @@ public record Settings(Map<String, Object> properties) {
    * @return {@code true} if the value should be included; {@code false} otherwise
    */
   private static boolean isValidValue(@Nullable Object value) {
-    if (value == null) {
-      return false;
-    }
-    if (value instanceof String string) {
-      return !string.isEmpty();
-    }
-    if (value instanceof Collection<?> collection) {
-      return !collection.isEmpty();
-    }
-    if (value instanceof Map<?, ?> map) {
-      return !map.isEmpty();
-    }
-    return true;
+    return switch (value) {
+      case null -> false;
+      case String string -> !string.isEmpty();
+      case Collection<?> collection -> !collection.isEmpty();
+      case Map<?, ?> map -> !map.isEmpty();
+      default -> true;
+    };
   }
 
   @Override
