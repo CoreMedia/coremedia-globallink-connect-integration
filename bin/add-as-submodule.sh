@@ -24,10 +24,12 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Ensure CDPATH does not interfere with any cd calls in the script.
 unset CDPATH || true
 
-readonly SCRIPT_NAME="$(basename "$0")"
-readonly DEFAULT_REF="maintenance/2506.x"
+SCRIPT_NAME="$(basename "$0")"
+readonly SCRIPT_NAME
+readonly DEFAULT_REF="main"
 readonly REPO_URL_DEFAULT="https://github.com/CoreMedia/coremedia-globallink-connect-integration.git"
 readonly REPO_URL="${GLOBALLINK_REPO_URL:-$REPO_URL_DEFAULT}"
 readonly SUBMODULE_NAME="coremedia-globallink-connect-integration"
