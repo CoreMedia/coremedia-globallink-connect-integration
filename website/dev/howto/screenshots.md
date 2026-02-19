@@ -168,8 +168,41 @@ connector.
 4. **Accept User Task:** As soon as available, accept the user task named
    _Review translation (Redelivered)_.
 
-**Cleanup**: Consider accepting the user task and selecting _Rollback_ to end
-the workflow.
+**Cleanup**: _Skip cleanup, if you want to continue with the next screenshot
+scenario_. Otherwise, consider accepting the user task and selecting _Rollback_
+to end the workflow.
+
+### gcc-redelivered-upload-xliff.png
+
+A screenshot representing a typical process during redelivered submission
+handling, which is to manually upload the XLIFF file received from the
+translation agency after a redelivery.
+
+**Screenshot Tool Recommended**: As we are about to screenshot an element
+(a tooltip) that will disappear on the mouseout event, it is recommended to use
+an external screenshot tool, to trigger the screenshot via a hotkey. If
+possible, adjust your screenshot tool to also capture the mouse cursor.
+
+1. Prepare the redelivery scenario as described in the previous screenshot
+   advice.
+2. **Workflow App:** To have just any XLIFF file at hand, you can click on
+   _Issue Details_ » _Click to download_ to get a ZIP file containing the XLIFF.
+   Unpack the ZIP and keep the XLIFF file for the next step.
+3. **Content App:**
+  * Minimize the preview before taking the screenshot. The currently opened
+    document will appear as background to the start workflow window.
+  * Close all tabs despite the _Press Release_ (`en-US`, active tab).
+  * Open the workflow in the sidebar, thus, click on "Show Workflow" button
+    within the "In Localization" badge.
+  * Click on _Upload_ to open the upload dialog and select the XLIFF extracted
+    in the previous step as a file to upload.
+  * Move the upload dialog closer to the _Upload_ button, so that the main
+    focus of the screenshot is on the connection between the button and the
+    dialog.
+  * Hover the mouse cursor over the _Upload_ button to show the tooltip for 
+    that button.
+
+**Cleanup**: Consider selecting _Rollback_ to end the workflow.
 
 ### gcc-running.png
 
