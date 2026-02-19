@@ -5,15 +5,23 @@ static website generator.
 
 ## Cheat Sheet
 
-| Command                 | Description                                |
-|-------------------------|--------------------------------------------|
-| `pnpm build`            | Build website artifacts (to `build/`).     |
-| `pnpm clear`            | Clear Docusaurus cache.                    |
-| `pnpm deploy`           | Deploy to `gh-pages` branch.               |
-| `pnpm docusaurus <cmd>` | Execute Docusaurus command.                |
-| `pnpm install`          | _(required)_ Install dependency artifacts. |
-| `pnpm serve`            | Serve website artifacts (from `build/`).   |
-| `pnpm start`            | Start local server (opens default browser) |
+| Command                   | Description                                |
+|---------------------------|--------------------------------------------|
+| `pnpm build`              | Build website artifacts (to `build/`).     |
+| `pnpm clear`              | Clear Docusaurus cache.                    |
+| `pnpm deploy`             | Deploy to `gh-pages` branch.               |
+| `pnpm docusaurus <cmd>`   | Execute Docusaurus command.                |
+| `pnpm install`            | _(required)_ Install dependency artifacts. |
+| `pnpm serve`              | Serve website artifacts (from `build/`).   |
+| `pnpm start`              | Start local server (opens default browser) |
+| `pnpm validate:overrides` | Check overrides                            |
+
+> 💡 **Dependency Overrides:** This project uses `pnpm.overrides` to fix
+> security vulnerabilities. Before updating major dependencies (especially
+> `@docusaurus/core`), run `pnpm validate:overrides` to check if overrides are
+> still needed.
+>
+> See [DEPENDENCY_OVERRIDES.md](./DEPENDENCY_OVERRIDES.md) for full details.
 
 ## Installation
 
