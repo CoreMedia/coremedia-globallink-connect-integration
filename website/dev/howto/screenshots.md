@@ -105,7 +105,7 @@ connector.
 2. **Content:** Create a new article (name irrelevant) and make it valid.
 3. **Workflow:**
    * Start a translation workflow for the article to `de-DE`.
-   * As workflow name choose _Press Release With GlobalLink_.
+   * As workflow name choose _Press Release with GlobalLink_.
 4. **Workflow App:** From the "In localization" badge, for example, open the
    workflow within the Workflow App.
 5. **Accept User Task:** As soon as available, accept the user task named
@@ -125,7 +125,7 @@ connector.
 2. **Content:** Create a new article (name irrelevant) and make it valid.
 3. **Workflow:**
    * Start a translation workflow for the article to `de-DE`.
-   * As workflow name choose _Press Release With GlobalLink_.
+   * As workflow name choose _Press Release with GlobalLink_.
 4. **Workflow App:** From the "In localization" badge, for example, open the
    workflow within the Workflow App.
 5. **Accept User Task:** As soon as available, accept the user task named
@@ -141,7 +141,8 @@ A screenshot representing the running workflow when opened in the Workflow App.
    * Add the content to the Chef Corp. Homepage.
 3. **Workflow:**
    * Start a translation workflow for the homepage to `de-DE`.
-   * As workflow name choose _Press Release With GlobalLink_.
+   * Ensure, that the article _Press Release_ is added as dependent content.
+   * As workflow name choose _Press Release with GlobalLink_.
 4. **Workflow App:** From the "In localization" badge, for example, open the
    workflow within the Workflow App.
 5. **Status:** To have an alike screenshot over versions, wait for the field
@@ -159,7 +160,8 @@ the localization workflow type.
 
 **Screenshot Tool Recommended**: As we are about to screenshot an element
 (the dropdown) that will close on the blur event, it is recommended to use an
-external screenshot tool, to trigger the screenshot via a hotkey.
+external screenshot tool, to trigger the screenshot via a hotkey. If possible,
+adjust your screenshot tool to also capture the mouse cursor.
 
 1. **Translation Settings:** Ensure, that no scenario is selected.
 2. **Content:** (Hint: Same as for `gcc-running.png`, so you may reuse it.)
@@ -172,8 +174,10 @@ external screenshot tool, to trigger the screenshot via a hotkey.
      homepage (active tab).
 4. **Workflow:**
    * Trigger start of a translation workflow for the homepage to `de-DE`.
-   * As workflow name choose _Press Release With GlobalLink_.
+   * Select _Translation with GlobalLink_ as workflow type.
+   * As workflow name choose _Press Release with GlobalLink_.
    * Open the _Workflow Type_ selection combo.
+   * Hover the mouse cursor over the _Translation with GlobalLink_ option.
 
 ### gcc-settings.png
 
@@ -247,6 +251,10 @@ with the differencing view.
      > management.
 
     * Process a first translation workflow for the article to `de-DE`.
+
+      You may just use any translation workflow. Consider using the standard
+      _Translation_ workflow that ships with CoreMedia Blueprint.
+
     * Update the content to mark "CoreMedia GlobalLink connector" as bold.
 3. **Workflow:**
    * Start a translation workflow for "News" article to `de-DE`.
@@ -258,6 +266,7 @@ with the differencing view.
    * Accept the user task.
    * Double-click on the "News" article in the workflow's content set to open
      the differencing view.
+   * Change the pseudo-translated title just to "News".
    * Override the pseudo-translated result with this suggested translation:
 
      > Wir freuen uns, die Veröffentlichung des neuen **CoreMedia GlobalLink
@@ -268,7 +277,6 @@ with the differencing view.
      > sich jetzt das Upgrade und erleben Sie das Beste in Sachen
      > Inhaltslokalisierung und -verwaltung.
 
-   * Change the pseudo-translated title just to "News".
    * Check-in the modified content.
    * Move the separators around to have a good view on the overall scenario.
 
