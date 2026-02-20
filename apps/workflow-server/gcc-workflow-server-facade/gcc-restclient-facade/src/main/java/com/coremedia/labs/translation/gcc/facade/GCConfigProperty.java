@@ -37,6 +37,27 @@ public final class GCConfigProperty {
   public static final String KEY_API_KEY = "apiKey";
 
   /**
+   * Maximum number of retries on service unavailable errors.
+   * <p>
+   * <strong>Type</strong>: {@code Integer}
+   *
+   * @since 2512.0.0-1
+   */
+  public static final String KEY_MAX_RETRIES_ON_SERVICE_UNAVAILABLE = "maxRetriesOnServiceUnavailable";
+
+  /**
+   * Maximum number of retries on request errors. This could be, for example,
+   * request timeouts.
+   * <p>
+   * Errors like authentication errors are not retried.
+   * <p>
+   * <strong>Type</strong>: {@code Integer}
+   *
+   * @since 2512.0.0-1
+   */
+  public static final String KEY_MAX_RETRIES_ON_REQUEST_ERRORS = "maxRetriesOnRequestErrors";
+
+  /**
    * GlobalLink file type to use. Optional setting.
    * <p>
    * Defaults to first file type from list of file types that GlobalLink returns

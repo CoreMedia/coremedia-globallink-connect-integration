@@ -440,8 +440,41 @@ getGccProcessLocalization().then((gccProcessLocalization) => {
   workflowLocalizationRegistry._.addLocalization("TranslationGlobalLink", gccProcessLocalization);
 });
 
+const XLIFF_IMPORT_RESULT_CODES = [
+  "SUCCESS",
+  "DUPLICATE_NAME",
+  "INVALID_INTERNAL_LINK",
+  "INVALID_LOCALE",
+  "EMPTY_TRANSUNIT_TARGET_FOR_WHITESPACE_SOURCE",
+  "FAILED",
+  "DOES_NOT_EXIST",
+  "NOT_AUTHORIZED",
+  "MASTER_CHANGED",
+  "MASTER_VERSION_OUTDATED",
+  "EMPTY_TRANSUNIT_TARGET",
+  "INVALID_CONTENT_ID",
+  "CHECKED_OUT_BY_OTHER_USER",
+  "STRING_TOO_LONG",
+  "NO_SUCH_PROPERTY",
+  "INVALID_PROPERTY_TYPE",
+  "STRING_LIST_TOO_LONG",
+  "LIST_TOO_LONG",
+  "INVALID_MARKUP",
+  "INVALID_XLIFF",
+] as const;
+
 const getGccIssuesLocalization = async (): Promise<WorkflowIssuesLocalization> => {
   const localizer = await getLocalizer(GccWorkflowLocalization_properties);
+
+  const xliffImportResultLocalizations = Object.fromEntries(
+    XLIFF_IMPORT_RESULT_CODES.map((code) => [
+      `XLIFF_IMPORT_RESULT_${code}`,
+      {
+        singular: localizer(`XLIFF_IMPORT_RESULT_${code}_singular_text`),
+        plural: localizer(`XLIFF_IMPORT_RESULT_${code}_plural_text`),
+      },
+    ]),
+  );
 
   return {
     "GCC-WF-10000": localizer("GCC-WF-10000_text"),
@@ -462,6 +495,7 @@ const getGccIssuesLocalization = async (): Promise<WorkflowIssuesLocalization> =
       singular: localizer("SUCCESS_singular_text"),
       plural: localizer("SUCCESS_plural_text"),
     },
+    ...xliffImportResultLocalizations,
   };
 };
 
