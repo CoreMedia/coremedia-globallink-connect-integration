@@ -7,5 +7,8 @@ com.coremedia.labs.translation.gcc.facade.mock.scenarios.NoOperationScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.SubmissionCanceledByGlobalLinkScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.SubmissionErrorScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.SubmissionRedeliveredScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateDoesNotExistScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateEmptyTransunitTargetScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateInvalidContentIdScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateInvalidXliffScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateStringTooLongScenario

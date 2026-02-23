@@ -84,6 +84,12 @@
                   <StringProperty
                     Name="submission-redelivered"><![CDATA[Simulates a typical redelivered scenario, with first corrupted XLIFF, then signalling redelivered state.]]></StringProperty>
                   <StringProperty
+                    Name="translate-does-not-exist"><![CDATA[Simulates references to target content items, that no longer exist.]]></StringProperty>
+                  <StringProperty
+                    Name="translate-empty-transunit-target"><![CDATA[Simulates an incomplete translation where some translations have not been provided. Requires some non-empty strings to translate.]]></StringProperty>
+                  <StringProperty
+                    Name="translate-invalid-content-id"><![CDATA[Simulates an XLIFF, where the content item IDs are corrupted not using the CoreMedia ID format.]]></StringProperty>
+                  <StringProperty
                     Name="translate-invalid-xliff"><![CDATA[Simulates a permanently corrupted XLIFF shipped by GCC.]]></StringProperty>
                   <StringProperty
                     Name="translate-string-too-long"><![CDATA[Simulates a translation with long strings returned to provoke a string-too-long failure.]]></StringProperty>
