@@ -23,7 +23,7 @@
   </modules>
 
   <properties>
-    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <docs.directory>${project.basedir}/website/docs</docs.directory>
@@ -78,10 +78,10 @@
                   Possibly validate via `mvn versions:display-plugin-updates`
                   regarding required minimum versions.
                 -->
-                <version>3.8.6</version>
+                <version>3.9.11</version>
               </requireMavenVersion>
               <requireJavaVersion>
-                <version>[17,)</version>
+                <version>[21,)</version>
               </requireJavaVersion>
             </rules>
           </configuration>
