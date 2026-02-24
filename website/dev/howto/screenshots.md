@@ -308,16 +308,16 @@ with the differencing view.
 
     * Update the content to mark "CoreMedia GlobalLink connector" as bold.
 3. **Workflow:**
-   * Start a translation workflow for _Press Relese_ article to `de-DE`.
+   * Start a translation workflow for _Press Release_ article to `de-DE`.
    * As workflow name choose _Update Press Release_.
 4. **Content App:**
-   * Close all other tabs despite the _Press Relese_ article.
+   * Close all other tabs despite the _Press Release_ article.
    * Open the workflow in the sidebar (for example, click on "Show Workflow"
      button within the "In Localization" badge)
    * Accept the user task.
-   * Double-click on the _Press Relese_ article in the workflow's content set
+   * Double-click on the _Press Release_ article in the workflow's content set
      to open the differencing view.
-   * Change the pseudo-translated title just to _Press Relese_.
+   * Change the pseudo-translated title just to _Press Release_.
    * Override the pseudo-translated result with this suggested translation:
 
      > Wir freuen uns, die Veröffentlichung des neuen **CoreMedia GlobalLink
