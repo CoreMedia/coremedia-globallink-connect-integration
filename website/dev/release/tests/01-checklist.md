@@ -13,18 +13,18 @@ it with your results.
 
 ## All Scenarios
 
-| Scenario                     | Connector Type | Key Type     | Status | Notes |
-|------------------------------|----------------|--------------|--------|-------|
-| Contract Test                | `default`      | `automatic`  |        |       |
-| Happy Path                   | `default`      | `automatic`  |        |       |
-| General Error Handling       | `default`      | `automatic`  |        |       |
-| Cancelation (Studio)         | `default`      | `manual`     |        |       |
-| Cancelation (GlobalLink)     | `default`      | `manual`     |        |       |
-| Cancelation (Error Handling) | `default`      | `manual`     |        |       |
-| Wrong/Invalid Connector Key  | `default`      | `manual`     |        |       |
-| GCC Backend Error Handling   | `mock`         | _irrelevant_ |        |       |
-| XLIFF Import Error Handling  | `mock`         | _irrelevant_ |        |       |
-| Redelivered State Handling   | `mock`         | _irrelevant_ |        |       |
+| Scenario                      | Connector Type | Key Type     | Status | Notes |
+|-------------------------------|----------------|--------------|--------|-------|
+| Contract Test                 | `default`      | `automatic`  |        |       |
+| Happy Path                    | `default`      | `automatic`  |        |       |
+| General Error Handling        | `default`      | `automatic`  |        |       |
+| Cancellation (Studio)         | `default`      | `manual`     |        |       |
+| Cancellation (GlobalLink)     | `default`      | `manual`     |        |       |
+| Cancellation (Error Handling) | `default`      | `manual`     |        |       |
+| Wrong/Invalid Connector Key   | `default`      | `manual`     |        |       |
+| GCC Backend Error Handling    | `mock`         | _irrelevant_ |        |       |
+| XLIFF Import Error Handling   | `mock`         | _irrelevant_ |        |       |
+| Redelivered State Handling    | `mock`         | _irrelevant_ |        |       |
 
 ## Contract Test Results
 

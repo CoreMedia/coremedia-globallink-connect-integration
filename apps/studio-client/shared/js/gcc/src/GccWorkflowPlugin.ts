@@ -98,7 +98,7 @@ interface GccViewModel {
 /**
  * Retrieve the submission status from properties. Respects a virtual state
  * `CANCEL` when the status itself does not yet represent any state that is
- * part of the cancelation process. Thus, the state may still be _Translate_
+ * part of the cancellation process. Thus, the state may still be _Translate_
  * while an additional property already denotes, that we requested to cancel
  * the translation.
  *
@@ -108,7 +108,7 @@ const getSubmissionStatus = (process): string => {
   const properties = process.getProperties();
   const gccSubmissionsState = properties.get(GLOBAL_LINK_SUBMISSION_STATUS_VARIABLE_NAME) as string;
   if ([CANCELLATION_CONFIRMED_SUBMISSION_STATE, CANCELLED_SUBMISSION_STATE].includes(gccSubmissionsState)) {
-    // No need to override. These are well-known states of the cancelation process.
+    // No need to override. These are well-known states of the cancellation process.
     return gccSubmissionsState;
   }
   const cancelRequested = properties.get(CANCEL_REQUESTED_VARIABLE_NAME) as boolean;

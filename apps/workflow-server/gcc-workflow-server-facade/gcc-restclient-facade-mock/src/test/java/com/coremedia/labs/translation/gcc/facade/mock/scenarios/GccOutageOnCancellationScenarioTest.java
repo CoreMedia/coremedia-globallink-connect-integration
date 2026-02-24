@@ -22,17 +22,17 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @NullMarked
-class GccOutageOnCancelationScenarioTest {
+class GccOutageOnCancellationScenarioTest {
   @Nested
   class FacadeIntegrationBehavior {
     @Test
-    void shouldThrowExceptionOnCancelation(TestInfo testInfo) {
+    void shouldThrowExceptionOnCancellation(TestInfo testInfo) {
       String testName = testInfo.getDisplayName();
 
       Resource xliffResource = xliffResource();
 
       GCExchangeFacade facade = new MockedGCExchangeFacade(MockSettings.fromMockConfig(
-        Map.of(MockSettings.SCENARIO, GccOutageOnCancelationScenario.ID)
+        Map.of(MockSettings.SCENARIO, GccOutageOnCancellationScenario.ID)
       ));
 
       String fileId = facade.uploadContent(testName, xliffResource, Locale.US);

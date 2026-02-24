@@ -21,17 +21,17 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @NullMarked
-class CancelationNotFoundScenarioTest {
+class CancellationNotFoundScenarioTest {
   @Nested
   class FacadeIntegrationBehavior {
     @Test
-    void shouldProvoke404CancelationError(TestInfo testInfo) {
+    void shouldProvoke404CancellationError(TestInfo testInfo) {
       String testName = testInfo.getDisplayName();
 
       Resource xliffResource = xliffResource();
 
       GCExchangeFacade facade = new MockedGCExchangeFacade(MockSettings.fromMockConfig(
-        Map.of(MockSettings.SCENARIO, CancelationNotFoundScenario.ID)
+        Map.of(MockSettings.SCENARIO, CancellationNotFoundScenario.ID)
       ));
 
       String fileId = facade.uploadContent(testName, xliffResource, Locale.US);

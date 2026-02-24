@@ -1,6 +1,6 @@
-com.coremedia.labs.translation.gcc.facade.mock.scenarios.CancelationNotFoundScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.CancellationNotFoundScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.FullRegularApprovalStateFlowScenario
-com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnCancelationScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnCancellationScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnDownloadScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnUploadScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.NoOperationScenario

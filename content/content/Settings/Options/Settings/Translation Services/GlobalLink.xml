@@ -68,11 +68,11 @@
               <StructProperty Name="scenarios">
                 <Struct>
                   <StringProperty
-                    Name="cancelation-not-found"><![CDATA[Simulates a submission not found error on cancelation.]]></StringProperty>
+                    Name="cancellation-not-found"><![CDATA[Simulates a submission not found error on cancellation.]]></StringProperty>
                   <StringProperty
                     Name="full-regular-approval-state-flow"><![CDATA[Simulates a submission that passes all regular states, including approval states.]]></StringProperty>
                   <StringProperty
-                    Name="gcc-outage-on-cancelation"><![CDATA[Simulates a permanent GCC connection outage on cancelation.]]></StringProperty>
+                    Name="gcc-outage-on-cancellation"><![CDATA[Simulates a permanent GCC connection outage on cancellation.]]></StringProperty>
                   <StringProperty
                     Name="gcc-outage-on-download"><![CDATA[Simulates a permanent GCC connection outage on XLIFF download.]]></StringProperty>
                   <StringProperty
@@ -82,7 +82,7 @@
                   <StringProperty
                     Name="submission-canceled-by-globallink"><![CDATA[Simulates a submission that got canceled via GCC backend.]]></StringProperty>
                   <StringProperty
-                    Name="submission-redelivered"><![CDATA[Simulates a typical redelivered scenario, with first corrupted XLIFF, then signalling redelivered state.]]></StringProperty>
+                    Name="submission-redelivered"><![CDATA[Simulates a typical redelivered scenario, with first corrupted XLIFF, then signaling redelivered state.]]></StringProperty>
                   <StringProperty
                     Name="translate-does-not-exist"><![CDATA[Simulates references to target content items, that no longer exist.]]></StringProperty>
                   <StringProperty
