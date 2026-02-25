@@ -274,7 +274,7 @@ class DefaultGCExchangeFacadeContractTest {
       long submissionId = fixture.uploadAndSubmit(
         facade,
         submissionName,
-        "Submission is meant to be cancelled via API and later confirmed.",
+        "Submission is meant to be canceled via API and later confirmed.",
         testName
       );
 
@@ -311,7 +311,7 @@ class DefaultGCExchangeFacadeContractTest {
         .as("Cancellation should have been successful.")
         .isEqualTo(HTTP_OK);
 
-      await("Wait until submission is marked as cancelled.")
+      await("Wait until submission is marked as canceled.")
         .atMost(2L, TimeUnit.MINUTES)
         .pollDelay(5L, TimeUnit.SECONDS)
         .pollInterval(10L, TimeUnit.SECONDS)
@@ -319,7 +319,7 @@ class DefaultGCExchangeFacadeContractTest {
           GCSubmissionModel submission = facade.getSubmission(submissionId);
           assertThat(submission.getState())
             .as(
-              "Submission %s should be marked as cancelled after cancellation (id=%s, PD=%s).",
+              "Submission %s should be marked as canceled after cancellation (id=%s, PD=%s).",
               submission.getName(),
               submission.getSubmissionId(),
               submission.getPdSubmissionIds()

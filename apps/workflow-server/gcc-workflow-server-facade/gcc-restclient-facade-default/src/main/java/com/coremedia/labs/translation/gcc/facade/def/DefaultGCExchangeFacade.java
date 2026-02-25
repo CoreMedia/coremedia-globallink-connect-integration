@@ -310,7 +310,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public void confirmCancelledTasks(long submissionId) {
     Map<TaskStatus, Set<GCTaskModel>> tasksByState =
       getTasksByState(submissionId,
-        // Ignore tasks which got already confirmed as being cancelled.
+        // Ignore tasks which got already confirmed as being canceled.
         r -> r.setIsCancelConfirmed(0),
         Cancelled
       );
@@ -335,10 +335,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         MessageResponse messageResponse = delegate.confirmTaskCancellation(taskId);
         if (!HTTP_OK.equals(messageResponse.getStatus())) {
           LOG.debug("Failed to confirm task cancellation for the task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
-          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task %d", taskId);
+          throw new GCFacadeCommunicationException("Failed to confirm the canceled task %d", taskId);
         }
       } catch (RuntimeException e) {
-        throw new GCFacadeCommunicationException(e, "Failed to confirm the cancelled task: %d", taskId);
+        throw new GCFacadeCommunicationException(e, "Failed to confirm the canceled task: %d", taskId);
       }
     }
   }
@@ -482,7 +482,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       /*
        * In order to know, that there is no more interaction with GCC backend
        * required to put the submission into a valid finished state, we split
-       * the cancelled state into two. Only when the state is
+       * the canceled state into two. Only when the state is
        * "Cancellation Confirmed" there is nothing more to do. When it is
        * only "Cancelled" there are still tasks which need to be finished
        * either by confirming their cancellation or by downloading their
@@ -491,7 +491,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       if (areAllSubmissionTasksDone(submissionId)) {
         state = GCSubmissionState.CANCELLATION_CONFIRMED;
       } else {
-        // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
+        // Interpret the canceled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
         state = GCSubmissionState.CANCELLED;
       }
     }

@@ -78,11 +78,11 @@ public enum GCSubmissionState {
   DELIVERED(SubmissionStatus.Delivered),
   CANCELLED(SubmissionStatus.Cancelled),
   /**
-   * Artificial submission status for a cancelled submission completely
+   * Artificial submission status for a canceled submission completely
    * being marked as cancellation confirmed. In other words a submission
    * is considered to be in state <em>Cancellation Confirmed</em> when
-   * the submission is cancelled and all of its tasks are either
-   * cancelled (confirmed) or delivered.
+   * the submission is canceled and all of its tasks are either
+   * canceled (confirmed) or delivered.
    */
   CANCELLATION_CONFIRMED("Cancellation Confirmed"),
   /**

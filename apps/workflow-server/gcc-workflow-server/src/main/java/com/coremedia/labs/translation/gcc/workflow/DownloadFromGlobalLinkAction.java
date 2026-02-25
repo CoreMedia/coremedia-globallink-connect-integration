@@ -195,7 +195,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   /**
-   * Sets the name of the String process variable that states if a workflow may be cancelled
+   * Sets the name of the String process variable that states if a workflow may be canceled
    *
    * @param cancellationAllowedVariable boolean workflow variable name
    */
