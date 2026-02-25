@@ -81,15 +81,15 @@ partial revert of some contents, all contents which are part of the CMS
 translation workflow need to be reverted.
 
 Thus, as the existing CMS API does not support partial cancellation, the same
-applies to the GCC submission which must not be partially cancelled.
+applies to the GCC submission which must not be partially canceled.
 
 The current implementation is aware of partial cancellation, though: If only
-some tasks are cancelled, the implementation will stop downloading results from
-these tasks and wait for the whole submission to be marked as cancelled. Such
+some tasks are canceled, the implementation will stop downloading results from
+these tasks and wait for the whole submission to be marked as canceled. Such
 wait loops are logged.
 
 _Planned/Later:_ If you perform cancellation within the CMS workflow, it is
-always ensured, that the complete submission is cancelled.
+always ensured, that the complete submission is canceled.
 
 ## One Workflow for all Locales vs. One Workflow per Locale
 

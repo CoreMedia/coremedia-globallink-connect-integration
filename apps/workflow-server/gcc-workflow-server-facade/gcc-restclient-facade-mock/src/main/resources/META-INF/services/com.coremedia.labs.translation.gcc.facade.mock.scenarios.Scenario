@@ -1,11 +1,14 @@
-com.coremedia.labs.translation.gcc.facade.mock.scenarios.CancelationNotFoundScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.CancellationNotFoundScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.FullRegularApprovalStateFlowScenario
-com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnCancelationScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnCancellationScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnDownloadScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.GccOutageOnUploadScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.NoOperationScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.SubmissionCanceledByGlobalLinkScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.SubmissionErrorScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.SubmissionRedeliveredScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateDoesNotExistScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateEmptyTransunitTargetScenario
+com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateInvalidContentIdScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateInvalidXliffScenario
 com.coremedia.labs.translation.gcc.facade.mock.scenarios.TranslateStringTooLongScenario

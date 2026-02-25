@@ -149,7 +149,7 @@ public class CancelTranslationGlobalLinkAction extends
     Result result = new Result(submissionState, cancelled, params.completedLocales, submission.getPdSubmissionIds());
     resultConsumer.accept(result);
 
-    // nothing to do, if submission is already cancelled and confirmed or delivered
+    // nothing to do, if submission is already canceled and confirmed or delivered
     if (submissionState == CANCELLATION_CONFIRMED
       || submissionState == DELIVERED
       || submissionState == REDELIVERED) {
@@ -171,7 +171,7 @@ public class CancelTranslationGlobalLinkAction extends
       return;
     }
 
-    // not yet cancelled -> cancel
+    // not yet canceled -> cancel
     if (!cancelled && submissionState != CANCELLED) {
       result.cancelled = cancel(facade, submissionId, issues);
       result.submissionState = facade.getSubmission(submissionId).getState();
@@ -183,7 +183,7 @@ public class CancelTranslationGlobalLinkAction extends
       }
     }
 
-    // cancelled but not yet confirmed -> confirm
+    // canceled but not yet confirmed -> confirm
     if (result.submissionState == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
       result.submissionState = facade.getSubmission(submissionId).getState();
@@ -213,7 +213,7 @@ public class CancelTranslationGlobalLinkAction extends
    * @param submissionId submission to cancel
    * @param issues       map to store issues during the cancel operation
    *                     (write-only)
-   * @return {@code true} if the submission was successfully cancelled,
+   * @return {@code true} if the submission was successfully canceled,
    * {@code false} otherwise
    */
   private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<@Nullable Content>> issues) {

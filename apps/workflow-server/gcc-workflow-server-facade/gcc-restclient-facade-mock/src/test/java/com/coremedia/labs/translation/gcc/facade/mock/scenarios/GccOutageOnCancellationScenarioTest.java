@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.mock.scenarios;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
 import org.jspecify.annotations.NullMarked;
@@ -18,20 +19,20 @@ import java.util.Map;
 import static com.coremedia.labs.translation.gcc.facade.mock.SubmissionTestUtil.xliffResource;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @NullMarked
-class CancelationNotFoundScenarioTest {
+class GccOutageOnCancellationScenarioTest {
   @Nested
   class FacadeIntegrationBehavior {
     @Test
-    void shouldProvoke404CancelationError(TestInfo testInfo) {
+    void shouldThrowExceptionOnCancellation(TestInfo testInfo) {
       String testName = testInfo.getDisplayName();
 
       Resource xliffResource = xliffResource();
 
       GCExchangeFacade facade = new MockedGCExchangeFacade(MockSettings.fromMockConfig(
-        Map.of(MockSettings.SCENARIO, CancelationNotFoundScenario.ID)
+        Map.of(MockSettings.SCENARIO, GccOutageOnCancellationScenario.ID)
       ));
 
       String fileId = facade.uploadContent(testName, xliffResource, Locale.US);
@@ -43,10 +44,8 @@ class CancelationNotFoundScenarioTest {
         "admin",
         Locale.US, singletonMap(fileId, singletonList(Locale.ROOT)));
 
-      int responseCode = facade.cancelSubmission(submissionId);
-
-      assertThat(responseCode)
-        .isEqualTo(404);
+      assertThatThrownBy(() -> facade.cancelSubmission(submissionId))
+        .isInstanceOf(GCFacadeCommunicationException.class);
     }
   }
 }

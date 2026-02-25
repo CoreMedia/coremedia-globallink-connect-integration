@@ -32,6 +32,7 @@
     "serve": "docusaurus serve",
     "typecheck": "tsc",
     "update:latest": "pnpm update --interactive --latest --recursive",
+    "validate:overrides": "node ./scripts/validate-overrides.mjs",
     "write-heading-ids": "docusaurus write-heading-ids",
     "write-translations": "docusaurus write-translations"
   },
@@ -73,8 +74,13 @@
   },
   "pnpm": {
     "overrides": {
-      "qs": "^6.14.1",
-      "express": "^4.22.1"
+      "ajv@>=8.0.0 <8.18.0": "^8.18.0",
+      "baseline-browser-mapping": "^2.9.19",
+      "express": "^4.22.1",
+      "lodash": "^4.17.23",
+      "lodash-es": "^4.17.23",
+      "minimatch": "^10.2.1",
+      "qs": "^6.14.1"
     }
   }
 }

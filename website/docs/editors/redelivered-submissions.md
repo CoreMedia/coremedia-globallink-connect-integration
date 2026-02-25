@@ -16,3 +16,10 @@ XLIFF provided by the GCC backend had issues, you can download the (corrupted)
 XLIFF along with its issue details just as for the error handling.
 
 ![GCC Redelivered](./img/gcc-redelivered.png)
+
+After you received the fixed, updated XLIFF from the translator, you can upload
+it via _Upload_ within the Content application. Note that it will not create
+a content item, but instead apply the translation contained in the XLIFF to your
+content items.
+
+![GCC Redelivered Upload](./img/gcc-redelivered-upload-xliff.png)

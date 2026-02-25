@@ -20,8 +20,18 @@ updates:
     open-pull-requests-limit: 5
 
   # Frontend dependencies managed by PNPM
+  # IMPORTANT: When reviewing Dependabot PRs for npm dependencies (especially @docusaurus/core),
+  # check if pnpm.overrides in website/package.json are still needed.
+  # Run: cd website && pnpm run validate:overrides
+  # See: website/DEPENDENCY_OVERRIDES.md for review checklist
   - package-ecosystem: "npm"
     directory: "/website" # Location of pnpm-lock.yaml
+    ignore:
+      # ajv@6.12.6 is a transitive dependency of unmaintained file-loader
+      # Cannot be updated to 8.x without breaking the build
+      # See website/.npmrc for risk acceptance details
+      - dependency-name: "ajv"
+        versions: ["6.x"]
     commit-message:
       prefix: 'build(pnpm):'
     schedule:

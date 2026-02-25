@@ -166,14 +166,14 @@ maintenance branch (for _minor_ versions).
 >
 <TabItem value="major">
 ```bash
-git switch --create --track "maintenance/2506.x" "origin/main"
+git switch --create "maintenance/2506.x" "origin/main"
 git push --set-upstream origin "maintenance/2506.x"
-git switch --create --track "approval/2506.x" "origin/main"
+git switch --create "approval/2506.x"
 ```
 </TabItem>
 <TabItem value="minor">
 ```bash
-git switch --create --track "approval/2406.1.0" "origin/maintenance/2406.x"
+git switch --create "approval/2406.1.0" "origin/maintenance/2406.x"
 ```
 </TabItem>
 </Tabs>

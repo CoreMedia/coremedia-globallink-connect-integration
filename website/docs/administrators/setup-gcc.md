@@ -15,7 +15,7 @@ that the integration between both systems runs smoothly:
   [Configuring Connection Settings](<./configure-gcc-settings> "Administrators | Configuring Connection Settings")
   will tell you how to configure the identifier.
 
-* The connector automatically detects submissions that have been cancelled in
+* The connector automatically detects submissions that have been canceled in
   GlobalLink and shows this state to editors in CoreMedia Studio. Canceling
   individual jobs of a submission is not supported yet and will most likely
   yield unexpected results. To prevent this from happening, make sure that

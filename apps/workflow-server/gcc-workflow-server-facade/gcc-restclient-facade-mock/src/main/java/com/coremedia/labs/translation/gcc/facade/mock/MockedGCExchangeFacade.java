@@ -90,7 +90,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   @Override
   public int cancelSubmission(long submissionId) {
 
-    Optional<Integer> mockHttpResponse = mockSettings.scenario().cancelation().startCancelation();
+    Optional<Integer> mockHttpResponse = mockSettings.scenario().cancellation().startCancellation();
 
     if (mockHttpResponse.isPresent()) {
       return mockHttpResponse.get();
@@ -143,7 +143,7 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
       // from production code we can only reach `confirmCancelledTask` with
       // empty canceled tasks, when the submission is already in state
       // CANCELED.
-      LOG.debug("Assuming cancelation got trigger from the (mocked) backend. Marking all tasks as canceled.");
+      LOG.debug("Assuming cancellation got trigger from the (mocked) backend. Marking all tasks as canceled.");
       submissionStore.cancelSubmission(submissionId);
       cancelledTasks = submissionStore.getCancelledTasks(submissionId);
     }

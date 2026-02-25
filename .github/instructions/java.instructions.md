@@ -56,9 +56,10 @@ of such exceptions:
   };
   ```
 
-* **Suggest available language features**:
+* **Recommend available language features**:
   Recommend modern features available in the detected Java version. For Java 17,
-  suggest text blocks, switch expressions, records, and sealed classes when appropriate.
+  for example, recommend text blocks, switch expressions, records, and sealed
+  classes when appropriate.
 
 ### **Code Quality & Style**
 
@@ -70,8 +71,43 @@ of such exceptions:
   `orElseThrow()`, or `ifPresent()`.
 * **Avoid raw types**:
   Always use parameterized types for generics (e.g., `List<String>` not `List`).
+* **Annotate with `@org.jspecify.annotations.NullMarked`**:
+  Apply this annotation to all top-level classes, interfaces, enums, and
+  annotations (including test classes) to indicate that all types are
+  non-nullable by default, unless explicitly marked as `@Nullable`. This
+  annotation should appear after other class-level annotations and immediately
+  before the class/interface/enum declaration.
+* **Use `@org.jspecify.annotations.Nullable` for nullable types**:
+  When a field, parameter, or return type can be `null`, explicitly annotate it
+  with `@Nullable`. This works in conjunction with `@NullMarked` to provide
+  precise null-safety contracts.
+* **Avoid Error Prone Bug Patterns**:
+  Avoid all bug patterns listed at <https://errorprone.info/bugpatterns>,
+  except the ones that are experimental, yet.
+* **Prefer enums for constants and utilities**:
+  When defining multiple related constants, use an enum instead of a class with
+  `public static final` fields. For utility classes with only static methods,
+  prefer using an enum with a semicolon-only body: `enum UtilityName { ; }`.
+  This prevents instantiation more clearly than a private constructor.
+* **Use static imports judiciously**:
+  Static imports are encouraged for:
+  - Assertion methods (e.g., `org.assertj.core.api.Assertions.assertThat`)
+  - Test lifecycle methods (e.g., `org.junit.jupiter.api.Assertions.*`)
+  - Factory methods (e.g., `java.util.Collections.*`, `java.util.List.of`)
+  - Logger creation: `java.lang.invoke.MethodHandles.lookup` and
+    `org.slf4j.LoggerFactory.getLogger`
+* **Logger pattern**:
+  For logging, use SLF4J with the following pattern:
+  ```java
+  private static final Logger LOG = getLogger(lookup().lookupClass());
+  ```
+  This requires static imports:
+  ```java
+  import static java.lang.invoke.MethodHandles.lookup;
+  import static org.slf4j.LoggerFactory.getLogger;
+  ```
 
-### **Modern Java Features (Java 17)**
+### **Modern Java Features (Java 21)**
 
 * **Use text blocks**:
   For multi-line strings, prefer text blocks over string concatenation.

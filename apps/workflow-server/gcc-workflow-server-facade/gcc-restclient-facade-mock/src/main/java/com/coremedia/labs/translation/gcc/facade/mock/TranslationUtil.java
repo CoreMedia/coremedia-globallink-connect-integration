@@ -200,6 +200,7 @@ final class TranslationUtil {
   @SuppressWarnings("HttpUrlsUsage")
   private static DocumentBuilderFactory newDocumentBuilderFactory() throws ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
     factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
     factory.setFeature("http://xml.org/sax/features/external-general-entities", false);

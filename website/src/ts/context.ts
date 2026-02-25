@@ -2,10 +2,10 @@ const gitOrg = "CoreMedia";
 const gitRepository = "coremedia-globallink-connect-integration";
 
 const cmccVersion = {
-  main: "12",
-  major: "2506",
+  main: "13",
+  major: "2512",
   minor: "0",
-  patch: "1",
+  patch: "0",
 };
 
 const cmGccVersion = "1";

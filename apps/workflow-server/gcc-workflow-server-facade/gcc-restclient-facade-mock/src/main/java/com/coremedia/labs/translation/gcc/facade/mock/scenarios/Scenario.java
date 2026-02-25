@@ -76,17 +76,31 @@ public interface Scenario {
   }
 
   /**
-   * Return the cancelation interceptor for this scenario.
+   * Return the cancellation interceptor for this scenario.
    *
-   * @return the cancelation interceptor for this scenario
-   * @implSpec If this scenario implements {@link CancelationInterceptor},
+   * @return the cancellation interceptor for this scenario
+   * @implSpec If this scenario implements {@link CancellationInterceptor},
    * return this, otherwise return a no-op implementation.
    */
-  default CancelationInterceptor cancelation() {
-    if (this instanceof CancelationInterceptor me) {
+  default CancellationInterceptor cancellation() {
+    if (this instanceof CancellationInterceptor me) {
       return me;
     }
-    return CancelationInterceptor.NO_OPERATION;
+    return CancellationInterceptor.NO_OPERATION;
+  }
+
+  /**
+   * Return the cancellation interceptor for this scenario.
+   *
+   * @return the cancellation interceptor for this scenario
+   * @implSpec If this scenario implements {@link CancellationInterceptor},
+   * return this, otherwise return a no-op implementation.
+   * @deprecated Use {@link #cancellation()} instead.
+   */
+  @SuppressWarnings("SpellCheckingInspection")
+  @Deprecated(since = "2512.0.0-1", forRemoval = true)
+  default CancellationInterceptor cancelation() {
+    return cancellation();
   }
 
   /**

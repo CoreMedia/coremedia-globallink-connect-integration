@@ -10,12 +10,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface SubmissionInterceptor {
-  SubmissionInterceptor NO_OPERATION = new SubmissionInterceptor() {
-    @Override
-    public GCSubmissionModel intercept(GCSubmissionModel base) {
-      return base;
-    }
-  };
+  SubmissionInterceptor NO_OPERATION = base -> base;
 
   /**
    * Intercepts the submission model prior to returning it to the caller.

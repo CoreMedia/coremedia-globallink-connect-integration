@@ -29,7 +29,7 @@ final class PathUtil {
    */
   static boolean isReferringToParent(String path) {
     List<String> segments = tokenizeAndNormalize(path);
-    return !segments.isEmpty() && PATH_PARENT.equals(segments.get(0));
+    return !segments.isEmpty() && PATH_PARENT.equals(segments.getFirst());
   }
 
   /**
@@ -59,7 +59,7 @@ final class PathUtil {
         i = Math.max(0, i-2);
       }
     }
-    if (isAbsolute(path) && !segments.isEmpty() && PATH_PARENT.equals(segments.get(0))) {
+    if (isAbsolute(path) && !segments.isEmpty() && PATH_PARENT.equals(segments.getFirst())) {
       throw new IllegalArgumentException("Cannot resolve beyond root: " + path);
     }
     return segments;

@@ -70,20 +70,19 @@ public enum GCSubmissionState {
    * {@link #COMPLETED completed} is set directly to redelivered, without
    * the XLIFF provided via the GCC backend.
    * <p>
-   * The GCC API (v3.1.3) does not cover this state, so that we need to
-   * mock it.
-   *
+   * The GCC API (neither v3.1.3, nor v3.1.9) does not cover this state, so that
+   * we need to mock it.
    * @since 2406.1
    */
   REDELIVERED("Redelivered"),
   DELIVERED(SubmissionStatus.Delivered),
   CANCELLED(SubmissionStatus.Cancelled),
   /**
-   * Artificial submission status for a cancelled submission completely
+   * Artificial submission status for a canceled submission completely
    * being marked as cancellation confirmed. In other words a submission
    * is considered to be in state <em>Cancellation Confirmed</em> when
-   * the submission is cancelled and all of its tasks are either
-   * cancelled (confirmed) or delivered.
+   * the submission is canceled and all of its tasks are either
+   * canceled (confirmed) or delivered.
    */
   CANCELLATION_CONFIRMED("Cancellation Confirmed"),
   /**

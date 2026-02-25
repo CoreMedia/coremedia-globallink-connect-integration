@@ -195,7 +195,7 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
   }
 
   /**
-   * Sets the name of the String process variable that states if a workflow may be cancelled
+   * Sets the name of the String process variable that states if a workflow may be canceled
    *
    * @param cancellationAllowedVariable boolean workflow variable name
    */
@@ -478,7 +478,12 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     }
 
     for (XliffImportResultItem errorResultItem : errorResultItems) {
-      xliffImportIssueToContents.computeIfAbsent(errorResultItem.getCode().toString(), k -> new ArrayList<>())
+      String xliffImportFailureCode = errorResultItem.getCode().toString();
+      // XLIFF Error Codes are too generic, like for being displayed in the UI.
+      // Adding some context, to provide better means of localization and to
+      // avoid confusion with other error codes in the system.
+      String contextualizedFailureCode = "XLIFF_IMPORT_RESULT_%s".formatted(xliffImportFailureCode);
+      xliffImportIssueToContents.computeIfAbsent(contextualizedFailureCode, k -> new ArrayList<>())
         .add(errorResultItem.getContent());
     }
 

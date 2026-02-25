@@ -22,13 +22,13 @@ Therefore, you can set the following parameters within the `mock` section
   will either reduce or increase the delay (type:`Integer`)
 * `scenario` (type:`String`) If you want to test specific scenarios you can set
   this parameter to:
-  * `cancelation-not-found`: Simulates a submission not found error on
-    cancelation.
+  * `cancellation-not-found`: Simulates a submission not found error on
+    cancellation.
   * `full-regular-approval-state-flow`: Simulates a submission that passes all
     regular states, including approval states. This enriches normal mocking,
     that skips several intermediate states for simplicity.
-  * `gcc-outage-on-cancelation`: Simulates a permanent GCC connection outage on
-    cancelation.
+  * `gcc-outage-on-cancellation`: Simulates a permanent GCC connection outage on
+    cancellation.
   * `gcc-outage-on-download`: Simulates a permanent GCC connection outage on
     XLIFF download.
   * `gcc-outage-on-upload`: Simulates a permanent GCC connection outage on XLIFF
