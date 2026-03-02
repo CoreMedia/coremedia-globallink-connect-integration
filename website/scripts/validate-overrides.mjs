@@ -6,12 +6,16 @@
  *
  * Advantages over shell script:
  * - Cross-platform (works on Windows, macOS, Linux)
- * - No external dependencies (jq)
+ * - No external dependencies (jq, js-yaml, …)
  * - Better JSON parsing
  * - Easier to maintain for JavaScript/TypeScript developers
+ *
+ * Override source resolution order:
+ *   1. pnpm-workspace.yaml  (recommended, pnpm ≥ 9)
+ *   2. package.json → pnpm.overrides  (legacy fallback)
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 
@@ -41,6 +45,63 @@ function execCommand(command, options = {}) {
 }
 
 /**
+ * Read the `overrides` map from pnpm-workspace.yaml without an external YAML
+ * library.  The overrides block is a flat key→value section, so a small
+ * purpose-built parser is sufficient.
+ *
+ * Supported key forms (as produced by pnpm):
+ *   overrides:
+ *     'ajv@>=8.0.0 <8.18.0': ^8.18.0
+ *     baseline-browser-mapping: ^2.9.19
+ */
+function readWorkspaceYamlOverrides(filePath) {
+  let content;
+  try {
+    content = readFileSync(filePath, 'utf8');
+  } catch {
+    return null;
+  }
+
+  const overrides = {};
+  let inOverrides = false;
+
+  for (const line of content.split('\n')) {
+    // Detect the `overrides:` top-level key
+    if (/^overrides\s*:/.test(line)) {
+      inOverrides = true;
+      continue;
+    }
+
+    if (inOverrides) {
+      // Skip blank lines
+      if (line.trim() === '') continue;
+
+      // An un-indented non-empty line starts a new top-level section
+      if (/^\S/.test(line)) {
+        inOverrides = false;
+        continue;
+      }
+
+      // Quoted key:  'key': value  or  "key": value
+      const quotedMatch = line.match(/^\s+(?:'([^']*)'|"([^"]*)")?\s*:\s*(.+)$/);
+      if (quotedMatch && (quotedMatch[1] !== undefined || quotedMatch[2] !== undefined)) {
+        const key = quotedMatch[1] ?? quotedMatch[2];
+        overrides[key] = quotedMatch[3].trim();
+        continue;
+      }
+
+      // Unquoted key: word-chars, @, /, -  (no version range special chars)
+      const unquotedMatch = line.match(/^\s+([\w@/.-][^:]*?)\s*:\s*(.+)$/);
+      if (unquotedMatch) {
+        overrides[unquotedMatch[1].trim()] = unquotedMatch[2].trim();
+      }
+    }
+  }
+
+  return Object.keys(overrides).length > 0 ? overrides : null;
+}
+
+/**
  * Extract package name from override key (e.g., "ajv@>=8.0.0 <8.18.0" -> "ajv")
  */
 function extractPackageName(overrideKey) {
@@ -54,11 +115,9 @@ function extractPackageName(overrideKey) {
 }
 
 /**
- * Get unique package names from overrides
+ * Get unique package names from an overrides map
  */
-function getOverriddenPackages(packageJson) {
-  const overrides = packageJson?.pnpm?.overrides;
-
+function getOverriddenPackages(overrides) {
   if (!overrides || Object.keys(overrides).length === 0) {
     return [];
   }
@@ -177,12 +236,10 @@ function checkOutdatedPackages(packages) {
 /**
  * Print override summary table
  */
-function printOverrideSummary(packageJson, packages) {
+function printOverrideSummary(overrides, packages) {
   console.log('');
   console.log('Current Overrides:');
   console.log('-'.repeat(60));
-
-  const overrides = packageJson.pnpm.overrides;
 
   // Group overrides by package
   const overridesByPackage = new Map();
@@ -214,7 +271,7 @@ function printReviewChecklist() {
   console.log('Override Review Checklist');
   console.log('='.repeat(60));
   console.log('');
-  console.log('For each override in package.json, verify:');
+  console.log('For each override in pnpm-workspace.yaml, verify:');
   console.log('  1. Is the vulnerable version still in the dependency tree?');
   console.log('  2. Is the override version still the minimum secure version?');
   console.log('  3. Does the build pass with the override?');
@@ -244,30 +301,47 @@ function main() {
   const pnpmVersion = checkPnpm();
   console.log(`Using pnpm version: ${pnpmVersion}`);
 
-  // Read package.json
-  let packageJson;
-  try {
-    const packageJsonPath = join(process.cwd(), 'package.json');
-    const content = readFileSync(packageJsonPath, 'utf8');
-    packageJson = JSON.parse(content);
-  } catch (error) {
-    console.error(`${colors.red}Error: Could not read package.json${colors.reset}`);
-    console.error(error.message);
-    process.exit(1);
+  // Resolve overrides: pnpm-workspace.yaml first, then package.json fallback
+  let overrides = null;
+  let overrideSource = null;
+
+  const workspaceYamlPath = join(process.cwd(), 'pnpm-workspace.yaml');
+  if (existsSync(workspaceYamlPath)) {
+    overrides = readWorkspaceYamlOverrides(workspaceYamlPath);
+    if (overrides) overrideSource = 'pnpm-workspace.yaml';
   }
 
-  // Get overridden packages
-  const packages = getOverriddenPackages(packageJson);
+  if (!overrides) {
+    // Fallback: pnpm.overrides in package.json (legacy)
+    try {
+      const packageJsonPath = join(process.cwd(), 'package.json');
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+      const legacyOverrides = packageJson?.pnpm?.overrides;
+      if (legacyOverrides && Object.keys(legacyOverrides).length > 0) {
+        overrides = legacyOverrides;
+        overrideSource = 'package.json (pnpm.overrides)';
+      }
+    } catch {
+      // package.json is optional for this fallback
+    }
+  }
 
-  if (packages.length === 0) {
-    console.log(`${colors.yellow}Warning: No overrides found in package.json${colors.reset}`);
+  if (!overrides) {
+    console.log(
+      `${colors.yellow}Warning: No overrides found in pnpm-workspace.yaml or package.json${colors.reset}`
+    );
     process.exit(0);
   }
+
+  console.log(`Override source: ${colors.cyan}${overrideSource}${colors.reset}`);
+
+  // Get overridden packages
+  const packages = getOverriddenPackages(overrides);
 
   console.log(`Found ${packages.length} overridden package(s): ${packages.join(', ')}`);
 
   // Print override summary
-  printOverrideSummary(packageJson, packages);
+  printOverrideSummary(overrides, packages);
 
   // 1. Analyze dependency trees
   printHeader('1. Dependency Tree Analysis');
