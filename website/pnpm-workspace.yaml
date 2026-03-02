@@ -28,7 +28,8 @@ overrides:
     lodash: ^4.17.23
     lodash-es: ^4.17.23
     minimatch: ^10.2.1
-    qs: ^6.14.1
+    # https://github.com/advisories/GHSA-w7fw-mjwx-w883 (patched 6.14.2)
+    qs: ^6.14.2
     # https://github.com/advisories/GHSA-5c6j-r48x-rmvq (patched 7.0.3)
     serialize-javascript: ^7.0.3
     # https://github.com/advisories/GHSA-8fgc-7cc6-rx7x (patched 5.104.1)
