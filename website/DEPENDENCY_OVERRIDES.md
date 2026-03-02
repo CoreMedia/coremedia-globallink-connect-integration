@@ -4,14 +4,15 @@
 
 ### Security-Related Overrides
 
-| Package                    | Override       | Reason                                | Review Date | Status        |
-|----------------------------|----------------|---------------------------------------|-------------|---------------|
-| `ajv@>=8.0.0 <8.18.0`      | `^8.18.0`      | CVE-2025-69873 fix                    | 2026-02-19  | Active        |
-| `ajv@6.12.6`               | N/A (Excluded) | Unmaintained `file-loader` dependency | 2026-02-19  | Accepted Risk |
-| `baseline-browser-mapping` | `^2.9.19`      | Keep browser data current             | 2026-02-19  | Active        |
-| `express`                  | `^4.22.1`      | Security vulnerability fix            | 2026-02-19  | Active        |
-| `qs`                       | `^6.14.1`      | Security vulnerability fix            | 2026-02-19  | Active        |
-| `lodash`                   | `^4.17.23`     | Security vulnerability fix            | 2026-02-19  | Active        |
+| Package                    | Override       | Reason                                | Status        |
+|----------------------------|----------------|---------------------------------------|---------------|
+| `ajv@>=8.0.0 <8.18.0`      | `^8.18.0`      | CVE-2025-69873 fix                    | Active        |
+| `ajv@6.12.6`               | N/A (Excluded) | Unmaintained `file-loader` dependency | Accepted Risk |
+| `baseline-browser-mapping` | `^2.9.19`      | Keep browser data current             | Active        |
+| `express`                  | `^4.22.1`      | Security vulnerability fix            | Active        |
+| `lodash`                   | `^4.17.23`     | Security vulnerability fix            | Active        |
+| `minimatch`                | `^10.2.3`      | Security vulnerability fix            | Active        |
+| `qs`                       | `^6.14.1`      | Security vulnerability fix            | Active        |
 
 ## Maintenance Process
 
