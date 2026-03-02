@@ -29,6 +29,8 @@ overrides:
     lodash-es: ^4.17.23
     minimatch: ^10.2.1
     qs: ^6.14.1
+    # https://github.com/advisories/GHSA-5c6j-r48x-rmvq
+    serialize-javascript: ^7.0.3
 
 minimumReleaseAge: 1440
 
