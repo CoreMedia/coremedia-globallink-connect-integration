@@ -28,7 +28,7 @@
     -->
     <gcc-restclient.version>3.1.3</gcc-restclient.version>
     <cm.middle.core.version>2512.0.0</cm.middle.core.version>
-    <error-prone.version>2.46.0</error-prone.version>
+    <error-prone.version>2.48.0</error-prone.version>
     <nullaway.version>0.13.1</nullaway.version>
     <!--
      Error Prone Arguments
