@@ -3,9 +3,9 @@ name: Deploy Website to GitHub Pages
 on:
   workflow_dispatch: {}
   workflow_call: {}
-  # Only run when merging closed pull-requests.
-  pull_request:
-    types: [closed]
+  # Trigger on push to main to detect merged PRs from maintenance/* or website/* branches.
+  # This runs from the main branch context, which is required for GitHub Pages environment protection.
+  push:
     branches:
       - main
     paths:
@@ -17,9 +17,8 @@ permissions:
 
 # Prevent overlapping deployments for the same ref (hardening)
 concurrency:
-  # Ensure deployments for the same target branch serialize. For pull_request events
-  # we want to serialize on the base branch (main), not the PR pseudo ref.
-  group: pages-${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref }}
+  # Ensure deployments for the same target branch serialize.
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -33,17 +32,21 @@ jobs:
   # development flow as introduced in August 2025 and may require to be adapted,
   # if we decide differently. Goal: Only publish the "latest approved version"
   # rather than an intermediate state while preparing the next release.
+  # For trigger-testing purpose, also merging from `website/*` branches will
+  # trigger a deployment.
   check-source-branch:
     runs-on: ubuntu-latest
     outputs:
       should-deploy: ${{ steps.check.outputs.should-deploy }}
       build-ref: ${{ steps.check.outputs.build-ref }}
     steps:
+      - id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
       - id: check
         env:
-          PR_MERGED: ${{ github.event.pull_request.merged }}
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           EVENT="${{ github.event_name }}"
           echo "Event: $EVENT"
@@ -52,27 +55,54 @@ jobs:
           if [[ "$EVENT" == "workflow_dispatch" || "$EVENT" == "workflow_call" ]]; then
             echo "Triggered via $EVENT: enabling deployment."
             echo "should-deploy=true" >> "$GITHUB_OUTPUT"
-            # Default to main for manual / reusable triggers
             echo "build-ref=main" >> "$GITHUB_OUTPUT"
             echo "Manual/reusable trigger" > decision.txt
             exit 0
           fi
 
-          # Only evaluate PR-specific data for pull_request events.
-          if [[ "$EVENT" == "pull_request" ]]; then
-            if [[ "$PR_MERGED" == "true" && "$HEAD_REF" =~ ^maintenance/ && "$BASE_REF" == "main" ]]; then
-              echo "Merged maintenance/* PR into $BASE_REF: enabling deployment. (head: $HEAD_REF)"
+          # For push events, check if this push came from merging a qualifying PR.
+          if [[ "$EVENT" == "push" ]]; then
+            COMMIT_SHA="${{ github.sha }}"
+            echo "Checking commit: $COMMIT_SHA"
+
+            # Try to extract PR number from merge commit message
+            COMMIT_MSG=$(git log -1 --pretty=%B "$COMMIT_SHA")
+            echo "Commit message: $COMMIT_MSG"
+
+            # GitHub merge commits have format: "Merge pull request #123 from user/branch"
+            if [[ "$COMMIT_MSG" =~ Merge\ pull\ request\ \#([0-9]+)\ from\ [^/]+/(maintenance/[^[:space:]]+|website/[^[:space:]]+) ]]; then
+              PR_NUMBER="${BASH_REMATCH[1]}"
+              SOURCE_BRANCH="${BASH_REMATCH[2]}"
+              echo "Detected merged PR #$PR_NUMBER from branch: $SOURCE_BRANCH"
+              echo "Merged PR qualifies: enabling deployment."
               echo "should-deploy=true" >> "$GITHUB_OUTPUT"
-              # Always build from the base (main) branch, not the merged head ref.
-              echo "build-ref=$BASE_REF" >> "$GITHUB_OUTPUT"
-              echo "Merged maintenance PR ($HEAD_REF -> $BASE_REF)" > decision.txt
-              exit 0
-            else
-              echo "Not a qualifying merged maintenance/* PR: skipping deployment. (head: $HEAD_REF base: $BASE_REF merged: $PR_MERGED)"
-              echo "should-deploy=false" >> "$GITHUB_OUTPUT"
-              echo "Non-qualifying PR" > decision.txt
+              echo "build-ref=main" >> "$GITHUB_OUTPUT"
+              echo "Merged qualifying PR #$PR_NUMBER ($SOURCE_BRANCH -> main)" > decision.txt
               exit 0
             fi
+
+            # Fallback: Check via GitHub API if commit is associated with a merged PR
+            echo "Merge commit pattern not found in message, checking via API..."
+            PR_INFO=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_SHA/pulls")
+
+            # Check if any associated PR came from maintenance/* or website/*
+            QUALIFYING_PR=$(echo "$PR_INFO" | jq -r '.[] | select(.merged_at != null and (.head.ref | test("^(maintenance|website)/"))) | .number' | head -n 1)
+
+            if [[ -n "$QUALIFYING_PR" && "$QUALIFYING_PR" != "null" ]]; then
+              SOURCE_BRANCH=$(echo "$PR_INFO" | jq -r ".[] | select(.number == $QUALIFYING_PR) | .head.ref")
+              echo "API detected merged PR #$QUALIFYING_PR from branch: $SOURCE_BRANCH"
+              echo "should-deploy=true" >> "$GITHUB_OUTPUT"
+              echo "build-ref=main" >> "$GITHUB_OUTPUT"
+              echo "Merged qualifying PR #$QUALIFYING_PR ($SOURCE_BRANCH -> main)" > decision.txt
+              exit 0
+            fi
+
+            echo "Push does not originate from a qualifying maintenance/* or website/* PR merge: skipping deployment."
+            echo "should-deploy=false" >> "$GITHUB_OUTPUT"
+            echo "Non-qualifying push" > decision.txt
+            exit 0
           fi
 
           # Fallback: Unknown event type (should normally not occur with current triggers)
