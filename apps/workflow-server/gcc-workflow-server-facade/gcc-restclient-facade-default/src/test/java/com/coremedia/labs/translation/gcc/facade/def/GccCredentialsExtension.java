@@ -56,6 +56,7 @@ public class GccCredentialsExtension implements ExecutionCondition, ParameterRes
 
     try {
       Map<String, String> propertiesMap = readConfiguration(configPath);
+      LOG.info("Successfully read GCC properties from {}.", configPath);
       synchronized (this) {
         gccProperties = propertiesMap;
       }
@@ -121,7 +122,9 @@ public class GccCredentialsExtension implements ExecutionCondition, ParameterRes
     Path configPath = Paths.get(USER_HOME, GCC_PROPERTIES_PROFILE_PATTERN.formatted(profile));
     if (Files.isRegularFile(configPath) && Files.isReadable(configPath)) {
       try {
-        return readConfiguration(configPath);
+        Map<String, String> profileProperties = readConfiguration(configPath);
+        LOG.info("Successfully read profile configuration from {}.", configPath);
+        return profileProperties;
       } catch (IOException e) {
         LOG.warn("Failed to read profile's properties file: {}", configPath, e);
       }

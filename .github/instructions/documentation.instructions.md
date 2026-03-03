@@ -96,6 +96,26 @@ serial (Oxford) comma for clarity in technical writing.
   don't use XHTML-style `<p></p>` tags
 * **Maintain consistent indentation**: Align asterisks vertically
 
+### Version Documentation
+
+* **Use `@since` tags in Javadoc**: Document when features were introduced using
+  `@since` tags:
+  ```java
+  /**
+   * Description of the feature.
+   *
+   * @since 2506.0.1-1
+   */
+  ```
+* **Use Since badges in Markdown**: For documentation pages, use the `<Since>`
+  component to indicate version information:
+  ```mdx
+  <Since value="2506.0.0-1" />
+  ```
+* **Document deprecations properly**: When deprecating features, use both
+  `@deprecated` Javadoc tags and `@Deprecated` annotations with clear
+  explanations and migration paths.
+
 ```java
 /**
  * Returns the user's display name formatted for the current locale.

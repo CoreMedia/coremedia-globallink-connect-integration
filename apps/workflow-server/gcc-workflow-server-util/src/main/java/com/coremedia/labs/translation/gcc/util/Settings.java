@@ -30,7 +30,9 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @param properties merged properties from all sources
  * @since 2506.0.0-1
  */
-@SuppressWarnings("Immutable") // We ensure immutability by defensive copying and unmodifiable collections.
+// For the given use-cases we ensure (enough) immutability. Note though, that it
+// is not granted for any value type (like, we don't handle Calendar here).
+@SuppressWarnings({"Immutable", "AssignmentOrReturnOfFieldWithMutableType"})
 @Immutable
 @NullMarked
 public record Settings(Map<String, Object> properties) {
@@ -116,6 +118,9 @@ public record Settings(Map<String, Object> properties) {
     requireNonNull(other, "other");
     if (other.isEmpty()) {
       return this;
+    }
+    if (isEmpty()) {
+      return other;
     }
     Map<String, Object> merged = new HashMap<>(properties);
     other.properties.forEach((k, v) -> merged.merge(k, v, Settings::deepMerge));
@@ -274,7 +279,7 @@ public record Settings(Map<String, Object> properties) {
         .filter(Settings::isValidEntry)
         .map(e -> sanitizeEntryValue(e, depth + 1))
         .filter(Settings::isValidEntry)
-        .collect(Collectors.toMap(
+        .collect(Collectors.toUnmodifiableMap(
           Map.Entry::getKey,
           Map.Entry::getValue
         ));
@@ -323,25 +328,19 @@ public record Settings(Map<String, Object> properties) {
    * @return {@code true} if the value should be included; {@code false} otherwise
    */
   private static boolean isValidValue(@Nullable Object value) {
-    if (value == null) {
-      return false;
-    }
-    if (value instanceof String string) {
-      return !string.isEmpty();
-    }
-    if (value instanceof Collection<?> collection) {
-      return !collection.isEmpty();
-    }
-    if (value instanceof Map<?, ?> map) {
-      return !map.isEmpty();
-    }
-    return true;
+    return switch (value) {
+      case null -> false;
+      case String string -> !string.isEmpty();
+      case Collection<?> collection -> !collection.isEmpty();
+      case Map<?, ?> map -> !map.isEmpty();
+      default -> true;
+    };
   }
 
   @Override
   public String toString() {
     Map<String, Object> properties = this.properties.entrySet().stream()
-      .collect(Collectors.toMap(
+      .collect(Collectors.toUnmodifiableMap(
         Map.Entry::getKey,
         e -> SENSITIVE_KEYS.contains(e.getKey()) ? "****" : e.getValue()
       ));

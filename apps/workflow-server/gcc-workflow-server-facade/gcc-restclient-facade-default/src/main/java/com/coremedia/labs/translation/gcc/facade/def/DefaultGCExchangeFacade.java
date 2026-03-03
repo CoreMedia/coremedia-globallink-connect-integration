@@ -82,10 +82,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final Integer HTTP_OK = 200;
-  /**
-   * Some string, so GCC can identify the source of requests.
-   */
-  private static final String USER_AGENT = lookup().lookupClass().getPackage().getName();
 
   private final Boolean isSendSubmitter;
   private final GCExchange delegate;
@@ -107,27 +103,18 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   @VisibleForTesting
   DefaultGCExchangeFacade(Settings config,
                           Function<GCConfig, GCExchange> exchangeFactory) {
-    String apiUrl = requireConfig(config, GCConfigProperty.KEY_URL);
-    String connectorKey = requireConfig(config, GCConfigProperty.KEY_KEY);
-    String apiKey = requireConfig(config, GCConfigProperty.KEY_API_KEY);
+    GCConfig gcConfig = GCConfigUtil.fromGlobalLinkConfig(config);
     isSendSubmitter = config.at(GCConfigProperty.KEY_IS_SEND_SUBMITTER).map(o -> Boolean.valueOf(String.valueOf(o))).orElse(false);
     submissionName = GCSubmissionName.fromGlobalLinkConfig(config);
     submissionInstruction = GCSubmissionInstruction.fromGlobalLinkConfig(config);
-    LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
+    LOG.debug("Will connect to GCC endpoint: {}", gcConfig.getApiUrl());
     try {
-      GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
-      gcConfig.setUserAgent(USER_AGENT);
-      gcConfig.setConnectorKey(connectorKey);
-      // Redirect logging to SLF4j.
-      gcConfig.setLogger(SLF4JHandler.getLogger(GCExchange.class));
-      gcConfig.getLogger().finest("JUL Logging redirection to SLF4J: OK");
-      LOG.trace("JUL Logging redirected to SLF4J.");
       delegate = exchangeFactory.apply(gcConfig);
       validateConnectorKey(delegate);
     } catch (GCFacadeException e) {
       throw e;
     } catch (RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);
+      throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", gcConfig.getApiUrl());
     } catch (IllegalAccessError e) {
       throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
@@ -163,12 +150,6 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     if (!availableConnectorKeys.contains(configuredKey)) {
       throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).", gcExchange.getConfig().getApiUrl());
     }
-  }
-
-  private static String requireConfig(Settings config, String key) {
-    return config.at(key)
-      .map(String::valueOf)
-      .orElseThrow(() -> new GCFacadeConfigException("Configuration for %s is missing. Configuration : %s", key, config));
   }
 
   @Override
@@ -329,7 +310,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public void confirmCancelledTasks(long submissionId) {
     Map<TaskStatus, Set<GCTaskModel>> tasksByState =
       getTasksByState(submissionId,
-        // Ignore tasks which got already confirmed as being cancelled.
+        // Ignore tasks which got already confirmed as being canceled.
         r -> r.setIsCancelConfirmed(0),
         Cancelled
       );
@@ -354,10 +335,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         MessageResponse messageResponse = delegate.confirmTaskCancellation(taskId);
         if (!HTTP_OK.equals(messageResponse.getStatus())) {
           LOG.debug("Failed to confirm task cancellation for the task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
-          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task %d", taskId);
+          throw new GCFacadeCommunicationException("Failed to confirm the canceled task %d", taskId);
         }
       } catch (RuntimeException e) {
-        throw new GCFacadeCommunicationException(e, "Failed to confirm the cancelled task: %d", taskId);
+        throw new GCFacadeCommunicationException(e, "Failed to confirm the canceled task: %d", taskId);
       }
     }
   }
@@ -371,6 +352,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return map of task states to sets of {@link GCTaskModel}
    * @throws GCFacadeCommunicationException if tasks could be not be retrieved.
    */
+  @SuppressWarnings("SameParameterValue")
   private Map<TaskStatus, Set<GCTaskModel>> getTasksByState(long submissionId, TaskStatus... taskStates) {
     return getTasksByState(submissionId, r -> {
     }, taskStates);
@@ -500,7 +482,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       /*
        * In order to know, that there is no more interaction with GCC backend
        * required to put the submission into a valid finished state, we split
-       * the cancelled state into two. Only when the state is
+       * the canceled state into two. Only when the state is
        * "Cancellation Confirmed" there is nothing more to do. When it is
        * only "Cancelled" there are still tasks which need to be finished
        * either by confirming their cancellation or by downloading their
@@ -509,7 +491,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       if (areAllSubmissionTasksDone(submissionId)) {
         state = GCSubmissionState.CANCELLATION_CONFIRMED;
       } else {
-        // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
+        // Interpret the canceled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
         state = GCSubmissionState.CANCELLED;
       }
     }
@@ -541,7 +523,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
           case Delivered -> {
           }
           case Cancelled -> {
-            LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
+            LOG.debug("Verifying cancellation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
             // Logical AND: Only use confirmed state, if value
             // is still true. Otherwise, keep false state.
             allDone.compareAndSet(true, t.getIsCancelConfirmed());
@@ -583,7 +565,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         submissionId
       );
     }
-    return submissions.get(0);
+    return submissions.getFirst();
   }
 
   private String getSupportedFileType(@Nullable String configuredFileType) {
@@ -603,7 +585,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String result;
     if (configuredFileType == null) {
       // if no file type is configured, just use the first from the list of supported file types
-      result = supportedFileTypes.get(0);
+      result = supportedFileTypes.getFirst();
     } else if (supportedFileTypes.contains(configuredFileType)) {
       // configured file type found in supported ones
       result = configuredFileType;

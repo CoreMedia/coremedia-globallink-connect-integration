@@ -1,5 +1,6 @@
 package com.coremedia.labs.translation.gcc.util;
 
+import com.google.common.collect.ImmutableMap;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
@@ -11,7 +12,9 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +25,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @NullMarked
 class SettingsTest {
@@ -31,7 +35,11 @@ class SettingsTest {
     @EnumSource(EmptyFixture.class)
     void shouldHaveEmptyProperties(EmptyFixture emptyFixture) {
       Settings settings = emptyFixture.get();
-      assertThat(settings.properties()).isEmpty();
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEmpty(),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     /**
@@ -39,7 +47,8 @@ class SettingsTest {
      */
     enum EmptyFixture implements Supplier<Settings> {
       CONSTANT(Settings.EMPTY),
-      FROM_EMPTY_MAP(new Settings(Map.of()));
+      FROM_EMPTY_MAP(new Settings(Map.of())),
+      FROM_EMPTY_MUTABLE_MAP(new Settings(new HashMap<>()));
 
       private final Settings settings;
 
@@ -70,11 +79,16 @@ class SettingsTest {
 
     @Test
     void shouldHaveExpectedProperties() {
-      Map<String, @Nullable Object> properties = Map.of("key", "value");
-      Settings settings = fixture.apply(properties);
-      assertThat(settings.properties()).isEqualTo(properties);
+      Map<String, @Nullable Object> expectedProperties = Map.of("key", "value");
+      Settings settings = fixture.apply(new HashMap<>(expectedProperties));
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
+    @SuppressWarnings("JUnitMalformedDeclaration") // false-positive for @NullSource
     @ParameterizedTest
     @ValueSource(ints = {0, 42})
     @ValueSource(classes = {Object.class, String.class})
@@ -85,23 +99,31 @@ class SettingsTest {
       Map<@Nullable Object, @Nullable Object> nestedInvalidMap = new HashMap<>();
       nestedInvalidMap.put("valid_key", "value1");
       nestedInvalidMap.put(key, "value2");
-      Map<String, @Nullable Object> input = Map.of("containsInvalid", nestedInvalidMap);
-      Map<String, Object> expected = Map.of("containsInvalid", Map.of("valid_key", "value1"));
+      Map<String, @Nullable Object> input = new HashMap<>(Map.of("containsInvalid", nestedInvalidMap));
+      Map<String, Object> expectedProperties = Map.of("containsInvalid", Map.of("valid_key", "value1"));
 
       Settings settings = fixture.apply(input);
 
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @ParameterizedTest
     @EnumSource(EmptyValueFixture.class)
     void shouldFilterEmptyValues(EmptyValueFixture emptyValueFixture) {
-      Map<String, @Nullable Object> properties = new HashMap<>();
-      properties.put("non-empty", "value");
-      properties.put("empty", emptyValueFixture.get());
-      Map<String, Object> expected = Map.of("non-empty", "value");
-      Settings settings = fixture.apply(properties);
-      assertThat(settings.properties()).isEqualTo(expected);
+      Map<String, @Nullable Object> input = new HashMap<>();
+      input.put("non-empty", "value");
+      input.put("empty", emptyValueFixture.get());
+      Map<String, Object> expectedProperties = Map.of("non-empty", "value");
+      Settings settings = fixture.apply(input);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @ParameterizedTest
@@ -113,28 +135,32 @@ class SettingsTest {
       alsoEmpty.put("empty", emptyValueFixture.get());
       alsoEmpty.put("non-empty", "value");
 
-      Map<String, @Nullable Object> properties = Map.of(
+      Map<String, @Nullable Object> input = Map.of(
         "non-empty", "value",
         "parent-only-empty", onlyEmpty,
         "parent-also-empty", alsoEmpty
       );
 
-      Map<String, Object> expected = Map.of(
+      Map<String, Object> expectedProperties = Map.of(
         "non-empty", "value",
         "parent-also-empty", Map.of(
           "non-empty", "value"
         )
       );
 
-      Settings settings = fixture.apply(properties);
+      Settings settings = fixture.apply(input);
 
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
     void shouldRespectMapEntriesUpToMaxDepth() {
-      Map<String, @Nullable Object> properties = new HashMap<>();
-      Map<String, @Nullable Object> current = properties;
+      Map<String, @Nullable Object> input = new HashMap<>();
+      Map<String, @Nullable Object> current = input;
       current.put("level", 0);
       for (int i = 0; i < Settings.MAX_DEPTH; i++) {
         Map<String, @Nullable Object> next = new HashMap<>();
@@ -142,10 +168,15 @@ class SettingsTest {
         current.put("next", next);
         current = next;
       }
+      Map<String, Object> expectedProperties = ImmutableMap.copyOf(input);
 
-      Settings settings = fixture.apply(properties);
+      Settings settings = fixture.apply(input);
 
-      assertThat(settings.properties()).isEqualTo(properties);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
@@ -163,19 +194,24 @@ class SettingsTest {
         currentList = next;
       }
 
-      Map<String, @Nullable Object> properties = Map.of("list", list);
+      Map<String, @Nullable Object> input = new HashMap<>(Map.of("list", list));
+      Map<String, Object> expectedProperties = ImmutableMap.copyOf(input);
 
-      Settings settings = fixture.apply(properties);
+      Settings settings = fixture.apply(input);
 
-      assertThat(settings.properties()).isEqualTo(properties);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
     void shouldStripMapEntriesBelowMaxDepth() {
-      Map<String, @Nullable Object> properties = new HashMap<>();
-      Map<String, @Nullable Object> current = properties;
-      Map<String, Object> expected = new HashMap<>();
-      Map<String, Object> currentExpected = expected;
+      Map<String, @Nullable Object> input = new HashMap<>();
+      Map<String, @Nullable Object> current = input;
+      Map<String, Object> expectedProperties = new HashMap<>();
+      Map<String, Object> currentExpected = expectedProperties;
 
       current.put("level", 0);
       currentExpected.put("level", 0);
@@ -193,9 +229,13 @@ class SettingsTest {
         currentExpected = nextExpected;
       }
 
-      Settings settings = fixture.apply(properties);
+      Settings settings = fixture.apply(input);
 
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
@@ -263,76 +303,100 @@ class SettingsTest {
 
     @Test
     void shouldMergeNonConflictingProperties() {
-      Map<String, Object> first = Map.of("key1", "value1");
-      Map<String, Object> second = Map.of("key2", "value2");
-      Map<String, Object> expected = Map.of("key1", "value1", "key2", "value2");
+      Map<String, Object> first = new HashMap<>(Map.of("key1", "value1"));
+      Map<String, Object> second = new HashMap<>(Map.of("key2", "value2"));
+      Map<String, Object> expectedProperties = Map.of("key1", "value1", "key2", "value2");
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
     void shouldMergeNonConflictingPropertiesDeeply() {
-      Map<String, Object> first = Map.of("parent", Map.of("key1", "value1"));
-      Map<String, Object> second = Map.of("parent", Map.of("key2", "value2"));
-      Map<String, Object> expected = Map.of("parent", Map.of("key1", "value1", "key2", "value2"));
+      Map<String, Object> first = new HashMap<>(Map.of("parent", new HashMap<>(Map.of("key1", "value1"))));
+      Map<String, Object> second = new HashMap<>(Map.of("parent", new HashMap<>(Map.of("key2", "value2"))));
+      Map<String, Object> expectedProperties = Map.of("parent", Map.of("key1", "value1", "key2", "value2"));
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
     void shouldOverrideWithSecondSource() {
-      Map<String, Object> first = Map.of("key1", "value1", "to-override", "original");
-      Map<String, Object> second = Map.of("key2", "value2", "to-override", "overridden");
-      Map<String, Object> expected = Map.of("key1", "value1", "key2", "value2", "to-override", "overridden");
+      Map<String, Object> first = new HashMap<>(Map.of("key1", "value1", "to-override", "original"));
+      Map<String, Object> second = new HashMap<>(Map.of("key2", "value2", "to-override", "overridden"));
+      Map<String, Object> expectedProperties = Map.of("key1", "value1", "key2", "value2", "to-override", "overridden");
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @ParameterizedTest
     @EnumSource(EmptyValueFixture.class)
     void shouldNotOverrideWithSecondSourceEmptyValue(EmptyValueFixture emptyValueFixture) {
-      Map<String, Object> first = Map.of("key1", "value1", "to-override", "original");
+      Map<String, Object> first = new HashMap<>(Map.of("key1", "value1", "to-override", "original"));
       Map<String, @Nullable Object> second = new HashMap<>(Map.of("key2", "value2"));
       second.put("to-override", emptyValueFixture.get());
-      Map<String, Object> expected = Map.of("key1", "value1", "key2", "value2", "to-override", "original");
+      Map<String, Object> expectedProperties = Map.of("key1", "value1", "key2", "value2", "to-override", "original");
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
     void shouldOverrideDeeplyWithSecondSource() {
-      Map<String, Object> first = Map.of("parent", Map.of("to-override", "original"));
-      Map<String, Object> second = Map.of("parent", Map.of("to-override", "overridden"));
-      Map<String, Object> expected = Map.of("parent", Map.of("to-override", "overridden"));
+      Map<String, Object> first = new HashMap<>(Map.of("parent", new HashMap<>(Map.of("to-override", "original"))));
+      Map<String, Object> second = new HashMap<>(Map.of("parent", new HashMap<>(Map.of("to-override", "overridden"))));
+      Map<String, Object> expectedProperties = Map.of("parent", Map.of("to-override", "overridden"));
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @ParameterizedTest
     @EnumSource(EmptyValueFixture.class)
     void shouldNotOverrideDeeplyWithSecondSourceEmptyValue(EmptyValueFixture emptyValueFixture) {
-      Map<String, Object> first = Map.of("parent", Map.of("to-override", "original"));
+      Map<String, Object> first = new HashMap<>(Map.of("parent", new HashMap<>(Map.of("to-override", "original"))));
       Map<String, @Nullable Object> emptyValue = new HashMap<>();
       emptyValue.put("to-override", emptyValueFixture.get());
       Map<String, Object> second = Map.of("parent", emptyValue);
-      Map<String, Object> expected = Map.of("parent", Map.of("to-override", "original"));
+      Map<String, Object> expectedProperties = Map.of("parent", Map.of("to-override", "original"));
 
       Settings settings = fixture.apply(first, second);
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
     void shouldRespectEntriesUpToMaxDepth() {
-      Map<String, Object> first = Map.of("key1", "value1");
-      Map<String, Object> expected = new HashMap<>();
+      Map<String, Object> first = new HashMap<>(Map.of("key1", "value1"));
+      Map<String, Object> expectedProperties = new HashMap<>();
       Map<String, Object> second = new HashMap<>();
       Map<String, Object> current = second;
-      Map<String, Object> currentExpected = expected;
+      Map<String, Object> currentExpected = expectedProperties;
       current.put("level", 0);
       currentExpected.put("level", 0);
       for (int i = 0; i < Settings.MAX_DEPTH; i++) {
@@ -345,11 +409,15 @@ class SettingsTest {
         current = next;
         currentExpected = nextExpected;
       }
-      expected.putAll(first);
+      expectedProperties.putAll(first);
 
       Settings settings = fixture.apply(first, second);
 
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     @Test
@@ -357,8 +425,8 @@ class SettingsTest {
       Map<String, Object> first = Map.of("key1", "value1");
       Map<String, Object> second = new HashMap<>();
       Map<String, Object> current = second;
-      Map<String, Object> expected = new HashMap<>();
-      Map<String, Object> currentExpected = expected;
+      Map<String, Object> expectedProperties = new HashMap<>();
+      Map<String, Object> currentExpected = expectedProperties;
 
       current.put("level", 0);
       currentExpected.put("level", 0);
@@ -375,11 +443,15 @@ class SettingsTest {
         current = next;
         currentExpected = nextExpected;
       }
-      expected.putAll(first);
+      expectedProperties.putAll(first);
 
       Settings settings = fixture.apply(first, second);
 
-      assertThat(settings.properties()).isEqualTo(expected);
+      assertThat(settings.properties())
+        .satisfies(
+          properties -> assertThat(properties).isEqualTo(expectedProperties),
+          SettingsTest::assertIsDeeplyUnmodifiable
+        );
     }
 
     /**
@@ -481,7 +553,7 @@ class SettingsTest {
         @Override
         public Optional<Object> apply(Settings settings, List<String> strings) {
           String first = strings.stream().findFirst().orElseThrow();
-          String[] others = strings.stream().skip(1).toArray(String[]::new);
+          String[] others = strings.stream().skip(1L).toArray(String[]::new);
           return settings.at(first, others);
         }
       },
@@ -495,6 +567,32 @@ class SettingsTest {
         }
       },
     }
+  }
+
+  private static void assertIsDeeplyUnmodifiable(Map<String, Object> map) {
+    assertThatThrownBy(() -> map.put("key", "value")).isInstanceOf(UnsupportedOperationException.class);
+    map.values().forEach(value -> {
+      if (value instanceof Map<?, ?> nestedMap) {
+        @SuppressWarnings("unchecked") Map<String, Object> castedMap = (Map<String, Object>) nestedMap;
+        assertIsDeeplyUnmodifiable(castedMap);
+      } else if (value instanceof Collection<?> nestedList) {
+        @SuppressWarnings("unchecked") Collection<Object> castedList = (Collection<Object>) nestedList;
+        assertIsDeeplyUnmodifiable(castedList);
+      }
+    });
+  }
+
+  private static void assertIsDeeplyUnmodifiable(Collection<Object> list) {
+    assertThatThrownBy(() -> list.add("value")).isInstanceOf(UnsupportedOperationException.class);
+    list.forEach(value -> {
+      if (value instanceof Map<?, ?> nestedMap) {
+        @SuppressWarnings("unchecked") Map<String, Object> castedMap = (Map<String, Object>) nestedMap;
+        assertIsDeeplyUnmodifiable(castedMap);
+      } else if (value instanceof Collection<?> nestedList) {
+        @SuppressWarnings("unchecked") Collection<Object> castedList = (Collection<Object>) nestedList;
+        assertIsDeeplyUnmodifiable(castedList);
+      }
+    });
   }
 
   /**
@@ -520,16 +618,34 @@ class SettingsTest {
         return Set.of();
       }
     },
+    EMPTY_MUTABLE_SET() {
+      @Override
+      public Object get() {
+        return new HashSet<>();
+      }
+    },
     EMPTY_LIST() {
       @Override
       public Object get() {
         return List.of();
       }
     },
+    EMPTY_MUTABLE_LIST() {
+      @Override
+      public Object get() {
+        return new ArrayList<>();
+      }
+    },
     EMPTY_MAP() {
       @Override
       public Object get() {
         return Map.of();
+      }
+    },
+    EMPTY_MUTABLE_MAP() {
+      @Override
+      public Object get() {
+        return new HashMap<>();
       }
     }
   }

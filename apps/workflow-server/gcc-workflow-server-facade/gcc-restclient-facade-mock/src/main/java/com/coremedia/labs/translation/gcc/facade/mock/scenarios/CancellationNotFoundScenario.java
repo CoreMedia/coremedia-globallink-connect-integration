@@ -12,7 +12,7 @@ import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * A scenario that simulates a cancelation attempt for a non-existing
+ * A scenario that simulates a cancellation attempt for a non-existing
  * submission.
  * <p>
  * <strong>Identifier:</strong> {@value #ID}
@@ -20,14 +20,14 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @since 2506.0.1-1
  */
 @NullMarked
-public class CancelationNotFoundScenario implements Scenario, CancelationInterceptor, SubmissionInterceptor {
+public class CancellationNotFoundScenario implements Scenario, CancellationInterceptor, SubmissionInterceptor {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
   /**
    * We must not reach any of these states to be able to provoke the
-   * cancelation failure.
+   * cancellation failure.
    */
-  private static final Set<GCSubmissionState> FORBIDDEN_CANCELATION_STATES = Set.of(
+  private static final Set<GCSubmissionState> FORBIDDEN_CANCELLATION_STATES = Set.of(
     GCSubmissionState.CANCELLED,
     GCSubmissionState.CANCELLATION_CONFIRMED,
     GCSubmissionState.COMPLETED,
@@ -38,7 +38,7 @@ public class CancelationNotFoundScenario implements Scenario, CancelationInterce
   /**
    * The identifier of this scenario.
    */
-  public static final String ID = "cancelation-not-found";
+  public static final String ID = "cancellation-not-found";
 
   @Override
   public String id() {
@@ -47,7 +47,7 @@ public class CancelationNotFoundScenario implements Scenario, CancelationInterce
 
   /**
    * Ensures that the submission is not in a state that would prevent
-   * cancelation.
+   * cancellation.
    *
    * @param base the original submission model
    * @return the original or an adapted submission model
@@ -55,7 +55,7 @@ public class CancelationNotFoundScenario implements Scenario, CancelationInterce
   @Override
   public GCSubmissionModel intercept(GCSubmissionModel base) {
     GCSubmissionState actualState = base.getState();
-    if (FORBIDDEN_CANCELATION_STATES.contains(actualState)) {
+    if (FORBIDDEN_CANCELLATION_STATES.contains(actualState)) {
       return GCSubmissionModel.builder(base)
         .state(GCSubmissionState.TRANSLATE)
         .build();
@@ -64,15 +64,15 @@ public class CancelationNotFoundScenario implements Scenario, CancelationInterce
   }
 
   /**
-   * Simulates a cancelation attempt for a non-existing submission.
+   * Simulates a cancellation attempt for a non-existing submission.
    * <p>
    * Always returns a 404 status code.
    *
    * @return an {@code Optional} containing the HTTP status code 404
    */
   @Override
-  public Optional<Integer> startCancelation() {
-    LOG.info("Mock scenario '{}' simulates cancelation of a non-existing submission, returning 404.", ID);
+  public Optional<Integer> startCancellation() {
+    LOG.info("Mock scenario '{}' simulates cancellation of a non-existing submission, returning 404.", ID);
     return Optional.of(404);
   }
 }

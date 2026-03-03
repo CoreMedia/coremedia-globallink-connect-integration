@@ -22,8 +22,47 @@ of the codebase:
 Key rules: AP Stylebook compliance, Javadoc formatting, technical writing
 standards
 
+### [Markdown Instructions](instructions/markdown.instructions.md)
+
+**Applies to:** `**/*.md`
+
+Key rules: Markdown syntax, structure, formatting, GitHub Flavored Markdown
+
 ### [Java Instructions](instructions/java.instructions.md)
 
 **Applies to:** `**/*.java`
 
-Key rules: Java 21 language level, coding standards, best practices
+Key rules: Java 21 language level, coding standards, best practices, null-safety
+
+### [Java Test Instructions](instructions/java-test.instructions.md)
+
+**Applies to:** `**/src/test/java/**/*.java`
+
+Key rules: JUnit 6 test framework, AssertJ assertions, test organization
+
+### [TypeScript Instructions](instructions/typescript.instructions.md)
+
+**Applies to:** `**/*.ts`, `**/*.tsx`
+
+Key rules: TypeScript best practices, React components, type safety, ESLint
+compliance
+
+### [Maven Instructions](instructions/maven.instructions.md)
+
+**Applies to:** `**/pom.xml`
+
+Key rules: POM structure, dependency management, plugin configuration, Java 21
+requirement
+
+### [pnpm & Package.json Instructions](instructions/pnpm.instructions.md)
+
+**Applies to:** `**/package.json`, `**/pnpm-*.yaml`
+
+Key rules: pnpm workspaces, dependency management, package configuration, Node.js
+version requirements
+
+### [Bash Shell Script Instructions](instructions/bash.instructions.md)
+
+**Applies to:** `**/*.sh`
+
+Key rules: Bash best practices, strict mode, error handling, portability
