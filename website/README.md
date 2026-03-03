@@ -137,7 +137,7 @@ In August 2025 we decided not to use this approach for these reasons:
 
 * **Limited Gain:**
   Due to Docusaurus' recommendation for versioned documentation, we would not
-  provide fine-grained documentation for each and every approved version, but
+  provide a fine-grained documentation for each and every approved version, but
   instead only for _major_ versions (thus, changes in the first number of the
   CMCC version). That is why a previous proof-of-concept introduced versions
   `2406.x`, `2412.x` etc. only.
