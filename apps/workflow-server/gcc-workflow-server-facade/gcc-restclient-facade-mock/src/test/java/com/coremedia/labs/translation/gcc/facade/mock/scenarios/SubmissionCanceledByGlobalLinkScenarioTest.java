@@ -26,7 +26,7 @@ class SubmissionCanceledByGlobalLinkScenarioTest {
   @Nested
   class FacadeIntegrationBehavior {
     @Test
-    void shouldMockCancelationByGlobalLink(TestInfo testInfo) {
+    void shouldMockCancellationByGlobalLink(TestInfo testInfo) {
       String testName = testInfo.getDisplayName();
 
       Resource xliffResource = xliffResource();

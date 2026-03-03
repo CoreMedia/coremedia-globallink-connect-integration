@@ -1,25 +1,23 @@
 ---
-description: "Scenario: Cancelation."
+description: "Scenario: Cancellation."
 tags:
   - test
   - scenario
   - manual
 ---
 
-# Cancelation
+# Cancellation
 
 * **Connector Type**: `default`
 * **Key Type**: `manual`
 
 :::tip TIP: Cancelation vs. Cancellation
-GlobalLink uses "Cancellation", but according to Miriam Webster, which is our
-go-to source for spelling, "Cancelation" is better to be used in American
-English – while both are valid.
-
-**Source:** [Merriam-Webster: Cancelled or Canceled - Which is Correct?](https://www.merriam-webster.com/grammar/canceled-or-cancelled)
+In American English, verb forms of "cancel" are spelled with one "l"
+(canceled, canceling), while the noun form uses two "l"s (cancellation).
+This documentation follows American English spelling conventions.
 :::
 
-## Cancelation in Studio
+## Cancellation in Studio
 
 1. Log in as Rick C.
 
@@ -44,7 +42,7 @@ English – while both are valid.
    1. The “Status” field should display “Canceled”
    2. The icon should mark the workflow as canceled (little “x” on the bottom right)
 
-## Cancelation in GlobalLink
+## Cancellation in GlobalLink
 
 1. Log in as Rick C.
 
@@ -64,13 +62,13 @@ English – while both are valid.
    The "Cancel" button used to be in the upper right corner of the opened
    submission.
 
-   ![GlobalLink Management Dashboard](./img/screenshot-globallink-mgmt-cancelation.png)
+   ![GlobalLink Management Dashboard](img/screenshot-globallink-mgmt-cancellation.png)
 
 5. Go back to the _Workflow App_
 
    1. After a while, the workflow should appear in Rick's "Open" workflows
    2. When accepting the task, Rick can only choose to abort and rollback the
-      previous changes and accept the cancelation.
+      previous changes and accept the cancellation.
    3. Choose "Abort and rollback changes".
 
 6. Open the "Closed" area and open the canceled workflow.
@@ -79,9 +77,9 @@ English – while both are valid.
    2. The icon should mark the workflow as canceled (little “x” on the
       bottom right)
 
-## Cancelation Error Handling
+## Cancellation Error Handling
 
-The following test is about the error handling of a cancelation, as well as it
+The following test is about the error handling of a cancellation, as well as it
 includes testing UI behaviors for multi-selection.
 
 1. Log in as **Rick C**.
@@ -133,7 +131,7 @@ includes testing UI behaviors for multi-selection.
    **Do it**: Now, break the connection to GlobalLink by changing the `apiKey`.
 
 7. **Speed Mode, Step 1**: Select both "Translation with GlobalLink" workflows
-   and click the “X”. Acknowledge the dialog to proceed the cancelation.
+   and click the “X”. Acknowledge the dialog to proceed the cancellation.
 
 8. **Speed Mode, Step 2**: Check that already now, the "X" button/menu-entry
    is disabled.
@@ -142,11 +140,11 @@ includes testing UI behaviors for multi-selection.
 
 9. **Workflow App**: Open one of the workflows.
 
-10. Wait for the workflow to reach the task named "Cancelation error".
+10. Wait for the workflow to reach the task named "Cancellation error".
 
 11. Validate the following:
 
-    1. The "Current Task" field should display "Cancelation Error".
+    1. The "Current Task" field should display "Cancellation Error".
     2. The "Status" field should display "Canceled".
     3. The icon should signal a warning.
 
@@ -155,7 +153,7 @@ includes testing UI behaviors for multi-selection.
     1. Validate options, that should be available:
 
        1. Abort and rollback without canceling at GlobalLink
-       2. Retry cancelation
+       2. Retry cancellation
        3. Continue translation
 
     2. Click "Abort and rollback without canceling at GlobalLink" and open the

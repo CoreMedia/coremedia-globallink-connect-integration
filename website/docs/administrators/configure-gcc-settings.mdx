@@ -81,6 +81,12 @@ in CoreMedia Studio and add a struct named
   `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow
   Window to lie within the future in days.
   (_optional_, default: `0`, type:`Integer`, scope:**global**)
+* `maxRetriesOnServiceUnavailable` Number of retries in case of a `Service
+  Unavailable` response from GlobalLink. Turned off by default.
+  (_optional_, default: `0`, type:`Integer`)
+* `maxRetriesOnRequestErrors` Number of retries in case of a `Request Error`
+  response from GlobalLink. Turned off by default.
+  (_optional_, default: `0`, type:`Integer`)
 * `retryCommunicationErrors` Number of retries in case of a communication error
   with GlobalLink. (_optional_, default: `5`, type:`Integer`)
 * `isSendSubmitter` Defines if the name of the editor that started the workflow

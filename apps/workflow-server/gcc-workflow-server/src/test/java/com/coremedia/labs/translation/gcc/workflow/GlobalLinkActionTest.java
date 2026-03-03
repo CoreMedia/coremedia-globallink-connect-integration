@@ -65,6 +65,7 @@ import java.util.stream.Collectors;
 
 import static com.coremedia.labs.translation.gcc.util.RetryDelay.saturatedOf;
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkAction.DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
+import static java.util.Objects.requireNonNullElseGet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
@@ -526,10 +527,7 @@ class GlobalLinkActionTest {
 
     @Override
     protected String getGCCRetryDelaySettingsKey() {
-      if (overrideGccRetryDelaySettingsKey == null) {
-        return super.getGCCRetryDelaySettingsKey();
-      }
-      return overrideGccRetryDelaySettingsKey;
+      return requireNonNullElseGet(overrideGccRetryDelaySettingsKey, super::getGCCRetryDelaySettingsKey);
     }
 
     @Override

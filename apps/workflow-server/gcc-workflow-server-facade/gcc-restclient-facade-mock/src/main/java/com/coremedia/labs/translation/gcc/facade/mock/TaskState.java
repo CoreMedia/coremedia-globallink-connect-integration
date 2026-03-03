@@ -16,7 +16,7 @@ enum TaskState {
    */
   OTHER,
   /**
-   * Task state is cancelled.
+   * Task state is canceled.
    */
   CANCELLED,
   /**

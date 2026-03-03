@@ -57,9 +57,9 @@ tags:
        2. Continue and retry
 
 12. Select “Abort and rollback changes” (which will subsequently try to
-    trigger a cancelation at GlobalLink).
+    trigger a cancellation at GlobalLink).
 
-13. Wait for the current task to change to "Cancelation Error".
+13. Wait for the current task to change to "Cancellation Error".
 
     1. The icon should signal a warning.
 
@@ -68,7 +68,7 @@ tags:
     1. Validate available options when pressing "Next" are:
 
         1. Abort and rollback without canceling at GlobalLink
-        2. Retry cancelation
+        2. Retry cancellation
         3. Continue translation
 
 15. Set `apiKey` in GlobalLink settings to its valid value.

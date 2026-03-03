@@ -103,6 +103,13 @@ class DefaultGCExchangeFacadeContractTest {
    */
   @SuppressWarnings("TimeInStaticInitializer") // Time only meant as rough guidance. No need to tune initialization time.
   private static final String TEST_ID = "CT#%s".formatted(LocalDateTime.now(ZoneId.systemDefault()).format(DATE_TIME_FORMATTER));
+  /**
+   * We observed that cancellation sometimes was not processed, even if it
+   * already reached a state that should allow cancellation (Translate, for
+   * example). Assumption is, that the system needs some more grace time before
+   * we can actually cancel the submission.
+   */
+  private static final Duration BEFORE_CANCELLATION_GRACE_TIME = Duration.ofMinutes(1L);
   private String submissionName;
   private String testName;
 
@@ -261,13 +268,13 @@ class DefaultGCExchangeFacadeContractTest {
 
     @Test
     @DisplayName("Be aware of submission/task cancellation.")
-    void shouldBeCancellationAware() {
+    void shouldBeCancellationAware() throws InterruptedException {
       XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
       long submissionId = fixture.uploadAndSubmit(
         facade,
         submissionName,
-        "Submission is meant to be cancelled via API and later confirmed.",
+        "Submission is meant to be canceled via API and later confirmed.",
         testName
       );
 
@@ -279,12 +286,20 @@ class DefaultGCExchangeFacadeContractTest {
         .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         .pollDelay(1L, TimeUnit.SECONDS)
         .pollInterval(10L, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState())
-          .isNotIn(
-            GCSubmissionState.OTHER,
-            GCSubmissionState.IN_PRE_PROCESS
-          )
+        .untilAsserted(() -> {
+            GCSubmissionModel submission = facade.getSubmission(submissionId);
+            GCSubmissionState state = submission.getState();
+            assertThat(state)
+              .isNotIn(
+                GCSubmissionState.OTHER,
+                GCSubmissionState.IN_PRE_PROCESS
+              );
+            LOG.debug("Submission: {} (id: {}, PD: {}) is at state: {}", submission.getName(), submissionId, submission.getPdSubmissionIds(), state);
+          }
         );
+
+      LOG.debug("Grace time for submission {} (id: {}) before cancellation.", submissionName, submissionId);
+      Thread.sleep(BEFORE_CANCELLATION_GRACE_TIME);
 
       /*
        * If cancellation fails because of invalid state: Extend the forbidden
@@ -296,11 +311,21 @@ class DefaultGCExchangeFacadeContractTest {
         .as("Cancellation should have been successful.")
         .isEqualTo(HTTP_OK);
 
-      await("Wait until submission is marked as cancelled.")
+      await("Wait until submission is marked as canceled.")
         .atMost(2L, TimeUnit.MINUTES)
         .pollDelay(5L, TimeUnit.SECONDS)
         .pollInterval(10L, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLED));
+        .untilAsserted(() -> {
+          GCSubmissionModel submission = facade.getSubmission(submissionId);
+          assertThat(submission.getState())
+            .as(
+              "Submission %s should be marked as canceled after cancellation (id=%s, PD=%s).",
+              submission.getName(),
+              submission.getSubmissionId(),
+              submission.getPdSubmissionIds()
+            )
+            .isEqualTo(GCSubmissionState.CANCELLED);
+        });
 
       await("Wait until cancellation got confirmed for submission.")
         .atMost(2L, TimeUnit.MINUTES)
@@ -316,7 +341,12 @@ class DefaultGCExchangeFacadeContractTest {
             LOG.info("Ignoring communication exception. Rather trying again later.", e);
           }
         })
-        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getState()).isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED));
+        .untilAsserted(() -> {
+          GCSubmissionModel submission = facade.getSubmission(submissionId);
+          assertThat(submission.getState())
+            .as("Submission %s should have cancellation confirmed (id=%s, PD=%s).", submission.getName(), submissionId, submission.getPdSubmissionIds())
+            .isEqualTo(GCSubmissionState.CANCELLATION_CONFIRMED);
+        });
     }
   }
 

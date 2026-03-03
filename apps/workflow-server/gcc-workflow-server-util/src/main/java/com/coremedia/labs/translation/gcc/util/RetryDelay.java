@@ -229,16 +229,12 @@ public record RetryDelay(Duration value) implements Comparable<RetryDelay> {
     requireNonNull(value);
 
     try {
-      if (value instanceof RetryDelay retryDelay) {
-        return Optional.of(retryDelay);
-      }
-      if (value instanceof Duration duration) {
-        return Optional.of(saturatedOf(duration));
-      }
-      if (value instanceof Number number) {
-        return Optional.of(saturatedOf(Duration.ofSeconds(number.longValue())));
-      }
-      return Optional.of(saturatedParse(String.valueOf(value)));
+      return switch (value) {
+        case RetryDelay retryDelay -> Optional.of(retryDelay);
+        case Duration duration -> Optional.of(saturatedOf(duration));
+        case Number number -> Optional.of(saturatedOf(Duration.ofSeconds(number.longValue())));
+        default -> Optional.of(saturatedParse(String.valueOf(value)));
+      };
     } catch (IllegalArgumentException e) {
       LOG.trace("Unable to parse retry delay value: {}. Returning empty.", value, e);
       return Optional.empty();

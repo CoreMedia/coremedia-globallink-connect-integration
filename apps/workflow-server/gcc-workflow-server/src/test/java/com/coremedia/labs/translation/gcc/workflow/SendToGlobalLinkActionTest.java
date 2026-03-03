@@ -134,7 +134,7 @@ class SendToGlobalLinkActionTest {
             .hasValueSatisfying(new Condition<>("contains target locale de-DE") {
               @Override
               public boolean matches(List<Locale> value) {
-                return value.size() == 1 && derivedLocale.equals(value.get(0));
+                return value.size() == 1 && derivedLocale.equals(value.getFirst());
               }
             });
     assertThat(masterLocaleCaptor.getValue()).isEqualTo(masterLocale);

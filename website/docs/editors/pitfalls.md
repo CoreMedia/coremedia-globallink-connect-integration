@@ -21,9 +21,9 @@ active workflow.
 
 Additionally to _Abort and destroy workflows_ the workflows of type
 _Translation with GlobalLink_ can be canceled so that also GlobalLink gets
-notified about the cancelation. In rare cases, when for example the submission
+notified about the cancellation. In rare cases, when for example the submission
 was at the same time completed in GlobalLink, then you will see the workflow
 with a symbol for being canceled in the _Closed_ list of the Workflow App, but
 the detail view will state that the status is completed. In this case, the
 translation was completed at GlobalLink, but the translated texts were not
-applied because of the cancelation.
+applied because of the cancellation.

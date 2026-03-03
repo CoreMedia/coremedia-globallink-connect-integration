@@ -133,11 +133,11 @@ public interface GCExchangeFacade {
 
   /**
    * <p>
-   * Confirm all cancelled tasks of the given submission.
+   * Confirm all canceled tasks of the given submission.
    * </p>
    *
    * @param submissionId ID of the submission
-   * @throws GCFacadeCommunicationException if cancelled tasks could not be confirmed
+   * @throws GCFacadeCommunicationException if canceled tasks could not be confirmed
    */
   void confirmCancelledTasks(long submissionId);
 

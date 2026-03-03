@@ -892,7 +892,7 @@ class DefaultGCExchangeFacadeTest {
     }
 
     @Nested
-    @DisplayName("Support for artificial cancelled states")
+    @DisplayName("Support for artificial canceled states")
     class ArtificialCancelledStates {
       @Mock
       private Tasks.TasksResponseData tasksListResponse;
@@ -971,7 +971,7 @@ class DefaultGCExchangeFacadeTest {
 
         /**
          * This tests the partial cancellation case. As example the submission got
-         * cancelled while some tasks were already delivered. In this case, the
+         * canceled while some tasks were already delivered. In this case, the
          * already delivered tasks shall be ignored for cancellation confirmed
          * evaluation.
          */
