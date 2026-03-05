@@ -22,10 +22,10 @@
   </modules>
 
   <properties>
-    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <docs.directory>${project.basedir}/docs</docs.directory>
+    <docs.directory>${project.basedir}/website/docs</docs.directory>
   </properties>
 
   <build>
@@ -34,23 +34,41 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
-          <version>2.5.0</version>
+          <version>2.7.1</version>
           <configuration>
-            <cleanLicensesOutputDirectory>true</cleanLicensesOutputDirectory>
             <errorRemedy>ignore</errorRemedy>
             <excludedGroups>^com\.coremedia\.</excludedGroups>
             <excludeTransitiveDependencies>true</excludeTransitiveDependencies>
+            <fileTemplate>src/main/templates/third-party-md.ftl</fileTemplate>
             <includeTransitiveDependencies>false</includeTransitiveDependencies>
-            <licensesOutputFile>${docs.directory}/third-party-licenses/licenses.xml</licensesOutputFile>
-            <licensesOutputDirectory>${docs.directory}/third-party-licenses</licensesOutputDirectory>
-            <outputDirectory>${docs.directory}</outputDirectory>
+            <licenseMerges>
+              <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version 2.0</licenseMerge>
+              <licenseMerge>Apache License, Version 2.0|Apache Public License 2.0</licenseMerge>
+              <licenseMerge>Apache License, Version 2.0|Apache-2.0</licenseMerge>
+              <licenseMerge>Eclipse Distribution License, Version 1.0|EDL 1.0</licenseMerge>
+              <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU LESSER GENERAL PUBLIC
+                LICENSE, Version 2.1</licenseMerge>
+              <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU Lesser General Public License</licenseMerge>
+              <licenseMerge>MIT License|The MIT License</licenseMerge>
+              <licenseMerge>MIT License|MIT</licenseMerge>
+            </licenseMerges>
+            <licensesOutputFile>${docs.directory}/third-party/files/licenses.xml</licensesOutputFile>
+            <licensesOutputDirectory>${docs.directory}/third-party/files</licensesOutputDirectory>
+            <licenseUrlFileNames>
+              <spdx/> <!-- activate built-in file name entries based on spdx.org license IDs -->
+            </licenseUrlFileNames>
+            <outputDirectory>${docs.directory}/third-party</outputDirectory>
+            <removeOrphanLicenseFiles>true</removeOrphanLicenseFiles>
             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+            <thirdPartyFilename>third-party.md</thirdPartyFilename>
+            <useDefaultContentSanitizers>true</useDefaultContentSanitizers>
+            <useDefaultUrlReplacements>true</useDefaultUrlReplacements>
           </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.6.2</version>
           <configuration>
             <rules>
               <requireMavenVersion>
@@ -59,10 +77,10 @@
                   Possibly validate via `mvn versions:display-plugin-updates`
                   regarding required minimum versions.
                 -->
-                <version>3.8.6</version>
+                <version>3.9.11</version>
               </requireMavenVersion>
               <requireJavaVersion>
-                <version>[17,)</version>
+                <version>[21,)</version>
               </requireJavaVersion>
             </rules>
           </configuration>
@@ -88,9 +106,6 @@
   <profiles>
     <profile>
       <id>docs-third-party</id>
-      <!--
-        Will create generated resources for docs/ folder.
-      -->
       <build>
         <plugins>
           <plugin>
@@ -106,6 +121,32 @@
                 <phase>generate-resources</phase>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>gcc-strict-checks</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+              <showDeprecation>true</showDeprecation>
+              <showWarnings>true</showWarnings>
+              <compilerArgs>
+                <!-- Disable annotation processing to avoid version compatibility warnings -->
+                <!--
+                     Suppresses failure on:
+                     Supported source version 'RELEASE_8' from annotation processor
+                     'org.glassfish.corba.annotation.processing.ExceptionWrapperProcessor'
+                     less than -source '17'
+                -->
+                <arg>-proc:none</arg>
+              </compilerArgs>
+            </configuration>
           </plugin>
         </plugins>
       </build>

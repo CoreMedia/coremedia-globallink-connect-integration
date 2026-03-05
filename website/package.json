@@ -1,0 +1,75 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "GitHub Pages for CoreMedia GCC integration provided by Docusaurus.",
+  "author": {
+    "name": "CoreMedia GmbH",
+    "email": "info@coremedia.com",
+    "url": "https://coremedia.com/"
+  },
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=10.24.0 <11"
+  },
+  "private": true,
+  "keywords": [
+    "docusaurus",
+    "globallink",
+    "gcc",
+    "coremedia",
+    "coremedia cms",
+    "coremedia cmcc"
+  ],
+  "scripts": {
+    "build": "docusaurus build",
+    "clear": "docusaurus clear",
+    "deploy": "docusaurus deploy",
+    "knip": "knip",
+    "docusaurus": "docusaurus",
+    "preinstall": "node ./scripts/check-pnpm.mjs",
+    "start": "docusaurus start",
+    "swizzle": "docusaurus swizzle",
+    "serve": "docusaurus serve",
+    "typecheck": "tsc",
+    "update:latest": "pnpm update --interactive --latest --recursive",
+    "validate:overrides": "node ./scripts/validate-overrides.mjs",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "write-translations": "docusaurus write-translations"
+  },
+  "dependencies": {
+    "@docusaurus/core": "catalog:",
+    "@docusaurus/logger": "catalog:",
+    "@docusaurus/plugin-content-docs": "catalog:",
+    "@docusaurus/preset-classic": "catalog:",
+    "@docusaurus/theme-mermaid": "catalog:",
+    "@mdx-js/react": "catalog:",
+    "@types/mdast": "catalog:",
+    "clsx": "catalog:",
+    "mdast-util-from-markdown": "catalog:",
+    "prism-react-renderer": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "remark": "catalog:",
+    "unified": "catalog:",
+    "unist-util-visit": "catalog:"
+  },
+  "devDependencies": {
+    "@docusaurus/tsconfig": "catalog:",
+    "@docusaurus/types": "catalog:",
+    "@types/unist": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  }
+}

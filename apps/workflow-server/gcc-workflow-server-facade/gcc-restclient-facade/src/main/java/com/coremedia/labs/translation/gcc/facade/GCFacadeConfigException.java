@@ -1,8 +1,9 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
 
@@ -10,7 +11,7 @@ import java.io.Serial;
  * Signals a configuration problem, like especially invalid settings.
  */
 @SuppressWarnings("unused")
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public class GCFacadeConfigException extends GCFacadeException {
   @Serial
   private static final long serialVersionUID = 6482445402768874493L;
@@ -18,11 +19,13 @@ public class GCFacadeConfigException extends GCFacadeException {
   public GCFacadeConfigException() {
   }
 
-  public GCFacadeConfigException(String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeConfigException(@FormatString String message, @Nullable Object... args) {
     super(message, args);
   }
 
-  public GCFacadeConfigException(Throwable cause, String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeConfigException(Throwable cause, @FormatString String message, @Nullable Object... args) {
     super(cause, message, args);
   }
 

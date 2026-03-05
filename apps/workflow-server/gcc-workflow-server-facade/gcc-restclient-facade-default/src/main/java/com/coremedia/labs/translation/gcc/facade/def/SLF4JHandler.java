@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.def;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +15,8 @@ import java.util.logging.LogRecord;
  *
  * @since 2406.1
  */
+@NullMarked
 final class SLF4JHandler extends Handler {
-  @NonNull
   private final Logger slf4jLogger;
 
   private SLF4JHandler(String loggerName) {
@@ -24,8 +25,7 @@ final class SLF4JHandler extends Handler {
     setFilter(null);
   }
 
-  @NonNull
-  public static java.util.logging.Logger getLogger(@NonNull String name) {
+  public static java.util.logging.Logger getLogger(String name) {
     java.util.logging.Logger logger = java.util.logging.Logger.getLogger(name);
     logger.setLevel(Level.ALL);
     logger.setUseParentHandlers(false);
@@ -33,25 +33,27 @@ final class SLF4JHandler extends Handler {
     return logger;
   }
 
-  @NonNull
-  public static java.util.logging.Logger getLogger(@NonNull Class<?> clazz) {
+  public static java.util.logging.Logger getLogger(Class<?> clazz) {
     return getLogger(clazz.getName());
   }
 
   @Override
-  public void publish(@NonNull LogRecord record) {
+  public void publish(@Nullable LogRecord record) {
+    if (record == null) {
+      return;
+    }
     Level level = record.getLevel();
     String message = record.getMessage();
     Throwable thrown = record.getThrown();
     String messageWithLevel = "%s: %s".formatted(level.getName(), message);
-    if (level == Level.SEVERE) {
+    if (Level.SEVERE.equals(level)) {
       slf4jLogger.error(messageWithLevel, thrown);
-    } else if (level == Level.WARNING) {
+    } else if (Level.WARNING.equals(level)) {
       slf4jLogger.warn(messageWithLevel, thrown);
-    } else if (level == Level.INFO) {
+    } else if (Level.INFO.equals(level)) {
       // Lower to `debug` because `info` for GCFacade is too verbose.
       slf4jLogger.debug(messageWithLevel, thrown);
-    } else if (level == Level.CONFIG || level == Level.FINE) {
+    } else if (Level.CONFIG.equals(level) || Level.FINE.equals(level)) {
       slf4jLogger.debug(messageWithLevel, thrown);
     } else {
       slf4jLogger.trace(messageWithLevel, thrown);

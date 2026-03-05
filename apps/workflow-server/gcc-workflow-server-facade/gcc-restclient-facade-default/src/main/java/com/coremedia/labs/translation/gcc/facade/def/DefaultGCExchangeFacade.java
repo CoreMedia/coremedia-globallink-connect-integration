@@ -16,14 +16,11 @@ import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCConfig;
 import org.gs4tr.gcc.restclient.GCExchange;
 import org.gs4tr.gcc.restclient.dto.GCResponse;
@@ -41,6 +38,8 @@ import org.gs4tr.gcc.restclient.request.SubmissionSubmitRequest;
 import org.gs4tr.gcc.restclient.request.SubmissionsListRequest;
 import org.gs4tr.gcc.restclient.request.TaskListRequest;
 import org.gs4tr.gcc.restclient.request.UploadFileRequest;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
@@ -49,7 +48,6 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.IllformedLocaleException;
 import java.util.List;
@@ -67,7 +65,6 @@ import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.gs4tr.gcc.restclient.model.TaskStatus.Cancelled;
 import static org.gs4tr.gcc.restclient.model.TaskStatus.Completed;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -81,21 +78,15 @@ import static org.slf4j.LoggerFactory.getLogger;
  * To create an instance of this facade, use {@link GCExchangeFacadeSessionProvider}.
  * </p>
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public class DefaultGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
   private static final Integer HTTP_OK = 200;
-  /**
-   * Some string, so GCC can identify the source of requests.
-   */
-  private static final String USER_AGENT = lookup().lookupClass().getPackage().getName();
 
   private final Boolean isSendSubmitter;
   private final GCExchange delegate;
   private final Supplier<String> fileTypeSupplier;
-  @NonNull
   private final GCSubmissionName submissionName;
-  @NonNull
   private final GCSubmissionInstruction submissionInstruction;
 
   /**
@@ -105,39 +96,32 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @throws GCFacadeConfigException        if configuration is incomplete
    * @throws GCFacadeCommunicationException if connection to GCC failed.
    */
-  DefaultGCExchangeFacade(@NonNull Map<String, Object> config) {
+  DefaultGCExchangeFacade(Settings config) {
     this(config, GCExchange::new);
   }
 
   @VisibleForTesting
-  DefaultGCExchangeFacade(@NonNull Map<String, Object> config,
-                          @NonNull Function<GCConfig, GCExchange> exchangeFactory) {
-    String apiUrl = requireNonNullConfig(config, GCConfigProperty.KEY_URL);
-    String connectorKey = requireNonNullConfig(config, GCConfigProperty.KEY_KEY);
-    String apiKey = requireNonNullConfig(config, GCConfigProperty.KEY_API_KEY);
-    isSendSubmitter = Boolean.valueOf(String.valueOf(config.get(GCConfigProperty.KEY_IS_SEND_SUBMITTER)));
+  DefaultGCExchangeFacade(Settings config,
+                          Function<GCConfig, GCExchange> exchangeFactory) {
+    GCConfig gcConfig = GCConfigUtil.fromGlobalLinkConfig(config);
+    isSendSubmitter = config.at(GCConfigProperty.KEY_IS_SEND_SUBMITTER).map(o -> Boolean.valueOf(String.valueOf(o))).orElse(false);
     submissionName = GCSubmissionName.fromGlobalLinkConfig(config);
     submissionInstruction = GCSubmissionInstruction.fromGlobalLinkConfig(config);
-    LOG.debug("Will connect to GCC endpoint: {}", apiUrl);
+    LOG.debug("Will connect to GCC endpoint: {}", gcConfig.getApiUrl());
     try {
-      GCConfig gcConfig = new GCConfig(apiUrl, apiKey);
-      gcConfig.setUserAgent(USER_AGENT);
-      gcConfig.setConnectorKey(connectorKey);
-      // Redirect logging to SLF4j.
-      gcConfig.setLogger(SLF4JHandler.getLogger(GCExchange.class));
-      gcConfig.getLogger().finest("JUL Logging redirection to SLF4J: OK");
-      LOG.trace("JUL Logging redirected to SLF4J.");
       delegate = exchangeFactory.apply(gcConfig);
       validateConnectorKey(delegate);
     } catch (GCFacadeException e) {
       throw e;
     } catch (RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", apiUrl);
+      throw new GCFacadeCommunicationException(e, "Failed to connect to GCC at %s.", gcConfig.getApiUrl());
     } catch (IllegalAccessError e) {
       throw new GCFacadeAccessException(e, "Cannot authenticate with API key.");
     }
-    fileTypeSupplier = Suppliers.memoize(() -> getSupportedFileType(
-      String.valueOf(config.get(GCConfigProperty.KEY_FILE_TYPE)))
+    fileTypeSupplier = Suppliers.memoize(() -> config.at(GCConfigProperty.KEY_FILE_TYPE)
+      .map(String::valueOf)
+      .map(this::getSupportedFileType)
+      .orElseGet(() -> getSupportedFileType(null))
     );
   }
 
@@ -160,26 +144,16 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    *
    * @param gcExchange GCC exchange instance to validate
    */
-  private static void validateConnectorKey(@NonNull GCExchange gcExchange) {
+  private static void validateConnectorKey(GCExchange gcExchange) {
     String configuredKey = gcExchange.getConfig().getConnectorKey();
     List<String> availableConnectorKeys = gcExchange.getConnectors().stream().map(Connector::getConnectorKey).toList();
     if (!availableConnectorKeys.contains(configuredKey)) {
-      throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).".formatted(gcExchange.getConfig().getApiUrl()));
+      throw new GCFacadeConnectorKeyConfigException("Connector key is unavailable in GCC (url=%s).", gcExchange.getConfig().getApiUrl());
     }
-  }
-
-  private static String requireNonNullConfig(@NonNull Map<String, Object> config, String key) {
-    Object value = config.get(key);
-    if (value == null) {
-      throw new GCFacadeConfigException("Configuration for %s is missing. Configuration (values hidden): %s", key, config.entrySet().stream()
-        .collect(toMap(Map.Entry::getKey, e -> GCConfigProperty.KEY_URL.equals(e.getKey()) ? e.getValue() : "*****"))
-      );
-    }
-    return String.valueOf(value);
   }
 
   @Override
-  public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
+  public String uploadContent(String fileName, Resource resource, @Nullable Locale sourceLocale) {
     byte[] bytes;
     try (InputStream stream = resource.getInputStream()) {
       bytes = ByteStreams.toByteArray(stream);
@@ -256,7 +230,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       // here.
       return response.getStatus();
     } catch (RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to cancel submission: id=" + submissionId);
+      throw new GCFacadeCommunicationException(e, "Failed to cancel submission: id=%d", submissionId);
     }
   }
 
@@ -279,8 +253,8 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return a descriptive string.
    */
   private String createSubmissionName(@Nullable String subject,
-                                      @NonNull Locale sourceLocale,
-                                      @NonNull Map<String, List<Locale>> contentMap) {
+                                      Locale sourceLocale,
+                                      Map<String, List<Locale>> contentMap) {
     String trimmedSubject = Objects.toString(subject, "").trim();
     String subjectWithDefault = trimmedSubject.isEmpty() ? Instant.now().toString() : trimmedSubject;
     String allTargetLocales = contentMap.entrySet().stream()
@@ -336,7 +310,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   public void confirmCancelledTasks(long submissionId) {
     Map<TaskStatus, Set<GCTaskModel>> tasksByState =
       getTasksByState(submissionId,
-        // Ignore tasks which got already confirmed as being cancelled.
+        // Ignore tasks which got already confirmed as being canceled.
         r -> r.setIsCancelConfirmed(0),
         Cancelled
       );
@@ -361,10 +335,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         MessageResponse messageResponse = delegate.confirmTaskCancellation(taskId);
         if (!HTTP_OK.equals(messageResponse.getStatus())) {
           LOG.debug("Failed to confirm task cancellation for the task {}. Will retry. Failed confirmation information: {}", taskId, messageResponse.getMessage());
-          throw new GCFacadeCommunicationException("Failed to confirm the cancelled task " + taskId);
+          throw new GCFacadeCommunicationException("Failed to confirm the canceled task %d", taskId);
         }
       } catch (RuntimeException e) {
-        throw new GCFacadeCommunicationException(e, "Failed to confirm the cancelled task: " + taskId);
+        throw new GCFacadeCommunicationException(e, "Failed to confirm the canceled task: %d", taskId);
       }
     }
   }
@@ -378,6 +352,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return map of task states to sets of {@link GCTaskModel}
    * @throws GCFacadeCommunicationException if tasks could be not be retrieved.
    */
+  @SuppressWarnings("SameParameterValue")
   private Map<TaskStatus, Set<GCTaskModel>> getTasksByState(long submissionId, TaskStatus... taskStates) {
     return getTasksByState(submissionId, r -> {
     }, taskStates);
@@ -476,17 +451,22 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return {@code PageableResponseData} to retrieve the total number of pages.
    */
   private PageableResponseData executeRequest(TaskListRequest request, Consumer<? super GCTask> taskConsumer) {
-    Tasks.TasksResponseData tasksList = delegate.getTasksList(request);
+    Tasks.TasksResponseData taskData = delegate.getTasksList(request);
 
-    if (tasksList == null) {
-      tasksList = new Tasks.TasksResponseData();
-    }
-    if (tasksList.getTasks() == null) {
-      tasksList.setTasks(Collections.emptyList());
+    if (taskData == null) {
+      taskData = new Tasks.TasksResponseData();
     }
 
-    tasksList.getTasks().forEach(taskConsumer);
-    return tasksList;
+    List<GCTask> taskList = taskData.getTasks();
+
+    if (taskList == null) {
+      // Ensure non-null data
+      taskData.setTasks(List.of());
+    } else {
+      taskList.forEach(taskConsumer);
+    }
+
+    return taskData;
   }
 
   @Override
@@ -502,7 +482,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       /*
        * In order to know, that there is no more interaction with GCC backend
        * required to put the submission into a valid finished state, we split
-       * the cancelled state into two. Only when the state is
+       * the canceled state into two. Only when the state is
        * "Cancellation Confirmed" there is nothing more to do. When it is
        * only "Cancelled" there are still tasks which need to be finished
        * either by confirming their cancellation or by downloading their
@@ -511,7 +491,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
       if (areAllSubmissionTasksDone(submissionId)) {
         state = GCSubmissionState.CANCELLATION_CONFIRMED;
       } else {
-        // Interpret the cancelled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
+        // Interpret the canceled flag of submission as state. May be obsolete since gcc-restclient 2.4.0.
         state = GCSubmissionState.CANCELLED;
       }
     }
@@ -540,16 +520,15 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         TaskStatus status = TaskStatus.valueOf(t.getState());
         LOG.debug("Retrieved status \"{}\" of task {} of submission {}", status.text(), t.getTaskId(), submissionId);
         switch (status) {
-          case Delivered:
-            break;
-          case Cancelled:
-            LOG.debug("Verifying cancelation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
+          case Delivered -> {
+          }
+          case Cancelled -> {
+            LOG.debug("Verifying cancellation of task {} got confirmed -> {}", t.getTaskId(), t.getIsCancelConfirmed());
             // Logical AND: Only use confirmed state, if value
             // is still true. Otherwise, keep false state.
             allDone.compareAndSet(true, t.getIsCancelConfirmed());
-            break;
-          default:
-            allDone.set(false);
+          }
+          default -> allDone.set(false);
         }
       })
     );
@@ -564,8 +543,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
    * @return submission found; {@code null} if not found
    * @throws GCFacadeCommunicationException if unable to retrieve.
    */
-  @Nullable
-  private GCSubmission getSubmissionById(long submissionId) {
+  private @Nullable GCSubmission getSubmissionById(long submissionId) {
     SubmissionsListRequest request = new SubmissionsListRequest();
     request.setSubmissionId(submissionId);
     request.setPageSize(1L);
@@ -573,7 +551,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     try {
       responseData = delegate.getSubmissionsList(request);
     } catch (RuntimeException e) {
-      throw new GCFacadeCommunicationException(e, "Failed to retrieve submission list for submission ID " + submissionId);
+      throw new GCFacadeCommunicationException(e, "Failed to retrieve submission list for submission ID %d", submissionId);
     }
     List<GCSubmission> submissions = responseData.getSubmissions();
     if (submissions == null || submissions.isEmpty()) {
@@ -587,10 +565,10 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
         submissionId
       );
     }
-    return submissions.get(0);
+    return submissions.getFirst();
   }
 
-  private String getSupportedFileType(String configuredFileType) {
+  private String getSupportedFileType(@Nullable String configuredFileType) {
     String apiUrl = delegate.getConfig().getApiUrl();
 
     List<String> supportedFileTypes;
@@ -607,7 +585,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
     String result;
     if (configuredFileType == null) {
       // if no file type is configured, just use the first from the list of supported file types
-      result = supportedFileTypes.get(0);
+      result = supportedFileTypes.getFirst();
     } else if (supportedFileTypes.contains(configuredFileType)) {
       // configured file type found in supported ones
       result = configuredFileType;

@@ -1,7 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Optional;
@@ -19,6 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @since 2406.1
  */
+@NullMarked
 public enum TextTransform {
   /**
    * No transformation. Take as is.
@@ -43,8 +44,7 @@ public enum TextTransform {
      * @return the transformed text
      */
     @Override
-    @NonNull
-    public String transform(@NonNull String text) {
+    public String transform(String text) {
       String result = text
         .replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -61,7 +61,6 @@ public enum TextTransform {
   ;
 
   private static final Logger LOG = getLogger(lookup().lookupClass());
-  @NonNull
   private final String id;
 
   TextTransform() {
@@ -74,8 +73,7 @@ public enum TextTransform {
    * @param text the text to transform
    * @return the transformed text
    */
-  @NonNull
-  public String transform(@NonNull String text) {
+  public String transform(String text) {
     return text;
   }
 
@@ -87,18 +85,22 @@ public enum TextTransform {
    * an unsupported type
    */
   public static Optional<TextTransform> fromConfig(@Nullable Object type) {
-    if (type == null) {
-      LOG.trace("No text-type given. Returning empty.");
-      return Optional.empty();
+    switch (type) {
+      case null -> {
+        LOG.trace("No text-type given. Returning empty.");
+        return Optional.empty();
+      }
+      case TextTransform textTransform -> {
+        return Optional.of(textTransform);
+      }
+      case String stringType -> {
+        return fromString(stringType);
+      }
+      default -> {
+        LOG.debug("Unsupported type of text-type {} '{}'. Returning empty.", type.getClass(), type);
+        return Optional.empty();
+      }
     }
-    if (type instanceof TextTransform textTransform) {
-      return Optional.of(textTransform);
-    }
-    if (type instanceof String stringType) {
-      return fromString(stringType);
-    }
-    LOG.debug("Unsupported type of text-type {} '{}'. Returning empty.", type.getClass(), type);
-    return Optional.empty();
   }
 
   /**
@@ -108,7 +110,6 @@ public enum TextTransform {
    * @return the parsed type
    * set
    */
-  @NonNull
   public static Optional<TextTransform> fromString(@Nullable String type) {
     if (type == null || type.isBlank()) {
       LOG.debug("Empty transformation type. Returning empty.");
@@ -130,8 +131,7 @@ public enum TextTransform {
    * @param str string to strip underscores and dashes from
    * @return string without underscores and dashes
    */
-  @NonNull
-  private static String stripUnderscoresAndDashes(@NonNull String str) {
+  private static String stripUnderscoresAndDashes(String str) {
     return str.replace("_", "").replace("-", "");
   }
 }

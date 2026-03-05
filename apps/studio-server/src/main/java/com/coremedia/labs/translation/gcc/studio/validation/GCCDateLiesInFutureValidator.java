@@ -6,9 +6,11 @@ import com.coremedia.rest.validation.Issues;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.rest.validation.impl.IssuesImpl;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Collections;
 
+@NullMarked
 public class GCCDateLiesInFutureValidator extends DateLiesInFutureValidator {
 
   private final String additionalDateProperty;
@@ -30,10 +32,10 @@ public class GCCDateLiesInFutureValidator extends DateLiesInFutureValidator {
 
   }
 
-  private static class LocalizationIssues extends IssuesImpl<Object> {
+  private static final class LocalizationIssues extends IssuesImpl<Object> {
      final Issues delegate;
 
-    public LocalizationIssues(Issues delegate) {
+    private LocalizationIssues(Issues delegate) {
       super(null, Collections.emptyList());
       this.delegate = delegate;
     }

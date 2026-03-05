@@ -1,6 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade.config;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -10,11 +10,13 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
 class CharacterTypeTest {
   @Nested
   class MethodReplaceAllInvalid {
@@ -40,7 +42,7 @@ class CharacterTypeTest {
     class FromString {
       @ParameterizedTest
       @ArgumentsSource(ConfigTestCaseFixtureProvider.class)
-      void shouldParseValues(@NonNull CharacterType expected, @NonNull String configValue) {
+      void shouldParseValues(CharacterType expected, String configValue) {
         assertThat(CharacterType.fromString(configValue)).hasValue(expected);
       }
 
@@ -59,7 +61,7 @@ class CharacterTypeTest {
     class FromConfig {
       @ParameterizedTest
       @ArgumentsSource(ConfigTestCaseFixtureProvider.class)
-      void shouldParseValues(@NonNull CharacterType expected, @NonNull String configValue) {
+      void shouldParseValues(CharacterType expected, String configValue) {
         assertThat(CharacterType.fromConfig(configValue)).hasValue(expected);
       }
 
@@ -75,7 +77,7 @@ class CharacterTypeTest {
 
       @ParameterizedTest
       @EnumSource(CharacterType.class)
-      void shouldReturnEnumAsIs(@NonNull CharacterType input) {
+      void shouldReturnEnumAsIs(CharacterType input) {
         CharacterType actual = CharacterType.fromConfig(input).orElse(null);
         assertThat(actual).isEqualTo(input);
       }
@@ -84,7 +86,8 @@ class CharacterTypeTest {
 
   static class ConfigTestCaseFixtureProvider implements ArgumentsProvider {
     @Override
-    public @NonNull Stream<? extends Arguments> provideArguments(@NonNull ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters,
+                                                        ExtensionContext context) {
       return EnumConfigValueFixture.provideArguments(CharacterType.values());
     }
   }

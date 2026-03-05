@@ -1,0 +1,166 @@
+---
+sidebar_position: 4
+description: "How to configure GlobalLink connection credentials etc."
+---
+
+# Configuring Connection Settings
+
+## Server-side configuration
+
+Various default values are defined globally in the properties file of
+the `gcc-workflow-server` module (see
+<RepositoryLink
+  path="apps/workflow-server/gcc-workflow-server/src/main/resources/META-INF/coremedia/gcc-workflow.properties"
+  title="gcc-workflow.properties"
+/>).
+
+The following configuration shall only be stored there so that you do not
+accidentally leak it to clients that have read access to the content repository:
+
+`gcc.apiKey` the API key to authenticate at GlobalLink. In the content configuration
+it is just called `apiKey` (type:`String`).
+
+If the API key is to be set upon system startup, you can do so by defining
+variable `GCC_APIKEY` with the appropriate value. Check with development that
+the required actions have been taken on the code (see
+[Enabling External Definition of API Key](<../developers/coremedia-blueprint.mdx#enabling-external-definition-of-api-key> "Developers | CoreMedia Blueprint | Enabling External Definition of API Key")).
+In context of a CoreMedia-hosted cloud instance, store the values in
+_Cloud Manager Secrets_ and request activation through _CoreMedia
+Cloud Support_.
+
+You can theoretically set it in the content like the parameters in the
+next chapter, but it is not recommended. The same applies to the parameters
+`gcc.username` and `gcc.password` in previous versions of this integration.
+
+Property setting `gcc.cms-retry-delay` defines the delay in seconds between two
+attempts to retrieve data from or write data to the Content Management Server,
+should the Content Management Server be unavailable temporarily (_optional_,
+default: `60` type: `Integer`). Intervals shorter than 60 seconds or longer
+than a day are not allowed and will fall back to the corresponding max or min
+values.
+
+If the delay is to be set upon system startup, you can do so by defining
+variable `GCC_CMS_RETRY_DELAY` with the appropriate value.
+
+## Configuration in Studio
+
+GlobalLink Settings can be configured globally for all sites or specifically
+for some site. Site-specific settings override global settings except for
+`dayOffsetForDueDate`. The Settings can be located in the following folders:
+
+* `/Settings/Options/Settings/Translation Services`: Once you have configured
+  the integration in a Settings content in this folder the GlobalLink
+  workflow will be available to all sites.
+* `<SITE_ROOT>/Options/Settings/Translation Services`: Only define
+  the Settings here, if the GlobalLink workflow should only be available
+  if you translate content from this site to one of its derived sites. But, you
+  can also define Settings in this folder to overwrite specific parameters from
+  the global Settings.
+
+After you have created your GlobalLink settings for example at
+`/Settings/Options/Settings/Translation Services/GlobalLink`
+you need to configure your personal GlobalLink parameters. Open the Settings
+in CoreMedia Studio and add a struct named
+`globalLink`. Within that struct the following parameters must/can be specified:
+
+* `url` for GCC REST Base URL  (type:`String`)
+* `key` The GCC connector key. If there is only one key, then setting it as
+  part of the _Server-side configuration_ is recommended. Otherwise, you can
+  create separate site-specific GlobalLink settings that only contain
+  this parameter. (type:`String`)
+* `fileType` If there is more than one file format in your
+  GlobalLink setup, then this has to be set to the XLIFF file type identifier
+  to be used by your connector. (_optional_, default: `xliff`, type:`String`)
+* `type` Determines which facade implementation will be used (see
+  <RepositoryLink
+  path="apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade/README.md"
+  title="Facade Documentation"
+  />).
+  (_optional_, type:`String`)
+* `dayOffsetForDueDate` Defines the offset for the
+  `Due Date` of the workflow "Translation with GlobalLink" in the Start Workflow
+  Window to lie within the future in days.
+  (_optional_, default: `0`, type:`Integer`, scope:**global**)
+* `maxRetriesOnServiceUnavailable` Number of retries in case of a `Service
+  Unavailable` response from GlobalLink. Turned off by default.
+  (_optional_, default: `0`, type:`Integer`)
+* `maxRetriesOnRequestErrors` Number of retries in case of a `Request Error`
+  response from GlobalLink. Turned off by default.
+  (_optional_, default: `0`, type:`Integer`)
+* `retryCommunicationErrors` Number of retries in case of a communication error
+  with GlobalLink. (_optional_, default: `5`, type:`Integer`)
+* `isSendSubmitter` Defines if the name of the editor that started the workflow
+  is sent to GlobalLink as part of the submission.
+  (_optional_, default: `false`, type:`Boolean`)
+* `submissionInstruction` Defines the behavior of submission instructions.
+  For details, see `GCSubmissionInstruction`.
+  (_optional_, default: see `GCSubmissionInstruction`, type:`Struct`)
+* `submissionName` Defines the behavior of submission names.
+  For details, see `GCSubmissionName`.
+  (_optional_, default: see `GCSubmissionName`, type:`Struct`)
+
+Be aware that the `dayOffsetForDueDate` can only be configured in the global
+Settings location.
+
+The following parameters of the struct should be handled carefully and only
+after consulting Translations.com. They affect all new and running workflows,
+and as such they can instantly cause high loads on GlobalLink's servers or
+unexpectedly long update intervals. Intervals shorter than 60 seconds or longer
+than a day are not allowed and will fall back to the corresponding max or min
+values. The interval is also limited to be not longer than one day because if
+you accidentally set it to a very big value, there would be no turning back. You
+would have to wait until it is expired.
+
+:::tip TIP: Integer or String
+As retry delays you may specify integer values, interpreted as number of
+seconds or use string values, representing number of seconds when given
+without a unit.
+
+Unit's may be given as supported by Spring's
+[DurationFormatterUtils](https://docs.spring.io/spring-framework/docs/current/javadoc-api//org/springframework/format/datetime/standard/DurationFormatterUtils.html).
+
+<Since value="2506.0.0-1"/>
+
+Prior to 2506.0.0-1 only integer values were supported.
+:::
+
+* `sendTranslationRequestRetryDelay` The delay to wait, if the XLIFF could not
+  be sent on first try.
+
+  (_optional_, default: `3m`, type: `Integer` or `String`)
+
+* `downloadTranslationRetryDelay` The delay to wait before updating the
+  submission's state and to eventually download the XLIFF once it contains
+  the translations.
+
+  (_optional_, default: `30m`, type: `Integer` or `String`)
+
+* <Since value="2506.0.0-1"/>
+  `downloadTranslationEarlyRetryDelay` An alternative delay to
+  `downloadTranslationRetryDelay` in early submission stages. Allows more
+  frequent updates and especially faster feedback on assigned project
+  director IDs, required by editors when communicating with translators.
+
+  If _unset_ (the default), applies the `downloadTranslationRetryDelay`
+  instead.
+
+  (_optional_, default: _unset_, type: `Integer` or `String`)
+
+* `cancelTranslationRetryDelay` The delay to wait, if the first
+  cancellation request failed until it is repeated.
+
+  (_optional_, default: `3m`, type: `Integer` or `String`)
+
+You can also define parameters for testing with the mock facade
+(see
+<RepositoryLink
+  path="apps/workflow-server/gcc-workflow-server-facade/gcc-restclient-facade-mock/README.md"
+  title="Mock Facade Documentation"
+  />).
+
+:::warning Restrict Access to Settings
+Make sure to restrict read and write rights to the Settings content to
+those user groups that actually need access. Do not publish the
+Settings and follow the recommendations from the previous chapter.
+This will reduce the risk of accidentally leaking sensitive information.
+:::

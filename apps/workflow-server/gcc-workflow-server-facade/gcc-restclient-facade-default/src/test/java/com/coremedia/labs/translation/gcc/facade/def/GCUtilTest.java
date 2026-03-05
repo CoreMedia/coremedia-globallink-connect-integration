@@ -4,6 +4,7 @@ import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import org.assertj.core.api.Assertions;
 import org.gs4tr.gcc.restclient.dto.PageableResponseData;
 import org.gs4tr.gcc.restclient.request.PageableRequest;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -33,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests {@link GCUtil}.
  */
+@NullMarked
 class GCUtilTest {
   @SuppressWarnings("UseOfObsoleteDateTimeApi")
   @ParameterizedTest
@@ -112,14 +115,15 @@ class GCUtilTest {
 
   private static final class InstantArgumentsProvider implements ArgumentsProvider {
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters,
+                                                        ExtensionContext context) {
       LocalDateTime someTime = LocalDateTime.of(2018, 7, 15, 13, 11, 30, 0);
       return Stream.concat(
           Stream.of(
             ZonedDateTime.of(LocalDateTime.ofEpochSecond(0L, 0, ZoneOffset.UTC), ZoneOffset.UTC),
             ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 2, 0, 0), ZoneId.of("Europe/Berlin")),
             ZonedDateTime.of(LocalDateTime.of(2018, 10, 28, 3, 0, 0), ZoneId.of("Europe/Berlin")),
-            ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault())
+            ZonedDateTime.of(LocalDateTime.now(ZoneId.systemDefault()), ZoneId.systemDefault())
           ),
           ZoneId.getAvailableZoneIds().stream()
             .map(ZoneId::of)

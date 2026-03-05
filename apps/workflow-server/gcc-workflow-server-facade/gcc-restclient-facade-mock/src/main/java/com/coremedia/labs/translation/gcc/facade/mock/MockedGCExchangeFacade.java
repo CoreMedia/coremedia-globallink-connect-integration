@@ -2,16 +2,13 @@ package com.coremedia.labs.translation.gcc.facade.mock;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeSessionProvider;
-import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
 import com.coremedia.labs.translation.gcc.facade.GCTaskModel;
-import com.coremedia.labs.translation.gcc.facade.mock.settings.MockError;
 import com.coremedia.labs.translation.gcc.facade.mock.settings.MockSettings;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.gs4tr.gcc.restclient.GCExchange;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
@@ -25,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -38,7 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * <p>
  * To get an instance of this facade, use {@link GCExchangeFacadeSessionProvider}.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public final class MockedGCExchangeFacade implements GCExchangeFacade {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
@@ -50,10 +48,9 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
    * submissions across multiple facade instances.
    */
   private static final SubmissionStore submissionStore = SubmissionStore.getInstance();
-  @NonNull
   private final MockSettings mockSettings;
 
-  MockedGCExchangeFacade(@NonNull MockSettings mockSettings) {
+  public MockedGCExchangeFacade(MockSettings mockSettings) {
     this.mockSettings = mockSettings;
     // By intention may adapt the settings also within the submission store
     // on each new instance creation of the facade. While this is not meant
@@ -72,10 +69,8 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   @Override
-  public String uploadContent(String fileName, Resource resource, Locale sourceLocale) {
-    if (mockSettings.error() == MockError.UPLOAD_COMMUNICATION) {
-      throw new GCFacadeCommunicationException("Exception to test upload communication errors with translation service.");
-    }
+  public String uploadContent(String fileName, Resource resource, @Nullable Locale sourceLocale) {
+    mockSettings.scenario().upload().startUpload();
     return contentStore.addContent(resource);
   }
 
@@ -94,15 +89,13 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
 
   @Override
   public int cancelSubmission(long submissionId) {
-    if (mockSettings.error() == MockError.CANCEL_COMMUNICATION) {
-      throw new GCFacadeCommunicationException("Exception to test cancel communication errors with translation service.");
+
+    Optional<Integer> mockHttpResponse = mockSettings.scenario().cancellation().startCancellation();
+
+    if (mockHttpResponse.isPresent()) {
+      return mockHttpResponse.get();
     }
-    if (mockSettings.error() == MockError.CANCEL_RESULT) {
-      // Any one of the possible errors documented in
-      // https://connect-dev.translations.com/docs/api/v2/index.html#submissions_cancel
-      // 400, 401, 404, 500
-      return 404;
-    }
+
     submissionStore.cancelSubmission(submissionId);
     return 200;  // http ok
   }
@@ -123,12 +116,15 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   }
 
   private void downloadTask(Task task, BiPredicate<? super InputStream, ? super GCTaskModel> taskDataConsumer) {
-    if (mockSettings.error() == MockError.DOWNLOAD_COMMUNICATION) {
-      throw new GCFacadeCommunicationException("Exception to test download communication errors with translation service.");
-    }
+
+    mockSettings.scenario().download().startDownload();
+
     boolean success = false;
     String untranslatedContent = task.getContent();
-    String translatedContent = TranslationUtil.translateXliff(untranslatedContent, mockSettings.error() == MockError.DOWNLOAD_XLIFF);
+    String translatedContent = TranslationUtil.translateXliff(
+      untranslatedContent,
+      mockSettings.scenario().translate()
+    );
     try (InputStream is = new ByteArrayInputStream(translatedContent.getBytes(StandardCharsets.UTF_8))) {
       success = taskDataConsumer.test(is, new GCTaskModel(task.getId(), task.getTargetLocale()));
     } catch (IOException e) {
@@ -142,18 +138,29 @@ public final class MockedGCExchangeFacade implements GCExchangeFacade {
   @Override
   public void confirmCancelledTasks(long submissionId) {
     Collection<Task> cancelledTasks = submissionStore.getCancelledTasks(submissionId);
+    if (cancelledTasks.isEmpty()) {
+      // There is no need to validate the actual state of the submission, as
+      // from production code we can only reach `confirmCancelledTask` with
+      // empty canceled tasks, when the submission is already in state
+      // CANCELED.
+      LOG.debug("Assuming cancellation got trigger from the (mocked) backend. Marking all tasks as canceled.");
+      submissionStore.cancelSubmission(submissionId);
+      cancelledTasks = submissionStore.getCancelledTasks(submissionId);
+    }
     cancelledTasks.forEach(Task::markAsCancellationConfirmed);
   }
 
 
   @Override
   public GCSubmissionModel getSubmission(long submissionId) {
-    // State: Will query an exception if not found.
+    // State: Will raise an exception if not found.
     GCSubmissionState submissionState = submissionStore.getSubmissionState(submissionId);
-    return GCSubmissionModel.builder(submissionId)
-      .pdSubmissionIds(List.of(Long.toString(submissionId)))
-      .state(submissionState)
-      .error(mockSettings.error() == MockError.SUBMISSION_ERROR)
-      .build();
+
+    return mockSettings.scenario().submission().intercept(
+      GCSubmissionModel.builder(submissionId)
+        .pdSubmissionIds(List.of(Long.toString(submissionId)))
+        .state(submissionState)
+        .build()
+    );
   }
 }

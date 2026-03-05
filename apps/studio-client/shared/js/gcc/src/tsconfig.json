@@ -4,9 +4,32 @@
   "extends": "@jangaroo/build/tsconfig-jangaroo.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "../dist/src",
-    "types": [
-      "@jangaroo/ext-ts"
-    ]
-  }
+    "outDir": "../dist/src"
+  },
+  "references": [
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/cap-base-models/src"
+    },
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/cap-rest-client/src"
+    },
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/cap-rest-client-impl/src"
+    },
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/client-core/src"
+    },
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/client-core-impl/src"
+    },
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/core-icons/generated/src"
+    },
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/workflow-models/src"
+    },
+    {
+      "path": "../../../../../../../../../../apps/studio-client/shared/js/core/workflow-plugin-models/src"
+    }
+  ]
 }

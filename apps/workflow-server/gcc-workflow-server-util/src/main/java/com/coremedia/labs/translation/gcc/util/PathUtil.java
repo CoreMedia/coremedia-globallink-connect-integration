@@ -1,6 +1,7 @@
 package com.coremedia.labs.translation.gcc.util;
 
 import com.google.common.base.Splitter;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import java.util.stream.StreamSupport;
  * Unix file system path, or the path part of a URL. PathUtil does NOT
  * cover special syntaxes like Windows file system paths.
  */
+@NullMarked
 final class PathUtil {
   private static final char PATH_SEPARATOR = '/';
   private static final String PATH_SEPARATOR_STR = "/";
@@ -27,7 +29,7 @@ final class PathUtil {
    */
   static boolean isReferringToParent(String path) {
     List<String> segments = tokenizeAndNormalize(path);
-    return !segments.isEmpty() && PATH_PARENT.equals(segments.get(0));
+    return !segments.isEmpty() && PATH_PARENT.equals(segments.getFirst());
   }
 
   /**
@@ -48,7 +50,7 @@ final class PathUtil {
   private static List<String> tokenizeAndNormalize(String path) {
     Iterable<String> split = Splitter.on(PATH_SEPARATOR).omitEmptyStrings().split(path);
     List<String> segments = StreamSupport.stream(split.spliterator(), false)
-                                         .filter(s -> !(PATH_SELF.equals(s)))
+                                         .filter(s -> !PATH_SELF.equals(s))
                                          .collect(Collectors.toList());
     for (int i=1; i<segments.size(); ++i) {
       if (PATH_PARENT.equals(segments.get(i)) && !PATH_PARENT.equals(segments.get(i-1))) {
@@ -57,7 +59,7 @@ final class PathUtil {
         i = Math.max(0, i-2);
       }
     }
-    if (isAbsolute(path) && !segments.isEmpty() && PATH_PARENT.equals(segments.get(0))) {
+    if (isAbsolute(path) && !segments.isEmpty() && PATH_PARENT.equals(segments.getFirst())) {
       throw new IllegalArgumentException("Cannot resolve beyond root: " + path);
     }
     return segments;

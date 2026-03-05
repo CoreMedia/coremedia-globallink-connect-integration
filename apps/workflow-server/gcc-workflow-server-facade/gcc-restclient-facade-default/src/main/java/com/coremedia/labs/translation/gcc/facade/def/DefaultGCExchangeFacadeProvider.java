@@ -2,12 +2,10 @@ package com.coremedia.labs.translation.gcc.facade.def;
 
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeProvider;
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import com.coremedia.labs.translation.gcc.util.Settings;
+import org.jspecify.annotations.NullMarked;
 
-import java.util.Map;
-
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public class DefaultGCExchangeFacadeProvider implements GCExchangeFacadeProvider {
   private static final String TYPE_TOKEN = "default";
 
@@ -22,7 +20,7 @@ public class DefaultGCExchangeFacadeProvider implements GCExchangeFacadeProvider
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, Object> settings) {
+  public GCExchangeFacade getFacade(Settings settings) {
     return new DefaultGCExchangeFacade(settings);
   }
 

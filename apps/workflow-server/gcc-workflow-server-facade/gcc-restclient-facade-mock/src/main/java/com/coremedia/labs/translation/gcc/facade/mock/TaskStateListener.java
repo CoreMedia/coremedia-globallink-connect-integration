@@ -1,13 +1,12 @@
 package com.coremedia.labs.translation.gcc.facade.mock;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Interface for a listener which will receive a signal when a
  * task state changed.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 interface TaskStateListener {
   /**
    * Event receiver.

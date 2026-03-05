@@ -1,13 +1,12 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Properties to be used in {@code GlobalLink} settings document.
  */
 @SuppressWarnings("UtilityClassCanBeEnum")
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public final class GCConfigProperty {
   /**
    * Root node for GCC Settings in Struct.
@@ -36,6 +35,27 @@ public final class GCConfigProperty {
    * <strong>Type</strong>: {@code String}
    */
   public static final String KEY_API_KEY = "apiKey";
+
+  /**
+   * Maximum number of retries on service unavailable errors.
+   * <p>
+   * <strong>Type</strong>: {@code Integer}
+   *
+   * @since 2512.0.0-1
+   */
+  public static final String KEY_MAX_RETRIES_ON_SERVICE_UNAVAILABLE = "maxRetriesOnServiceUnavailable";
+
+  /**
+   * Maximum number of retries on request errors. This could be, for example,
+   * request timeouts.
+   * <p>
+   * Errors like authentication errors are not retried.
+   * <p>
+   * <strong>Type</strong>: {@code Integer}
+   *
+   * @since 2512.0.0-1
+   */
+  public static final String KEY_MAX_RETRIES_ON_REQUEST_ERRORS = "maxRetriesOnRequestErrors";
 
   /**
    * GlobalLink file type to use. Optional setting.

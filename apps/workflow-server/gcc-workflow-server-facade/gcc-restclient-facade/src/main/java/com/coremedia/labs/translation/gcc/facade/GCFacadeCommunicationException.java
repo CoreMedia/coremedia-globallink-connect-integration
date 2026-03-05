@@ -1,8 +1,9 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
 
@@ -10,7 +11,7 @@ import java.io.Serial;
  * Signals a communication error with the GCC REST Backend via GCC Java RestClient.
  */
 @SuppressWarnings("unused")
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public class GCFacadeCommunicationException extends GCFacadeException {
   @Serial
   private static final long serialVersionUID = -4226793602127027111L;
@@ -18,11 +19,13 @@ public class GCFacadeCommunicationException extends GCFacadeException {
   public GCFacadeCommunicationException() {
   }
 
-  public GCFacadeCommunicationException(String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeCommunicationException(@FormatString String message, @Nullable Object... args) {
     super(message, args);
   }
 
-  public GCFacadeCommunicationException(Throwable cause, String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeCommunicationException(Throwable cause, @FormatString String message, @Nullable Object... args) {
     super(cause, message, args);
   }
 

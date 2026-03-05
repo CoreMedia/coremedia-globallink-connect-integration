@@ -6,8 +6,8 @@ import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionModel;
 import com.coremedia.labs.translation.gcc.facade.GCSubmissionState;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +33,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Workflow action that cancels a GlobalLink submission.
  */
+@NullMarked
 public class CancelTranslationGlobalLinkAction extends
         GlobalLinkAction<CancelTranslationGlobalLinkAction.Parameters, CancelTranslationGlobalLinkAction.Result> {
   @Serial
@@ -44,11 +45,11 @@ public class CancelTranslationGlobalLinkAction extends
 
   private static final int HTTP_OK = 200;
 
-  private String globalLinkSubmissionIdVariable;
-  private String globalLinkPdSubmissionIdsVariable;
-  private String globalLinkSubmissionStatusVariable;
-  private String cancelledVariable;
-  private String completedLocalesVariable;
+  private @Nullable String globalLinkSubmissionIdVariable;
+  private @Nullable String globalLinkPdSubmissionIdsVariable;
+  private @Nullable String globalLinkSubmissionStatusVariable;
+  private @Nullable String cancelledVariable;
+  private @Nullable String completedLocalesVariable;
 
   // --- construct and configure ------------------------------------
 
@@ -73,7 +74,7 @@ public class CancelTranslationGlobalLinkAction extends
    * Sets the name of the process variable that holds the submission IDs shown to editors in Studio and
    * in the GlobalLink tools.
    *
-   * @param globalLinkPdSubmissionIdsVariable string workflow variable name
+   * @param globalLinkPdSubmissionIdsVariable name of workflow aggregation variable of type string
    */
   @SuppressWarnings("unused") // set from workflow definition
   public void setGlobalLinkPdSubmissionIdsVariable(String globalLinkPdSubmissionIdsVariable) {
@@ -116,7 +117,6 @@ public class CancelTranslationGlobalLinkAction extends
   // --- GlobalLinkAction interface ----------------------------------------------------------------------
 
   @Override
-  @NonNull
   protected String getGCCRetryDelaySettingsKey() {
     return GCC_RETRY_DELAY_SETTINGS_KEY;
   }
@@ -133,8 +133,10 @@ public class CancelTranslationGlobalLinkAction extends
   }
 
   @Override
-  void doExecuteGlobalLinkAction(Parameters params, Consumer<? super Result> resultConsumer,
-                                 GCExchangeFacade facade, Map<String, List<Content>> issues) {
+  void doExecuteGlobalLinkAction(Parameters params,
+                                 Consumer<? super Result> resultConsumer,
+                                 GCExchangeFacade facade,
+                                 Map<String, List<@Nullable Content>> issues) {
     long submissionId = params.submissionId;
     // Ignore Submission Error State: As we are trying to cancel the submission,
     // we don't care about the error state. At least for observed scenarios,
@@ -147,7 +149,7 @@ public class CancelTranslationGlobalLinkAction extends
     Result result = new Result(submissionState, cancelled, params.completedLocales, submission.getPdSubmissionIds());
     resultConsumer.accept(result);
 
-    // nothing to do, if submission is already cancelled and confirmed or delivered
+    // nothing to do, if submission is already canceled and confirmed or delivered
     if (submissionState == CANCELLATION_CONFIRMED
       || submissionState == DELIVERED
       || submissionState == REDELIVERED) {
@@ -169,7 +171,7 @@ public class CancelTranslationGlobalLinkAction extends
       return;
     }
 
-    // not yet cancelled -> cancel
+    // not yet canceled -> cancel
     if (!cancelled && submissionState != CANCELLED) {
       result.cancelled = cancel(facade, submissionId, issues);
       result.submissionState = facade.getSubmission(submissionId).getState();
@@ -181,16 +183,15 @@ public class CancelTranslationGlobalLinkAction extends
       }
     }
 
-    // cancelled but not yet confirmed -> confirm
+    // canceled but not yet confirmed -> confirm
     if (result.submissionState == CANCELLED) {
       facade.confirmCancelledTasks(submissionId);
       result.submissionState = facade.getSubmission(submissionId).getState();
     }
   }
 
-  @Nullable
   @Override
-  Void doStoreResult(Task task, Result result) {
+  @Nullable Void doStoreResult(Task task, Result result) {
     Process process = task.getContainingProcess();
     process.set(globalLinkSubmissionStatusVariable, result.submissionState.toString());
     process.set(cancelledVariable, result.cancelled);
@@ -212,10 +213,10 @@ public class CancelTranslationGlobalLinkAction extends
    * @param submissionId submission to cancel
    * @param issues       map to store issues during the cancel operation
    *                     (write-only)
-   * @return {@code true} if the submission was successfully cancelled,
+   * @return {@code true} if the submission was successfully canceled,
    * {@code false} otherwise
    */
-  private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<Content>> issues) {
+  private static boolean cancel(GCExchangeFacade facade, long submissionId, Map<String, List<@Nullable Content>> issues) {
     int httpStatus = facade.cancelSubmission(submissionId);
     if (httpStatus == HTTP_OK) {
       return true;

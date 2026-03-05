@@ -25,7 +25,8 @@ interface Gcc_properties {
   translationResultXliff_Label_Button_text: string;
   confirm_cancellation_title: string;
   confirm_cancellation: string;
-  Action_Tooltip_Cancel_Process: string;
+  Action_text_Cancel_Process: string;
+  Action_tooltip_Cancel_Process: string;
   TranslationGlobalLink_completed_Locales: string;
   TranslationGlobalLink_Multi_Target_Locale_Text: string;
 }
@@ -56,7 +57,8 @@ const Gcc_properties: Gcc_properties = {
   translationResultXliff_Label_Button_text: "Issue Details",
   confirm_cancellation_title: "Cancel Submission",
   confirm_cancellation: "This action will cancel the submission(s) at GlobalLink. Do you really want to proceed?",
-  Action_Tooltip_Cancel_Process: "Cancel the selected translation(s) with GlobalLink",
+  Action_text_Cancel_Process: "Cancel",
+  Action_tooltip_Cancel_Process: "Cancel the selected translation(s) with GlobalLink",
   TranslationGlobalLink_completed_Locales: "Completed Locales",
   TranslationGlobalLink_Multi_Target_Locale_Text: "{0} Locales",
 };

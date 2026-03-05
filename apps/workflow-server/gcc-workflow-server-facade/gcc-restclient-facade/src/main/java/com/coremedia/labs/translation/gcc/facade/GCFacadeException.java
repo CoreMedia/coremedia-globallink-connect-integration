@@ -1,8 +1,9 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
 
@@ -10,7 +11,7 @@ import java.io.Serial;
  * Base failure for any exceptions raised by this facade.
  */
 @SuppressWarnings("WeakerAccess")
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public class GCFacadeException extends RuntimeException {
   @Serial
   private static final long serialVersionUID = 8255693835569503552L;
@@ -19,11 +20,13 @@ public class GCFacadeException extends RuntimeException {
     super();
   }
 
-  public GCFacadeException(String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeException(@FormatString String message, @Nullable Object... args) {
     super(String.format(message, args));
   }
 
-  public GCFacadeException(Throwable cause, String message, @Nullable Object... args) {
+  @FormatMethod
+  public GCFacadeException(Throwable cause, @FormatString String message, @Nullable Object... args) {
     super(String.format(message, args), cause);
   }
 

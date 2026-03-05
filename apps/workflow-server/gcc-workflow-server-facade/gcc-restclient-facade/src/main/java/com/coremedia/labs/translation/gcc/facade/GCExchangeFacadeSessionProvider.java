@@ -1,9 +1,7 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import java.util.Map;
+import com.coremedia.labs.translation.gcc.util.Settings;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * An implementation of this factory may decide on different facades
@@ -11,8 +9,8 @@ import java.util.Map;
  * do real communication, some may provide mock answers for testing
  * purpose and others just may signal a disabled communication state.
  */
-@DefaultAnnotation(NonNull.class)
 @FunctionalInterface
+@NullMarked
 public interface GCExchangeFacadeSessionProvider {
   /**
    * <p>
@@ -27,5 +25,5 @@ public interface GCExchangeFacadeSessionProvider {
    * @implSpec Factories may support extra settings in order to control which
    * facade to instantiate.
    */
-  GCExchangeFacade openSession(Map<String, Object> settings);
+  GCExchangeFacade openSession(Settings settings);
 }

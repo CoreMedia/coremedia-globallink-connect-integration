@@ -3,36 +3,50 @@
   "author": "CoreMedia GmbH",
   "version": "1.0.0-SNAPSHOT",
   "license": "CoreMedia Open Source License",
+  "type": "module",
   "private": true,
   "dependencies": {
-    "@coremedia-labs/studio-client.ext.gcc-studio-client": "workspace:*"
+    "@coremedia-labs/studio-client.gcc-studio-client": "workspace:*"
   },
   "devDependencies": {
-    "@jangaroo/build": "catalog:",
-    "@jangaroo/core": "catalog:","rimraf": "catalog:"
+    "@babel/core": "catalog:",
+    "@coremedia/studio-client.build-config": "catalog:",
+    "@coremedia/studio-client.eslint-config": "catalog:",
+    "@coremedia/studio-client.main.shared-modules": "catalog:",
+    "eslint": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
+    "webpack": "catalog:",
+    "webpack-cli": "catalog:"
   },
   "scripts": {
-    "clean": "rimraf ./dist && rimraf ./build",
-    "build": "jangaroo build",
-    "watch": "jangaroo watch",
-    "publish": "jangaroo publish"
+    "build": "tsc --project src && webpack build --mode=production",
+    "clean": "rimraf ./dist",
+    "lint": "eslint",
+    "watch": "webpack watch --mode=development"
   },
   "exports": {
-    "./*": {
-      "types": "./src/*.ts",
-      "default": "./dist/src/*.js"
+    "./appEntry.js": {
+      "default": "./dist/appEntry.js"
     }
   },
   "coremedia": {
-    "projectExtensionFor": "studio-client.main"
+    "projectExtensionFor": "studio-client.main",
+    "plugins": {
+      "main_gccWorkflowPlugin": "./dist/appEntry.js"
+    }
   },
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": false,
     "exports": {
-      "./*": {
-        "types": "./src/*.d.ts",
-        "default": "./src/*.js"
+      "./appEntry.js": {
+        "default": "./appEntry.js"
+      }
+    },
+    "coremedia": {
+      "plugins": {
+        "main_gccWorkflowPlugin": "./appEntry.js"
       }
     }
   }

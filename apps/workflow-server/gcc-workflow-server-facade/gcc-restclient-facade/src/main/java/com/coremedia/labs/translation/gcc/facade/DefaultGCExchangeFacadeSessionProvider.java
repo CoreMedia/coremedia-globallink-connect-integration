@@ -1,11 +1,10 @@
 package com.coremedia.labs.translation.gcc.facade;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import com.coremedia.labs.translation.gcc.util.Settings;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
@@ -16,7 +15,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Factory which, depending on given settings, will create either a
  * default communication channel to GCC, a mocked one or a disabled one.
  */
-@DefaultAnnotation(NonNull.class)
+@NullMarked
 public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeFacadeSessionProvider {
   private static final Logger LOG = getLogger(lookup().lookupClass());
 
@@ -34,8 +33,10 @@ public final class DefaultGCExchangeFacadeSessionProvider implements GCExchangeF
    * facade to instantiate.
    */
   @Override
-  public GCExchangeFacade openSession(Map<String, Object> settings) {
-    String facadeType = String.valueOf(settings.getOrDefault(GCConfigProperty.KEY_TYPE, GCConfigProperty.VALUE_TYPE_DEFAULT));
+  public GCExchangeFacade openSession(Settings settings) {
+    String facadeType = settings.at(GCConfigProperty.KEY_TYPE)
+      .map(String::valueOf)
+      .orElse(GCConfigProperty.VALUE_TYPE_DEFAULT);
     LOG.debug("Identified facade type to use: {}", facadeType);
     GCExchangeFacadeProvider defaultFacadeProvider = null;
     for (GCExchangeFacadeProvider facadeProvider : facadeProviders) {
