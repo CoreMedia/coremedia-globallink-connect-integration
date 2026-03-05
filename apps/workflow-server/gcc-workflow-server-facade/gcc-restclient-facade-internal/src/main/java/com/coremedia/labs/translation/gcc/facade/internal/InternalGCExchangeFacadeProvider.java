@@ -1,8 +1,10 @@
 package com.coremedia.labs.translation.gcc.facade.internal;
 
 import com.coremedia.blueprint.translation.TranslationService;
+import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacadeProvider;
+import com.coremedia.labs.translation.gcc.util.Settings;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotation;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -20,13 +22,10 @@ public class InternalGCExchangeFacadeProvider implements GCExchangeFacadeProvide
   }
 
   @Override
-  public GCExchangeFacade getFacade(Map<String, Object> settings) {
+  public GCExchangeFacade getFacade(Settings settings) {
     InternalGCExchangeFacade facade = new InternalGCExchangeFacade();
-
-    if(settings.containsKey("translationService")) {
-      facade.setTranslationService((TranslationService) settings.get("translationService"));
-    }
-
+    settings.at("translationService")
+      .ifPresent(translationService -> facade.setTranslationService((TranslationService) translationService));
     return facade;
   }
 }

@@ -165,6 +165,9 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
     CapErrorCodes.REPOSITORY_NOT_AVAILABLE
   );
 
+  // SALESDEMO: Prefix for settings keys whose values should be resolved as Spring bean names.
+  private static final String BEAN_KEY_PREFIX = "bean:";
+
   private @Nullable String skipVariable;
   private @Nullable String masterContentObjectsVariable;
   private @Nullable String remainingAutomaticRetriesVariable;
@@ -577,22 +580,43 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
 
   @VisibleForTesting
   GCExchangeFacade openSession(Settings settings) {
-    // return defaultFactory().openSession(settings);
-    // SALESDEMO: Customize settings by adding required Spring beans
-    Map<String, Object> gccSettings = getGccSettings(site);
-    Map<String, Object> customizedSettings = gccSettings.entrySet().stream()
-            .map(entry -> {
-              Object entryValue = entry.getValue();
-              if (entryValue instanceof String && entry.getKey().startsWith("bean:")) {
-                String beanName = (String) entryValue;
-                if (getSpringContext().containsBean(beanName)) {
-                  return Map.entry(entry.getKey().substring("bean:".length()), getSpringContext().getBean(beanName));
-                }
-              }
-              return entry;
-            })
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//    defaultFactory().openSession(settings);
+
+    // SALESDEMO: Customize settings by resolving "bean:"-prefixed keys to Spring beans.
+    // A setting entry with key "bean:<actualKey>" and value "<beanName>" will be resolved
+    // to key "<actualKey>" with the corresponding Spring bean as value. This allows keeping
+    // the flexibility of configuring settings in the content repository while also being
+    // able to inject Spring-managed objects (e.g. custom connectors) into the GCC session.
+    Settings customizedSettings = resolveSpringBeanSettings(settings);
     return defaultFactory().openSession(customizedSettings);
+  }
+
+  /**
+   * Returns a new {@link Settings} instance where all entries whose key starts with {@value #BEAN_KEY_PREFIX}
+   * are replaced by an entry whose key is the suffix after the prefix and whose value is the corresponding
+   * Spring bean looked up by the original entry's value (the bean name). Entries that cannot be resolved
+   * (e.g. unknown bean name or non-string value) are kept unchanged with their original key.
+   *
+   * @param settings the settings to process
+   * @return settings with bean references resolved
+   */
+  private Settings resolveSpringBeanSettings(Settings settings) {
+    Map<String, Object> resolvedProperties = settings.properties().entrySet().stream()
+      .map(entry -> {
+        String key = entry.getKey();
+        if (key.startsWith(BEAN_KEY_PREFIX) && entry.getValue() instanceof String beanName) {
+          String resolvedKey = key.substring(BEAN_KEY_PREFIX.length());
+          if (getSpringContext().containsBean(beanName)) {
+            LOG.debug("Resolving setting '{}' to Spring bean '{}'.", key, beanName);
+            return Map.entry(resolvedKey, getSpringContext().getBean(beanName));
+          } else {
+            LOG.warn("Setting '{}' references unknown Spring bean '{}'. Keeping original entry.", key, beanName);
+          }
+        }
+        return entry;
+      })
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return Settings.ofSanitized(resolvedProperties);
   }
 
   /**
