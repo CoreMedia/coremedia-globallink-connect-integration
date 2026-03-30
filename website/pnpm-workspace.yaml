@@ -43,7 +43,6 @@ overrides:
   'picomatch@>=2.0.0 <2.3.2': ^2.3.2
   # https://github.com/advisories/GHSA-w7fw-mjwx-w883 (patched 6.14.2)
   qs: ^6.14.2
-  # https://github.com/advisories/GHSA-5c6j-r48x-rmvq (patched 7.0.3)
-  serialize-javascript: ^7.0.3
+  'serialize-javascript@>=6.0.0 <7.0.5': ^7.0.5
   # https://github.com/advisories/GHSA-8fgc-7cc6-rx7x (patched 5.104.1)
   webpack: ^5.105.3
