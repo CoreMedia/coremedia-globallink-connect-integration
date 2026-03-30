@@ -34,6 +34,7 @@ overrides:
   'ajv@>=8.0.0 <8.18.0': ^8.18.0
   baseline-browser-mapping: ^2.9.19
   'brace-expansion@>=5.0.0 <5.0.5': ^5.0.5
+  'dompurify@>=3.0.0 <3.3.2': ^3.3.2
   express: ^4.22.1
   lodash: ^4.17.23
   lodash-es: ^4.17.23
