@@ -44,5 +44,6 @@ overrides:
   # https://github.com/advisories/GHSA-w7fw-mjwx-w883 (patched 6.14.2)
   qs: ^6.14.2
   'serialize-javascript@>=6.0.0 <7.0.5': ^7.0.5
+  'svgo@>=3.0.0 <3.3.3': ^3.3.3
   # https://github.com/advisories/GHSA-8fgc-7cc6-rx7x (patched 5.104.1)
   webpack: ^5.105.3
