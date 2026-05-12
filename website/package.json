@@ -32,12 +32,14 @@
     "serve": "docusaurus serve",
     "typecheck": "tsc",
     "update:latest": "pnpm update --interactive --latest --recursive",
-    "validate:overrides": "node ./scripts/validate-overrides.mjs",
+    "overrides": "node ./scripts/manage-overrides.mjs",
+    "overrides:fix": "node ./scripts/manage-overrides.mjs --fix",
     "write-heading-ids": "docusaurus write-heading-ids",
     "write-translations": "docusaurus write-translations"
   },
   "dependencies": {
     "@docusaurus/core": "catalog:",
+    "@docusaurus/faster": "catalog:",
     "@docusaurus/logger": "catalog:",
     "@docusaurus/plugin-content-docs": "catalog:",
     "@docusaurus/preset-classic": "catalog:",

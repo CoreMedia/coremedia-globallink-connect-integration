@@ -41,7 +41,7 @@ sidebar_position: 1
 
 # Third-Party Libraries
 
-<!-- Auto-Generated File via License Maven Plugin -->
+{/* Auto-Generated File via License Maven Plugin */}
 
 <#if dependencyMap?size == 0>
 The project has no dependencies.
