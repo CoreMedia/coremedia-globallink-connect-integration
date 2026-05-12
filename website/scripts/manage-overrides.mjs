@@ -1,25 +1,33 @@
 #!/usr/bin/env node
 
 /**
- * Dependency Override Validation Script (Node.js version)
- * This script checks if your pnpm overrides are still needed
+ * Dependency Override Management Script
  *
- * Advantages over shell script:
+ * Analyzes pnpm dependency overrides and determines which ones are still
+ * needed, which can be safely removed, and — with {@code --fix} — removes
+ * unnecessary overrides automatically with full verification.
+ *
+ * Features:
  * - Cross-platform (works on Windows, macOS, Linux)
  * - No external dependencies (jq, js-yaml, …)
- * - Better JSON parsing
- * - Easier to maintain for JavaScript/TypeScript developers
+ * - CI-friendly exit codes (exit 1 when removable overrides are detected)
+ * - Automatic fix mode with safety verification (audit + build)
  *
  * Override source resolution order:
  *   1. pnpm-workspace.yaml  (recommended, pnpm ≥ 9)
  *   2. package.json → pnpm.overrides  (legacy fallback)
  *
  * Usage:
- *   node ./scripts/validate-overrides.mjs           # concise output
- *   node ./scripts/validate-overrides.mjs --verbose  # include full dependency trees
+ *   node ./scripts/manage-overrides.mjs             # check mode (CI-friendly)
+ *   node ./scripts/manage-overrides.mjs --fix       # auto-remove + verify
+ *   node ./scripts/manage-overrides.mjs --verbose   # include full dependency trees
+ *
+ * Exit codes:
+ *   0 - no removable overrides found (or --fix completed successfully)
+ *   1 - removable overrides detected (check mode) or fix failed
  */
 
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 
@@ -36,6 +44,7 @@ const colors = {
 };
 
 const verbose = process.argv.includes('--verbose');
+const fix = process.argv.includes('--fix');
 
 /**
  * Execute a command and return output, or null if it fails
@@ -952,7 +961,7 @@ function checkOutdatedPackages(packages) {
 }
 
 /**
- * Print review checklist
+ * Print review checklist (check mode only)
  */
 function printReviewChecklist() {
   console.log('');
@@ -960,7 +969,12 @@ function printReviewChecklist() {
   console.log('Next Steps');
   console.log('='.repeat(60));
   console.log('');
-  console.log('For each "LIKELY REMOVABLE" override:');
+  console.log(
+    `Run ${colors.cyan}pnpm overrides:fix${colors.reset} to automatically ` +
+      `remove safe overrides with verification.`,
+  );
+  console.log('');
+  console.log('Or manually for each "LIKELY REMOVABLE" override:');
   console.log('  1. Remove the override from pnpm-workspace.yaml');
   console.log('  2. Run: pnpm install');
   console.log('  3. Run: pnpm audit   (verify no new vulnerabilities)');
@@ -979,14 +993,304 @@ function printReviewChecklist() {
   console.log('');
 }
 
+// ─── YAML manipulation ─────────────────────────────────────────────────────────
+
+/**
+ * Extract the override key from a YAML entry line.
+ *
+ * Supports both quoted keys ({@code 'ajv@>=6.0.0 <6.14.0': ^6.14.0})
+ * and unquoted keys ({@code express: ^4.22.1}).
+ *
+ * @param line - a single YAML line from the overrides section
+ * @returns the override key, or null if the line is not an entry
+ */
+function extractKeyFromYamlLine(line) {
+  // Quoted key: '...' or "..."
+  const quotedMatch = line.match(/^\s+(?:'([^']*)'|"([^"]*)")\s*:/);
+  if (quotedMatch) return quotedMatch[1] ?? quotedMatch[2];
+
+  // Unquoted key
+  const unquotedMatch = line.match(/^\s+([\w@/.-][^:]*?)\s*:/);
+  if (unquotedMatch) return unquotedMatch[1].trim();
+
+  return null;
+}
+
+/**
+ * Remove specific override entries from pnpm-workspace.yaml.
+ *
+ * This function handles:
+ * - Removing the override entry line itself
+ * - Removing comment lines immediately above the entry (e.g., CVE links)
+ * - Removing the entire `overrides:` section if it becomes empty
+ * - Preserving all other sections and formatting
+ *
+ * @param filePath - absolute path to pnpm-workspace.yaml
+ * @param keysToRemove - array of override keys to remove
+ * @returns object with removedCount and the original file content for rollback
+ */
+function removeOverridesFromYaml(filePath, keysToRemove) {
+  const originalContent = readFileSync(filePath, 'utf8');
+  const lines = originalContent.split('\n');
+  const result = [];
+  let inOverrides = false;
+  let overrideHeaderIndex = -1;
+  let removedCount = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Detect the `overrides:` top-level key
+    if (/^overrides\s*:/.test(line)) {
+      inOverrides = true;
+      overrideHeaderIndex = result.length;
+      result.push(line);
+      continue;
+    }
+
+    if (inOverrides) {
+      // Blank line — keep for now (cleaned up later if section becomes empty)
+      if (line.trim() === '') {
+        result.push(line);
+        continue;
+      }
+
+      // An un-indented non-empty line starts a new top-level section
+      if (/^\S/.test(line)) {
+        inOverrides = false;
+        result.push(line);
+        continue;
+      }
+
+      // Comment line — keep for now, may be removed with next entry
+      if (/^\s*#/.test(line)) {
+        result.push(line);
+        continue;
+      }
+
+      // Override entry — check if it should be removed
+      const key = extractKeyFromYamlLine(line);
+      if (key && keysToRemove.includes(key)) {
+        // Remove any comment lines immediately preceding this entry
+        while (
+          result.length > 0 &&
+          result.length > overrideHeaderIndex + 1 &&
+          /^\s*#/.test(result[result.length - 1])
+        ) {
+          result.pop();
+        }
+        removedCount++;
+        continue;
+      }
+
+      result.push(line);
+    } else {
+      result.push(line);
+    }
+  }
+
+  // Check if the overrides section is now empty (only header + blanks/comments)
+  if (overrideHeaderIndex >= 0) {
+    let hasEntries = false;
+    for (let i = overrideHeaderIndex + 1; i < result.length; i++) {
+      const line = result[i];
+      if (line.trim() === '') continue;
+      if (/^\S/.test(line)) break; // next top-level section
+      if (!/^\s*#/.test(line)) {
+        hasEntries = true;
+        break;
+      }
+    }
+
+    if (!hasEntries) {
+      // Find where the overrides section ends
+      let sectionEnd = overrideHeaderIndex + 1;
+      while (sectionEnd < result.length) {
+        const line = result[sectionEnd];
+        if (line.trim() !== '' && /^\S/.test(line)) break;
+        sectionEnd++;
+      }
+      // Remove the entire section including trailing blank line
+      result.splice(overrideHeaderIndex, sectionEnd - overrideHeaderIndex);
+    }
+  }
+
+  writeFileSync(filePath, result.join('\n'));
+  return { removedCount, originalContent };
+}
+
+/**
+ * Restore pnpm-workspace.yaml to its previous state.
+ *
+ * @param filePath - absolute path to pnpm-workspace.yaml
+ * @param originalContent - the content to restore
+ */
+function restoreYaml(filePath, originalContent) {
+  writeFileSync(filePath, originalContent);
+}
+
+// ─── Fix mode ──────────────────────────────────────────────────────────────────
+
+/**
+ * Run a shell command with live output, returning true on success.
+ *
+ * @param label - human-readable label for the step
+ * @param command - shell command to execute
+ * @returns true if the command succeeded, false otherwise
+ */
+function runStep(label, command) {
+  console.log(`\n${colors.cyan}▶ ${label}${colors.reset}`);
+  console.log(`  ${colors.dim}$ ${command}${colors.reset}`);
+  try {
+    execSync(command, { stdio: 'inherit' });
+    console.log(`  ${colors.green}✅ ${label} passed${colors.reset}`);
+    return true;
+  } catch {
+    console.log(`  ${colors.red}❌ ${label} failed${colors.reset}`);
+    return false;
+  }
+}
+
+/**
+ * Attempt to automatically remove overrides that analysis identified as
+ * safe to remove.  The process is:
+ *
+ *   1. Remove all fixable overrides from pnpm-workspace.yaml
+ *   2. Run `pnpm install` to update the lockfile
+ *   3. Run `pnpm audit` to verify no new vulnerabilities
+ *   4. Run `pnpm build` to verify the site still compiles
+ *   5. If any step fails → revert to original YAML
+ *
+ * @param analyses - the analysis results from the check phase
+ * @param workspaceYamlPath - path to pnpm-workspace.yaml
+ * @returns true if fix was successful, false otherwise
+ */
+function attemptFix(analyses, workspaceYamlPath) {
+  const fixable = analyses.filter(
+    (a) => a.verdict === Verdict.REMOVABLE || a.verdict === Verdict.NOT_IN_TREE,
+  );
+
+  if (fixable.length === 0) {
+    console.log(
+      `\n${colors.green}✅ No overrides to fix — all overrides are still needed.${colors.reset}`,
+    );
+    return true;
+  }
+
+  const keysToRemove = fixable.map((a) => a.overrideKey);
+
+  console.log('');
+  console.log('='.repeat(60));
+  console.log('Fix Mode: Removing Unnecessary Overrides');
+  console.log('='.repeat(60));
+  console.log('');
+  console.log(`Will remove ${keysToRemove.length} override(s):`);
+  keysToRemove.forEach((key) => {
+    const analysis = fixable.find((a) => a.overrideKey === key);
+    const label =
+      analysis.verdict === Verdict.NOT_IN_TREE
+        ? `${colors.red}NOT IN TREE${colors.reset}`
+        : `${colors.green}LIKELY REMOVABLE${colors.reset}`;
+    console.log(`  - ${key} (${label})`);
+  });
+
+  // Step 1: Remove overrides from YAML
+  console.log(
+    `\n${colors.cyan}▶ Removing overrides from ${workspaceYamlPath}${colors.reset}`,
+  );
+  const { removedCount, originalContent } = removeOverridesFromYaml(
+    workspaceYamlPath,
+    keysToRemove,
+  );
+  console.log(`  ${colors.green}✅ Removed ${removedCount} override(s)${colors.reset}`);
+
+  // Step 2: pnpm install
+  if (!runStep('pnpm install', 'pnpm install')) {
+    console.log(
+      `\n${colors.red}Reverting changes — pnpm install failed.${colors.reset}`,
+    );
+    restoreYaml(workspaceYamlPath, originalContent);
+    console.log(`${colors.yellow}pnpm-workspace.yaml restored to original state.${colors.reset}`);
+    return false;
+  }
+
+  // Step 3: pnpm audit
+  if (!runStep('pnpm audit', 'pnpm audit --audit-level=moderate')) {
+    console.log(
+      `\n${colors.red}Reverting changes — security audit found vulnerabilities.${colors.reset}`,
+    );
+    restoreYaml(workspaceYamlPath, originalContent);
+    // Re-install to restore original lockfile
+    console.log(`${colors.dim}Restoring lockfile...${colors.reset}`);
+    runStep('pnpm install (restore)', 'pnpm install');
+    console.log(`${colors.yellow}pnpm-workspace.yaml restored to original state.${colors.reset}`);
+    return false;
+  }
+
+  // Step 4: pnpm build
+  if (!runStep('pnpm build', 'pnpm run build')) {
+    console.log(
+      `\n${colors.red}Reverting changes — build failed after removing overrides.${colors.reset}`,
+    );
+    restoreYaml(workspaceYamlPath, originalContent);
+    // Re-install to restore original lockfile
+    console.log(`${colors.dim}Restoring lockfile...${colors.reset}`);
+    runStep('pnpm install (restore)', 'pnpm install');
+    console.log(`${colors.yellow}pnpm-workspace.yaml restored to original state.${colors.reset}`);
+    return false;
+  }
+
+  // All checks passed
+  console.log('');
+  console.log('='.repeat(60));
+  console.log(
+    `${colors.green}${colors.bold}Fix completed successfully!${colors.reset}`,
+  );
+  console.log('='.repeat(60));
+  console.log('');
+  console.log(`Removed ${removedCount} override(s) from pnpm-workspace.yaml:`);
+  keysToRemove.forEach((key) => console.log(`  ${colors.green}✓${colors.reset} ${key}`));
+  console.log('');
+  console.log('Verification passed:');
+  console.log('  ✅ pnpm install   — lockfile updated');
+  console.log('  ✅ pnpm audit     — no new vulnerabilities');
+  console.log('  ✅ pnpm build     — site compiles successfully');
+  console.log('');
+
+  const remaining = analyses.filter(
+    (a) => a.verdict !== Verdict.REMOVABLE && a.verdict !== Verdict.NOT_IN_TREE,
+  );
+  if (remaining.length > 0) {
+    const neededCount = remaining.filter((a) => a.verdict === Verdict.NEEDED).length;
+    const reviewCount = remaining.filter((a) => a.verdict === Verdict.REVIEW).length;
+    console.log(
+      `Remaining overrides: ${neededCount} still needed, ${reviewCount} require manual review.`,
+    );
+  }
+
+  console.log('');
+  console.log(
+    `${colors.dim}Don't forget to commit the updated pnpm-workspace.yaml ` +
+      `and pnpm-lock.yaml.${colors.reset}`,
+  );
+  console.log('');
+
+  return true;
+}
+
 /**
  * Main execution
  */
 function main() {
   console.log('='.repeat(60));
-  console.log('Dependency Override Validation Report');
+  console.log(
+    fix
+      ? 'Dependency Override Fix Report'
+      : 'Dependency Override Validation Report',
+  );
   console.log('='.repeat(60));
   console.log(`Date: ${new Date().toISOString().split('T')[0]}`);
+  console.log(`Mode: ${fix ? `${colors.yellow}fix${colors.reset}` : 'check'}`);
   console.log('');
 
   // Check pnpm is available
@@ -1020,7 +1324,7 @@ function main() {
 
   if (!overrides) {
     console.log(
-      `${colors.yellow}Warning: No overrides found in pnpm-workspace.yaml or package.json${colors.reset}`,
+      `${colors.green}✅ No overrides found — nothing to check.${colors.reset}`,
     );
     process.exit(0);
   }
@@ -1049,6 +1353,28 @@ function main() {
 
   printAnalysisSummary(analyses);
 
+  // Count fixable overrides for exit code
+  const fixableCount = analyses.filter(
+    (a) => a.verdict === Verdict.REMOVABLE || a.verdict === Verdict.NOT_IN_TREE,
+  ).length;
+
+  // ── Fix mode ─────────────────────────────────────────────────────────────
+  if (fix) {
+    if (overrideSource !== 'pnpm-workspace.yaml') {
+      console.error(
+        `${colors.red}Error: --fix only supports pnpm-workspace.yaml, ` +
+          `not ${overrideSource}${colors.reset}`,
+      );
+      process.exit(1);
+    }
+
+    const success = attemptFix(analyses, workspaceYamlPath);
+    process.exit(success ? 0 : 1);
+  }
+
+  // ── Check mode (default) ─────────────────────────────────────────────────
+  // Run additional checks only in check mode (fix mode already runs them)
+
   // 2. Dependency trees (verbose only)
   if (verbose) {
     printHeader('2. Dependency Tree Analysis (verbose)');
@@ -1063,8 +1389,19 @@ function main() {
   printHeader(verbose ? '4. Outdated Packages Check' : '3. Outdated Packages Check');
   checkOutdatedPackages(packages);
 
-  // 5. Print checklist
-  printReviewChecklist();
+  // 5. Print checklist (only when there are fixable items)
+  if (fixableCount > 0) {
+    printReviewChecklist();
+  }
+
+  // CI-friendly exit code: exit 1 if there are removable overrides
+  if (fixableCount > 0) {
+    console.log(
+      `${colors.yellow}${fixableCount} override(s) can be removed. ` +
+        `Run with --fix to auto-remove.${colors.reset}`,
+    );
+    process.exit(1);
+  }
 }
 
 // Run the script
