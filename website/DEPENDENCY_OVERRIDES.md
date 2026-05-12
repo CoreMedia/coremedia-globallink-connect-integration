@@ -2,6 +2,30 @@
 
 Overrides are applied (and documented) in `pnpm-workspace.yaml`.
 
+## Quick Reference
+
+| Command                  | Description                                         |
+|--------------------------|-----------------------------------------------------|
+| `pnpm overrides`         | Check which overrides are removable (CI-friendly)   |
+| `pnpm overrides:fix`     | Auto-remove unnecessary overrides with verification |
+| `pnpm fix-audit`         | Auto-add overrides for new vulnerabilities          |
+| `pnpm fix-audit:dry-run` | Report fixable vulnerabilities without changes      |
+
+## Automated Workflow
+
+The **fix-vulnerability-overrides** GitHub Action runs weekly (Monday 06:30
+UTC) and on manual dispatch. It:
+
+1. Runs `pnpm audit --json` to detect vulnerabilities
+2. Determines ranged overrides (`pkg@>=vulnerable <patched: ^patched`)
+3. Adds overrides to `pnpm-workspace.yaml`
+4. Verifies: `pnpm install` → `pnpm audit` → `pnpm build`
+5. Opens a PR if all checks pass
+
+Ranged overrides are self-documenting and automatically removable: once the
+parent package updates its dependency declaration past the vulnerable range,
+`pnpm overrides` will flag the override as "LIKELY REMOVABLE."
+
 ## Maintenance Process
 
 ### When to Review Overrides

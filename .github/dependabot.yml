@@ -22,7 +22,8 @@ updates:
   # Frontend dependencies managed by PNPM
   # IMPORTANT: When reviewing Dependabot PRs for npm dependencies (especially @docusaurus/core),
   # check if PNPM Overrides in website/pnpm-workspace.yaml are still needed.
-  # Run: cd website && pnpm run validate:overrides
+  # Run: cd website && pnpm overrides
+  # Auto-fix vulnerabilities: the fix-vulnerability-overrides.yml workflow runs weekly.
   # See: website/DEPENDENCY_OVERRIDES.md for review checklist
   - package-ecosystem: "npm"
     directory: "/website" # Location of pnpm-lock.yaml

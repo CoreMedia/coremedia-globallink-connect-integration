@@ -5,17 +5,19 @@ static website generator.
 
 ## Cheat Sheet
 
-| Command                 | Description                                         |
-|-------------------------|-----------------------------------------------------|
-| `pnpm build`            | Build website artifacts (to `build/`).              |
-| `pnpm clear`            | Clear Docusaurus cache.                             |
-| `pnpm deploy`           | Deploy to `gh-pages` branch.                        |
-| `pnpm docusaurus <cmd>` | Execute Docusaurus command.                         |
-| `pnpm install`          | _(required)_ Install dependency artifacts.          |
-| `pnpm serve`            | Serve website artifacts (from `build/`).            |
-| `pnpm start`            | Start local server (opens default browser)          |
-| `pnpm overrides`        | Check overrides (CI-friendly, exit 1 if removable)  |
-| `pnpm overrides:fix`    | Auto-remove unnecessary overrides with verification |
+| Command                  | Description                                         |
+|--------------------------|-----------------------------------------------------|
+| `pnpm build`             | Build website artifacts (to `build/`).              |
+| `pnpm clear`             | Clear Docusaurus cache.                             |
+| `pnpm deploy`            | Deploy to `gh-pages` branch.                        |
+| `pnpm docusaurus <cmd>`  | Execute Docusaurus command.                         |
+| `pnpm install`           | _(required)_ Install dependency artifacts.          |
+| `pnpm serve`             | Serve website artifacts (from `build/`).            |
+| `pnpm start`             | Start local server (opens default browser)          |
+| `pnpm overrides`         | Check overrides (CI-friendly, exit 1 if removable)  |
+| `pnpm overrides:fix`     | Auto-remove unnecessary overrides with verification |
+| `pnpm fix-audit`         | Auto-add overrides for new vulnerabilities          |
+| `pnpm fix-audit:dry-run` | Report fixable vulnerabilities without changes      |
 
 > 💡 **Dependency Overrides:** This project uses `pnpm.overrides` to fix
 > security vulnerabilities. Before updating major dependencies (especially
