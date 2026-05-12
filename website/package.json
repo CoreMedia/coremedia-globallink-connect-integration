@@ -34,6 +34,8 @@
     "update:latest": "pnpm update --interactive --latest --recursive",
     "overrides": "node ./scripts/manage-overrides.mjs",
     "overrides:fix": "node ./scripts/manage-overrides.mjs --fix",
+    "fix-audit": "node ./scripts/fix-audit.mjs --skip-smoke-test",
+    "fix-audit:dry-run": "node ./scripts/fix-audit.mjs --dry-run",
     "write-heading-ids": "docusaurus write-heading-ids",
     "write-translations": "docusaurus write-translations"
   },

@@ -27,274 +27,30 @@
  *   1 - removable overrides detected (check mode) or fix failed
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 
-// ANSI color codes
-const colors = {
-  reset: '\x1b[0m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  cyan: '\x1b[36m',
-  dim: '\x1b[2m',
-  bold: '\x1b[1m',
-};
+
+import {
+  colors,
+  execCommand,
+  runStep,
+  parseVersion,
+  compareVersions,
+  extractMinVersion,
+  satisfiesRange,
+  computeRangeUpper,
+  readWorkspaceYamlOverrides,
+  extractKeyFromYamlLine,
+  extractPackageName,
+  extractOverrideSelector,
+  removeOverridesFromYaml,
+  restoreYaml,
+} from './lib/yaml-overrides.mjs';
 
 const verbose = process.argv.includes('--verbose');
 const fix = process.argv.includes('--fix');
-
-/**
- * Execute a command and return output, or null if it fails
- *
- * @param command - shell command to execute
- * @param options - optional execSync options
- * @returns trimmed stdout or null on failure
- */
-function execCommand(command, options = {}) {
-  try {
-    return execSync(command, {
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      ...options,
-    }).trim();
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Read the `overrides` map from pnpm-workspace.yaml without an external YAML
- * library.  The overrides block is a flat key→value section, so a small
- * purpose-built parser is sufficient.
- *
- * Supported key forms (as produced by pnpm):
- *   overrides:
- *     'ajv@>=8.0.0 <8.18.0': ^8.18.0
- *     baseline-browser-mapping: ^2.9.19
- *
- * @param filePath - absolute path to pnpm-workspace.yaml
- * @returns the overrides map or null if none found
- */
-function readWorkspaceYamlOverrides(filePath) {
-  let content;
-  try {
-    content = readFileSync(filePath, 'utf8');
-  } catch {
-    return null;
-  }
-
-  const overrides = {};
-  let inOverrides = false;
-
-  for (const line of content.split('\n')) {
-    // Detect the `overrides:` top-level key
-    if (/^overrides\s*:/.test(line)) {
-      inOverrides = true;
-      continue;
-    }
-
-    if (inOverrides) {
-      // Skip blank lines
-      if (line.trim() === '') continue;
-
-      // An un-indented non-empty line starts a new top-level section
-      if (/^\S/.test(line)) {
-        inOverrides = false;
-        continue;
-      }
-
-      // Skip comment-only lines
-      if (/^\s*#/.test(line)) continue;
-
-      // Quoted key:  'key': value  or  "key": value
-      const quotedMatch = line.match(/^\s+(?:'([^']*)'|"([^"]*)")?\s*:\s*(.+)$/);
-      if (quotedMatch && (quotedMatch[1] !== undefined || quotedMatch[2] !== undefined)) {
-        const key = quotedMatch[1] ?? quotedMatch[2];
-        overrides[key] = quotedMatch[3].trim();
-        continue;
-      }
-
-      // Unquoted key: word-chars, @, /, -  (no version range special chars)
-      const unquotedMatch = line.match(/^\s+([\w@/.-][^:]*?)\s*:\s*(.+)$/);
-      if (unquotedMatch) {
-        overrides[unquotedMatch[1].trim()] = unquotedMatch[2].trim();
-      }
-    }
-  }
-
-  return Object.keys(overrides).length > 0 ? overrides : null;
-}
-
-/**
- * Extract package name from override key (e.g., "ajv@>=8.0.0 <8.18.0" -> "ajv")
- *
- * @param overrideKey - the override key, possibly containing a version selector
- * @returns the package name
- */
-function extractPackageName(overrideKey) {
-  // Handle scoped packages like "@babel/core"
-  if (overrideKey.startsWith('@')) {
-    const match = overrideKey.match(/^(@[^/]+\/[^@]+)/);
-    return match ? match[1] : overrideKey;
-  }
-  // Handle regular packages
-  return overrideKey.split('@')[0];
-}
-
-/**
- * Extract the version selector from a ranged override key
- * (e.g., "ajv@>=6.0.0 <6.14.0" -> ">=6.0.0 <6.14.0", "express" -> null)
- *
- * @param overrideKey - the override key
- * @returns the version selector string, or null for unranged overrides
- */
-function extractOverrideSelector(overrideKey) {
-  const pkgName = extractPackageName(overrideKey);
-  const rest = overrideKey.slice(pkgName.length);
-  if (rest.startsWith('@')) {
-    return rest.slice(1).trim() || null;
-  }
-  return null;
-}
-
-/**
- * Check whether a parent's declared dependency range overlaps with
- * a ranged override selector (e.g., ">=6.0.0 <6.14.0").
- *
- * A parent is relevant when its declared range could resolve to
- * a version within the override's selector bounds.
- *
- * @param declaredRange - the parent's declared version range
- * @param overrideSelector - the override's version selector, or null
- * @returns true if the parent's range is relevant to this override
- */
-function isParentRelevantToOverride(declaredRange, overrideSelector) {
-  if (!overrideSelector) return true; // unranged override → all parents relevant
-
-  const parentMin = extractMinVersion(declaredRange);
-  if (!parentMin) return true; // cannot determine → assume relevant
-
-  // Extract the bounds of the override selector (e.g., ">=6.0.0 <6.14.0")
-  const selectorMin = extractMinVersion(overrideSelector);
-  const upperMatch = overrideSelector.match(/<\s*(\d+\.\d+\.\d+)/);
-  const selectorUpper = upperMatch ? upperMatch[1] : null;
-
-  if (!selectorMin) return true; // can't parse → assume relevant
-
-  // For caret ranges like ^X.Y.Z, compute the upper bound
-  const parentUpper = computeRangeUpper(declaredRange);
-
-  // Ranges overlap if: parentMin < selectorUpper AND parentUpper > selectorMin
-  if (selectorUpper && parentUpper) {
-    return (
-      compareVersions(parentMin, selectorUpper) < 0 &&
-      compareVersions(parentUpper, selectorMin) > 0
-    );
-  }
-
-  // If we only have selectorMin, check if parentMin could be in range
-  if (selectorUpper) {
-    return compareVersions(parentMin, selectorUpper) < 0;
-  }
-
-  return true;
-}
-
-/**
- * Compute the exclusive upper bound of a common version range.
- *
- * @param range - a version range like "^6.12.5", "~6.12.5", "6.12.5"
- * @returns the exclusive upper bound version string, or null
- */
-function computeRangeUpper(range) {
-  const trimmed = range.trim();
-
-  // Exact version: "6.12.5" → upper is "6.12.6" (practically, next patch)
-  if (/^\d+\.\d+\.\d+$/.test(trimmed)) {
-    const v = parseVersion(trimmed);
-    return v ? `${v[0]}.${v[1]}.${v[2] + 1}` : null;
-  }
-
-  // Caret range: "^6.12.5" → upper is "7.0.0" (next major)
-  const caretMatch = trimmed.match(/^\^(\d+)\.(\d+)\.(\d+)$/);
-  if (caretMatch) {
-    const major = parseInt(caretMatch[1]);
-    if (major === 0) {
-      const minor = parseInt(caretMatch[2]);
-      if (minor === 0) return `0.0.${parseInt(caretMatch[3]) + 1}`;
-      return `0.${minor + 1}.0`;
-    }
-    return `${major + 1}.0.0`;
-  }
-
-  // Tilde range: "~6.12.5" → upper is "6.13.0" (next minor)
-  const tildeMatch = trimmed.match(/^~(\d+)\.(\d+)\.\d+$/);
-  if (tildeMatch) {
-    return `${parseInt(tildeMatch[1])}.${parseInt(tildeMatch[2]) + 1}.0`;
-  }
-
-  return null;
-}
-
-/**
- * Check whether a parent's declared range would naturally resolve to
- * a safe version (>= safeMinVersion) without the override.
- *
- * Three possible outcomes:
- * - 'always_safe': The parent's range minimum is already >= safe
- *   (all allowed versions are safe).
- * - 'includes_safe': The parent's range includes the safe version,
- *   so pnpm would resolve to it (or newer) naturally.
- * - 'unsafe': The parent's range does not include the safe version
- *   at all (e.g., the safe version is in a newer major).
- * - 'unknown': Cannot determine from the range.
- *
- * @param declaredRange - the parent's declared version range
- * @param safeMinVersion - the minimum safe version
- * @returns one of the outcome strings above
- */
-function classifyParentSafety(declaredRange, safeMinVersion) {
-  const parentMin = extractMinVersion(declaredRange);
-  if (!parentMin) return 'unknown';
-
-  // If parent's minimum is already >= safe, all versions in range are safe
-  if (compareVersions(parentMin, safeMinVersion) >= 0) {
-    return 'always_safe';
-  }
-
-  // Check if the safe version falls within the parent's range
-  const result = satisfiesRange(safeMinVersion, declaredRange);
-  if (result === true) {
-    return 'includes_safe';
-  }
-  if (result === false) {
-    return 'unsafe';
-  }
-
-  return 'unknown';
-}
-
-/**
- * Get unique package names from an overrides map
- *
- * @param overrides - the overrides map
- * @returns sorted array of unique package names
- */
-function getOverriddenPackages(overrides) {
-  if (!overrides || Object.keys(overrides).length === 0) {
-    return [];
-  }
-
-  const packageNames = Object.keys(overrides)
-    .map(extractPackageName)
-    .filter(Boolean);
-
-  // Remove duplicates and sort
-  return [...new Set(packageNames)].sort();
-}
 
 /**
  * Check if pnpm is available
@@ -321,113 +77,82 @@ function printHeader(title) {
   console.log('-'.repeat(title.length));
 }
 
-// ─── Version comparison utilities ──────────────────────────────────────────────
+// ─── Helper functions ──────────────────────────────────────────────────────────
 
 /**
- * Parse a version string into a numeric triple [major, minor, patch].
+ * Check whether a parent's declared dependency range overlaps with
+ * a ranged override selector.
  *
- * @param v - version string like "6.14.0"
- * @returns tuple [major, minor, patch] or null if unparseable
+ * @param declaredRange - the parent's declared version range
+ * @param overrideSelector - the override's version selector, or null
+ * @returns true if the parent's range is relevant to this override
  */
-function parseVersion(v) {
-  const match = v.match(/(\d+)\.(\d+)\.(\d+)/);
-  if (!match) return null;
-  return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+function isParentRelevantToOverride(declaredRange, overrideSelector) {
+  if (!overrideSelector) return true;
+
+  const parentMin = extractMinVersion(declaredRange);
+  if (!parentMin) return true;
+
+  const selectorMin = extractMinVersion(overrideSelector);
+  const upperMatch = overrideSelector.match(/<\s*(\d+\.\d+\.\d+)/);
+  const selectorUpper = upperMatch ? upperMatch[1] : null;
+
+  if (!selectorMin) return true;
+
+  const parentUpper = computeRangeUpper(declaredRange);
+
+  if (selectorUpper && parentUpper) {
+    return (
+      compareVersions(parentMin, selectorUpper) < 0 &&
+      compareVersions(parentUpper, selectorMin) > 0
+    );
+  }
+
+  if (selectorUpper) {
+    return compareVersions(parentMin, selectorUpper) < 0;
+  }
+
+  return true;
 }
 
 /**
- * Compare two version strings.
+ * Classify whether a parent's declared range is safe without an override.
  *
- * @param a - first version
- * @param b - second version
- * @returns -1 if a < b, 0 if equal, 1 if a > b
+ * @param declaredRange - the parent's declared version range
+ * @param safeMinVersion - the minimum safe version
+ * @returns 'always_safe' | 'includes_safe' | 'unsafe' | 'unknown'
  */
-function compareVersions(a, b) {
-  const pa = parseVersion(a);
-  const pb = parseVersion(b);
-  if (!pa || !pb) return 0;
-  for (let i = 0; i < 3; i++) {
-    if (pa[i] < pb[i]) return -1;
-    if (pa[i] > pb[i]) return 1;
-  }
-  return 0;
-}
+function classifyParentSafety(declaredRange, safeMinVersion) {
+  const parentMin = extractMinVersion(declaredRange);
+  if (!parentMin) return 'unknown';
 
-/**
- * Extract the minimum version from a range specifier.
- *
- * Examples:
- *   "^6.14.0"     → "6.14.0"
- *   "~6.14.0"     → "6.14.0"
- *   ">=6.14.0"    → "6.14.0"
- *   "6.14.0"      → "6.14.0"
- *   "^6.14.0 <7"  → "6.14.0"
- *
- * @param range - a version range specifier
- * @returns the minimum version string or null
- */
-function extractMinVersion(range) {
-  const match = range.match(/(\d+\.\d+\.\d+)/);
-  return match ? match[1] : null;
-}
-
-/**
- * Check whether a given version satisfies a dependency range specifier.
- *
- * This is a simplified implementation covering the most common patterns
- * used in package.json: caret (^), tilde (~), exact, and >=.  It does
- * NOT handle complex OR ranges, pre-release tags, or wildcard patterns
- * beyond these; for unrecognized patterns it returns 'unknown'.
- *
- * @param version - the concrete version to test (e.g., "6.14.0")
- * @param range - the range specifier (e.g., "^6.12.5")
- * @returns true if satisfied, false if not, 'unknown' if range is too complex
- */
-function satisfiesRange(version, range) {
-  const ver = parseVersion(version);
-  if (!ver) return 'unknown';
-
-  const trimmed = range.trim();
-
-  // Exact version: "6.12.5"
-  if (/^\d+\.\d+\.\d+$/.test(trimmed)) {
-    return compareVersions(version, trimmed) === 0;
+  if (compareVersions(parentMin, safeMinVersion) >= 0) {
+    return 'always_safe';
   }
 
-  // Caret range: "^6.12.5"
-  const caretMatch = trimmed.match(/^\^(\d+)\.(\d+)\.(\d+)$/);
-  if (caretMatch) {
-    const [, majorStr, minorStr, patchStr] = caretMatch;
-    const major = parseInt(majorStr);
-    const minor = parseInt(minorStr);
-    const patch = parseInt(patchStr);
-
-    // ^0.0.x → exact match on patch; ^0.y.z → same minor; ^X.y.z → same major
-    if (major === 0 && minor === 0) {
-      return ver[0] === 0 && ver[1] === 0 && ver[2] === patch;
-    }
-    if (major === 0) {
-      return ver[0] === 0 && ver[1] === minor && ver[2] >= patch;
-    }
-    return ver[0] === major && compareVersions(version, `${major}.${minor}.${patch}`) >= 0;
-  }
-
-  // Tilde range: "~6.12.5"
-  const tildeMatch = trimmed.match(/^~(\d+)\.(\d+)\.(\d+)$/);
-  if (tildeMatch) {
-    const major = parseInt(tildeMatch[1]);
-    const minor = parseInt(tildeMatch[2]);
-    const patch = parseInt(tildeMatch[3]);
-    return ver[0] === major && ver[1] === minor && ver[2] >= patch;
-  }
-
-  // >= range: ">=6.12.5"  (no upper bound)
-  const gteMatch = trimmed.match(/^>=\s*(\d+\.\d+\.\d+)$/);
-  if (gteMatch) {
-    return compareVersions(version, gteMatch[1]) >= 0;
-  }
+  const result = satisfiesRange(safeMinVersion, declaredRange);
+  if (result === true) return 'includes_safe';
+  if (result === false) return 'unsafe';
 
   return 'unknown';
+}
+
+/**
+ * Get unique package names from an overrides map.
+ *
+ * @param overrides - the overrides map
+ * @returns sorted array of unique package names
+ */
+function getOverriddenPackages(overrides) {
+  if (!overrides || Object.keys(overrides).length === 0) {
+    return [];
+  }
+
+  const packageNames = Object.keys(overrides)
+    .map(extractPackageName)
+    .filter(Boolean);
+
+  return [...new Set(packageNames)].sort();
 }
 
 // ─── Parent dependency analysis ────────────────────────────────────────────────
@@ -993,163 +718,8 @@ function printReviewChecklist() {
   console.log('');
 }
 
-// ─── YAML manipulation ─────────────────────────────────────────────────────────
-
-/**
- * Extract the override key from a YAML entry line.
- *
- * Supports both quoted keys ({@code 'ajv@>=6.0.0 <6.14.0': ^6.14.0})
- * and unquoted keys ({@code express: ^4.22.1}).
- *
- * @param line - a single YAML line from the overrides section
- * @returns the override key, or null if the line is not an entry
- */
-function extractKeyFromYamlLine(line) {
-  // Quoted key: '...' or "..."
-  const quotedMatch = line.match(/^\s+(?:'([^']*)'|"([^"]*)")\s*:/);
-  if (quotedMatch) return quotedMatch[1] ?? quotedMatch[2];
-
-  // Unquoted key
-  const unquotedMatch = line.match(/^\s+([\w@/.-][^:]*?)\s*:/);
-  if (unquotedMatch) return unquotedMatch[1].trim();
-
-  return null;
-}
-
-/**
- * Remove specific override entries from pnpm-workspace.yaml.
- *
- * This function handles:
- * - Removing the override entry line itself
- * - Removing comment lines immediately above the entry (e.g., CVE links)
- * - Removing the entire `overrides:` section if it becomes empty
- * - Preserving all other sections and formatting
- *
- * @param filePath - absolute path to pnpm-workspace.yaml
- * @param keysToRemove - array of override keys to remove
- * @returns object with removedCount and the original file content for rollback
- */
-function removeOverridesFromYaml(filePath, keysToRemove) {
-  const originalContent = readFileSync(filePath, 'utf8');
-  const lines = originalContent.split('\n');
-  const result = [];
-  let inOverrides = false;
-  let overrideHeaderIndex = -1;
-  let removedCount = 0;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Detect the `overrides:` top-level key
-    if (/^overrides\s*:/.test(line)) {
-      inOverrides = true;
-      overrideHeaderIndex = result.length;
-      result.push(line);
-      continue;
-    }
-
-    if (inOverrides) {
-      // Blank line — keep for now (cleaned up later if section becomes empty)
-      if (line.trim() === '') {
-        result.push(line);
-        continue;
-      }
-
-      // An un-indented non-empty line starts a new top-level section
-      if (/^\S/.test(line)) {
-        inOverrides = false;
-        result.push(line);
-        continue;
-      }
-
-      // Comment line — keep for now, may be removed with next entry
-      if (/^\s*#/.test(line)) {
-        result.push(line);
-        continue;
-      }
-
-      // Override entry — check if it should be removed
-      const key = extractKeyFromYamlLine(line);
-      if (key && keysToRemove.includes(key)) {
-        // Remove any comment lines immediately preceding this entry
-        while (
-          result.length > 0 &&
-          result.length > overrideHeaderIndex + 1 &&
-          /^\s*#/.test(result[result.length - 1])
-        ) {
-          result.pop();
-        }
-        removedCount++;
-        continue;
-      }
-
-      result.push(line);
-    } else {
-      result.push(line);
-    }
-  }
-
-  // Check if the overrides section is now empty (only header + blanks/comments)
-  if (overrideHeaderIndex >= 0) {
-    let hasEntries = false;
-    for (let i = overrideHeaderIndex + 1; i < result.length; i++) {
-      const line = result[i];
-      if (line.trim() === '') continue;
-      if (/^\S/.test(line)) break; // next top-level section
-      if (!/^\s*#/.test(line)) {
-        hasEntries = true;
-        break;
-      }
-    }
-
-    if (!hasEntries) {
-      // Find where the overrides section ends
-      let sectionEnd = overrideHeaderIndex + 1;
-      while (sectionEnd < result.length) {
-        const line = result[sectionEnd];
-        if (line.trim() !== '' && /^\S/.test(line)) break;
-        sectionEnd++;
-      }
-      // Remove the entire section including trailing blank line
-      result.splice(overrideHeaderIndex, sectionEnd - overrideHeaderIndex);
-    }
-  }
-
-  writeFileSync(filePath, result.join('\n'));
-  return { removedCount, originalContent };
-}
-
-/**
- * Restore pnpm-workspace.yaml to its previous state.
- *
- * @param filePath - absolute path to pnpm-workspace.yaml
- * @param originalContent - the content to restore
- */
-function restoreYaml(filePath, originalContent) {
-  writeFileSync(filePath, originalContent);
-}
-
 // ─── Fix mode ──────────────────────────────────────────────────────────────────
 
-/**
- * Run a shell command with live output, returning true on success.
- *
- * @param label - human-readable label for the step
- * @param command - shell command to execute
- * @returns true if the command succeeded, false otherwise
- */
-function runStep(label, command) {
-  console.log(`\n${colors.cyan}▶ ${label}${colors.reset}`);
-  console.log(`  ${colors.dim}$ ${command}${colors.reset}`);
-  try {
-    execSync(command, { stdio: 'inherit' });
-    console.log(`  ${colors.green}✅ ${label} passed${colors.reset}`);
-    return true;
-  } catch {
-    console.log(`  ${colors.red}❌ ${label} failed${colors.reset}`);
-    return false;
-  }
-}
 
 /**
  * Attempt to automatically remove overrides that analysis identified as
