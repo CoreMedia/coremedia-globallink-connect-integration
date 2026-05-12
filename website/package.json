@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@docusaurus/core": "catalog:",
+    "@docusaurus/faster": "catalog:",
     "@docusaurus/logger": "catalog:",
     "@docusaurus/plugin-content-docs": "catalog:",
     "@docusaurus/preset-classic": "catalog:",

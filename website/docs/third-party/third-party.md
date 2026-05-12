@@ -8,7 +8,7 @@ sidebar_position: 1
 
 # Third-Party Libraries
 
-<!-- Auto-Generated File via License Maven Plugin -->
+{/* Auto-Generated File via License Maven Plugin */}
 
 This project uses the following 26 third-party libraries:
 
