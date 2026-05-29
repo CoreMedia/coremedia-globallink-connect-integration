@@ -351,8 +351,8 @@ async function main() {
 
   // ── Verification ────────────────────────────────────────────────────────────
 
-  // Step 1: pnpm install
-  if (!runStep('pnpm install', 'pnpm install')) {
+  // Step 1: pnpm install (--no-frozen-lockfile because overrides changed)
+  if (!runStep('pnpm install', 'pnpm install --no-frozen-lockfile')) {
     console.log(`\n${colors.red}Reverting — pnpm install failed.${colors.reset}`);
     restoreYaml(workspaceYamlPath, originalContent);
     process.exit(1);
@@ -374,7 +374,7 @@ async function main() {
   if (!runStep('pnpm build', 'pnpm run build')) {
     console.log(`\n${colors.red}Reverting — build failed after adding overrides.${colors.reset}`);
     restoreYaml(workspaceYamlPath, originalContent);
-    runStep('pnpm install (restore)', 'pnpm install');
+    runStep('pnpm install (restore)', 'pnpm install --no-frozen-lockfile');
     process.exit(1);
   }
 
@@ -384,7 +384,7 @@ async function main() {
     if (!passed) {
       console.log(`\n${colors.red}Reverting — smoke test failed.${colors.reset}`);
       restoreYaml(workspaceYamlPath, originalContent);
-      runStep('pnpm install (restore)', 'pnpm install');
+      runStep('pnpm install (restore)', 'pnpm install --no-frozen-lockfile');
       process.exit(1);
     }
   } else {
