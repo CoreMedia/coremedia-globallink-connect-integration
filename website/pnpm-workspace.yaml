@@ -37,3 +37,12 @@ overrides:
   'serialize-javascript@>=6.0.0 <7.0.5': ^7.0.5
   # https://github.com/advisories/GHSA-8fgc-7cc6-rx7x (patched 5.104.1)
   webpack: ^5.105.3
+
+  # https://github.com/advisories/GHSA-79cf-xcqc-c78w
+  'webpack-dev-server@>=0.0.0 <5.2.4': ^5.2.4
+  # https://github.com/advisories/GHSA-58qx-3vcg-4xpx
+  'ws@>=8.0.0 <8.20.1': ^8.20.1
+  # https://github.com/advisories/GHSA-w5hq-g745-h8pq
+  'uuid@>=0.0.0 <11.1.1': ^11.1.1
+  # https://github.com/advisories/GHSA-q8mj-m7cp-5q26
+  'qs@>=6.11.1 <6.15.2': ^6.15.2

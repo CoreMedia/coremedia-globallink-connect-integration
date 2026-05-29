@@ -1,0 +1,31 @@
+============================================================
+Vulnerability Override Fix
+============================================================
+Date: 2026-05-29
+Mode: dry-run (report only)
+
+Using pnpm: 10.24.0
+Existing overrides: 5
+
+[36m▶ Running pnpm audit...[0m
+  Found 4 vulnerability/vulnerabilities
+
+============================================================
+Overrides to add: 4
+============================================================
+
+  [33m[moderate][0m [36mwebpack-dev-server@>=0.0.0 <5.2.4[0m → ^5.2.4
+    [2mwebpack-dev-server vulnerable to cross-origin source code exposure on non-HTTPS origins[0m
+    [2mhttps://github.com/advisories/GHSA-79cf-xcqc-c78w[0m
+  [33m[moderate][0m [36mws@>=8.0.0 <8.20.1[0m → ^8.20.1
+    [2mws: Uninitialized memory disclosure[0m
+    [2mhttps://github.com/advisories/GHSA-58qx-3vcg-4xpx[0m
+  [33m[moderate][0m [36muuid@>=0.0.0 <11.1.1[0m → ^11.1.1
+    [2muuid: Missing buffer bounds check in v3/v5/v6 when buf is provided[0m
+    [2mhttps://github.com/advisories/GHSA-w5hq-g745-h8pq[0m
+  [33m[moderate][0m [36mqs@>=6.11.1 <6.15.2[0m → ^6.15.2
+    [2mqs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set[0m
+    [2mhttps://github.com/advisories/GHSA-q8mj-m7cp-5q26[0m
+
+[33mDry-run mode — no changes made.[0m
+Run without --dry-run to apply these overrides.
