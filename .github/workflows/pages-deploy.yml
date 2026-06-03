@@ -41,7 +41,7 @@ jobs:
       build-ref: ${{ steps.check.outputs.build-ref }}
     steps:
       - id: checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
       - id: check
@@ -138,7 +138,7 @@ jobs:
       contents: read
     steps:
       - id: checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
           # Always build from the resolved build-ref (e.g., main after merged maintenance PR)
