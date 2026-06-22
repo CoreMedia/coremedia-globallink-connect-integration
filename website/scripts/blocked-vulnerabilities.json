@@ -1,0 +1,12 @@
+{
+  "blockedDependencies": [
+    {
+      "name": "js-yaml",
+      "blockedRange": ">=3.0.0 <4.0.0",
+      "ignoreGhsas": [
+        "GHSA-h67p-54hq-rp68"
+      ],
+      "rationale": "Update to versions above 3.x break the build."
+    }
+  ]
+}

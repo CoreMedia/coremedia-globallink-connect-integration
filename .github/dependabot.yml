@@ -27,6 +27,10 @@ updates:
   # See: website/DEPENDENCY_OVERRIDES.md for review checklist
   - package-ecosystem: "npm"
     directory: "/website" # Location of pnpm-lock.yaml
+    ignore:
+      # Blocked: js-yaml major version bumps break build (see website/scripts/blocked-vulnerabilities.json).
+      - dependency-name: "js-yaml"
+        versions: [ ">=4.0.0" ]
     commit-message:
       prefix: 'build(pnpm):'
     schedule:
