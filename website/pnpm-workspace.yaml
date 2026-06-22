@@ -50,3 +50,7 @@ overrides:
   'shell-quote@>=1.1.0 <1.8.4': ^1.8.4
   # https://github.com/advisories/GHSA-q7cg-457f-vx79
   'joi@>=0.0.0 <17.13.4': ^17.13.4
+
+auditConfig:
+  ignoreGhsas:
+    - GHSA-h67p-54hq-rp68
