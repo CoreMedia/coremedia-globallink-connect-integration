@@ -51,6 +51,16 @@ overrides:
   # https://github.com/advisories/GHSA-q7cg-457f-vx79
   'joi@>=0.0.0 <17.13.4': ^17.13.4
 
+  # https://github.com/advisories/GHSA-v6wh-96g9-6wx3
+  'launch-editor@>=0.0.0 <2.14.1': ^2.14.1
+  # https://github.com/advisories/GHSA-4x5r-pxfx-6jf8
+  '@babel/core@>=0.0.0 <7.29.6': ^7.29.6
+  # https://github.com/advisories/GHSA-cmwh-pvxp-8882
+  'dompurify@>=0.0.0 <3.4.11': ^3.4.11
+  # https://github.com/advisories/GHSA-mx8g-39q3-5c79
+  'webpack-dev-server@>=0.0.0 <5.2.5': ^5.2.5
+  # https://github.com/advisories/GHSA-64mm-vxmg-q3vj
+  'http-proxy-middleware@>=0.16.0 <3.0.6': ^3.0.6
 auditConfig:
   ignoreGhsas:
     - GHSA-h67p-54hq-rp68
