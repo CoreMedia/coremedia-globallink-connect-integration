@@ -73,7 +73,7 @@ function findInstalledVersions(lockContent, dependencyName) {
 }
 
 function parseBound(range, operator) {
-  const escapedOperator = operator.replace(/[<>=]/g, '\\$&')
+  const escapedOperator = escapeRegex(operator)
   const regex = new RegExp(`${escapedOperator}\\s*(\\d+\\.\\d+\\.\\d+)`)
   return range.match(regex)?.[1] || null
 }
