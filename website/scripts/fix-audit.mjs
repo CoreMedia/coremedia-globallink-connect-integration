@@ -32,6 +32,7 @@ import {
   extractPackageName,
   extractMinVersion,
   compareVersions,
+  parseVersion,
 } from './lib/yaml-overrides.mjs';
 
 import { runSmokeTests } from './lib/smoke-test.mjs';
@@ -185,6 +186,12 @@ function determineOverride(vuln) {
 /**
  * Filter out vulnerabilities that are already covered by existing overrides.
  *
+ * An override only covers a vulnerability if both the override value and the
+ * required patched version share the same major version line.  For example,
+ * an override that pins `ws` to `^8.20.1` does NOT cover a `ws@7.x`
+ * vulnerability that requires `>=7.5.11` — even though 8.20.1 > 7.5.11 as
+ * raw numbers.
+ *
  * @param {Array} vulnerabilities - extracted vulnerabilities
  * @param {Record<string, string> | null} existingOverrides - current overrides
  * @returns {Array} vulnerabilities that still need fixing
@@ -196,13 +203,23 @@ function filterAlreadyCovered(vulnerabilities, existingOverrides) {
     const patchedMin = extractMinVersion(vuln.patchedVersion);
     if (!patchedMin) return true; // can't determine, keep it
 
-    // Check if any existing override covers this package with a sufficient version
+    const patchedMajor = parseVersion(patchedMin)?.[0];
+
+    // Check if any existing override covers this package with a sufficient
+    // version in the same major version lane.
     for (const [key, value] of Object.entries(existingOverrides)) {
       const overridePkg = extractPackageName(key);
       if (overridePkg !== vuln.name) continue;
 
       const overrideMin = extractMinVersion(value);
-      if (overrideMin && compareVersions(overrideMin, patchedMin) >= 0) {
+      if (!overrideMin) continue;
+
+      // Only consider an override as covering this vulnerability if it targets
+      // the same major version.  An 8.x override cannot cover a 7.x advisory.
+      const overrideMajor = parseVersion(overrideMin)?.[0];
+      if (overrideMajor !== patchedMajor) continue;
+
+      if (compareVersions(overrideMin, patchedMin) >= 0) {
         // Existing override already forces a version >= patched
         return false;
       }
@@ -213,30 +230,41 @@ function filterAlreadyCovered(vulnerabilities, existingOverrides) {
 }
 
 /**
- * Deduplicate vulnerabilities by package name, keeping the one with
- * the highest patched version.
+ * Deduplicate vulnerabilities by (package name, major version), keeping the
+ * entry with the highest patched version within each major-version lane.
+ *
+ * The same package can have concurrent advisories across multiple major
+ * versions (e.g. `ws@7.x` and `ws@8.x`).  Deduplicating by name alone would
+ * silently drop all but the highest-versioned entry and leave the other major
+ * versions unfixed.
  *
  * @param {Array} vulnerabilities
  * @returns {Array} deduplicated list
  */
 function deduplicateByPackage(vulnerabilities) {
-  const byName = new Map();
+  // Key: "name@major" — separate major-version lanes for the same package
+  // are treated as independent entries.
+  const byKey = new Map();
 
   for (const vuln of vulnerabilities) {
-    const existing = byName.get(vuln.name);
+    const patchedMin = extractMinVersion(vuln.patchedVersion);
+    const major = patchedMin ? (parseVersion(patchedMin)?.[0] ?? 0) : 0;
+    const key = `${vuln.name}@${major}`;
+
+    const existing = byKey.get(key);
     if (!existing) {
-      byName.set(vuln.name, vuln);
+      byKey.set(key, vuln);
       continue;
     }
 
     const existingMin = extractMinVersion(existing.patchedVersion);
     const currentMin = extractMinVersion(vuln.patchedVersion);
     if (existingMin && currentMin && compareVersions(currentMin, existingMin) > 0) {
-      byName.set(vuln.name, vuln);
+      byKey.set(key, vuln);
     }
   }
 
-  return [...byName.values()];
+  return [...byKey.values()];
 }
 
 // ─── Main execution ────────────────────────────────────────────────────────────
