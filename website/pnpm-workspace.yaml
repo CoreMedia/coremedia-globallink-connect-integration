@@ -61,6 +61,8 @@ overrides:
   'webpack-dev-server@>=0.0.0 <5.2.5': ^5.2.5
   # https://github.com/advisories/GHSA-64mm-vxmg-q3vj
   'http-proxy-middleware@>=0.16.0 <3.0.6': ^3.0.6
+  # https://github.com/advisories/GHSA-96hv-2xvq-fx4p
+  'ws@>=7.0.0 <7.5.11': ^7.5.11
 auditConfig:
   ignoreGhsas:
     - GHSA-h67p-54hq-rp68
