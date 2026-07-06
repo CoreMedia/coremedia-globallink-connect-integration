@@ -248,8 +248,8 @@ function deduplicateByPackage(vulnerabilities) {
 
   for (const vuln of vulnerabilities) {
     const patchedMin = extractMinVersion(vuln.patchedVersion);
-    const major = patchedMin ? (parseVersion(patchedMin)?.[0] ?? 0) : 0;
-    const key = `${vuln.name}@${major}`;
+    const major = patchedMin ? parseVersion(patchedMin)?.[0] : null;
+    const key = `${vuln.name}@${major ?? 'unknown'}`;
 
     const existing = byKey.get(key);
     if (!existing) {
