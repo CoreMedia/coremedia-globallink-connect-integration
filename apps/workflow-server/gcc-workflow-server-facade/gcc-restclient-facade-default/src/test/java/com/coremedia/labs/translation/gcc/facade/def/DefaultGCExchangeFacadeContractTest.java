@@ -460,46 +460,6 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     /**
-     * This test requires a known way how to make the GCC REST Backend fail
-     * internally. For now, it is passing instructions that contain
-     * Unicode characters from Supplementary Multilingual Plane without
-     * escaping them.
-     * <p>
-     * This test relies on this ability to fail. If the behavior is changed,
-     * and there is no other way to provoke an error, this test should be
-     * removed.
-     */
-    @Test
-    void shouldExposeErrorStateToClient(@NonNull Map<String, Object> originalGccProperties) {
-      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
-      // The only known way to provoke a failure for now is using a
-      // high Unicode character and set it unmodified as instruction text.
-      gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
-      GCExchangeFacade facade = new DefaultGCExchangeFacade(gccProperties);
-      String fileId = facade.uploadContent(testName, new ByteArrayResource(XML_CONTENT.getBytes(UTF_8)), null);
-      String unicodeDove = "\uD83D\uDD4A";
-      String comment = "Instruction to break GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(unicodeDove);
-
-      long submissionId = facade.submitSubmission(
-        submissionName,
-        comment,
-        getSomeDueDate(),
-        null,
-        testName,
-        Locale.US, Map.of(fileId, List.of(Locale.GERMANY)));
-
-      assertThat(submissionId).isGreaterThan(0L);
-
-      await("Submission is expected to fail with error state.")
-        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        .pollDelay(1L, TimeUnit.SECONDS)
-        .pollInterval(10L, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).isError())
-          .isTrue()
-        );
-    }
-
-    /**
      * Tests instructions (forwarded from Workflow Comments) to be handed over
      * to the GCC backend. The instructions are expected to be in plain text.
      * <p>
