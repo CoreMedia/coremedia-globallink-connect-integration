@@ -62,14 +62,10 @@ globalLink:
   submissionInstruction:
     # [...]
     # characterType (type: String)
-    # Adjust to "unicode" to provoke errors in the GCC backend, as it does
-    # not support SMP characters.
     characterType: "unicode"
   submissionName:
     # [...]
     # characterType (type: String)
-    # Adjust to "unicode" to provoke errors in the GCC backend, as it does
-    # not support SMP characters.
     characterType: "unicode"
   # Section: Mock Settings
   # Referenced below, like to provoke errors are certain states.
@@ -598,20 +594,10 @@ key is invalid, the workflow should be able to recover from that scenario.
 ## Scenario: GCC Backend Error Handling (Submission Error State)
 
 This test is about submissions within the GCC backend, which are in an error
-state. This has been observed, for example, when trying to send a submission
-with instructions containing characters from the Supplementary Multilingual
-Plane (SMP).
-
-**Alternative Scenario:**
-The given manual test steps "mock" this state, as we cannot ensure that an
-error persists over time. If you want to test the real-life behavior, you
-may choose using the "default" rather than the "mock" type and instead of
-using `mock.error`, you may use the `submissionInstruction.characterType`
-setting. Set it to `unicode` and add some SMP characters to the instructions
-(thus, workflow notes), like for example, the dove emoji: 🕊.
-
-**Advantage**: The advantage of the real-world scenario is, that you may also
-test, that a submission in an error state may still be canceled.
+state. This has been observed in the past, for example, when trying to send a
+submission with instructions containing characters from the Supplementary
+Multilingual Plane (SMP). This is fixed meanwhile, so that you can only test
+this using the mock facade.
 
 * **Connector Type**: `mock`
 * **Key Type**: _irrelevant_
