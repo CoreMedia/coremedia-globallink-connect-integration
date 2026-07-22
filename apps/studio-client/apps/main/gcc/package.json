@@ -8,10 +8,10 @@
     "@coremedia-labs/studio-client.ext.gcc-studio-client": "1.0.0-SNAPSHOT"
   },
   "devDependencies": {
-    "@jangaroo/build": "^3.4.0",
-    "@jangaroo/core": "^3.4.0",
-    "@jangaroo/publish": "^3.4.0",
-    "rimraf": "^5.0.7"
+    "@jangaroo/build": "^3.4.5",
+    "@jangaroo/core": "^3.4.5",
+    "@jangaroo/publish": "^3.4.5",
+    "rimraf": "^6.1.3"
   },
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",
