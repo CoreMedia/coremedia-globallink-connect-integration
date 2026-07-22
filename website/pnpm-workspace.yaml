@@ -63,6 +63,26 @@ overrides:
   'http-proxy-middleware@>=0.16.0 <3.0.6': ^3.0.6
   # https://github.com/advisories/GHSA-96hv-2xvq-fx4p
   'ws@>=7.0.0 <7.5.11': ^7.5.11
+  # https://github.com/advisories/GHSA-mp7j-qc5w-4988
+  'websocket-driver@>=0.0.0 <0.7.5': ^0.7.5
+  # https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+  'brace-expansion@>=3.0.0 <5.0.7': ^5.0.7
+  # https://github.com/advisories/GHSA-52cp-r559-cp3m
+  'js-yaml@>=4.0.0 <4.3.0': ^4.3.0
+  # https://github.com/advisories/GHSA-52cp-r559-cp3m
+  'js-yaml@>=3.0.0 <3.15.0': ^3.15.0
+  # https://github.com/advisories/GHSA-395f-4hp3-45gv
+  'shell-quote@>=0.0.0 <1.9.0': ^1.9.0
+  # https://github.com/advisories/GHSA-f5vj-f2hx-8m93
+  'webpack-dev-server@>=0.0.0 <5.2.6': ^5.2.6
+  # https://github.com/advisories/GHSA-v422-hmwv-36x6
+  'body-parser@>=0.0.0 <1.20.6': ^1.20.6
+  # https://github.com/advisories/GHSA-2p49-hgcm-8545
+  'svgo@>=3.0.0 <3.3.4': ^3.3.4
+  # https://github.com/advisories/GHSA-c2j3-45gr-mqc4
+  'dompurify@>=0.0.0 <3.4.12': ^3.4.12
+  # https://github.com/advisories/GHSA-v2hh-gcrm-f6hx
+  'fast-uri@>=3.0.0 <3.1.4': ^3.1.4
 auditConfig:
   ignoreGhsas:
     - GHSA-h67p-54hq-rp68
