@@ -83,6 +83,10 @@ overrides:
   'dompurify@>=0.0.0 <3.4.12': ^3.4.12
   # https://github.com/advisories/GHSA-v2hh-gcrm-f6hx
   'fast-uri@>=3.0.0 <3.1.4': ^3.1.4
+  # https://github.com/advisories/GHSA-r28c-9q8g-f849
+  'postcss@>=0.0.0 <8.5.18': ^8.5.18
+  # https://github.com/advisories/GHSA-mh99-v99m-4gvg
+  'brace-expansion@>=0.0.0 <5.0.8': ^5.0.8
 auditConfig:
   ignoreGhsas:
     - GHSA-h67p-54hq-rp68
