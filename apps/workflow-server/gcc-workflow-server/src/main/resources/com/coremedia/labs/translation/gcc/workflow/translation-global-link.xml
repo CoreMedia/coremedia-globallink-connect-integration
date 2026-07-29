@@ -321,13 +321,14 @@
       </ExitAction>
     </UserTask>
 
-    <If name="SelectTaskAfterDownloadTranslationError">
-      <Condition>
+    <Switch name="SelectTaskAfterDownloadTranslationError" defaultSuccessor="DownloadTranslation">
+      <Case successor="CancelTranslation">
         <Equal><Get variable="translationAction"/><String value="rollbackTranslation"/></Equal>
-      </Condition>
-      <Then successor="CancelTranslation"/>
-      <Else successor="DownloadTranslation"/>
-    </If>
+      </Case>
+      <Case successor="Complete">
+        <Equal><Get variable="translationAction"/><String value="finishTranslation_afterDownloadFailed"/></Equal>
+      </Case>
+    </Switch>
 
     <UserTask name="ReviewDeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
       <!--
