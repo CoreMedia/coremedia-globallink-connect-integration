@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 
 /**
- * Facade for {@link org.gs4tr.gcc.restclient.GCExchange}.
+ * Facade for {@link GCExchange}.
  * <p>
  * Get instances of facades via a {@link GCExchangeFacadeSessionProvider}.
  *
