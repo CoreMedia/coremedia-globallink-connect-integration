@@ -74,12 +74,11 @@ public enum LoremIpsum {
   public static String loremIpsum(int length) {
     if (length <= LOREM_IPSUM.length()) {
       return LOREM_IPSUM.substring(0, length);
-    } else {
-      StringBuilder sb = new StringBuilder(length);
-      while (sb.length() < length) {
-        sb.append(LOREM_IPSUM);
-      }
-      return sb.substring(0, length);
     }
+    StringBuilder sb = new StringBuilder(length);
+    while (sb.length() < length) {
+      sb.append(LOREM_IPSUM);
+    }
+    return sb.substring(0, length);
   }
 }
