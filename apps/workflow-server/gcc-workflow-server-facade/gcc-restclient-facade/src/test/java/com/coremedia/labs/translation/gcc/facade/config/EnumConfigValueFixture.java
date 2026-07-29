@@ -47,8 +47,8 @@ enum EnumConfigValueFixture {
   public abstract String toConfigValue(Enum<?> transform);
 
   public static Stream<? extends Arguments> provideArguments(Enum<?>[] enumType) {
-    return java.util.stream.Stream.of(enumType)
-      .flatMap(en -> java.util.stream.Stream.of(values())
+    return Stream.of(enumType)
+      .flatMap(en -> Stream.of(values())
         .map(testCaseFixture -> Arguments.of(en, testCaseFixture.toConfigValue(en))));
   }
 }
