@@ -8,7 +8,7 @@ import {
   StartWorkflowFormExtension,
   TextField,
   TranslationWorkflowPlugin,
-  WorkflowIssuesLocalization,
+  WorkflowIssuesLocalizationConfig,
   WorkflowLocalizationConfig,
   workflowLocalizationRegistry,
   workflowPlugins,
@@ -463,7 +463,7 @@ const XLIFF_IMPORT_RESULT_CODES = [
   "INVALID_XLIFF",
 ] as const;
 
-const getGccIssuesLocalization = async (): Promise<WorkflowIssuesLocalization> => {
+const getGccIssuesLocalization = async (): Promise<WorkflowIssuesLocalizationConfig> => {
   const localizer = await getLocalizer(GccWorkflowLocalization_properties);
 
   const xliffImportResultLocalizations = Object.fromEntries(
