@@ -9,6 +9,7 @@
       <Grant group="translation-manager-role"
              rights="create, read, write, start, suspend, resume, abort"/>
       <Grant group="administratoren" rights="create, read, write,  start, suspend, resume, abort"/>
+      <Grant variable="targetSiteManagerGroup" rights="read, write"/>
     </Rights>
 
     <Variable name="subject" type="String"/>
@@ -18,6 +19,7 @@
     <AggregationVariable name="targetSiteId" type="String"/>
     <!-- list of locales that are marked as completed. -->
     <AggregationVariable name="completedLocales" type="String"/>
+    <AggregationVariable name="targetSiteManagerGroup" type="Group"/>
     <Variable name="performer" type="User"/>
     <Variable name="robotUser" type="User"/>
 
@@ -110,6 +112,7 @@
       <Writes variable="masterContentObjects"/>
       <Writes variable="derivedContents"/>
       <Writes variable="createdContents"/>
+      <Writes variable="targetSiteManagerGroup"/>
       <Writes variable="targetSiteId"/>
       <Writes variable="globalLinkSubmissionId"/>
       <Writes variable="globalLinkSubmissionStatus"/>
@@ -153,8 +156,14 @@
         <IsEmpty variable="derivedContents"/>
       </Condition>
       <Then successor="Finish"/>
-      <Else successor="AutoMerge"/>
+      <Else successor="GetTargetSiteManagerGroup"/>
     </If>
+
+    <AutomatedTask name="GetTargetSiteManagerGroup" successor="AutoMerge">
+      <Action class="com.coremedia.translate.workflow.GetMultiSiteManagerGroupAction"
+              siteVariable="targetSiteId"
+              siteManagerGroupVariable="targetSiteManagerGroup"/>
+    </AutomatedTask>
 
     <AutomatedTask name="AutoMerge" successor="SendTranslationRequest">
       <Action class="com.coremedia.translate.workflow.CreateTranslationTreeDataAction"
@@ -211,6 +220,8 @@
 
     <UserTask name="HandleSendTranslationRequestError" successor="SelectTaskAfterSendTranslationRequestError">
       <Rights>
+        <Grant variable="targetSiteManagerGroup"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
@@ -289,6 +300,8 @@
         <Boolean value="false"/>
       </EntryAction>
       <Rights>
+        <Grant variable="targetSiteManagerGroup"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
@@ -321,6 +334,8 @@
         Should be kept aligned with ReviewRedeliveredTranslation.
       -->
       <Rights>
+        <Grant variable="targetSiteManagerGroup"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
@@ -353,6 +368,8 @@
         directly changed from `Completed` to `Redelivered`.
       -->
       <Rights>
+        <Grant variable="targetSiteManagerGroup"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
@@ -382,6 +399,8 @@
 
     <UserTask name="ReviewCancelledTranslation" successor="RollbackContent">
       <Rights>
+        <Grant variable="targetSiteManagerGroup"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
@@ -476,6 +495,8 @@
 
     <UserTask name="HandleCancelTranslationError" successor="SelectTaskAfterCancelTranslationError">
       <Rights>
+        <Grant variable="targetSiteManagerGroup"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
