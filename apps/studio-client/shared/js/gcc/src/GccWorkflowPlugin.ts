@@ -223,6 +223,10 @@ const getGccWorkflowPlugin = async (): Promise<TranslationWorkflowPlugin> => {
             name: "continueRetry",
             allowAlways: true,
           },
+          {
+            name: "finishTranslation_afterDownloadFailed",
+            allowAlways: true,
+          },
         ],
       },
       {
