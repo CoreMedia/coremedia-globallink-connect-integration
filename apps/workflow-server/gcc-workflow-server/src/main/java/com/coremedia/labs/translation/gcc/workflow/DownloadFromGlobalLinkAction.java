@@ -409,10 +409,9 @@ public class DownloadFromGlobalLinkAction extends GlobalLinkAction<DownloadFromG
     String[] files = srcDir.list();
     if (files == null || files.length == 0) {
       return null;
-    } else {
-      Zipper.zip(zipFile.getAbsolutePath(), srcDir, null);
-      return zipFile;
     }
+    Zipper.zip(zipFile.getAbsolutePath(), srcDir, null);
+    return zipFile;
   }
 
   private static void moveFiles(File srcDir, String srcSubDirName, File targetDir, String targetSubDirName) throws IOException {

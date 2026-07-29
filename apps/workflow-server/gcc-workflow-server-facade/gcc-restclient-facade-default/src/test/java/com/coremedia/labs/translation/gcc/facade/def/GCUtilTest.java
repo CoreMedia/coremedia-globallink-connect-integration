@@ -85,9 +85,8 @@ class GCUtilTest {
           if (invocations.get() < 1) {
             invocations.incrementAndGet();
             return responseData;
-          } else {
-            throw new RuntimeException("Provoked exception.");
           }
+          throw new RuntimeException("Provoked exception.");
         })
       )
         .isInstanceOf(GCFacadeCommunicationException.class);
