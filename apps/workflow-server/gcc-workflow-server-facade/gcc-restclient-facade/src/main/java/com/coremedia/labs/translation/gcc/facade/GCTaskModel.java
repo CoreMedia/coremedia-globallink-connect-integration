@@ -1,7 +1,6 @@
 package com.coremedia.labs.translation.gcc.facade;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Objects;

@@ -3,7 +3,6 @@ package com.coremedia.labs.translation.gcc.workflow;
 import com.coremedia.labs.translation.gcc.util.Zipper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.assertj.core.api.Assumptions;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
