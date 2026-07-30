@@ -138,8 +138,11 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
    * Values ensured to be within bounds:
    * {@code RetryDelay.MIN_VALUE} <= {@code value} <= {@code RetryDelay.MAX_VALUE}.
    * <p>
-   * This value cannot be overwritten by the corresponding settings in the
-   * content repository.
+   * Just as the other retry delays, this value may also be overwritten by the
+   * corresponding settings in the content repository. Note, though, that these
+   * settings can only be respected if they could be read before the Content
+   * Management Server became unavailable. Thus, the value from the Spring
+   * context serves as fallback.
    */
   @VisibleForTesting
   static final String CMS_RETRY_DELAY_SETTINGS_KEY = "cms-retry-delay";
@@ -157,6 +160,23 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
    */
   @VisibleForTesting
   static final String DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY = "gcc-retry-delay";
+
+  /**
+   * Property for specification of jitter, given as integer percentage within
+   * {@code 0} and {@code 100}, that is applied to every computed retry delay.
+   * <p>
+   * Jitter prevents that many workflow processes retry at the exact same
+   * instant, which otherwise may cause the external system to respond with
+   * {@code HTTP 429 (Too Many Requests)}. Disabled ({@code 0}) by default.
+   * <p>
+   * This is only a fallback for sub-classing actions that don't provide a
+   * unique jitter percentage by overwriting method
+   * {@link #getGCCRetryJitterSettingsKey()}.
+   *
+   * @since 2512.1.0-1
+   */
+  @VisibleForTesting
+  static final String DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY = "gcc-retry-jitter";
 
   private static final Set<String> REPOSITORY_UNAVAILABLE_ERROR_CODES = Set.of(
     CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE,
@@ -267,6 +287,21 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
   }
 
   /**
+   * Returns the name of the setting to define the jitter to apply to retry
+   * delays, given as integer percentage.
+   * <p>
+   * May be overwritten by subclassing actions, analogous to
+   * {@link #getGCCRetryDelaySettingsKey()}, if an action requires a dedicated
+   * jitter configuration.
+   *
+   * @return settings key to read the jitter percentage from
+   * @since 2512.1.0-1
+   */
+  protected String getGCCRetryJitterSettingsKey() {
+    return DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY;
+  }
+
+  /**
    * Utility method to retrieve a retry delay at a given key from settings.
    *
    * @param settings settings
@@ -292,6 +327,44 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
       .flatMap(RetryDelay::findRetryDelay);
   }
 
+  /**
+   * Utility method to retrieve the jitter fraction at a given key from
+   * settings.
+   * <p>
+   * The settings value is expected to be an integer percentage. Parsing and
+   * bounds handling is delegated to
+   * {@link RetryDelay#findJitterFraction(Object)}.
+   *
+   * @param settings settings
+   * @param key      settings key where to expect the jitter percentage
+   * @return jitter fraction if found and parseable; empty otherwise
+   * @since 2512.1.0-1
+   */
+  protected static Optional<Double> findJitterFraction(Settings settings,
+                                                       String key) {
+    return settings.at(key)
+      .flatMap(RetryDelay::findJitterFraction);
+  }
+
+  /**
+   * Applies the configured jitter to the given retry delay.
+   * <p>
+   * If jitter is unset, disabled or not parseable, the given delay is returned
+   * unmodified.
+   *
+   * @param retryDelay retry delay to apply jitter to
+   * @param settings   settings to read the jitter percentage from
+   * @return retry delay with jitter applied; unmodified delay if jitter is
+   * disabled
+   * @since 2512.1.0-1
+   */
+  private RetryDelay applyRetryJitter(RetryDelay retryDelay,
+                                      Settings settings) {
+    return findJitterFraction(settings, getGCCRetryJitterSettingsKey())
+      .map(retryDelay::withJitter)
+      .orElse(retryDelay);
+  }
+
   @Override
   protected final @Nullable Result<R> doExecute(@Nullable Object params) {
     if (params == null) {
@@ -306,7 +379,8 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
     // maps error codes to affected contents; list of contents may be empty for some errors */
     Map<String, List<@Nullable Content>> issues = new HashMap<>();
 
-    RetryDelay retryDelay = RetryDelay.DEFAULT;
+    // Base delay, before action-specific adaptation and jitter get applied.
+    RetryDelay baseRetryDelay = RetryDelay.DEFAULT;
     int maxAutomaticRetries = 0; // if we ever get to this variable's usage, it will be set to something reasonable
     Settings settings = SettingsSource.fromContext(getSpringContext());
 
@@ -314,7 +388,7 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
       settings = withGlobalSettings(settings, getConnection().getContentRepository());
       Site masterSite = getMasterSite(parameters.masterContentObjects);
       settings = withSiteSettings(settings, masterSite);
-      retryDelay = getDefaultRetryDelay(settings);
+      baseRetryDelay = getDefaultRetryDelay(settings);
       maxAutomaticRetries = maxAutomaticRetries(settings);
 
       GCExchangeFacade gccSession = openSession(settings);
@@ -325,7 +399,8 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
     } catch (GCFacadeCommunicationException e) {
       // automatically retry upon communication errors until configured maximum of retries has been reached
       // but do not retry automatically if #doExecuteGlobalLinkAction returned additional issues
-      return getResultForGCCConnectionError(e, result, issues, parameters, retryDelay, maxAutomaticRetries);
+      return getResultForGCCConnectionError(e, result, issues, parameters,
+        applyRetryJitter(baseRetryDelay, settings), maxAutomaticRetries);
     } catch (GCFacadeSubmissionNotFoundException e) {
       LOG.warn("{}: Failed to find submission ({}).", getName(), GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, e);
       issues.put(GlobalLinkWorkflowErrorCodes.SUBMISSION_NOT_FOUND_ERROR, List.of());
@@ -361,11 +436,14 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
 
     // set retry delay for continuation of non-completed GlobalLink task, e.g.,
     // download of translations that are still missing
-    result.retryDelaySeconds = adaptDelayForGeneralRetry(
-      retryDelay,
-      settings,
-      result.extendedResult,
-      issues
+    result.retryDelaySeconds = applyRetryJitter(
+      adaptDelayForGeneralRetry(
+        baseRetryDelay,
+        settings,
+        result.extendedResult,
+        issues
+      ),
+      settings
     )
       .toSecondsInt();
     result.issues = issuesAsJsonBlob(issues);
@@ -596,7 +674,10 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
       throw exception;
     }
     // get delay for retries on CMS connection error *just* from properties
-    int cmsRetryDelaySeconds = getRetryDelay(settings, CMS_RETRY_DELAY_SETTINGS_KEY).toSecondsInt();
+    int cmsRetryDelaySeconds = applyRetryJitter(
+      getRetryDelay(settings, CMS_RETRY_DELAY_SETTINGS_KEY),
+      settings
+    ).toSecondsInt();
     LOG.info("{}: Failed to connect to CMS. Will retry after {} seconds.", getName(), cmsRetryDelaySeconds, exception);
     result.remainingAutomaticRetries = Integer.MAX_VALUE;
     result.retryDelaySeconds = cmsRetryDelaySeconds;
@@ -634,7 +715,9 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
    * @param result              the execution result so far.
    * @param issues              issues in execution so far.
    * @param parameters          action parameters.
-   * @param retryDelay          time to wait before retrying the GlobalLink action.
+   * @param retryDelay          time to wait before retrying the GlobalLink
+   *                            action; the configured jitter is expected to be
+   *                            applied already.
    * @param maxAutomaticRetries maximum number of retries for the current GlobalLink action.
    */
   private Result<R> getResultForGCCConnectionError(GCFacadeCommunicationException exception, Result<R> result,

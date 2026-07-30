@@ -29,6 +29,8 @@ public class GlobalLinkConfigBuilder {
   private RetryDelayMode retryDelayMode = RetryDelayMode.INTEGER;
   private @Nullable Site site;
   private final Map<String, Duration> retryDelays = new HashMap<>();
+  private final Map<String, Integer> integers = new HashMap<>();
+  private final Map<String, String> strings = new HashMap<>();
 
   public GlobalLinkConfigBuilder(ContentRepository repository,
                                  StructService structService) {
@@ -56,10 +58,37 @@ public class GlobalLinkConfigBuilder {
     return this;
   }
 
+  /**
+   * Declares an integer property, like a jitter percentage.
+   *
+   * @param key   key to declare
+   * @param value value to set
+   * @return self-reference
+   */
+  public GlobalLinkConfigBuilder withInteger(String key, int value) {
+    integers.put(requireNonNull(key), value);
+    return this;
+  }
+
+  /**
+   * Declares a string property, like a jitter percentage given as string, or
+   * an intentionally invalid value.
+   *
+   * @param key   key to declare
+   * @param value value to set
+   * @return self-reference
+   */
+  public GlobalLinkConfigBuilder withString(String key, String value) {
+    strings.put(requireNonNull(key), requireNonNull(value));
+    return this;
+  }
+
   public void build() {
     StructBuilder configBuilder = structService.createStructBuilder()
       .enter("globalLink");
     retryDelays.forEach((key, retryDelay) -> retryDelayMode.apply(configBuilder, key, retryDelay));
+    integers.forEach(configBuilder::declareInteger);
+    strings.forEach((key, value) -> configBuilder.declareString(key, Integer.MAX_VALUE, value));
     Struct config = configBuilder.build();
     if (site == null) {
       repository.createContentBuilder()
