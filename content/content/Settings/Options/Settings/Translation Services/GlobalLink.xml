@@ -39,6 +39,8 @@
               <StringProperty Name="downloadTranslationRetryDelay">3m</StringProperty>
               <StringProperty Name="downloadTranslationEarlyRetryDelay">1m</StringProperty>
               <StringProperty Name="cancelTranslationRetryDelay">1m</StringProperty>
+              <StringProperty Name="cms-retry-delay">1m</StringProperty>
+              <IntProperty Name="gcc-retry-jitter">20</IntProperty>
               <StructProperty Name="submissionInstruction">
                 <Struct>
                   <StringProperty
