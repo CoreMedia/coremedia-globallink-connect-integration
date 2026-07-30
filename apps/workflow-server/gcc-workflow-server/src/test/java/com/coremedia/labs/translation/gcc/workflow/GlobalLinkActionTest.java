@@ -710,7 +710,7 @@ class GlobalLinkActionTest {
    * ---------------------------------------------------------------------------
    */
 
-  private static final class MockedGlobalLinkAction extends GlobalLinkAction<@Nullable Void, Void> {
+  static final class MockedGlobalLinkAction extends GlobalLinkAction<@Nullable Void, Void> {
     @Serial
     private static final long serialVersionUID = -288745610618179168L;
     private final ApplicationContext applicationContext;
