@@ -1,5 +1,6 @@
 package com.coremedia.labs.translation.gcc.util;
 
+import org.assertj.core.api.SoftAssertions;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
@@ -14,6 +15,8 @@ import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -267,6 +270,155 @@ class RetryDelayTest {
         assertThat(RetryDelay.findRetryDelay(invalidDurationString))
           .isEmpty();
       }
+    }
+  }
+
+  @Nested
+  class WithJitterBehavior {
+    @Test
+    void shouldReturnSameInstanceForDisabledJitter() {
+      RetryDelay retryDelay = new RetryDelay(Duration.ofMinutes(30L));
+      assertThat(retryDelay.withJitter(0.0d))
+        .isSameAs(retryDelay);
+    }
+
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      baseSeconds | jitterFraction | randomOffset | expectedSeconds | comment
+      1800        | 0.2            | 0.2          | 2160            | Should apply maximum positive jitter.
+      1800        | 0.2            | -0.2         | 1440            | Should apply maximum negative jitter.
+      1800        | 0.2            | 0.0          | 1800            | Should keep delay for zero offset.
+      1800        | 0.5            | 0.5          | 2700            | Should respect the given fraction.
+      """)
+    void shouldApplyJitterAsExpected(long baseSeconds,
+                                     double jitterFraction,
+                                     double randomOffset,
+                                     long expectedSeconds) {
+      RetryDelay retryDelay = new RetryDelay(Duration.ofSeconds(baseSeconds));
+      assertThat(retryDelay.withJitter(jitterFraction, fixedOffset(randomOffset)).toSeconds())
+        .isEqualTo(expectedSeconds);
+    }
+
+    @ParameterizedTest(name = "[{index}] seed={arguments}")
+    @ValueSource(longs = {0L, 1L, 42L, 4711L, Long.MAX_VALUE})
+    void shouldStayWithinJitterBandForAnySeed(long seed) {
+      Duration base = Duration.ofMinutes(30L);
+      double jitterFraction = 0.2d;
+      RetryDelay retryDelay = new RetryDelay(base);
+      RandomGenerator random = new Random(seed);
+
+      SoftAssertions.assertSoftly(softly -> {
+        for (int i = 0; i < 100; i++) {
+          RetryDelay actual = retryDelay.withJitter(jitterFraction, random);
+          softly.assertThat(actual.value())
+            .isBetween(
+              Duration.ofNanos(Math.round(base.toNanos() * (1.0d - jitterFraction))),
+              Duration.ofNanos(Math.round(base.toNanos() * (1.0d + jitterFraction)))
+            );
+        }
+      });
+    }
+
+    @ParameterizedTest(name = "[{index}] seed={arguments}")
+    @ValueSource(longs = {0L, 1L, 42L, 4711L, Long.MAX_VALUE})
+    void shouldStayWithinBoundsAtDelayBoundaries(long seed) {
+      RandomGenerator random = new Random(seed);
+
+      SoftAssertions.assertSoftly(softly -> {
+        for (int i = 0; i < 100; i++) {
+          softly.assertThat(RetryDelay.MIN_VALUE.withJitter(1.0d, random))
+            .isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE);
+          softly.assertThat(RetryDelay.MAX_VALUE.withJitter(1.0d, random))
+            .isBetween(RetryDelay.MIN_VALUE, RetryDelay.MAX_VALUE);
+        }
+      });
+    }
+
+    @ParameterizedTest(name = "[{index}] jitterFraction={arguments}")
+    @ValueSource(doubles = {-0.1d, 1.1d, Double.NaN})
+    void shouldDenyJitterFractionOutOfBounds(double jitterFraction) {
+      RetryDelay retryDelay = new RetryDelay(Duration.ofMinutes(30L));
+      assertThatThrownBy(() -> retryDelay.withJitter(jitterFraction))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("jitterFraction");
+    }
+
+    /**
+     * Provides a random generator that always reports the given offset, to
+     * enable deterministic assertions on the applied jitter.
+     *
+     * @param offset offset to always return
+     * @return random generator with fixed behavior
+     */
+    private static RandomGenerator fixedOffset(double offset) {
+      return new RandomGenerator() {
+        @Override
+        public long nextLong() {
+          // Sole abstract method of RandomGenerator, thus, required. Irrelevant
+          // for the behavior under test, as the actually used method is
+          // overridden below.
+          return 0L;
+        }
+
+        @Override
+        public double nextDouble(double origin, double bound) {
+          return offset;
+        }
+      };
+    }
+  }
+
+  @Nested
+  class FindJitterFractionBehavior {
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      configValue | expectedFraction | comment
+      0           | 0.0              | Should support disabling jitter.
+      20          | 0.2              | Should parse percentage as fraction.
+      100         | 1.0              | Should support maximum percentage.
+      150         | 1.0              | Should saturate to maximum percentage.
+      -5          | 0.0              | Should saturate to minimum percentage.
+      """)
+    void shouldParseAndSaturateAsExpected(String configValue,
+                                          double expectedFraction) {
+      assertThat(RetryDelay.findJitterFraction(configValue))
+        .hasValue(expectedFraction);
+    }
+
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+      configValue | expectedFraction | comment
+      0           | 0.0              | Should support disabling jitter.
+      20          | 0.2              | Should parse percentage as fraction.
+      150         | 1.0              | Should saturate to maximum percentage.
+      """)
+    void shouldSupportNumberValues(int configValue,
+                                   double expectedFraction) {
+      assertThat(RetryDelay.findJitterFraction(configValue))
+        .hasValue(expectedFraction);
+    }
+
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @ValueSource(strings = {
+      // Empty string behavior most important here, as we expect it to trigger
+      // jitter to be disabled instead.
+      "",
+      // Test for accidental left-over space(s).
+      " ",
+      "lorem",
+      "20%",
+      "0.2"
+    })
+    void shouldReturnEmptyOnInvalidPercentage(String invalidPercentage) {
+      assertThat(RetryDelay.findJitterFraction(invalidPercentage))
+        .isEmpty();
+    }
+
+    @SuppressWarnings({"NullAway", "DataFlowIssue"}) // Intentional contract violation: the documented NullPointerException is under test.
+    @Test
+    void shouldDenyNullValue() {
+      assertThatThrownBy(() -> RetryDelay.findJitterFraction(null))
+        .isInstanceOf(NullPointerException.class);
     }
   }
 
