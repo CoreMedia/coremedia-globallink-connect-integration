@@ -15,6 +15,7 @@ import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
 import com.coremedia.cap.workflow.Task;
 import com.coremedia.labs.translation.gcc.facade.GCConfigProperty;
 import com.coremedia.labs.translation.gcc.facade.GCExchangeFacade;
+import com.coremedia.labs.translation.gcc.facade.GCFacadeCommunicationException;
 import com.coremedia.labs.translation.gcc.facade.mock.MockedGCExchangeFacade;
 import com.coremedia.labs.translation.gcc.util.RetryDelay;
 import com.coremedia.labs.translation.gcc.util.Settings;
@@ -22,6 +23,7 @@ import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.assertj.core.api.SoftAssertions;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -249,6 +251,274 @@ class GlobalLinkActionTest {
           .isEqualTo(expectedRetryDelay.toSecondsInt());
       }
     }
+
+    @Nested
+    class RetryJitterBehavior {
+      private static final int BASE_RETRY_DELAY_SECONDS = 1800;
+
+      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
+      private GlobalLinkAction.Parameters<@Nullable Object> parameters() {
+        return new GlobalLinkAction.Parameters<>(
+          null,
+          List.of(masterSite.getSiteIndicator()),
+          0
+        );
+      }
+
+      @Test
+      void shouldNotApplyJitterByDefault() {
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          .build();
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+
+        assertThat(result)
+          .isNotNull()
+          .extracting(r -> r.retryDelaySeconds)
+          .as("Should keep the retry delay unmodified, as jitter is disabled by default.")
+          .isEqualTo(BASE_RETRY_DELAY_SECONDS);
+      }
+
+      @ParameterizedTest(name = "[{index}] jitterPercentage={arguments}")
+      @ValueSource(ints = {0, 100})
+      void shouldRespectDisabledOrExplicitJitterPercentage(int jitterPercentage) {
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, jitterPercentage)
+          .build();
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+
+        assertThat(result)
+          .isNotNull()
+          .extracting(r -> r.retryDelaySeconds)
+          .as("Should stay within the jitter band for %d%%.", jitterPercentage)
+          .satisfies(actual -> assertThat(actual)
+            .isBetween(
+              expectedLowerBound(jitterPercentage),
+              expectedUpperBound(jitterPercentage)
+            ));
+      }
+
+      @Test
+      void shouldApplyJitterOnGeneralRetry() {
+        int jitterPercentage = 50;
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, jitterPercentage)
+          .build();
+
+        SoftAssertions.assertSoftly(softly -> {
+          for (int i = 0; i < 20; i++) {
+            GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+            softly.assertThat(result)
+              .isNotNull()
+              .extracting(r -> r.retryDelaySeconds)
+              .asInstanceOf(InstanceOfAssertFactories.INTEGER)
+              .isBetween(
+                expectedLowerBound(jitterPercentage),
+                expectedUpperBound(jitterPercentage)
+              );
+          }
+        });
+      }
+
+      @Test
+      void shouldApplyJitterOnGccCommunicationError() {
+        int jitterPercentage = 50;
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, jitterPercentage)
+          .build();
+
+        globalLinkAction.onDoExecuteGlobalLinkAction(() -> {
+          throw new GCFacadeCommunicationException("Simulated GCC communication error.");
+        });
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+
+        assertThat(result)
+          .isNotNull()
+          .satisfies(
+            r -> assertThat(r.issues)
+              .extracting(String::valueOf, InstanceOfAssertFactories.STRING)
+              .contains(GlobalLinkWorkflowErrorCodes.GLOBAL_LINK_COMMUNICATION_ERROR),
+            r -> assertThat(r.retryDelaySeconds)
+              .as("Should apply jitter also on GCC communication errors.")
+              .isBetween(
+                expectedLowerBound(jitterPercentage),
+                expectedUpperBound(jitterPercentage)
+              )
+          );
+      }
+
+      @Test
+      void shouldApplyJitterOnCmsCommunicationError() {
+        int jitterPercentage = 50;
+        int cmsRetryDelaySeconds = 600;
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(GlobalLinkAction.CMS_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(cmsRetryDelaySeconds))
+          .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, jitterPercentage)
+          .build();
+
+        globalLinkAction.onDoExecuteGlobalLinkAction(() -> {
+          throw new CapException("foo", CapErrorCodes.CONTENT_REPOSITORY_UNAVAILABLE, null, null);
+        });
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+
+        assertThat(result)
+          .isNotNull()
+          .satisfies(
+            r -> assertThat(r.issues)
+              .extracting(String::valueOf, InstanceOfAssertFactories.STRING)
+              .contains(GlobalLinkWorkflowErrorCodes.CMS_COMMUNICATION_ERROR),
+            r -> assertThat(r.retryDelaySeconds)
+              .as("Should apply jitter also on CMS communication errors.")
+              .isBetween(
+                expectedLowerBound(cmsRetryDelaySeconds, jitterPercentage),
+                expectedUpperBound(cmsRetryDelaySeconds, jitterPercentage)
+              )
+          );
+      }
+
+      @Test
+      void shouldSaturateJitterPercentageAboveMaximum() {
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          // Above maximum: expected to be saturated to 100%, thus, not to be
+          // interpreted as jitter being disabled.
+          .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, 150)
+          .build();
+
+        SoftAssertions.assertSoftly(softly -> {
+          for (int i = 0; i < 20; i++) {
+            GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+            softly.assertThat(result)
+              .isNotNull()
+              .extracting(r -> r.retryDelaySeconds)
+              .asInstanceOf(InstanceOfAssertFactories.INTEGER)
+              .as("Should behave as if 100%% jitter had been configured.")
+              .isBetween(expectedLowerBound(100), expectedUpperBound(100));
+          }
+        });
+      }
+
+      @Test
+      void shouldSaturateJitterPercentageBelowMinimum() {
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          // Below minimum: expected to be saturated to 0%, thus, to be
+          // interpreted as jitter being disabled.
+          .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, -50)
+          .build();
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+
+        assertThat(result)
+          .isNotNull()
+          .extracting(r -> r.retryDelaySeconds)
+          .as("Should behave as if jitter had been disabled.")
+          .isEqualTo(BASE_RETRY_DELAY_SECONDS);
+      }
+
+      @ParameterizedTest(name = "[{index}] Jitter Key With Overridden Name = {0}")
+      @ValueSource(booleans = {true, false})
+      void shouldUseExpectedJitterSettingsKey(boolean overrideName) {
+        int jitterPercentage = 50;
+        String jitterKey = overrideName
+          ? "retry-jitter-key-overridden"
+          : GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY;
+
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          .withInteger(jitterKey, jitterPercentage)
+          .build();
+
+        if (overrideName) {
+          globalLinkAction.setOverrideGccRetryJitterSettingsKey(jitterKey);
+        }
+
+        SoftAssertions.assertSoftly(softly -> {
+          boolean anyJitterApplied = false;
+          for (int i = 0; i < 20; i++) {
+            GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+            softly.assertThat(result)
+              .isNotNull()
+              .extracting(r -> r.retryDelaySeconds)
+              .asInstanceOf(InstanceOfAssertFactories.INTEGER)
+              .as("Should use expected jitter settings key %s (overridden: %s).", jitterKey, overrideName)
+              .isBetween(expectedLowerBound(jitterPercentage), expectedUpperBound(jitterPercentage));
+            anyJitterApplied = anyJitterApplied
+              || (result != null && result.retryDelaySeconds != BASE_RETRY_DELAY_SECONDS);
+          }
+          softly.assertThat(anyJitterApplied)
+            .as("Should actually have applied jitter, thus, read the settings from key %s.", jitterKey)
+            .isTrue();
+        });
+      }
+
+      @ParameterizedTest(name = "[{index}] jitterValue={arguments}")
+      @ValueSource(strings = {"lorem", "20%", "0.2"})
+      void shouldDisableJitterOnUnparseableValue(String invalidJitterValue) {
+        globalLinkConfigBuilderProvider.getObject()
+          .atGlobal()
+          .withRetryDelay(DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY, Duration.ofSeconds(BASE_RETRY_DELAY_SECONDS))
+          .withString(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, invalidJitterValue)
+          .build();
+
+        GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
+
+        assertThat(result)
+          .isNotNull()
+          .extracting(r -> r.retryDelaySeconds)
+          .as("Should fall back to disabled jitter for unparseable value '%s'.", invalidJitterValue)
+          .isEqualTo(BASE_RETRY_DELAY_SECONDS);
+      }
+
+      private static int expectedLowerBound(int jitterPercentage) {
+        return expectedLowerBound(BASE_RETRY_DELAY_SECONDS, jitterPercentage);
+      }
+
+      private static int expectedUpperBound(int jitterPercentage) {
+        return expectedUpperBound(BASE_RETRY_DELAY_SECONDS, jitterPercentage);
+      }
+
+      /**
+       * Lower bound of the expected jitter band. Rounds towards the more
+       * tolerant value, as the exact rounding behavior of the applied jitter
+       * is irrelevant here.
+       *
+       * @param baseSeconds      base retry delay in seconds
+       * @param jitterPercentage configured jitter percentage
+       * @return lower bound in seconds
+       */
+      private static int expectedLowerBound(int baseSeconds, int jitterPercentage) {
+        return (int) Math.floor(baseSeconds * (1.0d - jitterPercentage / 100.0d));
+      }
+
+      /**
+       * Upper bound of the expected jitter band. Rounds towards the more
+       * tolerant value, as the exact rounding behavior of the applied jitter
+       * is irrelevant here.
+       *
+       * @param baseSeconds      base retry delay in seconds
+       * @param jitterPercentage configured jitter percentage
+       * @return upper bound in seconds
+       */
+      private static int expectedUpperBound(int baseSeconds, int jitterPercentage) {
+        return (int) Math.ceil(baseSeconds * (1.0d + jitterPercentage / 100.0d));
+      }
+    }
   }
 
   @Nested
@@ -451,6 +721,8 @@ class GlobalLinkActionTest {
     @Nullable
     private String overrideGccRetryDelaySettingsKey;
     @Nullable
+    private String overrideGccRetryJitterSettingsKey;
+    @Nullable
     private UnaryOperator<RetryDelay> retryDelayOperator;
 
     private MockedGlobalLinkAction(ApplicationContext applicationContext, GCExchangeFacade gcExchangeFacade) {
@@ -528,6 +800,15 @@ class GlobalLinkActionTest {
     @Override
     protected String getGCCRetryDelaySettingsKey() {
       return requireNonNullElseGet(overrideGccRetryDelaySettingsKey, super::getGCCRetryDelaySettingsKey);
+    }
+
+    private void setOverrideGccRetryJitterSettingsKey(@Nullable String overrideGccRetryJitterSettingsKey) {
+      this.overrideGccRetryJitterSettingsKey = overrideGccRetryJitterSettingsKey;
+    }
+
+    @Override
+    protected String getGCCRetryJitterSettingsKey() {
+      return requireNonNullElseGet(overrideGccRetryJitterSettingsKey, super::getGCCRetryJitterSettingsKey);
     }
 
     @Override
