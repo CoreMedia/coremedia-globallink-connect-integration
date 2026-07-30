@@ -18,18 +18,14 @@ catalogs:
     knip: ^6.29.0
     mdast-util-from-markdown: ^2.0.3
     prism-react-renderer: ^2.4.1
-    react: ^19.2.6
-    react-dom: ^19.2.6
+    react: ^19.2.8
+    react-dom: ^19.2.8
     remark: ^15.0.1
     typescript: ~6.0.3
     unified: ^11.0.5
     unist-util-visit: ^5.1.0
 ignoredBuiltDependencies:
   - '@swc/core'
-peerDependencyRules:
-  allowedVersions:
-    '@napi-rs/wasm-runtime>@emnapi/core': '1'
-    '@napi-rs/wasm-runtime>@emnapi/runtime': '1'
 
 minimumReleaseAge: 1440
 
@@ -94,3 +90,7 @@ overrides:
   'ws@>=7.0.0 <7.5.11': ^7.5.11
   # https://github.com/advisories/GHSA-58qx-3vcg-4xpx
   'ws@>=8.0.0 <8.20.1': ^8.20.1
+peerDependencyRules:
+  allowedVersions:
+    '@napi-rs/wasm-runtime>@emnapi/core': '1'
+    '@napi-rs/wasm-runtime>@emnapi/runtime': '1'
