@@ -1,24 +1,27 @@
+auditConfig:
+  ignoreGhsas:
+    - GHSA-h67p-54hq-rp68
 catalogs:
   default:
-    '@docusaurus/core': ^3.10.1
-    '@docusaurus/faster': ^3.10.1
-    '@docusaurus/logger': ^3.10.1
-    '@docusaurus/plugin-content-docs': ^3.10.1
-    '@docusaurus/preset-classic': ^3.10.1
-    '@docusaurus/theme-mermaid': ^3.10.1
-    '@docusaurus/tsconfig': ^3.10.1
-    '@docusaurus/types': ^3.10.1
+    '@docusaurus/core': ^3.10.2
+    '@docusaurus/faster': ^3.10.2
+    '@docusaurus/logger': ^3.10.2
+    '@docusaurus/plugin-content-docs': ^3.10.2
+    '@docusaurus/preset-classic': ^3.10.2
+    '@docusaurus/theme-mermaid': ^3.10.2
+    '@docusaurus/tsconfig': ^3.10.2
+    '@docusaurus/types': ^3.10.2
     '@mdx-js/react': ^3.1.1
     '@types/mdast': ^4.0.4
     '@types/unist': ^3.0.3
     clsx: ^2.1.1
-    knip: ^6.12.2
+    knip: ^6.29.0
     mdast-util-from-markdown: ^2.0.3
     prism-react-renderer: ^2.4.1
-    react: ^19.2.6
-    react-dom: ^19.2.6
+    react: ^19.2.8
+    react-dom: ^19.2.8
     remark: ^15.0.1
-    typescript: ~6.0.3
+    typescript: ~7.0.2
     unified: ^11.0.5
     unist-util-visit: ^5.1.0
 ignoredBuiltDependencies:
@@ -31,62 +34,23 @@ onlyBuiltDependencies:
   - core-js-pure
 
 overrides:
+  # https://github.com/advisories/GHSA-4x5r-pxfx-6jf8
+  '@babel/core@>=0.0.0 <7.29.6': ^7.29.6
+  # https://github.com/advisories/GHSA-64mm-vxmg-q3vj
+  'http-proxy-middleware@>=0.16.0 <3.0.6': ^3.0.6
+
   lodash-es: ^4.17.23
   minimatch: ^10.2.1
   'picomatch@>=2.0.0 <2.3.2': ^2.3.2
+  # https://github.com/advisories/GHSA-r28c-9q8g-f849
+  'postcss@>=0.0.0 <8.5.18': ^8.5.18
   'serialize-javascript@>=6.0.0 <7.0.5': ^7.0.5
+  # https://github.com/advisories/GHSA-w5hq-g745-h8pq
+  'uuid@>=0.0.0 <11.1.1': ^11.1.1
   # https://github.com/advisories/GHSA-8fgc-7cc6-rx7x (patched 5.104.1)
   webpack: ^5.105.3
 
-  # https://github.com/advisories/GHSA-79cf-xcqc-c78w
-  'webpack-dev-server@>=0.0.0 <5.2.4': ^5.2.4
-  # https://github.com/advisories/GHSA-58qx-3vcg-4xpx
-  'ws@>=8.0.0 <8.20.1': ^8.20.1
-  # https://github.com/advisories/GHSA-w5hq-g745-h8pq
-  'uuid@>=0.0.0 <11.1.1': ^11.1.1
-  # https://github.com/advisories/GHSA-q8mj-m7cp-5q26
-  'qs@>=6.11.1 <6.15.2': ^6.15.2
-  # https://github.com/advisories/GHSA-w7jw-789q-3m8p
-  'shell-quote@>=1.1.0 <1.8.4': ^1.8.4
-  # https://github.com/advisories/GHSA-q7cg-457f-vx79
-  'joi@>=0.0.0 <17.13.4': ^17.13.4
-
-  # https://github.com/advisories/GHSA-v6wh-96g9-6wx3
-  'launch-editor@>=0.0.0 <2.14.1': ^2.14.1
-  # https://github.com/advisories/GHSA-4x5r-pxfx-6jf8
-  '@babel/core@>=0.0.0 <7.29.6': ^7.29.6
-  # https://github.com/advisories/GHSA-cmwh-pvxp-8882
-  'dompurify@>=0.0.0 <3.4.11': ^3.4.11
-  # https://github.com/advisories/GHSA-mx8g-39q3-5c79
-  'webpack-dev-server@>=0.0.0 <5.2.5': ^5.2.5
-  # https://github.com/advisories/GHSA-64mm-vxmg-q3vj
-  'http-proxy-middleware@>=0.16.0 <3.0.6': ^3.0.6
-  # https://github.com/advisories/GHSA-96hv-2xvq-fx4p
-  'ws@>=7.0.0 <7.5.11': ^7.5.11
-  # https://github.com/advisories/GHSA-mp7j-qc5w-4988
-  'websocket-driver@>=0.0.0 <0.7.5': ^0.7.5
-  # https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
-  'brace-expansion@>=3.0.0 <5.0.7': ^5.0.7
-  # https://github.com/advisories/GHSA-52cp-r559-cp3m
-  'js-yaml@>=4.0.0 <4.3.0': ^4.3.0
-  # https://github.com/advisories/GHSA-52cp-r559-cp3m
-  'js-yaml@>=3.0.0 <3.15.0': ^3.15.0
-  # https://github.com/advisories/GHSA-395f-4hp3-45gv
-  'shell-quote@>=0.0.0 <1.9.0': ^1.9.0
-  # https://github.com/advisories/GHSA-f5vj-f2hx-8m93
-  'webpack-dev-server@>=0.0.0 <5.2.6': ^5.2.6
-  # https://github.com/advisories/GHSA-v422-hmwv-36x6
-  'body-parser@>=0.0.0 <1.20.6': ^1.20.6
-  # https://github.com/advisories/GHSA-2p49-hgcm-8545
-  'svgo@>=3.0.0 <3.3.4': ^3.3.4
-  # https://github.com/advisories/GHSA-c2j3-45gr-mqc4
-  'dompurify@>=0.0.0 <3.4.12': ^3.4.12
-  # https://github.com/advisories/GHSA-v2hh-gcrm-f6hx
-  'fast-uri@>=3.0.0 <3.1.4': ^3.1.4
-  # https://github.com/advisories/GHSA-r28c-9q8g-f849
-  'postcss@>=0.0.0 <8.5.18': ^8.5.18
-  # https://github.com/advisories/GHSA-mh99-v99m-4gvg
-  'brace-expansion@>=0.0.0 <5.0.8': ^5.0.8
-auditConfig:
-  ignoreGhsas:
-    - GHSA-h67p-54hq-rp68
+peerDependencyRules:
+  allowedVersions:
+    '@napi-rs/wasm-runtime>@emnapi/core': '1'
+    '@napi-rs/wasm-runtime>@emnapi/runtime': '1'

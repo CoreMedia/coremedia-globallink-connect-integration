@@ -107,11 +107,13 @@ releases.
 As a result for the website, the changelog deployed to GitHub pages (published
 from `main`) always only contains changes along major version approvals.
 
-:::note NOTE: CHANGELOG.md
+:::note[NOTE: CHANGELOG.md]
+
 In August 2025 we dropped a central `CHANGELOG.md` at repository root. Instead
 the releases must contain a corresponding changelog and a more detailed
 changelog with upgrade information is maintained
 at <RepositoryLink path="website/docs/changelog/" />.
+
 :::
 
 ## Third-Party Reports

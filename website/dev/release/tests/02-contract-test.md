@@ -22,7 +22,8 @@ To run the test you need to create a file with the name
 [.gcc.properties](./files/example.gcc.properties.txt)
 in your user home folder
 
-:::info INFO: Profile Support
+:::info[INFO: Profile Support]
+
 Some tests may require adapted properties. They define a so-called profile.
 If the profile is available, selected configuration may be overridden in
 a file `.gcc.<profile>.properties`.
@@ -31,6 +32,7 @@ Currently supported profile:
 
 * `cancellation`: You may need to set a "manual transition" connector here
   for the test to work.
+
 :::
 
 ## Manual Review

@@ -11,10 +11,12 @@ tags:
 * **Connector Type**: `default`
 * **Key Type**: `manual`
 
-:::tip TIP: Cancelation vs. Cancellation
+:::tip[TIP: Cancelation vs. Cancellation]
+
 In American English, verb forms of "cancel" are spelled with one "l"
 (canceled, canceling), while the noun form uses two "l"s (cancellation).
 This documentation follows American English spelling conventions.
+
 :::
 
 ## Cancellation in Studio

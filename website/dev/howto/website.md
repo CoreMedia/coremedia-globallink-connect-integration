@@ -54,11 +54,13 @@ The setting `customProps.sort` is respected by a corresponding
 You find custom MDX components at `website/src/components` and registered in
 `website/src/theme/MDXComponents.tsx`.
 
-:::tip TIP: MDX Plugin
+:::tip[TIP: MDX Plugin]
+
 For syntax highlighting in MDX enabled files, you may want to use this
 Visual Studio Code Plugin:
 
 * [MDX - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
+
 :::
 
 ### Deprecated
@@ -72,9 +74,11 @@ documentation to signal deprecations:
 />
 ```
 
-:::note Example
+:::note[Example]
+
 <Deprecated value="2506.0.0-1"/>
 Don't use this API anymore, it is deprecated without replacement.
+
 :::
 
 ### DocLink
@@ -130,9 +134,10 @@ documentation to signal a new API or feature:
 />
 ```
 
-:::note Example
+:::note[Example]
+
 <Since value="2506.0.0-1"/>
 You can now use duration strings instead of just integers interpreted as
 seconds.
-:::
 
+:::

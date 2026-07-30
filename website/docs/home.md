@@ -58,11 +58,13 @@ pnpm start
 
 to conveniently browse the documentation.
 
-:::note NOTE: website/docs/ Unavailable
+:::note[NOTE: website/docs/ Unavailable]
+
 If `website/docs` is inaccessible for your version, you may be visiting
 an older version. Navigate to repository path `docs/` instead.
 
 The same applies to version tag v2412.0.0-1, although the first deployed version
 of this site referenced v2412.0.0-1. This is due to the documentation change
 applied directly after the release of v2412.0.0-1.
+
 :::
