@@ -36,9 +36,11 @@ will never be published. Instead, they exist for locally browsing the changelog
 within the repository or if the website is deployed locally via `pnpm start`
 from a given release tag.
 
-:::note NOTE: Reverse Sorting
+:::note[NOTE: Reverse Sorting]
+
 For the changelog we have defined sorting as `descending` in the corresponding
 `_category_.json`. This is backed by a `sidebarItemsGenerator` in
 `docusaurus.config.ts`. Note, that it only considers alphabetic sorting and is
 not aware of the numbers within the filename.
+
 :::

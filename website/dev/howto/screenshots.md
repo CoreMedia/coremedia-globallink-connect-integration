@@ -118,7 +118,8 @@ described here, you can reuse it for the screenshots described in this document.
 * Add the content to the Chef Corp. Homepage, for example, at
   _Placement 1_.
 
-:::tip TIP: Annoying Spellchecker
+:::tip[TIP: Annoying Spellchecker]
+
 If you have a spellchecker enabled in your browser, it may highlight the
 text as having spelling mistakes. To disable it, while you are in developer
 tools, adjust the `<body>` element adding the attribute `spellcheck="false"`.
@@ -128,6 +129,7 @@ As an alternative, type into the console:
 ```javascript
 document.body.spellcheck=false
 ```
+
 :::
 
 ## Screenshot Advice

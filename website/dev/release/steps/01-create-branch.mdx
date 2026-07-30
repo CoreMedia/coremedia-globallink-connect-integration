@@ -125,7 +125,8 @@ gitGraph:
 </TabItem>
 </Tabs>
 
-:::info INFO: Merge Commit Representing GitHub Pull Request Base
+:::info[INFO: Merge Commit Representing GitHub Pull Request Base]
+
 ```mermaid
 ---
 config:
@@ -148,6 +149,7 @@ merged.
 
 It uses the _reverse_ commit type (shown as `X`) to signal, that it has not been
 merged yet.
+
 :::
 
 For each new approval of a CMCC version, we need to apply updates to the GCC
@@ -183,9 +185,11 @@ For a fresh approval of a major release, we create a new maintenance branch from
 create an approval branch from the related maintenance branch. This way, the
 subsequent steps for a major and minor release are almost identical.
 
-:::info INFO: Protected Branches
+:::info[INFO: Protected Branches]
+
 The branch `main` as well as all branches matching pattern `maintenance/*` are
 protected branches in GitHub. This means that you cannot push directly to these
 branches, but need to create a pull request for merging your changes. This is a
 safety mechanism to prevent unintended changes to these branches.
+
 :::

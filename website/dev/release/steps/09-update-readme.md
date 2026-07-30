@@ -50,7 +50,9 @@ And sometimes also:
 * Java version
 * Maven version
 
-:::tip TIP: Shields.io
+:::tip[TIP: Shields.io]
+
 For details on parameters and how to create badges, visit
 [Shields.io](https://shields.io/).
+
 :::

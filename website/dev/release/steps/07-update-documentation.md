@@ -15,7 +15,8 @@ contains documentation related to this repository (like this section here),
 CoreMedia GlobalLink Connect Cloud Integration. This section is about updating
 the latter.
 
-:::info INFO: Auto-Deployment of Documentation
+:::info[INFO: Auto-Deployment of Documentation]
+
 The documentation is deployed to an extra branch `gh-pages`. It is generated
 by [Docusaurus](https://docusaurus.io/) and located within the `website/`
 folder of this repository.
@@ -23,6 +24,7 @@ folder of this repository.
 Deployment is done automatically from `main` branch, as soon as changes have
 been merged from a `maintenance/*` branch. You may always decide to run the
 deployment manually, of course.
+
 :::
 
 ## a) CoreMedia Documentation Links
@@ -44,10 +46,12 @@ most of the time.
 
 ## c) Screenshot Revision
 
-:::info INFO: Skip for Minor Release Approval
+:::info[INFO: Skip for Minor Release Approval]
+
 Unless it is about documenting new features or behaviors, aligning screenshots,
 for example, to a new visual identity of CoreMedia, should just be considered
 for approval of new major versions.
+
 :::
 
 The section _"Editors"_ contains screenshots, that may require an update.
@@ -75,7 +79,9 @@ To create a new report:
   `website/docs/third-party/third-party.md` as well as adding downloaded
   licenses to `website/docs/third-party/files`.
 
-:::note NOTE: Customizing Report
+:::note[NOTE: Customizing Report]
+
 For generating the Markdown report `third-party.md` the FreeMarker template
 `src/main/templates/third-party-md.ftl` is used.
+
 :::

@@ -111,7 +111,8 @@ values. The interval is also limited to be not longer than one day because if
 you accidentally set it to a very big value, there would be no turning back. You
 would have to wait until it is expired.
 
-:::tip TIP: Integer or String
+:::tip[TIP: Integer or String]
+
 As retry delays you may specify integer values, interpreted as number of
 seconds or use string values, representing number of seconds when given
 without a unit.
@@ -122,6 +123,7 @@ Unit's may be given as supported by Spring's
 <Since value="2506.0.0-1"/>
 
 Prior to 2506.0.0-1 only integer values were supported.
+
 :::
 
 * `sendTranslationRequestRetryDelay` The delay to wait, if the XLIFF could not
@@ -158,9 +160,11 @@ You can also define parameters for testing with the mock facade
   title="Mock Facade Documentation"
   />).
 
-:::warning Restrict Access to Settings
+:::warning[Restrict Access to Settings]
+
 Make sure to restrict read and write rights to the Settings content to
 those user groups that actually need access. Do not publish the
 Settings and follow the recommendations from the previous chapter.
 This will reduce the risk of accidentally leaking sensitive information.
+
 :::
