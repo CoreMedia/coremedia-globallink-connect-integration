@@ -15,7 +15,7 @@ catalogs:
     '@types/mdast': ^4.0.4
     '@types/unist': ^3.0.3
     clsx: ^2.1.1
-    knip: ^6.12.2
+    knip: ^6.29.0
     mdast-util-from-markdown: ^2.0.3
     prism-react-renderer: ^2.4.1
     react: ^19.2.6
@@ -26,6 +26,10 @@ catalogs:
     unist-util-visit: ^5.1.0
 ignoredBuiltDependencies:
   - '@swc/core'
+peerDependencyRules:
+  allowedVersions:
+    '@napi-rs/wasm-runtime>@emnapi/core': '1'
+    '@napi-rs/wasm-runtime>@emnapi/runtime': '1'
 
 minimumReleaseAge: 1440
 
