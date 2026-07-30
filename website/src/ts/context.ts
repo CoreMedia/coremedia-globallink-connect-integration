@@ -4,7 +4,7 @@ const gitRepository = "coremedia-globallink-connect-integration";
 const cmccVersion = {
   main: "13",
   major: "2512",
-  minor: "0",
+  minor: "1",
   patch: "0",
 };
 
