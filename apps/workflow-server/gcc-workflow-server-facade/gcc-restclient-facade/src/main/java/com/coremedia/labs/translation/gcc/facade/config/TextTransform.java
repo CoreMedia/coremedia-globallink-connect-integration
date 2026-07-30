@@ -34,17 +34,14 @@ public enum TextTransform {
     private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\R");
     private static final Pattern LEADING_SPACES = Pattern.compile("(?m)^ +");
 
-    /**
-     * Transforms the given plain-text to the expected HTML.
-     * <p>
-     * Despite the general entity encoding, tabs are replaced by a number of
-     * non-breaking spaces and newlines are replaced by HTML line breaks.
-     *
-     * @param text the text to transform
-     * @return the transformed text
-     */
     @Override
     public String transform(String text) {
+      /*
+       * Transforms the given plain-text to the expected HTML.
+       *
+       * Despite the general entity encoding, tabs are replaced by a number of
+       * non-breaking spaces and newlines are replaced by HTML line breaks.
+       */
       String result = text
         .replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -85,22 +82,18 @@ public enum TextTransform {
    * an unsupported type
    */
   public static Optional<TextTransform> fromConfig(@Nullable Object type) {
-    switch (type) {
+    return switch (type) {
       case null -> {
         LOG.trace("No text-type given. Returning empty.");
-        return Optional.empty();
+        yield Optional.empty();
       }
-      case TextTransform textTransform -> {
-        return Optional.of(textTransform);
-      }
-      case String stringType -> {
-        return fromString(stringType);
-      }
+      case TextTransform textTransform -> Optional.of(textTransform);
+      case String stringType -> fromString(stringType);
       default -> {
         LOG.debug("Unsupported type of text-type {} '{}'. Returning empty.", type.getClass(), type);
-        return Optional.empty();
+        yield Optional.empty();
       }
-    }
+    };
   }
 
   /**
