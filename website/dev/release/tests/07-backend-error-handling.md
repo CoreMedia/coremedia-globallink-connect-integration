@@ -12,18 +12,7 @@ tags:
 This test is about submissions within the GCC backend, which are in an error
 state. This has been observed, for example, when trying to send a submission
 with instructions containing characters from the Supplementary Multilingual
-Plane (SMP).
-
-**Alternative Scenario:**
-The given manual test steps "mock" this state, as we cannot ensure that an
-error persists over time. If you want to test the real-life behavior, you
-may choose using the "default" rather than the "mock" type and instead of
-using `mock.scenario`, you may use the `submissionInstruction.characterType`
-setting. Set it to `unicode` and add some SMP characters to the instructions
-(thus, workflow notes), like for example, the dove emoji: 🕊.
-
-**Advantage**: The advantage of the real-world scenario is, that you may also
-test, that a submission in an error state may still be canceled.
+Plane (SMP) in previous GCC REST backend deployments (not reproducible anymore).
 
 * **Connector Type**: `mock`
 * **Key Type**: _irrelevant_
