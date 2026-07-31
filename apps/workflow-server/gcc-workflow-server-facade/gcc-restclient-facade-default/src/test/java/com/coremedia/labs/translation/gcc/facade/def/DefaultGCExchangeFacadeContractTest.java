@@ -567,18 +567,20 @@ class DefaultGCExchangeFacadeContractTest {
      * <p>
      * A successful test here provides some confidence that countermeasures
      * enabled by default (to escape problematic characters) can be disabled
-     * in production setups.
+     * in production setups. Caveat: This leaves the decision how these
+     * characters are handled to the GCC REST backend that for now silently
+     * drops these characters.
      */
     @ParameterizedTest
     @DisplayName("GCC REST Backend is expected to support full Unicode character set.")
-    @EnumSource(SupplementaryMultilingualPlaneChallenge.class)
+    @EnumSource(value = SupplementaryMultilingualPlaneChallenge.class, mode = EnumSource.Mode.EXCLUDE, names = "ASCII")
     void shouldSupportUnicodeCharactersInSubmissionNames(SupplementaryMultilingualPlaneChallenge challenge,
                                                          Map<String, Object> originalGccProperties) {
       Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
       gccProperties.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
       gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
       String submissionNameChallenge = "%s(%s)".formatted(submissionName, challenge.getChallenge());
-      String commentChallenge = "Instruction to challenge GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(challenge.getChallenge());
+      String commentChallenge = "Instruction to challenge GCC by directly passing possibly problematic characters (%s): %s".formatted(challenge, challenge.getChallenge());
       ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
       XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
 
