@@ -39,5 +39,5 @@ tags:
 
 7. Click "Accept Task" and "Next Step"
 
-    1. You should have the ability to “Abort and rollback changes” or
-       “Continue and retry”
+    1. You should have the ability to “Abort and rollback changes”,
+       “Continue and retry”, or "Finish content localization anyway"
