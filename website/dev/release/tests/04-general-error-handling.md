@@ -55,6 +55,7 @@ tags:
     1. Validate available options when pressing "Next" are:
        1. Abort and rollback changes
        2. Continue and retry
+       3. Finish content localization anyway
 
 12. Select “Abort and rollback changes” (which will subsequently try to
     trigger a cancellation at GlobalLink).
