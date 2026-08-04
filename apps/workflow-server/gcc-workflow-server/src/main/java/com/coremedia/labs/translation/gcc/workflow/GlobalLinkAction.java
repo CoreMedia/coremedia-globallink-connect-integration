@@ -169,8 +169,14 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
    * instant, which otherwise may cause the external system to respond with
    * {@code HTTP 429 (Too Many Requests)}. Disabled ({@code 0}) by default.
    * <p>
-   * This is only a fallback for sub-classing actions that don't provide a
-   * unique jitter percentage by overwriting method
+   * Just as the retry delays, this value may also be overwritten by the
+   * corresponding settings in the content repository. Note, though, that these
+   * settings can only be respected if they could be read before the Content
+   * Management Server became unavailable. Thus, the value from the Spring
+   * context serves as fallback.
+   * <p>
+   * This settings name is only a fallback for sub-classing actions that don't
+   * provide a unique jitter percentage by overwriting method
    * {@link #getGCCRetryJitterSettingsKey()}.
    *
    * @since 2512.1.0-1
@@ -673,7 +679,6 @@ abstract class GlobalLinkAction<P extends @Nullable Object, R> extends SpringAwa
     if (!isRepositoryUnavailableException(exception)) {
       throw exception;
     }
-    // get delay for retries on CMS connection error *just* from properties
     int cmsRetryDelaySeconds = applyRetryJitter(
       getRetryDelay(settings, CMS_RETRY_DELAY_SETTINGS_KEY),
       settings
