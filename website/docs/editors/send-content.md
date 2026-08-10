@@ -33,6 +33,11 @@ If there was an issue with the XLIFF retrieved from the GCC backend (such as
 being corrupted or invalid), you will have the option to download the XLIFF
 as well as details about the issues (in a ZIP file).
 
+If the download error cannot be fixed, but you have, for example, retrieved
+the XLIFF by other means, you may choose to finish the translation despite
+the observed error. Ensure that your target contents received their required
+updates and inform GlobalLink that the submission may be closed.
+
 ![GCC Error Handling](./img/gcc-connect-error.png)
 
 After the translation is finished, you will receive a notification. The workflow

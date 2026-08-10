@@ -90,22 +90,18 @@ public enum CharacterReplacementStrategy {
    * or of an unsupported type
    */
   public static Optional<CharacterReplacementStrategy> fromConfig(@Nullable Object type) {
-    switch (type) {
+    return switch (type) {
       case null -> {
         LOG.trace("No replacement-strategy given. Returning empty.");
-        return Optional.empty();
+        yield Optional.empty();
       }
-      case CharacterReplacementStrategy strategy -> {
-        return Optional.of(strategy);
-      }
-      case String stringType -> {
-        return fromString(stringType);
-      }
+      case CharacterReplacementStrategy strategy -> Optional.of(strategy);
+      case String stringType -> fromString(stringType);
       default -> {
         LOG.debug("Unsupported type of replacement-strategy {} '{}'. Returning empty.", type.getClass(), type);
-        return Optional.empty();
+        yield Optional.empty();
       }
-    }
+    };
   }
 
   public static Optional<CharacterReplacementStrategy> fromString(@Nullable String strategy) {

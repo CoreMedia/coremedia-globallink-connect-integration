@@ -28,7 +28,7 @@ The following steps are recommended to create a screenshot:
 1. Open the page in the browser.
 2. Open the development tools (F12).
 3. Toggle the device terminal emulation (Ctrl+Shift+M).
-4. Set the viewport size to a common value (e.g., 1280x800).
+4. Set the viewport size to a common value (e.g., 1920x1080).
 
 To take the screenshot, you may also use the development tools of the browser:
 

@@ -472,45 +472,6 @@ class DefaultGCExchangeFacadeContractTest {
     }
 
     /**
-     * This test requires a known way how to make the GCC REST Backend fail
-     * internally. For now, it is passing instructions that contain
-     * Unicode characters from Supplementary Multilingual Plane without
-     * escaping them.
-     * <p>
-     * This test relies on this ability to fail. If the behavior is changed,
-     * and there is no other way to provoke an error, this test should be
-     * removed.
-     */
-    @Test
-    void shouldExposeErrorStateToClient(Map<String, Object> originalGccProperties) {
-      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
-      // The only known way to provoke a failure for now is using a
-      // high Unicode character and set it unmodified as instruction text.
-      gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
-      String unicodeDove = "\uD83D\uDD4A";
-      String comment = "Instruction to break GCC by directly passing Unicode character from Supplementary Multilingual Plane: %s".formatted(unicodeDove);
-      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
-      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
-
-      long submissionId = fixture.uploadAndSubmit(
-        facade,
-        submissionName,
-        comment,
-        testName
-      );
-
-      assertThat(submissionId).isGreaterThan(0L);
-
-      await("Submission is expected to fail with error state.")
-        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        .pollDelay(1L, TimeUnit.SECONDS)
-        .pollInterval(10L, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).isError())
-          .isTrue()
-        );
-    }
-
-    /**
      * Tests instructions (forwarded from Workflow Comments) to be handed over
      * to the GCC backend. The instructions are expected to be in plain text.
      * <p>
@@ -564,6 +525,69 @@ class DefaultGCExchangeFacadeContractTest {
         facade,
         submissionNameChallenge,
         "Submission name with possible problematic characters: challenge ID '%s'".formatted(challenge),
+        testName
+      );
+
+      assertThat(submissionId).isGreaterThan(0L);
+
+      // Main focus of this test is to ensure that the submission name
+      // does not contain any problematic characters that make the GCC backend
+      // struggle.
+      assertSubmissionReachesAnyStateOf(
+        facade,
+        submissionId,
+        List.of(
+          GCSubmissionState.STARTED,
+          GCSubmissionState.ANALYZED,
+          GCSubmissionState.TRANSLATE,
+          GCSubmissionState.COMPLETED
+        ),
+        SUBMISSION_VALID_TIMEOUT_MINUTES
+      );
+
+      // Just validating, that some name is set.
+      await("Submission is expected to have a submission name.")
+        .atMost(SUBMISSION_VALID_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        .pollDelay(1L, TimeUnit.SECONDS)
+        .pollInterval(10L, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(facade.getSubmission(submissionId).getName())
+          .startsWith(submissionName)
+        );
+    }
+
+    /**
+     * As validated in July 2026 a previously existing internal failure in the
+     * GCC REST Backend is fixed: While Unicode characters were accepted by the
+     * REST backend itself it was the subsequent forwarding to the backend
+     * systems where these characters caused errors in the submissions.
+     * <p>
+     * Prior to approval of v2406.4.0-1 and v2512.1.0-1 we benefit from this
+     * failure to test a relevant error case. Now, the test got repurposed to
+     * test for possible regressions in the GCC backend.
+     * <p>
+     * A successful test here provides some confidence that countermeasures
+     * enabled by default (to escape problematic characters) can be disabled
+     * in production setups. Caveat: This leaves the decision how these
+     * characters are handled to the GCC REST backend that for now silently
+     * drops these characters.
+     */
+    @ParameterizedTest
+    @DisplayName("GCC REST Backend is expected to support full Unicode character set.")
+    @EnumSource(value = SupplementaryMultilingualPlaneChallenge.class, mode = EnumSource.Mode.EXCLUDE, names = "ASCII")
+    void shouldSupportUnicodeCharactersInSubmissionNames(SupplementaryMultilingualPlaneChallenge challenge,
+                                                         Map<String, Object> originalGccProperties) {
+      Map<String, Object> gccProperties = new HashMap<>(originalGccProperties);
+      gccProperties.put(GCConfigProperty.KEY_SUBMISSION_NAME, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
+      gccProperties.put(GCConfigProperty.KEY_SUBMISSION_INSTRUCTION, Map.of(GCSubmissionInstruction.CHARACTER_TYPE_KEY, CharacterType.UNICODE));
+      String submissionNameChallenge = "%s(%s)".formatted(submissionName, challenge.getChallenge());
+      String commentChallenge = "Instruction to challenge GCC by directly passing possibly problematic characters (%s): %s".formatted(challenge, challenge.getChallenge());
+      ExtendedDefaultGCExchangeFacade facade = connect(gccProperties);
+      XliffFixture fixture = XliffFixture.of(testName, facade.connectorsConfig().anyLanguageDirectionPair());
+
+      long submissionId = fixture.uploadAndSubmit(
+        facade,
+        submissionNameChallenge,
+        commentChallenge,
         testName
       );
 

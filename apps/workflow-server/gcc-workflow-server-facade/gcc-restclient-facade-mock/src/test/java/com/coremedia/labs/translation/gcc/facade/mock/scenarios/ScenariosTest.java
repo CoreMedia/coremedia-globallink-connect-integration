@@ -54,7 +54,7 @@ class ScenariosTest {
     public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) {
       return ServiceLoader.load(Scenario.class).stream()
         .map(ServiceLoader.Provider::get)
-        .map(org.junit.jupiter.params.provider.Arguments::of);
+        .map(Arguments::of);
     }
   }
 

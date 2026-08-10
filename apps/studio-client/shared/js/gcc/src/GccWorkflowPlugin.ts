@@ -8,7 +8,7 @@ import {
   StartWorkflowFormExtension,
   TextField,
   TranslationWorkflowPlugin,
-  WorkflowIssuesLocalization,
+  WorkflowIssuesLocalizationConfig,
   WorkflowLocalizationConfig,
   workflowLocalizationRegistry,
   workflowPlugins,
@@ -223,6 +223,10 @@ const getGccWorkflowPlugin = async (): Promise<TranslationWorkflowPlugin> => {
             name: "continueRetry",
             allowAlways: true,
           },
+          {
+            name: "finishTranslation_afterDownloadFailed",
+            allowAlways: true,
+          },
         ],
       },
       {
@@ -397,6 +401,9 @@ const getGccProcessLocalization = async (): Promise<WorkflowLocalizationConfig> 
         "TranslationGlobalLink_state_rollbackTranslation_afterCancellationFailed_displayName",
       ),
       finishTranslation: localizer("TranslationGlobalLink_state_finishTranslation_displayName"),
+      finishTranslation_afterDownloadFailed: localizer(
+        "TranslationGlobalLink_state_finishTranslation_afterDownloadFailed_displayName"
+      ),
       DownloadTranslation: localizer("TranslationGlobalLink_state_DownloadTranslation_displayName"),
       ReviewDeliveredTranslation: localizer("TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName"),
       ReviewRedeliveredTranslation: localizer("TranslationGlobalLink_state_ReviewRedeliveredTranslation_displayName"),
@@ -463,7 +470,7 @@ const XLIFF_IMPORT_RESULT_CODES = [
   "INVALID_XLIFF",
 ] as const;
 
-const getGccIssuesLocalization = async (): Promise<WorkflowIssuesLocalization> => {
+const getGccIssuesLocalization = async (): Promise<WorkflowIssuesLocalizationConfig> => {
   const localizer = await getLocalizer(GccWorkflowLocalization_properties);
 
   const xliffImportResultLocalizations = Object.fromEntries(

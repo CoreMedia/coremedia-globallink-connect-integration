@@ -9,6 +9,7 @@
       <Grant group="translation-manager-role"
              rights="create, read, write, start, suspend, resume, abort"/>
       <Grant group="administratoren" rights="create, read, write,  start, suspend, resume, abort"/>
+      <Grant variable="targetSiteManagerGroups" rights="read, write"/>
     </Rights>
 
     <Variable name="subject" type="String"/>
@@ -18,6 +19,7 @@
     <AggregationVariable name="targetSiteId" type="String"/>
     <!-- list of locales that are marked as completed. -->
     <AggregationVariable name="completedLocales" type="String"/>
+    <AggregationVariable name="targetSiteManagerGroups" type="Group"/>
     <Variable name="performer" type="User"/>
     <Variable name="robotUser" type="User"/>
 
@@ -110,6 +112,7 @@
       <Writes variable="masterContentObjects"/>
       <Writes variable="derivedContents"/>
       <Writes variable="createdContents"/>
+      <Writes variable="targetSiteManagerGroups"/>
       <Writes variable="targetSiteId"/>
       <Writes variable="globalLinkSubmissionId"/>
       <Writes variable="globalLinkSubmissionStatus"/>
@@ -153,8 +156,14 @@
         <IsEmpty variable="derivedContents"/>
       </Condition>
       <Then successor="Finish"/>
-      <Else successor="AutoMerge"/>
+      <Else successor="GetTargetSiteManagerGroup"/>
     </If>
+
+    <AutomatedTask name="GetTargetSiteManagerGroup" successor="AutoMerge">
+      <Action class="com.coremedia.translate.workflow.GetMultiSiteManagerGroupAction"
+              siteVariable="targetSiteId"
+              siteManagerGroupVariable="targetSiteManagerGroups"/>
+    </AutomatedTask>
 
     <AutomatedTask name="AutoMerge" successor="SendTranslationRequest">
       <Action class="com.coremedia.translate.workflow.CreateTranslationTreeDataAction"
@@ -308,19 +317,22 @@
       </ExitAction>
     </UserTask>
 
-    <If name="SelectTaskAfterDownloadTranslationError">
-      <Condition>
+    <Switch name="SelectTaskAfterDownloadTranslationError" defaultSuccessor="DownloadTranslation">
+      <Case successor="CancelTranslation">
         <Equal><Get variable="translationAction"/><String value="rollbackTranslation"/></Equal>
-      </Condition>
-      <Then successor="CancelTranslation"/>
-      <Else successor="DownloadTranslation"/>
-    </If>
+      </Case>
+      <Case successor="Complete">
+        <Equal><Get variable="translationAction"/><String value="finishTranslation_afterDownloadFailed"/></Equal>
+      </Case>
+    </Switch>
 
     <UserTask name="ReviewDeliveredTranslation" successor="SelectTaskAfterReviewDeliveredTranslation">
       <!--
         Should be kept aligned with ReviewRedeliveredTranslation.
       -->
       <Rights>
+        <Grant variable="targetSiteManagerGroups"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>
@@ -353,6 +365,8 @@
         directly changed from `Completed` to `Redelivered`.
       -->
       <Rights>
+        <Grant variable="targetSiteManagerGroups"
+               rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="administratoren" rights="read, accept, cancel, delegate, reject"/>

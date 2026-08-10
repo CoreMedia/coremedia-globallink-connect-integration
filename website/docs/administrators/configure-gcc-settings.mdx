@@ -39,6 +39,15 @@ default: `60` type: `Integer`). Intervals shorter than 60 seconds or longer
 than a day are not allowed and will fall back to the corresponding max or min
 values.
 
+This delay is also affected by the `gcc.gcc-retry-jitter` setting (see
+[Configuration in Studio](#configuration-in-studio) below).
+
+Just as the other retry delays, this delay may also be overridden in the
+content settings, where it is named `cms-retry-delay`. Note, however, that such an
+override can only take effect if the settings could be read before the Content
+Management Server became unavailable. The property value therefore serves as a
+fallback.
+
 If the delay is to be set upon system startup, you can do so by defining
 variable `GCC_CMS_RETRY_DELAY` with the appropriate value.
 
@@ -111,6 +120,11 @@ values. The interval is also limited to be not longer than one day because if
 you accidentally set it to a very big value, there would be no turning back. You
 would have to wait until it is expired.
 
+All delays listed here, as well as `gcc.cms-retry-delay` from
+[Server-side configuration](#server-side-configuration), can additionally be
+randomized with the `gcc.gcc-retry-jitter` setting described at the end of this
+section.
+
 :::tip[TIP: Integer or String]
 
 As retry delays you may specify integer values, interpreted as number of
@@ -129,13 +143,15 @@ Prior to 2506.0.0-1 only integer values were supported.
 * `sendTranslationRequestRetryDelay` The delay to wait, if the XLIFF could not
   be sent on first try.
 
-  (_optional_, default: `3m`, type: `Integer` or `String`)
+  (_optional_, default: `3m`, type: `Integer` or `String`, see also
+  `gcc-retry-jitter` below)
 
 * `downloadTranslationRetryDelay` The delay to wait before updating the
   submission's state and to eventually download the XLIFF once it contains
   the translations.
 
-  (_optional_, default: `30m`, type: `Integer` or `String`)
+  (_optional_, default: `30m`, type: `Integer` or `String`, see also
+  `gcc-retry-jitter` below)
 
 * <Since value="2506.0.0-1"/>
   `downloadTranslationEarlyRetryDelay` An alternative delay to
@@ -146,12 +162,47 @@ Prior to 2506.0.0-1 only integer values were supported.
   If _unset_ (the default), applies the `downloadTranslationRetryDelay`
   instead.
 
-  (_optional_, default: _unset_, type: `Integer` or `String`)
+  (_optional_, default: _unset_, type: `Integer` or `String`, see also
+  `gcc-retry-jitter` below)
 
 * `cancelTranslationRetryDelay` The delay to wait, if the first
   cancellation request failed until it is repeated.
 
-  (_optional_, default: `3m`, type: `Integer` or `String`)
+  (_optional_, default: `3m`, type: `Integer` or `String`, see also
+  `gcc-retry-jitter` below)
+
+* <Since value="2512.1.0-1"/>
+  `gcc-retry-jitter` Random jitter, given as integer percentage, that is
+  applied to _every_ retry delay listed above, thus,
+  `sendTranslationRequestRetryDelay`, `downloadTranslationRetryDelay`,
+  `downloadTranslationEarlyRetryDelay` and `cancelTranslationRetryDelay`, as
+  well as to `cms-retry-delay` from
+  [Server-side configuration](#server-side-configuration).
+
+  Jitter varies each delay randomly within the configured percentage. A value
+  of `20`, for example, varies a delay of 30 minutes between 24 and 36
+  minutes. As a result, workflow processes that would otherwise retry at the
+  exact same instant spread their requests over time.
+
+  Jitter does not prevent an initial peak of requests when many workflow
+  processes resume at the same time, for example, after a restart of the
+  Workflow Server. Some of these requests may still be answered with
+  `HTTP 429 (Too Many Requests)` by GlobalLink Connect Cloud. Jitter ensures,
+  though, that such a peak is short-lived: As each affected process then waits
+  a randomly varied amount of time, the requests desynchronize and the
+  situation typically resolves within one or two subsequent retries instead of
+  repeating with every retry.
+
+  Values above `100` are reduced to `100`, values below `0` are raised to `0`.
+  Values that cannot be interpreted as integer are ignored, thus, jitter stays
+  disabled. The resulting delays are still ensured to be within the general
+  bounds of 60 seconds and one day.
+
+  If _unset_ or `0` (the default), no jitter is applied and all delays behave
+  exactly as before.
+
+  (_optional_, default: `0` (disabled), type: `Integer` or `String`,
+  range: `0` to `100`)
 
 You can also define parameters for testing with the mock facade
 (see

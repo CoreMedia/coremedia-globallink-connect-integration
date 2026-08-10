@@ -45,16 +45,10 @@ public enum CharacterType {
    * Full Unicode support.
    */
   UNICODE {
-    /**
-     * No replacement needed, as all characters are supported.
-     *
-     * @param value    the value to check
-     * @param replacer the function to replace invalid characters; ignored
-     * @return the value as is
-     */
     @Override
     public String replaceAllInvalid(String value,
                                     Function<MatchResult, String> replacer) {
+      // No replacement needed, as all characters are supported.
       return value;
     }
   },
@@ -80,22 +74,18 @@ public enum CharacterType {
    * an unsupported type
    */
   public static Optional<CharacterType> fromConfig(@Nullable Object type) {
-    switch (type) {
+    return switch (type) {
       case null -> {
         LOG.trace("No character-type given. Returning empty.");
-        return Optional.empty();
+        yield Optional.empty();
       }
-      case CharacterType characterType -> {
-        return Optional.of(characterType);
-      }
-      case String stringType -> {
-        return fromString(stringType);
-      }
+      case CharacterType characterType -> Optional.of(characterType);
+      case String stringType -> fromString(stringType);
       default -> {
         LOG.debug("Unsupported type of character-type {} '{}'. Returning empty.", type.getClass(), type);
-        return Optional.empty();
+        yield Optional.empty();
       }
-    }
+    };
   }
 
   /**
