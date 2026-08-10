@@ -23,7 +23,6 @@ import com.coremedia.labs.translation.gcc.util.SettingsSource;
 import com.coremedia.rest.validation.Severity;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.assertj.core.api.SoftAssertions;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,6 +68,7 @@ import static com.coremedia.labs.translation.gcc.util.RetryDelay.saturatedOf;
 import static com.coremedia.labs.translation.gcc.workflow.GlobalLinkAction.DEFAULT_GCC_RETRY_DELAY_SETTINGS_KEY;
 import static java.util.Objects.requireNonNullElseGet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @SpringJUnitConfig(GlobalLinkActionTest.LocalConfig.class)
@@ -114,7 +114,8 @@ class GlobalLinkActionTest {
 
     @Nested
     class CmsOutageBehavior {
-      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
+      @SuppressWarnings("NullAway")
+      // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @ParameterizedTest(name = "[{index}] {arguments}")
       @CsvSource(useHeadersInDisplayName = true, textBlock = """
         retryDelaySource
@@ -180,7 +181,8 @@ class GlobalLinkActionTest {
         this.retryDelayMode = retryDelayMode;
       }
 
-      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
+      @SuppressWarnings("NullAway")
+      // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @ParameterizedTest(name = "[{index}] Retry Delay Key With Overridden Name = {0}")
       @ValueSource(booleans = {true, false})
       void shouldUseExpectedRetryDelayKey(boolean overrideName) {
@@ -218,7 +220,8 @@ class GlobalLinkActionTest {
           );
       }
 
-      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
+      @SuppressWarnings("NullAway")
+      // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       @Test
       void shouldRespectAdaptedRetryDelayForGeneralOperation() {
         int retryDelayBase = 1234;
@@ -256,7 +259,8 @@ class GlobalLinkActionTest {
     class RetryJitterBehavior {
       private static final int BASE_RETRY_DELAY_SECONDS = 1800;
 
-      @SuppressWarnings("NullAway") // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
+      @SuppressWarnings("NullAway")
+      // false-positive non-null assumption for generic parameter <P extends @Nullable Object> in GlobalLinkAction.Parameters<P>
       private GlobalLinkAction.Parameters<@Nullable Object> parameters() {
         return new GlobalLinkAction.Parameters<>(
           null,
@@ -312,7 +316,7 @@ class GlobalLinkActionTest {
           .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, jitterPercentage)
           .build();
 
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
           for (int i = 0; i < 20; i++) {
             GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
             softly.assertThat(result)
@@ -398,7 +402,7 @@ class GlobalLinkActionTest {
           .withInteger(GlobalLinkAction.DEFAULT_GCC_RETRY_JITTER_SETTINGS_KEY, 150)
           .build();
 
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
           for (int i = 0; i < 20; i++) {
             GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
             softly.assertThat(result)
@@ -448,7 +452,7 @@ class GlobalLinkActionTest {
           globalLinkAction.setOverrideGccRetryJitterSettingsKey(jitterKey);
         }
 
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
           boolean anyJitterApplied = false;
           for (int i = 0; i < 20; i++) {
             GlobalLinkAction.Result<Void> result = globalLinkAction.doExecute(parameters());
@@ -834,7 +838,6 @@ class GlobalLinkActionTest {
    * ---------------------------------------------------------------------------
    */
 
-  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Configuration(proxyBeanMethods = false)
   @Import({XmlRepoConfiguration.class, SimpleMultiSiteConfiguration.class, GCExchangeFacadeConfiguration.class})
   @ImportResource(reader = ResourceAwareXmlBeanDefinitionReader.class)
