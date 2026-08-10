@@ -9,7 +9,7 @@
       <Grant group="translation-manager-role"
              rights="create, read, write, start, suspend, resume, abort"/>
       <Grant group="administratoren" rights="create, read, write,  start, suspend, resume, abort"/>
-      <Grant variable="targetSiteManagerGroup" rights="read, write"/>
+      <Grant variable="targetSiteManagerGroups" rights="read, write"/>
     </Rights>
 
     <Variable name="subject" type="String"/>
@@ -19,7 +19,7 @@
     <AggregationVariable name="targetSiteId" type="String"/>
     <!-- list of locales that are marked as completed. -->
     <AggregationVariable name="completedLocales" type="String"/>
-    <AggregationVariable name="targetSiteManagerGroup" type="Group"/>
+    <AggregationVariable name="targetSiteManagerGroups" type="Group"/>
     <Variable name="performer" type="User"/>
     <Variable name="robotUser" type="User"/>
 
@@ -112,7 +112,7 @@
       <Writes variable="masterContentObjects"/>
       <Writes variable="derivedContents"/>
       <Writes variable="createdContents"/>
-      <Writes variable="targetSiteManagerGroup"/>
+      <Writes variable="targetSiteManagerGroups"/>
       <Writes variable="targetSiteId"/>
       <Writes variable="globalLinkSubmissionId"/>
       <Writes variable="globalLinkSubmissionStatus"/>
@@ -162,7 +162,7 @@
     <AutomatedTask name="GetTargetSiteManagerGroup" successor="AutoMerge">
       <Action class="com.coremedia.translate.workflow.GetMultiSiteManagerGroupAction"
               siteVariable="targetSiteId"
-              siteManagerGroupVariable="targetSiteManagerGroup"/>
+              siteManagerGroupVariable="targetSiteManagerGroups"/>
     </AutomatedTask>
 
     <AutomatedTask name="AutoMerge" successor="SendTranslationRequest">
@@ -331,7 +331,7 @@
         Should be kept aligned with ReviewRedeliveredTranslation.
       -->
       <Rights>
-        <Grant variable="targetSiteManagerGroup"
+        <Grant variable="targetSiteManagerGroups"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
@@ -365,7 +365,7 @@
         directly changed from `Completed` to `Redelivered`.
       -->
       <Rights>
-        <Grant variable="targetSiteManagerGroup"
+        <Grant variable="targetSiteManagerGroups"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
         <Grant group="translation-manager-role"
                rights="read, write, accept, complete, cancel, delegate, reject"/>
