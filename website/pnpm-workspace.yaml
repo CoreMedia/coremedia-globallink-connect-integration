@@ -50,6 +50,18 @@ overrides:
   # https://github.com/advisories/GHSA-8fgc-7cc6-rx7x (patched 5.104.1)
   webpack: ^5.105.3
 
+  # https://github.com/advisories/GHSA-7p8r-x3mc-p8w7
+  'fast-uri@>=3.0.0 <3.1.5': ^3.1.5
+  # https://github.com/advisories/GHSA-rgw5-rvv9-x895
+  'brace-expansion@>=4.0.0 <5.0.9': ^5.0.9
+  # https://github.com/advisories/GHSA-c4c3-pg64-4m4v
+  'mermaid@>=11.0.0 <11.16.1': ^11.16.1
+  # https://github.com/advisories/GHSA-5p4m-2wfm-xmqj
+  'js-yaml@>=4.0.0 <4.3.1': ^4.3.1
+  # https://github.com/advisories/GHSA-55q2-fjhq-7xh7
+  'dompurify@>=0.0.0 <3.4.13': ^3.4.13
+  # https://github.com/advisories/GHSA-2v37-7h3g-55p8
+  'nanoid@>=0.0.0 <3.3.17': ^3.3.17
 peerDependencyRules:
   allowedVersions:
     '@napi-rs/wasm-runtime>@emnapi/core': '1'
