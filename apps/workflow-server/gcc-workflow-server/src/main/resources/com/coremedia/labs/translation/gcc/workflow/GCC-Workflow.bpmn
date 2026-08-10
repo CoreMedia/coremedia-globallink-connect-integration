@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_1vt8gyf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.1.1">
   <bpmn:collaboration id="Collaboration_1205vur">
-    <bpmn:participant id="Participant_1k5rahc" name="translation-manager-role" processRef="Process_1" />
-    <bpmn:textAnnotation id="TextAnnotation_0llxue2">
-      <bpmn:text>gccStatus == REDELIVERED</bpmn:text>
+    <bpmn:participant id="Participant_1k5rahc" name="translation-globallink" processRef="Process_1" />
+    <bpmn:textAnnotation id="TextAnnotation_0kpev70">
+      <bpmn:text>gccStatus in
+[CANCELLATION_CONFIRMED, CANCELLED]</bpmn:text>
     </bpmn:textAnnotation>
-    <bpmn:association id="Association_07mhjy3" associationDirection="None" sourceRef="Flow_1uaw1py" targetRef="TextAnnotation_0llxue2" />
-    <bpmn:textAnnotation id="TextAnnotation_0wsnf7k">
-      <bpmn:text>gccStatus == DELIVERED</bpmn:text>
-    </bpmn:textAnnotation>
-    <bpmn:association id="Association_133b7lh" associationDirection="None" sourceRef="SequenceFlow_1q3uje5" targetRef="TextAnnotation_0wsnf7k" />
     <bpmn:textAnnotation id="TextAnnotation_1dfme25">
       <bpmn:text>gccStatus in
 [CANCELLATION_CONFIRMED, CANCELLED]
@@ -17,184 +13,201 @@
 (cancelled &amp;&amp;
 gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
     </bpmn:textAnnotation>
-    <bpmn:association id="Association_13eo36u" associationDirection="None" sourceRef="SequenceFlow_0ny071j" targetRef="TextAnnotation_1dfme25" />
-    <bpmn:textAnnotation id="TextAnnotation_0kpev70">
-      <bpmn:text>gccStatus in
-[CANCELLATION_CONFIRMED, CANCELLED]</bpmn:text>
+    <bpmn:textAnnotation id="TextAnnotation_0wsnf7k">
+      <bpmn:text>gccStatus == DELIVERED</bpmn:text>
     </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_0llxue2">
+      <bpmn:text>gccStatus == REDELIVERED</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_13eo36u" associationDirection="None" sourceRef="SequenceFlow_0ny071j" targetRef="TextAnnotation_1dfme25" />
+    <bpmn:association id="Association_07mhjy3" associationDirection="None" sourceRef="Flow_1uaw1py" targetRef="TextAnnotation_0llxue2" />
+    <bpmn:association id="Association_133b7lh" associationDirection="None" sourceRef="SequenceFlow_1q3uje5" targetRef="TextAnnotation_0wsnf7k" />
     <bpmn:association id="Association_0dth55e" associationDirection="None" sourceRef="SequenceFlow_1gkf4xz" targetRef="TextAnnotation_0kpev70" />
+    <bpmn:textAnnotation id="TextAnnotation_1mlpxzb">
+      <bpmn:text>completed</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_133kthy" associationDirection="None" sourceRef="Flow_1nr7lmv" targetRef="TextAnnotation_1mlpxzb" />
   </bpmn:collaboration>
   <bpmn:process id="Process_1" isExecutable="true">
-    <bpmn:exclusiveGateway id="ExclusiveGateway_1jk32ai" default="SequenceFlow_1m1jfu9">
-      <bpmn:incoming>SequenceFlow_1j3mjj8</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_1yp9pal</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_1m1jfu9</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_1gkf4xz</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_1q3uje5</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_1ji4k7m</bpmn:outgoing>
-      <bpmn:outgoing>Flow_1uaw1py</bpmn:outgoing>
+    <bpmn:userTask id="Activity_0ny8itj" name="Review Delivered Translation (redelivered)">
+      <bpmn:incoming>Flow_1uaw1py</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pgv43u</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_11jmfu5" name="Handle&#10;Send Translation Request Error">
+      <bpmn:incoming>SequenceFlow_02bjvew</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_11rri17</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_16kw1ye">
+      <bpmn:incoming>SequenceFlow_11rri17</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0hmaj6m</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_19fme40</bpmn:outgoing>
     </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_11rri17" sourceRef="Task_11jmfu5" targetRef="ExclusiveGateway_16kw1ye" />
+    <bpmn:startEvent id="StartEvent_07p9bpd">
+      <bpmn:outgoing>SequenceFlow_097qjs6</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_0h4p68c">
+      <bpmn:incoming>SequenceFlow_0vx8hly</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_0ho5dl9" name="Complete">
+      <bpmn:incoming>SequenceFlow_1dk2mfr</bpmn:incoming>
+      <bpmn:incoming>Flow_1nr7lmv</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0x4eo87</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0pgv43u" sourceRef="Activity_0ny8itj" targetRef="ExclusiveGateway_11vo6qu" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_11vo6qu">
+      <bpmn:incoming>Flow_0pgv43u</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_17x3zcq</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1dk2mfr</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_10ultzq</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_1dk2mfr" name="completed" sourceRef="ExclusiveGateway_11vo6qu" targetRef="Task_0ho5dl9" />
+    <bpmn:serviceTask id="Task_1f5v9d6" name="Finish">
+      <bpmn:incoming>SequenceFlow_0x4eo87</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0a4mjfm</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0yemoj6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0vx8hly</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0vx8hly" sourceRef="Task_1f5v9d6" targetRef="EndEvent_0h4p68c" />
+    <bpmn:sequenceFlow id="SequenceFlow_097qjs6" sourceRef="StartEvent_07p9bpd" targetRef="Task_0j091gc" />
+    <bpmn:sequenceFlow id="SequenceFlow_0x4eo87" sourceRef="Task_0ho5dl9" targetRef="Task_1f5v9d6" />
+    <bpmn:userTask id="Task_0yyyjlr" name="Review Delivered Translation">
+      <bpmn:incoming>SequenceFlow_1coxv9i</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1q3uje5</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_17x3zcq</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="SequenceFlow_17x3zcq" sourceRef="Task_0yyyjlr" targetRef="ExclusiveGateway_11vo6qu" />
+    <bpmn:serviceTask id="Task_0pe59bx" name="Rollback">
+      <bpmn:incoming>SequenceFlow_0hmaj6m</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_10ultzq</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1dw75ff</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1r901z3</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0ny071j</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0a4mjfm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0a4mjfm" sourceRef="Task_0pe59bx" targetRef="Task_1f5v9d6" />
+    <bpmn:sequenceFlow id="SequenceFlow_0hmaj6m" name="rollback" sourceRef="ExclusiveGateway_16kw1ye" targetRef="Task_0pe59bx" />
+    <bpmn:sequenceFlow id="SequenceFlow_10ultzq" name="rollback" sourceRef="ExclusiveGateway_11vo6qu" targetRef="Task_0pe59bx" />
+    <bpmn:userTask id="Task_0hyvewn" name="Review Cancelled Translation">
+      <bpmn:incoming>SequenceFlow_1gkf4xz</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1dw75ff</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1dw75ff" sourceRef="Task_0hyvewn" targetRef="Task_0pe59bx" />
+    <bpmn:serviceTask id="Task_0j091gc" name="Prepare&#10;">
+      <bpmn:incoming>SequenceFlow_097qjs6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_07gq977</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_07gq977" sourceRef="Task_0j091gc" targetRef="ExclusiveGateway_0mdmewu" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_0skeib3">
+      <bpmn:incoming>SequenceFlow_0hzm53q</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1r901z3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0p28pll</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0t37cde</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_1r901z3" name="rollback" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0pe59bx" />
+    <bpmn:userTask id="Task_1w6p8nu" name="Handle&#10;Cancel Translation Error">
+      <bpmn:incoming>SequenceFlow_0e03yp6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0hzm53q</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0hzm53q" sourceRef="Task_1w6p8nu" targetRef="ExclusiveGateway_0skeib3" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_05jbqrq">
+      <bpmn:incoming>SequenceFlow_1vy6ovs</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_19a8lpk</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1jxmwc7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1nr7lmv</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_0xtu95r" name="Download Translation">
+      <bpmn:incoming>Flow_0p28pll</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_19a8lpk</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_09a34e8</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1m1jfu9</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1j3mjj8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0p28pll" name="continue translation" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0xtu95r" />
+    <bpmn:sequenceFlow id="SequenceFlow_19a8lpk" name="retry download" sourceRef="ExclusiveGateway_05jbqrq" targetRef="Task_0xtu95r" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_147mgac" default="SequenceFlow_10bvbve">
+      <bpmn:incoming>SequenceFlow_000lcgi</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1coxv9i</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0ny071j</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0e03yp6</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_10bvbve</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_1coxv9i" name="!cancelled &#38;&#38;&#10;gccStatus in [DELIVERED, REDELIVERED]" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0yyyjlr" />
+    <bpmn:sequenceFlow id="SequenceFlow_0ny071j" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0pe59bx" />
+    <bpmn:sequenceFlow id="SequenceFlow_0e03yp6" name="errors exist &#38;&#38; retries == 0" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_1w6p8nu" />
+    <bpmn:serviceTask id="Task_0615ttf" name="Cancel Translation">
+      <bpmn:incoming>SequenceFlow_1jxmwc7</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0t37cde</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_10bvbve</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1ji4k7m</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_000lcgi</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_000lcgi" sourceRef="Task_0615ttf" targetRef="ExclusiveGateway_147mgac" />
+    <bpmn:sequenceFlow id="SequenceFlow_1jxmwc7" name="cancel" sourceRef="ExclusiveGateway_05jbqrq" targetRef="Task_0615ttf" />
+    <bpmn:sequenceFlow id="SequenceFlow_0t37cde" name="retry cancel" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0615ttf" />
+    <bpmn:sequenceFlow id="SequenceFlow_10bvbve" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0615ttf" />
+    <bpmn:userTask id="Task_1a98j80" name="Handle Download Translation Error">
+      <bpmn:incoming>SequenceFlow_1yp9pal</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1vy6ovs</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1vy6ovs" sourceRef="Task_1a98j80" targetRef="ExclusiveGateway_05jbqrq" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_0mdmewu">
+      <bpmn:incoming>SequenceFlow_07gq977</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0yemoj6</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_059ifsh</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_0yemoj6" name="derivedContents empty" sourceRef="ExclusiveGateway_0mdmewu" targetRef="Task_1f5v9d6" />
+    <bpmn:sequenceFlow id="SequenceFlow_059ifsh" name="derivedContents not empty" sourceRef="ExclusiveGateway_0mdmewu" targetRef="Activity_1o6hx3k" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_1m4f7qd">
+      <bpmn:incoming>SequenceFlow_14a3tgf</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_02bjvew</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_09a34e8</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1eqpdag</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_02bjvew" name="errors exist &#38;&#38; retries == 0" sourceRef="ExclusiveGateway_1m4f7qd" targetRef="Task_11jmfu5" />
+    <bpmn:sequenceFlow id="SequenceFlow_09a34e8" name="no errors" sourceRef="ExclusiveGateway_1m4f7qd" targetRef="Task_0xtu95r" />
     <bpmn:serviceTask id="Task_1lp89or" name="Send Translation Request">
       <bpmn:incoming>SequenceFlow_01omvwg</bpmn:incoming>
       <bpmn:incoming>SequenceFlow_1eqpdag</bpmn:incoming>
       <bpmn:incoming>SequenceFlow_19fme40</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_14a3tgf</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="ExclusiveGateway_1m4f7qd">
-      <bpmn:incoming>SequenceFlow_14a3tgf</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_1eqpdag</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_02bjvew</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_09a34e8</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_1nc40l9" name="Automerge">
-      <bpmn:incoming>SequenceFlow_059ifsh</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_01omvwg</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="ExclusiveGateway_0mdmewu">
-      <bpmn:incoming>SequenceFlow_07gq977</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_0yemoj6</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_059ifsh</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_1a98j80" name="Handle Download Translation Error">
-      <bpmn:incoming>SequenceFlow_1yp9pal</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_1vy6ovs</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Task_0615ttf" name="Cancel Translation">
-      <bpmn:incoming>SequenceFlow_1jxmwc7</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_10bvbve</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_0t37cde</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_1ji4k7m</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_000lcgi</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="ExclusiveGateway_147mgac" default="SequenceFlow_10bvbve">
-      <bpmn:incoming>SequenceFlow_000lcgi</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_10bvbve</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_0e03yp6</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_0ny071j</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_1coxv9i</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_0xtu95r" name="Download Translation">
-      <bpmn:incoming>SequenceFlow_09a34e8</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_19a8lpk</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_1m1jfu9</bpmn:incoming>
-      <bpmn:incoming>Flow_0p28pll</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_1j3mjj8</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="ExclusiveGateway_05jbqrq">
-      <bpmn:incoming>SequenceFlow_1vy6ovs</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_19a8lpk</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_1jxmwc7</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_1w6p8nu" name="Handle&#10;Cancel Translation Error">
-      <bpmn:incoming>SequenceFlow_0e03yp6</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_0hzm53q</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:exclusiveGateway id="ExclusiveGateway_0skeib3">
-      <bpmn:incoming>SequenceFlow_0hzm53q</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_0t37cde</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_1r901z3</bpmn:outgoing>
-      <bpmn:outgoing>Flow_0p28pll</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_0j091gc" name="Prepare&#10;">
-      <bpmn:incoming>SequenceFlow_097qjs6</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_07gq977</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:userTask id="Task_0hyvewn" name="Review Cancelled Translation">
-      <bpmn:incoming>SequenceFlow_1gkf4xz</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_1dw75ff</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Task_0pe59bx" name="Rollback">
-      <bpmn:incoming>SequenceFlow_0hmaj6m</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_1r901z3</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_1dw75ff</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_0ny071j</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_10ultzq</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_0a4mjfm</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:userTask id="Task_0yyyjlr" name="Review Delivered Translation">
-      <bpmn:incoming>SequenceFlow_1q3uje5</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_1coxv9i</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_17x3zcq</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Task_1f5v9d6" name="Finish">
-      <bpmn:incoming>SequenceFlow_0yemoj6</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_0a4mjfm</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_0x4eo87</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_0vx8hly</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="ExclusiveGateway_11vo6qu">
-      <bpmn:incoming>SequenceFlow_17x3zcq</bpmn:incoming>
-      <bpmn:incoming>Flow_0pgv43u</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_1dk2mfr</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_10ultzq</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_0ho5dl9" name="Complete">
-      <bpmn:incoming>SequenceFlow_1dk2mfr</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_0x4eo87</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:endEvent id="EndEvent_0h4p68c">
-      <bpmn:incoming>SequenceFlow_0vx8hly</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:startEvent id="StartEvent_07p9bpd">
-      <bpmn:outgoing>SequenceFlow_097qjs6</bpmn:outgoing>
-    </bpmn:startEvent>
-    <bpmn:exclusiveGateway id="ExclusiveGateway_16kw1ye">
-      <bpmn:incoming>SequenceFlow_11rri17</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_19fme40</bpmn:outgoing>
-      <bpmn:outgoing>SequenceFlow_0hmaj6m</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_11jmfu5" name="Handle&#10;Send Translation Request Error">
-      <bpmn:incoming>SequenceFlow_02bjvew</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_11rri17</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="SequenceFlow_11rri17" sourceRef="Task_11jmfu5" targetRef="ExclusiveGateway_16kw1ye" />
-    <bpmn:sequenceFlow id="SequenceFlow_1dk2mfr" name="completed" sourceRef="ExclusiveGateway_11vo6qu" targetRef="Task_0ho5dl9" />
-    <bpmn:sequenceFlow id="SequenceFlow_0vx8hly" sourceRef="Task_1f5v9d6" targetRef="EndEvent_0h4p68c" />
-    <bpmn:sequenceFlow id="SequenceFlow_0x4eo87" sourceRef="Task_0ho5dl9" targetRef="Task_1f5v9d6" />
-    <bpmn:sequenceFlow id="SequenceFlow_17x3zcq" sourceRef="Task_0yyyjlr" targetRef="ExclusiveGateway_11vo6qu" />
-    <bpmn:sequenceFlow id="SequenceFlow_0a4mjfm" sourceRef="Task_0pe59bx" targetRef="Task_1f5v9d6" />
-    <bpmn:sequenceFlow id="SequenceFlow_10ultzq" name="rollback" sourceRef="ExclusiveGateway_11vo6qu" targetRef="Task_0pe59bx" />
-    <bpmn:sequenceFlow id="SequenceFlow_0e03yp6" name="errors exist &#38;&#38; retries == 0" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_1w6p8nu" />
-    <bpmn:sequenceFlow id="SequenceFlow_000lcgi" sourceRef="Task_0615ttf" targetRef="ExclusiveGateway_147mgac" />
-    <bpmn:sequenceFlow id="SequenceFlow_10bvbve" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0615ttf" />
-    <bpmn:sequenceFlow id="SequenceFlow_0t37cde" name="retry cancel" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0615ttf" />
-    <bpmn:sequenceFlow id="SequenceFlow_0hzm53q" sourceRef="Task_1w6p8nu" targetRef="ExclusiveGateway_0skeib3" />
-    <bpmn:sequenceFlow id="SequenceFlow_1ji4k7m" name="cancel requested" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0615ttf" />
-    <bpmn:sequenceFlow id="SequenceFlow_1gkf4xz" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0hyvewn" />
-    <bpmn:sequenceFlow id="SequenceFlow_1vy6ovs" sourceRef="Task_1a98j80" targetRef="ExclusiveGateway_05jbqrq" />
-    <bpmn:sequenceFlow id="SequenceFlow_1yp9pal" name="errors exist &#38;&#38; retries == 0" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_1a98j80" />
-    <bpmn:sequenceFlow id="SequenceFlow_1j3mjj8" sourceRef="Task_0xtu95r" targetRef="ExclusiveGateway_1jk32ai" />
-    <bpmn:sequenceFlow id="SequenceFlow_1m1jfu9" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0xtu95r" />
-    <bpmn:sequenceFlow id="SequenceFlow_19a8lpk" name="retry download" sourceRef="ExclusiveGateway_05jbqrq" targetRef="Task_0xtu95r" />
-    <bpmn:sequenceFlow id="SequenceFlow_1jxmwc7" name="cancel" sourceRef="ExclusiveGateway_05jbqrq" targetRef="Task_0615ttf" />
-    <bpmn:sequenceFlow id="SequenceFlow_097qjs6" sourceRef="StartEvent_07p9bpd" targetRef="Task_0j091gc" />
-    <bpmn:sequenceFlow id="SequenceFlow_09a34e8" name="no errors" sourceRef="ExclusiveGateway_1m4f7qd" targetRef="Task_0xtu95r" />
-    <bpmn:sequenceFlow id="SequenceFlow_0hmaj6m" name="rollback" sourceRef="ExclusiveGateway_16kw1ye" targetRef="Task_0pe59bx" />
-    <bpmn:sequenceFlow id="SequenceFlow_19fme40" name="retry send translation request" sourceRef="ExclusiveGateway_16kw1ye" targetRef="Task_1lp89or" />
-    <bpmn:sequenceFlow id="SequenceFlow_02bjvew" name="errors exist &#38;&#38; retries == 0" sourceRef="ExclusiveGateway_1m4f7qd" targetRef="Task_11jmfu5" />
-    <bpmn:sequenceFlow id="SequenceFlow_1eqpdag" name="errors exist &#38;&#38; retries &#62; 0" sourceRef="ExclusiveGateway_1m4f7qd" targetRef="Task_1lp89or" />
     <bpmn:sequenceFlow id="SequenceFlow_14a3tgf" sourceRef="Task_1lp89or" targetRef="ExclusiveGateway_1m4f7qd" />
     <bpmn:sequenceFlow id="SequenceFlow_01omvwg" sourceRef="Task_1nc40l9" targetRef="Task_1lp89or" />
-    <bpmn:sequenceFlow id="SequenceFlow_059ifsh" name="derivedContents not empty" sourceRef="ExclusiveGateway_0mdmewu" targetRef="Task_1nc40l9" />
-    <bpmn:sequenceFlow id="SequenceFlow_0yemoj6" name="derivedContents empty" sourceRef="ExclusiveGateway_0mdmewu" targetRef="Task_1f5v9d6" />
-    <bpmn:sequenceFlow id="SequenceFlow_07gq977" sourceRef="Task_0j091gc" targetRef="ExclusiveGateway_0mdmewu" />
-    <bpmn:sequenceFlow id="SequenceFlow_1q3uje5" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0yyyjlr" />
-    <bpmn:sequenceFlow id="SequenceFlow_1r901z3" name="rollback" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0pe59bx" />
-    <bpmn:sequenceFlow id="SequenceFlow_1dw75ff" sourceRef="Task_0hyvewn" targetRef="Task_0pe59bx" />
-    <bpmn:sequenceFlow id="SequenceFlow_0ny071j" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0pe59bx" />
-    <bpmn:sequenceFlow id="SequenceFlow_1coxv9i" name="!cancelled &#38;&#38;&#10;gccStatus in [DELIVERED, REDELIVERED]" sourceRef="ExclusiveGateway_147mgac" targetRef="Task_0yyyjlr" />
-    <bpmn:sequenceFlow id="Flow_0p28pll" name="continue translation" sourceRef="ExclusiveGateway_0skeib3" targetRef="Task_0xtu95r" />
-    <bpmn:userTask id="Activity_0ny8itj" name="Review Delivered Translation (redelivered)">
-      <bpmn:incoming>Flow_1uaw1py</bpmn:incoming>
-      <bpmn:outgoing>Flow_0pgv43u</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_0pgv43u" sourceRef="Activity_0ny8itj" targetRef="ExclusiveGateway_11vo6qu" />
+    <bpmn:sequenceFlow id="SequenceFlow_1eqpdag" name="errors exist &#38;&#38; retries &#62; 0" sourceRef="ExclusiveGateway_1m4f7qd" targetRef="Task_1lp89or" />
+    <bpmn:sequenceFlow id="SequenceFlow_19fme40" name="retry send translation request" sourceRef="ExclusiveGateway_16kw1ye" targetRef="Task_1lp89or" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_1jk32ai" default="SequenceFlow_1m1jfu9">
+      <bpmn:incoming>SequenceFlow_1j3mjj8</bpmn:incoming>
+      <bpmn:outgoing>Flow_1uaw1py</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1q3uje5</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1m1jfu9</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1yp9pal</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1gkf4xz</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1ji4k7m</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_1uaw1py" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Activity_0ny8itj" />
+    <bpmn:sequenceFlow id="SequenceFlow_1q3uje5" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0yyyjlr" />
+    <bpmn:sequenceFlow id="SequenceFlow_1m1jfu9" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0xtu95r" />
+    <bpmn:sequenceFlow id="SequenceFlow_1yp9pal" name="errors exist &#38;&#38; retries == 0" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_1a98j80" />
+    <bpmn:sequenceFlow id="SequenceFlow_1gkf4xz" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0hyvewn" />
+    <bpmn:sequenceFlow id="SequenceFlow_1ji4k7m" name="cancel requested" sourceRef="ExclusiveGateway_1jk32ai" targetRef="Task_0615ttf" />
+    <bpmn:sequenceFlow id="SequenceFlow_1j3mjj8" sourceRef="Task_0xtu95r" targetRef="ExclusiveGateway_1jk32ai" />
+    <bpmn:serviceTask id="Task_1nc40l9" name="Automerge">
+      <bpmn:incoming>Flow_125yshu</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_01omvwg</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1o6hx3k" name="Get Site Manager Groups">
+      <bpmn:incoming>SequenceFlow_059ifsh</bpmn:incoming>
+      <bpmn:outgoing>Flow_125yshu</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_125yshu" sourceRef="Activity_1o6hx3k" targetRef="Task_1nc40l9" />
+    <bpmn:sequenceFlow id="Flow_1nr7lmv" sourceRef="ExclusiveGateway_05jbqrq" targetRef="Task_0ho5dl9" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1205vur">
       <bpmndi:BPMNShape id="Participant_1k5rahc_di" bpmnElement="Participant_1k5rahc" isHorizontal="true">
         <dc:Bounds x="152" y="84" width="1288" height="1836" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ExclusiveGateway_1jk32ai_di" bpmnElement="ExclusiveGateway_1jk32ai" isMarkerVisible="true">
         <dc:Bounds x="367" y="1040" width="50" height="50" />
@@ -204,9 +217,6 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ExclusiveGateway_1m4f7qd_di" bpmnElement="ExclusiveGateway_1m4f7qd" isMarkerVisible="true">
         <dc:Bounds x="367" y="744" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_0ishkke_di" bpmnElement="Task_1nc40l9">
-        <dc:Bounds x="342" y="469" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ExclusiveGateway_0mdmewu_di" bpmnElement="ExclusiveGateway_0mdmewu" isMarkerVisible="true">
         <dc:Bounds x="367" y="320" width="50" height="50" />
@@ -272,6 +282,13 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <dc:Bounds x="220" y="1379" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0ishkke_di" bpmnElement="Task_1nc40l9">
+        <dc:Bounds x="342" y="520" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0x70lxv" bpmnElement="Activity_1o6hx3k">
+        <dc:Bounds x="342" y="410" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_11rri17_di" bpmnElement="SequenceFlow_11rri17">
         <di:waypoint x="573" y="729" />
         <di:waypoint x="573" y="691" />
@@ -304,7 +321,7 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="417" y="1512" />
         <di:waypoint x="1200" y="1512" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="424" y="1490" width="38" height="14" />
+          <dc:Bounds x="424" y="1490" width="39" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0e03yp6_di" bpmnElement="SequenceFlow_0e03yp6">
@@ -331,7 +348,7 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="1027" y="947" />
         <di:waypoint x="896" y="947" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="949" y="927" width="57" height="14" />
+          <dc:Bounds x="949" y="927" width="58" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0hzm53q_di" bpmnElement="SequenceFlow_0hzm53q">
@@ -391,7 +408,7 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="598" y="947" />
         <di:waypoint x="796" y="947" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="624" y="929" width="32" height="14" />
+          <dc:Bounds x="624" y="929" width="33" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_097qjs6_di" bpmnElement="SequenceFlow_097qjs6">
@@ -402,7 +419,7 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="392" y="794" />
         <di:waypoint x="392" y="907" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="400" y="829" width="45" height="14" />
+          <dc:Bounds x="400" y="807" width="45" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0hmaj6m_di" bpmnElement="SequenceFlow_0hmaj6m">
@@ -410,14 +427,14 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="1250" y="666" />
         <di:waypoint x="1250" y="1472" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="603" y="646" width="38" height="14" />
+          <dc:Bounds x="603" y="646" width="39" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_19fme40_di" bpmnElement="SequenceFlow_19fme40">
         <di:waypoint x="548" y="666" />
         <di:waypoint x="442" y="666" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="479" y="619" width="51" height="40" />
+          <dc:Bounds x="480" y="619" width="50" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_02bjvew_di" bpmnElement="SequenceFlow_02bjvew">
@@ -441,14 +458,14 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="392" y="744" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_01omvwg_di" bpmnElement="SequenceFlow_01omvwg">
-        <di:waypoint x="392" y="549" />
+        <di:waypoint x="392" y="600" />
         <di:waypoint x="392" y="626" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_059ifsh_di" bpmnElement="SequenceFlow_059ifsh">
         <di:waypoint x="392" y="370" />
-        <di:waypoint x="392" y="469" />
+        <di:waypoint x="392" y="410" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="399" y="393" width="81" height="27" />
+          <dc:Bounds x="399" y="371" width="81" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0yemoj6_di" bpmnElement="SequenceFlow_0yemoj6">
@@ -476,7 +493,7 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="1250" y="948" />
         <di:waypoint x="1250" y="1472" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1086" y="930" width="38" height="14" />
+          <dc:Bounds x="1086" y="930" width="39" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_1dw75ff_di" bpmnElement="SequenceFlow_1dw75ff">
@@ -503,11 +520,11 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0p28pll_di" bpmnElement="Flow_0p28pll">
         <di:waypoint x="1051" y="923" />
-        <di:waypoint x="1051" y="880" />
-        <di:waypoint x="420" y="880" />
+        <di:waypoint x="1051" y="850" />
+        <di:waypoint x="420" y="850" />
         <di:waypoint x="420" y="907" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="964" y="846" width="51" height="27" />
+          <dc:Bounds x="965" y="816" width="50" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0pgv43u_di" bpmnElement="Flow_0pgv43u">
@@ -520,20 +537,35 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="270" y="1190" />
         <di:waypoint x="270" y="1379" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_13eo36u_di" bpmnElement="Association_13eo36u">
-        <di:waypoint x="1201.5285760948182" y="1157" />
-        <di:waypoint x="1173" y="1170" />
+      <bpmndi:BPMNEdge id="Flow_125yshu_di" bpmnElement="Flow_125yshu">
+        <di:waypoint x="392" y="490" />
+        <di:waypoint x="392" y="520" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_0dth55e_di" bpmnElement="Association_0dth55e">
-        <di:waypoint x="629.3707620070252" y="1363" />
-        <di:waypoint x="666" y="1317" />
+      <bpmndi:BPMNEdge id="Flow_1nr7lmv_di" bpmnElement="Flow_1nr7lmv">
+        <di:waypoint x="573" y="922" />
+        <di:waypoint x="573" y="880" />
+        <di:waypoint x="200" y="880" />
+        <di:waypoint x="200" y="1617" />
+        <di:waypoint x="342" y="1617" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_133kthy_di" bpmnElement="Association_133kthy">
+        <di:waypoint x="573" y="900" />
+        <di:waypoint x="590" y="896" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="TextAnnotation_0llxue2_di" bpmnElement="TextAnnotation_0llxue2">
-        <dc:Bounds x="280" y="1240" width="99.99305040770942" height="40.7709414381023" />
+        <dc:Bounds x="280" y="1240" width="100" height="41" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0wsnf7k_di" bpmnElement="TextAnnotation_0wsnf7k">
-        <dc:Bounds x="410" y="1260" width="99.99305040770942" height="40.7709414381023" />
+        <dc:Bounds x="410" y="1260" width="100" height="41" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1dfme25_di" bpmnElement="TextAnnotation_1dfme25">
+        <dc:Bounds x="950" y="1170" width="275" height="90" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0kpev70_di" bpmnElement="TextAnnotation_0kpev70">
+        <dc:Bounds x="650" y="1260" width="194" height="57" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_07mhjy3_di" bpmnElement="Association_07mhjy3">
@@ -544,12 +576,16 @@ gccStatus in [DELIVERED, REDELIVERED])</bpmn:text>
         <di:waypoint x="392" y="1234.5" />
         <di:waypoint x="435" y="1260" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="TextAnnotation_1dfme25_di" bpmnElement="TextAnnotation_1dfme25">
-        <dc:Bounds x="950" y="1170" width="275" height="90" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="TextAnnotation_0kpev70_di" bpmnElement="TextAnnotation_0kpev70">
-        <dc:Bounds x="650" y="1260" width="194.44001276324187" height="57.434588385449906" />
+      <bpmndi:BPMNEdge id="Association_13eo36u_di" bpmnElement="Association_13eo36u">
+        <di:waypoint x="1201.5285760948182" y="1157" />
+        <di:waypoint x="1173" y="1170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0dth55e_di" bpmnElement="Association_0dth55e">
+        <di:waypoint x="629.3707620070252" y="1363" />
+        <di:waypoint x="666" y="1317" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_1mlpxzb_di" bpmnElement="TextAnnotation_1mlpxzb">
+        <dc:Bounds x="590" y="870" width="99.98924268502583" height="29.999462134251292" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>

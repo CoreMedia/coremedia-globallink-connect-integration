@@ -18,6 +18,7 @@ import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionInstruction;
 import com.coremedia.labs.translation.gcc.facade.config.GCSubmissionName;
 import com.coremedia.labs.translation.gcc.util.Settings;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
@@ -235,7 +236,7 @@ public class DefaultGCExchangeFacade implements GCExchangeFacade {
   }
 
   private static String gcResponseToString(GCResponse response) {
-    return com.google.common.base.MoreObjects.toStringHelper(response)
+    return MoreObjects.toStringHelper(response)
       .add("status", response.getStatus())
       .add("statusCode", response.getStatusCode())
       .add("error", response.getError())

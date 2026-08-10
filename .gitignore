@@ -209,3 +209,6 @@ node_modules/
 dist/
 build/
 generated/
+
+# Temporary Folder
+/tmp/
