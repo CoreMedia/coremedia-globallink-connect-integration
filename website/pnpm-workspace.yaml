@@ -76,6 +76,8 @@ overrides:
   'js-yaml@>=4.0.0 <4.3.2': ^4.3.2
   # https://github.com/advisories/GHSA-w27v-7q3p-w38r
   'svgo@>=3.0.0 <3.3.5': ^3.3.5
+  # https://github.com/advisories/GHSA-5p2g-fcmc-qvqq
+  'image-size@>=1.2.0 <2.0.3': ^2.0.3
 peerDependencyRules:
   allowedVersions:
     '@napi-rs/wasm-runtime>@emnapi/core': '1'
