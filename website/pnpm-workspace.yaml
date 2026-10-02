@@ -78,6 +78,12 @@ overrides:
   'svgo@>=3.0.0 <3.3.5': ^3.3.5
   # https://github.com/advisories/GHSA-5p2g-fcmc-qvqq
   'image-size@>=1.2.0 <2.0.3': ^2.0.3
+  # https://github.com/advisories/GHSA-hrr3-gc8f-f4qj
+  'fast-uri@>=3.0.0 <3.1.8': ^3.1.8
+  # https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
+  'brace-expansion@>=4.0.0 <5.0.12': ^5.0.12
+  # https://github.com/advisories/GHSA-p98j-92pf-mc4p
+  'dompurify@>=3.4.13 <3.4.16': ^3.4.16
 peerDependencyRules:
   allowedVersions:
     '@napi-rs/wasm-runtime>@emnapi/core': '1'
