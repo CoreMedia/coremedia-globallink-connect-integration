@@ -59,6 +59,13 @@ named according to the CMS major version. It is recommended to take these tags
 as a starting point from within your project, choosing the major version
 matching your project version.
 
+# Contributing
+
+Want to contribute, or point an AI coding assistant at this repository? See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process and
+[AGENTS.md](AGENTS.md) for a machine- and human-readable orientation to this
+repository's structure and conventions.
+
 # See Also
 
 ## GCC Java REST Client Facades
