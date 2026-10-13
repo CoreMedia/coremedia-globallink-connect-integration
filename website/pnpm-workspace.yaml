@@ -84,6 +84,22 @@ overrides:
   'brace-expansion@>=4.0.0 <5.0.12': ^5.0.12
   # https://github.com/advisories/GHSA-p98j-92pf-mc4p
   'dompurify@>=3.4.13 <3.4.16': ^3.4.16
+  # https://github.com/advisories/GHSA-r4xh-jqrq-34v2
+  'smol-toml@>=0.0.0 <1.9.0': ^1.9.0
+  # https://github.com/advisories/GHSA-238p-pmpm-9mq7
+  'katex@>=0.11.0 <0.18.2': ^0.18.2
+  # https://github.com/advisories/GHSA-68fv-2mgg-jv7q
+  'source-map-js@>=1.0.0 <1.2.2': ^1.2.2
+  # https://github.com/advisories/GHSA-jqcg-44mw-7w3h
+  'proxy-addr@>=1.1.0 <2.0.8': ^2.0.8
+  # https://github.com/advisories/GHSA-vc2v-76pw-4v95
+  'compression@>=0.0.0 <1.8.2': ^1.8.2
+  # https://github.com/advisories/GHSA-rj75-hqrm-r3gf
+  'postcss-selector-parser@>=0.0.0 <7.1.6': ^7.1.6
+  # https://github.com/advisories/GHSA-85c8-ppgw-ccpr
+  'tinypool@>=0.0.0 <2.1.2': ^2.1.2
+  # https://github.com/advisories/GHSA-pqg4-j6r4-53mv
+  'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
 peerDependencyRules:
   allowedVersions:
     '@napi-rs/wasm-runtime>@emnapi/core': '1'
