@@ -16,7 +16,7 @@ catalogs:
     '@types/unist': ^3.0.3
     clsx: ^2.1.1
     knip: ^6.29.0
-    mdast-util-from-markdown: ^2.0.3
+    mdast-util-from-markdown: ^2.1.0
     prism-react-renderer: ^2.4.1
     react: ^19.2.8
     react-dom: ^19.2.8
