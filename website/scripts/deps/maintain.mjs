@@ -1,31 +1,34 @@
 #!/usr/bin/env node
 /**
- * Website dependency maintenance: one run keeps Docusaurus current, fixes
- * vulnerabilities with the smallest set of overrides, and reviews blocked
- * advisories. Every change is verified by install, build, and smoke test;
- * changes that break the site are reverted and reported.
+ * Website dependency maintenance: one run keeps Docusaurus and all other
+ * dependencies current, fixes vulnerabilities with the smallest set of
+ * overrides, and reviews blocked advisories. Every change is verified by
+ * install, build, and smoke test; changes that break the site are reverted
+ * and reported.
  *
  * Steps:
  *   1. Update `@docusaurus/*` to the latest minor or patch release.
- *   2. Drop blocked advisories that no longer apply. Blocks last reviewed
- *      with another Docusaurus version are retried in step 3.
- *   3. Rebuild overrides: remove all (except `keepOverrides`), then
+ *   2. Update all other packages within their declared ranges
+ *      (`pnpm update`, lockfile only).
+ *   3. Drop blocked advisories that no longer apply. Blocks last reviewed
+ *      with another Docusaurus version are retried in step 4.
+ *   4. Rebuild overrides: remove all (except `keepOverrides`), then
  *      `pnpm audit --fix update` (lockfile only) and
  *      `pnpm audit --fix override` for the rest. Fallbacks: keep retried
  *      blocks, then only add fixes to the existing overrides.
- *   4. Write a Markdown report.
+ *   5. Write a Markdown report.
  *
  * Usage (from `website/`):
- *   node ./scripts/deps/maintain.mjs [--report <file>] [--recheck-blocks] [--skip-docusaurus]
+ *   node ./scripts/deps/maintain.mjs [--report <file>] [--recheck-blocks] [--skip-docusaurus] [--skip-updates]
  *
  * Exit codes: 0 = done; 2 = done, but action required (see report); 1 = error.
  */
 
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import semver from 'semver';
-import { changedSince, restore, snapshot, WorkspaceFile } from './lib/files.mjs';
-import { audit, installedVersion, latestRelease, pnpm, startGroup } from './lib/pnpm.mjs';
+import { changedSince, lockfileChanges, restore, snapshot, WorkspaceFile } from './lib/files.mjs';
+import { audit, installedVersion, latestRelease, outdatedOutsideRange, pnpm, startGroup } from './lib/pnpm.mjs';
 import {
   applyBlocks,
   DEPENDABOT_PATH,
@@ -43,6 +46,7 @@ const { values: options } = parseArgs({
     report: { type: 'string' },
     'recheck-blocks': { type: 'boolean', default: false },
     'skip-docusaurus': { type: 'boolean', default: false },
+    'skip-updates': { type: 'boolean', default: false },
   },
 });
 
@@ -52,6 +56,7 @@ const DOCUSAURUS_CORE = '@docusaurus/core';
 /** Collected results for the report. */
 const report = {
   docusaurus: { status: 'skipped', current: '', latest: '' },
+  updates: { status: 'skipped', changes: [], outsideRange: [] },
   vulnerabilitiesBefore: [],
   vulnerabilitiesAfter: [],
   overridesBefore: {},
@@ -150,7 +155,41 @@ const updateDocusaurus = async () => {
 };
 
 /**
- * Step 2: sorts blocked advisories into obsolete, to retry, and to keep.
+ * Step 2: updates all packages within their declared ranges. This is what
+ * Dependabot's lockfile-only pull requests do, but verified.
+ */
+const updateDependencies = async () => {
+  if (options['skip-updates']) return;
+  console.log('\n▶ Package updates within declared ranges');
+  const saved = snapshot(TRACKED_FILES);
+  const end = startGroup('pnpm update');
+  const updated = pnpm(['update']).ok;
+  end();
+  if (updated) {
+    // Normalize key order, so an unchanged result is detected as unchanged.
+    new WorkspaceFile(WORKSPACE_PATH).save();
+    if (!changedSince(saved)) {
+      report.updates.status = 'up-to-date';
+      return;
+    }
+    report.updates.changes = lockfileChanges(saved.get(LOCKFILE_PATH), readFileSync(LOCKFILE_PATH, 'utf8'));
+  }
+
+  const result = updated ? await verify('package updates', saved) : { ok: false, step: 'pnpm update' };
+  if (result.ok) {
+    report.updates.status = 'updated';
+    return;
+  }
+  restore(saved);
+  report.updates.status = 'failed';
+  report.actionRequired.push(
+    `The package updates break the site (${describeFailure(result)}) and were discarded. ` +
+      'A developer should run `pnpm update` locally, find the offending package, and pin it in the catalog.',
+  );
+};
+
+/**
+ * Step 3: sorts blocked advisories into obsolete, to retry, and to keep.
  * A block is retried when the Docusaurus version changed since its last
  * review, or when a fixed version was published since.
  *
@@ -244,7 +283,7 @@ const applySecurityPlan = async (plan, keepOverrides) => {
 };
 
 /**
- * Step 3: fixes vulnerabilities, trying the plans in order until one works.
+ * Step 4: fixes vulnerabilities, trying the plans in order until one works.
  *
  * @param {{retry: object[]}} blocks - the block review result
  * @param {Set<string>} keepOverrides - override keys never removed
@@ -287,6 +326,35 @@ const renderReport = () => {
     failed: `Updating to ${docusaurus.latest} breaks the site; kept ${docusaurus.current}.`,
   }[docusaurus.status];
   lines.push('### Docusaurus', '', docusaurusText, '');
+
+  const { updates } = report;
+  const versions = (list) => (list.length > 0 ? list.join(', ') : '–');
+  const updatesText = {
+    skipped: 'Not checked.',
+    'up-to-date': 'All packages are up to date within their declared ranges.',
+    updated: `Updated ${updates.changes.length} packages within their declared ranges (build and smoke test passed).`,
+    failed: `The updates of ${updates.changes.length} packages break the site; discarded.`,
+  }[updates.status];
+  lines.push('### Package Updates', '', updatesText, '');
+  if (updates.changes.length > 0) {
+    lines.push(
+      '<details>',
+      '<summary>Changed packages</summary>',
+      '',
+      ...updates.changes.map((change) => `* \`${change.name}\`: ${versions(change.before)} → ${versions(change.after)}`),
+      '',
+      '</details>',
+      '',
+    );
+  }
+  if (updates.outsideRange.length > 0) {
+    lines.push(
+      'Newer versions outside the declared ranges (update manually when needed):',
+      '',
+      ...updates.outsideRange.map((entry) => `* \`${entry.name}\`: ${entry.current} → ${entry.latest}`),
+      '',
+    );
+  }
 
   const key = (advisory) => `${advisory.ghsa}|${advisory.module}`;
   const after = new Set(report.vulnerabilitiesAfter.map(key));
@@ -345,6 +413,7 @@ const main = async () => {
   report.vulnerabilitiesBefore = audit();
 
   const docusaurusVersion = await updateDocusaurus();
+  await updateDependencies();
 
   const blocks = reviewBlocks(initialPolicy.blockedAdvisories, docusaurusVersion);
   const keepOverrides = new Set(Object.keys(initialPolicy.keepOverrides));

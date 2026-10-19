@@ -20,8 +20,10 @@ updates:
     open-pull-requests-limit: 5
 
   # Website dependencies managed by pnpm.
-  # The "Website Dependencies" workflow updates @docusaurus/*, rebuilds the
-  # overrides in website/pnpm-workspace.yaml, and reviews blocked advisories.
+  # The "Website Dependencies" workflow owns all updates: Docusaurus, package
+  # updates within the declared ranges, overrides, and blocked advisories.
+  # Dependabot only raises security updates here (version updates are
+  # disabled by open-pull-requests-limit: 0); pages-test-deploy.yml tests them.
   # Ignore rules for blocked advisories are managed via
   # website/dependency-policy.json; do not edit them here.
   # See: website/DEPENDENCY_MAINTENANCE.md
@@ -31,23 +33,10 @@ updates:
       # Updated by the "Website Dependencies" workflow.
       - dependency-name: "@docusaurus/*"
     groups:
-      # Must be updated together, or the build fails.
-      react:
-        patterns:
-          - "react"
-          - "react-dom"
-          - "@types/react"
-      website-minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
       website-security:
         applies-to: security-updates
         patterns:
           - "*"
-    # pnpm refuses releases younger than minimumReleaseAge (1 day).
-    cooldown:
-      default-days: 2
     commit-message:
       prefix: 'build(pnpm):'
     schedule:
@@ -56,7 +45,8 @@ updates:
       - "scope/dependencies"
       - "scope/website"
       - "type/build"
-    open-pull-requests-limit: 5
+    # Disables version updates; security updates are not affected.
+    open-pull-requests-limit: 0
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
