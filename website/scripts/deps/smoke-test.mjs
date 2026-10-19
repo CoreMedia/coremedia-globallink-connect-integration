@@ -73,15 +73,15 @@ const readSitemapPaths = (buildDir) => {
  */
 const extractAssetPaths = (html) => {
   const attribute = (tag, name) => {
-    const match = tag.match(new RegExp(`\\s${name}=(?:"([^"]+)"|'([^']+)'|([^\\s>]+))`));
+    const match = tag.match(new RegExp(`\\s${name}=(?:"([^"]+)"|'([^']+)'|([^\\s>]+))`, 'i'));
     return match ? (match[1] ?? match[2] ?? match[3]) : undefined;
   };
   const assets = [];
-  for (const [tag] of html.matchAll(/<(?:script|link)\b[^>]*>/g)) {
-    if (tag.startsWith('<script')) {
+  for (const [tag, element] of html.matchAll(/<(script|link)\b[^>]*>/gi)) {
+    if (element.toLowerCase() === 'script') {
       const src = attribute(tag, 'src');
       if (src) assets.push(src);
-    } else if (attribute(tag, 'rel') === 'stylesheet') {
+    } else if (attribute(tag, 'rel')?.toLowerCase() === 'stylesheet') {
       const href = attribute(tag, 'href');
       if (href) assets.push(href);
     }
