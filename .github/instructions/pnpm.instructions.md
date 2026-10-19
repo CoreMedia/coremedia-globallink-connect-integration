@@ -24,8 +24,8 @@ best practices.
   Always specify Node.js and pnpm version requirements in the `engines` field:
   ```json
   "engines": {
-    "node": ">=24",
-    "pnpm": ">=10.24.0 <11"
+    "node": "^24.18.0",
+    "pnpm": "^11.26.0"
   }
   ```
 * **Use semantic versioning**:
