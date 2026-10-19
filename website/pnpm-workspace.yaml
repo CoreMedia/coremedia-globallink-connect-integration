@@ -30,12 +30,8 @@ catalogs:
     yaml: ^2.9.1
 minimumReleaseAge: 1440
 overrides:
-  # low: https://github.com/advisories/GHSA-238p-pmpm-9mq7
-  katex@>=0.11.0 <0.18.2: ^0.18.2
   # moderate: https://github.com/advisories/GHSA-rj75-hqrm-r3gf
   postcss-selector-parser@<7.1.6: ^7.1.6
-  # moderate: https://github.com/advisories/GHSA-4mjr-xmp4-gh2g
-  qs@>=2.2.5 <6.16.0: ^6.16.0
   # high: https://github.com/advisories/GHSA-5c6j-r48x-rmvq
   serialize-javascript@<=7.0.2: ^7.0.3
   # moderate: https://github.com/advisories/GHSA-qj8w-gfj5-8c6v
