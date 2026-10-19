@@ -62,6 +62,7 @@
   "devDependencies": {
     "@docusaurus/tsconfig": "catalog:",
     "@docusaurus/types": "catalog:",
+    "@types/react": "catalog:",
     "@types/unist": "catalog:",
     "knip": "catalog:",
     "typescript": "catalog:"
