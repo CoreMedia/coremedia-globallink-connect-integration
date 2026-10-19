@@ -77,9 +77,11 @@ export class WorkspaceFile {
   setIgnoredGhsas(ghsas) {
     const unique = [...new Set(ghsas)].sort();
     if (unique.length === 0) {
-      this.doc.deleteIn(['auditConfig', 'ignoreGhsas']);
+      // deleteIn() throws if auditConfig is missing, e.g., after the last block was removed.
       const auditConfig = this.doc.get('auditConfig');
-      if (isMap(auditConfig) && auditConfig.items.length === 0) this.doc.delete('auditConfig');
+      if (!isMap(auditConfig)) return;
+      auditConfig.delete('ignoreGhsas');
+      if (auditConfig.items.length === 0) this.doc.delete('auditConfig');
       return;
     }
     this.doc.setIn(['auditConfig', 'ignoreGhsas'], this.doc.createNode(unique));
