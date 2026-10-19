@@ -14,17 +14,15 @@ static website generator.
 | `pnpm install`           | _(required)_ Install dependency artifacts.          |
 | `pnpm serve`             | Serve website artifacts (from `build/`).            |
 | `pnpm start`             | Start local server (opens default browser)          |
-| `pnpm overrides`         | Check overrides (CI-friendly, exit 1 if removable)  |
-| `pnpm overrides:fix`     | Auto-remove unnecessary overrides with verification |
-| `pnpm fix-audit`         | Auto-add overrides for new vulnerabilities          |
-| `pnpm fix-audit:dry-run` | Report fixable vulnerabilities without changes      |
+| `pnpm smoke-test`        | Smoke-test website artifacts (from `build/`).       |
+| `pnpm deps:maintain`     | Update Docusaurus, fix vulnerabilities, verify.     |
+| `pnpm deps:block`        | Accept an advisory whose fix breaks the website.    |
 
-> 💡 **Dependency Overrides:** This project uses `pnpm.overrides` to fix
-> security vulnerabilities. Before updating major dependencies (especially
-> `@docusaurus/core`), run `pnpm overrides` to check if overrides are
-> still needed, or `pnpm overrides:fix` to auto-remove safe ones.
+> 💡 **Dependency Maintenance:** The "Website Dependencies" GitHub workflow
+> updates Docusaurus, fixes vulnerabilities with the smallest set of overrides
+> in `pnpm-workspace.yaml`, and verifies the website by build and smoke test.
 >
-> See [DEPENDENCY_OVERRIDES.md](./DEPENDENCY_OVERRIDES.md) for full details.
+> See [DEPENDENCY_MAINTENANCE.md](./DEPENDENCY_MAINTENANCE.md) for full details.
 
 ## Installation
 

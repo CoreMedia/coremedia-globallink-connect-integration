@@ -26,9 +26,10 @@
     "docusaurus.config.{js,ts}",
     "src/theme/**/*.{js,jsx,ts,tsx}",
     "src/components/**/*.{js,jsx,ts,tsx}",
-    "src/remark/**/*.{js,ts}"
+    "src/remark/**/*.{js,ts}",
+    "scripts/**/*.mjs"
   ],
   "project": [
-    "**/*.{js,jsx,ts,tsx}"
+    "**/*.{js,mjs,jsx,ts,tsx}"
   ]
 }
