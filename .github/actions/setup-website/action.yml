@@ -1,0 +1,61 @@
+name: "Setup Website"
+description: >-
+  Logs in to the CoreMedia npm registry, installs pnpm and Node.js as
+  declared in "engines" of website/package.json, and installs the website
+  dependencies from the lockfile.
+
+inputs:
+  npm-host:
+    description: "Hostname of the npm registry (output of env.yml)"
+    required: true
+  npm-url:
+    description: "URL of the npm registry without trailing slash (output of env.yml)"
+    required: true
+  npm-user:
+    description: "Registry user"
+    required: true
+  npm-password:
+    description: "Registry read-only password"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Setup npm authentication"
+      shell: bash
+      env:
+        NPM_HOST: ${{ inputs.npm-host }}
+        NPM_URL: ${{ inputs.npm-url }}
+        NPM_USER: ${{ inputs.npm-user }}
+        NPM_PASSWORD: ${{ inputs.npm-password }}
+      run: |
+        payload="$(jq -n --arg name "${NPM_USER}" --arg password "${NPM_PASSWORD}" '{name: $name, password: $password}')"
+        token="$(curl -s -H "Accept: application/json" -H "Content-Type: application/json" \
+          -X PUT --data "${payload}" \
+          "${NPM_URL}/-/user/org.couchdb.user:${NPM_USER}" | jq -r .token)"
+        echo "::add-mask::${token}"
+        # Home directory instead of repository root: never committed by accident.
+        {
+          echo "//${NPM_HOST}/:_authToken=${token}"
+          echo "@coremedia:registry=${NPM_URL}"
+        } > ~/.npmrc
+
+    # Single source of truth for tool versions: "engines" in website/package.json.
+    # (devEngines would make pnpm lock its own and the Node.js version in
+    # pnpm-lock.yaml, a lockfile format Dependabot may not support.)
+    - id: engines
+      name: "Read tool versions"
+      shell: bash
+      run: |
+        echo "pnpm=$(jq -er '.engines.pnpm' website/package.json)" >> "${GITHUB_OUTPUT}"
+        echo "node=$(jq -er '.engines.node' website/package.json)" >> "${GITHUB_OUTPUT}"
+
+    - name: "Install pnpm, Node.js, and dependencies"
+      uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+      with:
+        version: ${{ steps.engines.outputs.pnpm }}
+        runtime: node@${{ steps.engines.outputs.node }}
+        working-directory: website
+        cache: true
+        cache-dependency-path: website/pnpm-lock.yaml
+        require-lockfile: true

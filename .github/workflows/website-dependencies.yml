@@ -1,0 +1,125 @@
+name: "Website Dependencies"
+
+# Self-managed dependencies of the website (see website/DEPENDENCY_MAINTENANCE.md).
+#
+# * maintain: updates Docusaurus (minor/patch), fixes vulnerabilities with the
+#   smallest set of overrides, and reviews blocked advisories. Every change is
+#   verified by build and smoke test. Opens or updates one pull request.
+# * block-advisory: accepts an advisory whose fix breaks the website. Opens a
+#   pull request.
+#
+# The run fails when a person needs to act; the job summary explains what to do.
+
+on:
+  schedule:
+    - cron: "30 6 * * 1" # Monday 06:30 UTC
+  # Re-evaluate overrides after dependency changes, e.g. merged Dependabot PRs.
+  push:
+    branches:
+      - main
+    paths:
+      - website/package.json
+      - website/pnpm-workspace.yaml
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do"
+        type: choice
+        options:
+          - maintain
+          - block-advisory
+        default: maintain
+      recheck-blocks:
+        description: "maintain: retry all blocked advisories, even without a Docusaurus update"
+        type: boolean
+        default: false
+      ghsa:
+        description: "block-advisory: advisory ID (GHSA-xxxx-xxxx-xxxx) whose fix breaks the website"
+        type: string
+      rationale:
+        description: "block-advisory: why the fix cannot be applied"
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: website-dependencies
+  cancel-in-progress: false
+
+env:
+  # https://github.com/actions/runner-images/issues/70
+  NODE_OPTIONS: "--max_old_space_size=4096"
+
+jobs:
+  env:
+    uses: "./.github/workflows/env.yml"
+
+  dependencies:
+    name: "${{ inputs.action || 'maintain' }}"
+    needs:
+      - env
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write # push the pull request branch
+      pull-requests: write # open or update the pull request
+    env:
+      ACTION: ${{ inputs.action || 'maintain' }}
+      GHSA: ${{ inputs.ghsa }}
+      RATIONALE: ${{ inputs.rationale }}
+      RECHECK_BLOCKS: ${{ inputs.recheck-blocks && 'true' || 'false' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup website
+        uses: ./.github/actions/setup-website
+        with:
+          npm-host: ${{ needs.env.outputs.npm-host }}
+          npm-url: ${{ needs.env.outputs.npm-url }}
+          npm-user: ${{ secrets.CM_NPM_USER }}
+          npm-password: ${{ secrets.CM_NPM_READ_ONLY_PASSWORD }}
+
+      - id: run
+        name: "Run ${{ env.ACTION }}"
+        working-directory: website
+        run: ../.github/scripts/website-dependencies.sh
+
+      - id: pr
+        name: Create or update pull request
+        if: steps.run.outputs.status != '1'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # website/* branches are deployed after merge (pages-deploy.yml).
+          branch: ${{ steps.run.outputs.branch }}
+          commit-message: ${{ steps.run.outputs.title }}
+          title: ${{ steps.run.outputs.title }}
+          body-path: ${{ steps.run.outputs.report }}
+          add-paths: |
+            website/package.json
+            website/pnpm-lock.yaml
+            website/pnpm-workspace.yaml
+            website/dependency-policy.json
+            .github/dependabot.yml
+          labels: |
+            scope/dependencies
+            scope/website
+            type/build
+          delete-branch: true
+
+      - name: Report result
+        if: always()
+        env:
+          STATUS: ${{ steps.run.outputs.status }}
+          PR_URL: ${{ steps.pr.outputs.pull-request-url }}
+          PR_OPERATION: ${{ steps.pr.outputs.pull-request-operation }}
+        run: |
+          if [[ -n "${PR_URL}" ]]; then
+            echo "Pull request (${PR_OPERATION}): ${PR_URL}" >> "${GITHUB_STEP_SUMMARY}"
+          fi
+          case "${STATUS}" in
+            0) echo "Done." ;;
+            2) echo "::error::Action required. See the job summary for instructions."; exit 1 ;;
+            *) echo "::error::The ${ACTION} run failed. See the log for details."; exit 1 ;;
+          esac

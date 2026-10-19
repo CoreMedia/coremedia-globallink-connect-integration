@@ -63,6 +63,9 @@ catalogs:
     remark:
       specifier: ^15.0.1
       version: 15.0.1
+    semver:
+      specifier: ^7.8.5
+      version: 7.8.5
     typescript:
       specifier: ~7.0.2
       version: 7.0.2
@@ -72,6 +75,9 @@ catalogs:
     unist-util-visit:
       specifier: ^5.1.0
       version: 5.1.0
+    yaml:
+      specifier: ^2.9.1
+      version: 2.9.1
 
 overrides:
   '@babel/core@>=0.0.0 <7.29.6': ^7.29.6
@@ -177,9 +183,15 @@ importers:
       knip:
         specifier: 'catalog:'
         version: 6.29.0
+      semver:
+        specifier: 'catalog:'
+        version: 7.8.5
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
+      yaml:
+        specifier: 'catalog:'
+        version: 2.9.1
 
 packages:
 
@@ -6394,8 +6406,8 @@ packages:
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
-  yaml@2.9.0:
-    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
+  yaml@2.9.1:
+    resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
     engines: {node: '>= 14.6'}
     hasBin: true
 
@@ -11681,7 +11693,7 @@ snapshots:
       strip-json-comments: 5.0.3
       tinyglobby: 0.2.17
       unbash: 4.0.4
-      yaml: 2.9.0
+      yaml: 2.9.1
       zod: 4.4.3
 
   latest-version@7.0.0:
@@ -14214,7 +14226,7 @@ snapshots:
 
   yallist@3.1.1: {}
 
-  yaml@2.9.0: {}
+  yaml@2.9.1: {}
 
   yocto-queue@1.2.2: {}
 
