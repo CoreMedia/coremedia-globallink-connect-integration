@@ -2,9 +2,10 @@ name: "Website Dependencies"
 
 # Self-managed dependencies of the website (see website/DEPENDENCY_MAINTENANCE.md).
 #
-# * maintain: updates Docusaurus (minor/patch), fixes vulnerabilities with the
-#   smallest set of overrides, and reviews blocked advisories. Every change is
-#   verified by build and smoke test. Opens or updates one pull request.
+# * maintain: updates Docusaurus (minor/patch) and all other packages within
+#   their declared ranges, fixes vulnerabilities with the smallest set of
+#   overrides, and reviews blocked advisories. Every change is verified by
+#   build and smoke test. Opens or updates one pull request.
 # * block-advisory: accepts an advisory whose fix breaks the website. Opens a
 #   pull request.
 #
@@ -13,13 +14,6 @@ name: "Website Dependencies"
 on:
   schedule:
     - cron: "30 6 * * 1" # Monday 06:30 UTC
-  # Re-evaluate overrides after dependency changes, e.g. merged Dependabot PRs.
-  push:
-    branches:
-      - main
-    paths:
-      - website/package.json
-      - website/pnpm-workspace.yaml
   workflow_dispatch:
     inputs:
       action:

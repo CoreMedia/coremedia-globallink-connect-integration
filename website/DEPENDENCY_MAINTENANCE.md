@@ -1,9 +1,9 @@
 # Website Dependency Maintenance
 
 The website dependencies maintain themselves: a GitHub workflow updates
-Docusaurus, fixes vulnerabilities, cleans up overrides, and tests that the
-website still works. People only review pull requests, and decide in the rare
-case that a fix breaks the website.
+Docusaurus and all other packages, fixes vulnerabilities, cleans up overrides,
+and tests that the website still works. People only review pull requests, and
+decide in the rare case that an update breaks the website.
 
 ## What to Do When…
 
@@ -18,9 +18,10 @@ case that a fix breaks the website.
 * **The summary says a fix breaks the website:**
   Run the workflow with action `block-advisory`
   (see [Block an Advisory](#block-an-advisory)).
-* **A Dependabot pull request fails:**
-  Close it if the maintenance pull request covers the same update; otherwise
-  investigate the failing check.
+* **A Dependabot security pull request appears:**
+  If its check "Test deployment" passed, merge it. Otherwise, close it and run
+  the workflow with action `maintain`, which fixes the same advisory. Dependabot
+  also closes its pull request by itself once the advisory is fixed.
 
 ### Run the Workflow
 
@@ -47,17 +48,19 @@ version is published.
 
 ## How It Works
 
-The workflow `.github/workflows/website-dependencies.yml` runs every Monday,
-after changes to `package.json` or `pnpm-workspace.yaml` on `main` (for
-example, merged Dependabot pull requests), and on demand. The action
-`maintain` runs `scripts/deps/maintain.mjs`:
+The workflow `.github/workflows/website-dependencies.yml` runs every Monday
+and on demand. The action `maintain` runs `scripts/deps/maintain.mjs`:
 
 1. **Docusaurus first:** updates all `@docusaurus/*` packages to the latest
    minor or patch release, then verifies the website. New Docusaurus releases
    often update the transitive dependencies that overrides patch. Major
    releases require a manual migration and are only reported.
-2. **Review blocks:** removes blocked advisories that no longer apply.
-3. **Rebuild overrides:** removes all overrides, then lets pnpm fix the
+2. **Package updates:** `pnpm update` updates all other packages, including
+   transitive ones, to the latest versions their declared ranges allow; this
+   changes only the lockfile. If the result breaks the website, the updates
+   are discarded and the run asks a developer to investigate.
+3. **Review blocks:** removes blocked advisories that no longer apply.
+4. **Rebuild overrides:** removes all overrides, then lets pnpm fix the
    vulnerabilities again:
    * `pnpm audit --fix update` updates vulnerable packages within the version
      ranges their parents allow; this changes only the lockfile.
@@ -68,11 +71,11 @@ example, merged Dependabot pull requests), and on demand. The action
    This keeps the smallest set of overrides; obsolete overrides disappear
    automatically. If the result breaks the website, the run falls back to
    adding fixes to the existing overrides.
-4. **Verify:** every change is checked by `pnpm install`, `pnpm run build`,
+5. **Verify:** every change is checked by `pnpm install`, `pnpm run build`,
    and `pnpm run smoke-test`. Changes that fail are reverted and reported.
-5. **Report:** the pull request description lists the Docusaurus status,
-   fixed and remaining vulnerabilities, removed and added overrides, and
-   blocks.
+6. **Report:** the pull request description lists the Docusaurus status,
+   updated packages, newer versions outside the declared ranges, fixed and
+   remaining vulnerabilities, removed and added overrides, and blocks.
 
 The smoke test (`scripts/deps/smoke-test.mjs`) serves `build/` on a free
 port, requests every page from the sitemap and the scripts and styles of the
@@ -80,12 +83,15 @@ home page, and stops the server afterward.
 
 ### Division of Labor With Dependabot
 
-* **Dependabot** proposes version updates of direct dependencies, grouped into
-  one pull request for minor and patch updates, and one for React. Security
-  updates are grouped into one pull request as well. Each pull request is
-  tested by `pages-test-deploy.yml` (typecheck, build, smoke test).
-* **The maintenance workflow** owns Docusaurus updates (Dependabot ignores
-  `@docusaurus/*`), overrides, and blocked advisories.
+* **The maintenance workflow** owns all website dependency updates: Docusaurus,
+  package updates, overrides, and blocked advisories. It verifies everything
+  in one run and opens a single pull request.
+* **Dependabot** only raises security updates for the website, as an early
+  alert between the weekly runs. Its version updates are disabled
+  (`open-pull-requests-limit: 0`), because they duplicate the package updates
+  without adapting overrides. Each Dependabot pull request is tested by
+  `pages-test-deploy.yml` (typecheck, build, smoke test); a passing check is
+  the review.
 
 ## Policy File
 
@@ -111,6 +117,8 @@ Run these commands from the `website/` folder:
 pnpm deps:maintain
 # Same, retrying all blocked advisories.
 pnpm deps:maintain --recheck-blocks
+# Only fix vulnerabilities, without Docusaurus and package updates.
+pnpm deps:maintain --skip-docusaurus --skip-updates
 # Block an advisory.
 pnpm deps:block --ghsa GHSA-xxxx-xxxx-xxxx --rationale "Why the fix breaks"
 # Smoke-test an existing build/.

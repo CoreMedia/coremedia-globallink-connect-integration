@@ -15,12 +15,13 @@ static website generator.
 | `pnpm serve`             | Serve website artifacts (from `build/`).            |
 | `pnpm start`             | Start local server (opens default browser)          |
 | `pnpm smoke-test`        | Smoke-test website artifacts (from `build/`).       |
-| `pnpm deps:maintain`     | Update Docusaurus, fix vulnerabilities, verify.     |
+| `pnpm deps:maintain`     | Update dependencies, fix vulnerabilities, verify.   |
 | `pnpm deps:block`        | Accept an advisory whose fix breaks the website.    |
 
 > 💡 **Dependency Maintenance:** The "Website Dependencies" GitHub workflow
-> updates Docusaurus, fixes vulnerabilities with the smallest set of overrides
-> in `pnpm-workspace.yaml`, and verifies the website by build and smoke test.
+> updates Docusaurus and all other packages, fixes vulnerabilities with the
+> smallest set of overrides in `pnpm-workspace.yaml`, and verifies the website
+> by build and smoke test.
 >
 > See [DEPENDENCY_MAINTENANCE.md](./DEPENDENCY_MAINTENANCE.md) for full details.
 

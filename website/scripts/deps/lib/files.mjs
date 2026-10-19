@@ -4,7 +4,7 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { isMap, isScalar, isSeq, parseDocument } from 'yaml';
+import { isMap, isScalar, isSeq, parse, parseDocument } from 'yaml';
 
 const TO_STRING_OPTIONS = { lineWidth: 0 };
 
@@ -164,3 +164,38 @@ export const restore = (saved) => {
  * @returns {boolean} true if a file changed
  */
 export const changedSince = (saved) => [...saved].some(([path, content]) => readFileSync(path, 'utf8') !== content);
+
+/**
+ * Lists the resolved packages of a `pnpm-lock.yaml`.
+ *
+ * @param {string} content - the lockfile content
+ * @returns {Map<string, Set<string>>} the versions by package name
+ */
+const lockfilePackages = (content) => {
+  const versions = new Map();
+  for (const key of Object.keys(parse(content)?.packages ?? {})) {
+    const at = key.lastIndexOf('@');
+    if (at <= 0) continue;
+    const name = key.slice(0, at);
+    if (!versions.has(name)) versions.set(name, new Set());
+    versions.get(name).add(key.slice(at + 1));
+  }
+  return versions;
+};
+
+/**
+ * Compares the resolved packages of two lockfile versions.
+ *
+ * @param {string} before - the previous lockfile content
+ * @param {string} after - the current lockfile content
+ * @returns {{name: string, before: string[], after: string[]}[]} the changed packages, sorted by name
+ */
+export const lockfileChanges = (before, after) => {
+  const previous = lockfilePackages(before);
+  const current = lockfilePackages(after);
+  const names = [...new Set([...previous.keys(), ...current.keys()])].sort();
+  const sorted = (set) => [...(set ?? [])].sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+  return names
+    .map((name) => ({ name, before: sorted(previous.get(name)), after: sorted(current.get(name)) }))
+    .filter((change) => change.before.join() !== change.after.join());
+};

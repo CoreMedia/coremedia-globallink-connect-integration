@@ -118,6 +118,27 @@ export const installedVersion = (name) => {
 };
 
 /**
+ * Returns direct dependencies whose latest version is outside their declared
+ * range, i.e., updates that `pnpm update` does not apply.
+ *
+ * @returns {{name: string, current: string, latest: string}[]} the outdated dependencies, sorted by name
+ */
+export const outdatedOutsideRange = () => {
+  // pnpm outdated exits non-zero when it finds outdated dependencies.
+  const result = pnpm(['outdated', '--format', 'json'], { capture: true });
+  let outdated;
+  try {
+    outdated = JSON.parse(result.stdout || '{}');
+  } catch {
+    throw new Error(`"pnpm outdated --format json" returned no valid JSON:\n${result.stderr || result.stdout}`);
+  }
+  return Object.entries(outdated)
+    .filter(([, info]) => info.latest && info.wanted !== info.latest)
+    .map(([name, info]) => ({ name, current: info.current, latest: info.latest }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+};
+
+/**
  * Returns the latest published version and its release time.
  *
  * @param {string} name - the package name
