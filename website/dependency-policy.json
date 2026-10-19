@@ -1,13 +1,5 @@
 {
   "$comment": "Managed by scripts/deps/maintain.mjs and scripts/deps/block.mjs. See DEPENDENCY_MAINTENANCE.md.",
-  "blockedAdvisories": [
-    {
-      "ghsa": "GHSA-h67p-54hq-rp68",
-      "package": "js-yaml",
-      "ignoreVersions": ">=4.0.0",
-      "rationale": "Update to versions above 3.x break the build.",
-      "reviewedWithDocusaurus": "3.10.2"
-    }
-  ],
+  "blockedAdvisories": [],
   "keepOverrides": {}
 }
