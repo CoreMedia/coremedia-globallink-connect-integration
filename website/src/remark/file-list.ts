@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { Plugin } from 'unified';
 import type { Root } from 'mdast';
-import type { Node } from 'unist';
+import type { Parent } from 'unist';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import logger from '@docusaurus/logger';
 
@@ -24,9 +24,14 @@ import logger from '@docusaurus/logger';
 const remarkFileList: Plugin<[], Root> = () => {
   return (tree, file) => {
     // Handle MDX FileList components by replacing them with markdown
-    visit(tree, 'mdxJsxFlowElement', (node: any, index: number, parent: Node) => {
+    visit(tree, 'mdxJsxFlowElement', (node: any, index: number | undefined, parent: Parent | undefined) => {
       if (node.name === 'FileList') {
         logger.info(`[File-List-Plugin] Found FileList component in ${file.path}`);
+
+        if (index === undefined || parent === undefined) {
+          logger.error('[File-List-Plugin] FileList component has no parent node.');
+          return;
+        }
 
         // Extract props from the JSX element
         const directoryAttr = node.attributes?.find((attr: any) => attr.name === 'directory');
@@ -70,9 +75,9 @@ const remarkFileList: Plugin<[], Root> = () => {
 
           // Replace the FileList component with the markdown nodes
           if (listAst.children.length > 0) {
-            (parent as any).children.splice(index, 1, ...listAst.children);
+            parent.children.splice(index, 1, ...listAst.children);
           } else {
-            (parent as any).children.splice(index, 1);
+            parent.children.splice(index, 1);
           }
         }
       }
@@ -91,7 +96,8 @@ function generateMarkdownFileList(filePath: string, directory: string, exclude: 
   try {
     files = fs.readdirSync(targetDir);
   } catch (e) {
-    logger.error(`[File-List-Plugin] Failed to read directory ${targetDir}: ${e.message}`);
+    const message = e instanceof Error ? e.message : String(e);
+    logger.error(`[File-List-Plugin] Failed to read directory ${targetDir}: ${message}`);
     return null;
   }
 
