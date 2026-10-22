@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import static com.coremedia.rest.cap.workflow.validation.configuration.Translati
 
 @Configuration
 @Import(TranslationWorkflowValidationConfiguration.class)
+@PropertySource("classpath:META-INF/coremedia/gcc-studio-server.properties")
 @NullMarked
 public class GlobalLinkWorkflowValidationAutoConfiguration {
 

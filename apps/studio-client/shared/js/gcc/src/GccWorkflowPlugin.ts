@@ -258,6 +258,13 @@ const getGccWorkflowPlugin = async (): Promise<TranslationWorkflowPlugin> => {
         return { globalLinkDueCalendar: dueDate };
       },
 
+      // used for the parameters stored by the Propagation workflow, e.g. in its user task for validation
+      computeViewModelFromProcessVariables(variables: Record<string, unknown>): GccViewModel | undefined {
+        const dueDate =
+          variables.globalLinkDueDate instanceof Calendar ? variables.globalLinkDueDate : getDefaultDueDate();
+        return dueDate ? { globalLinkDueCalendar: dueDate } : undefined;
+      },
+
       saveViewModel(viewModel: GccViewModel): Record<string, unknown> {
         return { globalLinkDueDate: viewModel.globalLinkDueCalendar };
       },
