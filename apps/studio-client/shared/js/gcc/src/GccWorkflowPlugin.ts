@@ -409,7 +409,7 @@ const getGccProcessLocalization = async (): Promise<WorkflowLocalizationConfig> 
       ),
       finishTranslation: localizer("TranslationGlobalLink_state_finishTranslation_displayName"),
       finishTranslation_afterDownloadFailed: localizer(
-        "TranslationGlobalLink_state_finishTranslation_afterDownloadFailed_displayName"
+        "TranslationGlobalLink_state_finishTranslation_afterDownloadFailed_displayName",
       ),
       DownloadTranslation: localizer("TranslationGlobalLink_state_DownloadTranslation_displayName"),
       ReviewDeliveredTranslation: localizer("TranslationGlobalLink_state_ReviewDeliveredTranslation_displayName"),
