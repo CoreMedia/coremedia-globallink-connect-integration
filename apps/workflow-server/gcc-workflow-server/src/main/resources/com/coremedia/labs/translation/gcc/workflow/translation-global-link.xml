@@ -26,6 +26,9 @@
     <!-- list of contents or versions to be translated -->
     <AggregationVariable name="masterContentObjects" type="Resource"/>
 
+    <!-- The in-site variants that have been updated in the source site -->
+    <AggregationVariable name="masterVariants" type="Resource"/>
+
     <!-- list of derived contents -->
     <AggregationVariable name="derivedContents" type="Resource"/>
     <!-- list of derived contents that did not exist before the workflow was started -->
@@ -99,6 +102,7 @@
       <Writes variable="subject"/>
       <Writes variable="comment"/>
       <Writes variable="masterContentObjects"/>
+      <Writes variable="masterVariants"/>
       <Writes variable="targetSiteId"/>
       <Writes variable="globalLinkDueDate"/>
       <Writes variable="globalLinkWorkflow"/>
@@ -110,6 +114,7 @@
       <Writes variable="subject"/>
       <Writes variable="comment"/>
       <Writes variable="masterContentObjects"/>
+      <Writes variable="masterVariants"/>
       <Writes variable="derivedContents"/>
       <Writes variable="createdContents"/>
       <Writes variable="targetSiteManagerGroups"/>
@@ -135,17 +140,24 @@
       <Action class="com.coremedia.translate.workflow.ExtractTranslationWorkflowRobotUserAction"
               resultVariable="robotUser"/>
       <!-- Enable timers for delaying certain automated tasks. With its initial values, these timers will expire
-           immediately, so that the IsExpired guards of those tasks do not delay the initial task execution -->
+           immediately, so that the IsExpired guards of those tasks do not delay the initial task execution. -->
       <Action class="EnableTimer" timerVariable="sendTranslationRequestRetryDelay"/>
       <Action class="EnableTimer" timerVariable="downloadTranslationRetryDelay"/>
       <Action class="EnableTimer" timerVariable="cancelTranslationRetryDelay"/>
-      <!-- Find and filter derived contents -->
+      <!-- Find or create derived content. -->
       <Action class="com.coremedia.translate.workflow.GetDerivedContentsAction"
               masterContentObjectsVariable="masterContentObjects"
               derivedContentsVariable="derivedContents"
               createdContentsVariable="createdContents"
               placeholderPreparationStrategyVariable="placeholderPreparationStrategy"
               targetSiteIdVariable="targetSiteId"/>
+      <!-- Add existing derived variants for given master variants and target sites to the list of derived content. -->
+      <Action class="com.coremedia.translate.workflow.variant.AddDerivedVariantsAction"
+              masterVariantsVariable="masterVariants"
+              targetSiteIdVariable="targetSiteId"
+              derivedContentsVariable="derivedContents"
+              masterContentObjectsVariable="masterContentObjects"/>
+      <!-- Filter derived contents. -->
       <Action class="com.coremedia.translate.workflow.FilterDerivedContentsAction"
               masterContentObjectsVariable="masterContentObjects"
               derivedContentsVariable="derivedContents"/>
