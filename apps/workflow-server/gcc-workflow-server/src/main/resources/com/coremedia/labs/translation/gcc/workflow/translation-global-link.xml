@@ -150,17 +150,9 @@
               derivedContentsVariable="derivedContents"
               createdContentsVariable="createdContents"
               placeholderPreparationStrategyVariable="placeholderPreparationStrategy"
-              targetSiteIdVariable="targetSiteId"/>
-      <!-- Add existing derived variants for given master variants and target sites to the list of derived content. -->
-      <Action class="com.coremedia.translate.workflow.variant.AddDerivedVariantsAction"
-              masterVariantsVariable="masterVariants"
               targetSiteIdVariable="targetSiteId"
-              derivedContentsVariable="derivedContents"
-              masterContentObjectsVariable="masterContentObjects"/>
-      <!-- Filter derived contents. -->
-      <Action class="com.coremedia.translate.workflow.FilterDerivedContentsAction"
-              masterContentObjectsVariable="masterContentObjects"
-              derivedContentsVariable="derivedContents"/>
+              masterCheckInUserVariable="OWNER_"
+              masterVariantsVariable="masterVariants"/>
     </AutomatedTask>
 
     <If name="CheckIfDerivedContentsEmpty">
