@@ -98,6 +98,14 @@
     <!-- used by the client, to check if a cancellation may be requested via 'cancelRequested'-->
     <Variable name="cancellationAllowed" type="Boolean"><Boolean value="true"/></Variable>
 
+    <!--
+      Whether a Propagation process that forked this process should stop propagating the changes to the sites
+      derived from the target sites. This is true if the translation has been rolled back.
+    -->
+    <Variable name="stopPropagation" type="Boolean">
+      <Boolean value="false"/>
+    </Variable>
+
     <InitialAssignment>
       <Writes variable="subject"/>
       <Writes variable="comment"/>
@@ -526,6 +534,9 @@
       <Action class="com.coremedia.translate.workflow.RollbackTranslationAction"
               contentsVariable="createdContents"
               skipCleanInTranslation="true"/>
+      <Action class="AssignVariable" resultVariable="stopPropagation">
+        <Boolean value="true"/>
+      </Action>
     </AutomatedTask>
 
     <AutomatedTask name="Complete" successor="Finish">
